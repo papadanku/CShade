@@ -1,53 +1,50 @@
 
+#include "cGraphics.fxh"
+
 uniform float _Weight <
     ui_type = "drag";
 > = 1.0;
 
-texture2D Render_Color : COLOR;
-
-sampler2D Sample_Color
+struct VS2PS_Shard
 {
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
+    float4 HPos : SV_POSITION;
+    float4 Tex0 : TEXCOORD0;
+    float4 Tex1 : TEXCOORD1;
 };
 
-// Vertex shaders
-
-void Shard_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0, out float4 Offset : TEXCOORD1)
+VS2PS_Shard VS_Shard(APP2VS Input)
 {
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-    const float2 PixelSize = 0.5 / float2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    Offset = TexCoord.xyxy + float4(-PixelSize, PixelSize);
+    float2 PixelSize = float2(1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT));
+
+    VS2PS_Quad FSQuad = VS_Quad(Input);
+    VS2PS_Shard Output;
+
+    Output.HPos = FSQuad.HPos;
+    Output.Tex0 = FSQuad.Tex0.xyxy;
+    Output.Tex1 = FSQuad.Tex0.xyxy + float4(-PixelSize, PixelSize);
+    return Output;
 }
 
-/* [ Pixel Shaders ] */
-
-void Shard_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, in float4 Offset : TEXCOORD1, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Shard(VS2PS_Shard Input) : SV_TARGET0
 {
-    float4 OriginalSample = tex2D(Sample_Color, TexCoord);
+    float4 OriginalSample = tex2D(SampleColorTex, Input.Tex0.xy);
     float4 BlurSample = 0.0;
-    BlurSample += tex2D(Sample_Color, Offset.xw) * 0.25;
-    BlurSample += tex2D(Sample_Color, Offset.zw) * 0.25;
-    BlurSample += tex2D(Sample_Color, Offset.xy) * 0.25;
-    BlurSample += tex2D(Sample_Color, Offset.zy) * 0.25;
-    OutputColor0 = OriginalSample + (OriginalSample - BlurSample) * _Weight;
+    BlurSample += tex2D(SampleColorTex, Input.Tex1.xw) * 0.25;
+    BlurSample += tex2D(SampleColorTex, Input.Tex1.zw) * 0.25;
+    BlurSample += tex2D(SampleColorTex, Input.Tex1.xy) * 0.25;
+    BlurSample += tex2D(SampleColorTex, Input.Tex1.zy) * 0.25;
+    return OriginalSample + (OriginalSample - BlurSample) * _Weight;
 }
 
 technique cShard
 {
     pass
     {
-        VertexShader = Shard_VS;
-        PixelShader = Shard_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Shard;
+        PixelShader = PS_Shard;
     }
 }

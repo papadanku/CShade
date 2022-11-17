@@ -22,6 +22,8 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "cGraphics.fxh"
+
 uniform float _Divisor <
     ui_type = "drag";
 > = 0.05f;
@@ -37,34 +39,10 @@ uniform float _Roll <
 uniform bool _Symmetry <
 > = true;
 
-texture2D Render_Color : COLOR;
-
-sampler2D Sample_Color
-{
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
-};
-
-// Vertex shaders
-
-void Basic_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0)
-{
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-}
-
-/* [ Pixel Shaders ] */
-
-void Mirror_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Mirror(VS2PS_Quad Input) : SV_TARGET0
 {
     // Convert to polar coordinates
-    float2 Polar = TexCoord * 2.0 - 1.0;
+    float2 Polar = (Input.Tex0 * 2.0) - 1.0;
     float Phi = atan2(Polar.y, Polar.x);
     float Radius = length(Polar);
 
@@ -76,21 +54,22 @@ void Mirror_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0,
 
     // Convert back to the texture coordinate.
     float2 PhiSinCos; sincos(Phi, PhiSinCos.x, PhiSinCos.y);
-    TexCoord = (PhiSinCos.yx * Radius) * 0.5 + 0.5;
+    Input.Tex0 = ((PhiSinCos.yx * Radius) * 0.5) + 0.5;
 
     // Reflection at the border of the screen.
-    TexCoord = max(min(TexCoord, 2.0 - TexCoord), -TexCoord);
-    OutputColor0 = tex2D(Sample_Color, TexCoord);
+    Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
+    return tex2D(SampleColorTex, Input.Tex0);
 }
 
-technique KinoMirror
+technique kMirror
 {
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Mirror_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_Mirror;
     }
 }

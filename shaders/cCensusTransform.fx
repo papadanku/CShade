@@ -1,52 +1,50 @@
 
-texture2D Render_Color : COLOR;
+#include "cGraphics.fxh"
 
-sampler2D Sample_Color
+struct VS2PS_Census
 {
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
+    float4 HPos : SV_POSITION;
+    float4 Tex0 : TEXCOORD0;
+    float4 Tex1 : TEXCOORD1;
+    float4 Tex2 : TEXCOORD2;
 };
 
-void CensusTransform_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float4 TexCoords[3] : TEXCOORD0)
+VS2PS_Census VS_Census(APP2VS Input)
 {
-    float2 LocalTexCoord = 0.0;
-    LocalTexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    LocalTexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(LocalTexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-
     // Sample locations:
     // [0].xy [1].xy [2].xy
     // [0].xz [1].xz [2].xz
     // [0].xw [1].xw [2].xw
+
     const float2 PixelSize = 1.0 / float2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    TexCoords[0] = LocalTexCoord.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    TexCoords[1] = LocalTexCoord.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    TexCoords[2] = LocalTexCoord.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+
+    // Get fullscreen texcoord and vertex position
+    VS2PS_Quad FSQuad = VS_Quad(Input);
+
+    VS2PS_Census Output;
+    Output.HPos = FSQuad.HPos;
+    Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    Output.Tex1 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    Output.Tex2 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    return Output;
 }
 
-void CensusTransform_PS(in float4 Position : SV_POSITION, in float4 TexCoords[3] : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Census(VS2PS_Census Input) : SV_TARGET0
 {
-    OutputColor0 = 0.0;
+    float4 OutputColor0 = 0.0;
 
     const int Neighbors = 8;
+    float4 SampleNeighbor[Neighbors];
+    SampleNeighbor[0] = tex2D(SampleColorTex, Input.Tex0.xy);
+    SampleNeighbor[1] = tex2D(SampleColorTex, Input.Tex1.xy);
+    SampleNeighbor[2] = tex2D(SampleColorTex, Input.Tex2.xy);
+    SampleNeighbor[3] = tex2D(SampleColorTex, Input.Tex0.xz);
+    SampleNeighbor[4] = tex2D(SampleColorTex, Input.Tex2.xz);
+    SampleNeighbor[5] = tex2D(SampleColorTex, Input.Tex0.xw);
+    SampleNeighbor[6] = tex2D(SampleColorTex, Input.Tex1.xw);
+    SampleNeighbor[7] = tex2D(SampleColorTex, Input.Tex2.xw);
+    float4 CenterSample = tex2D(SampleColorTex, Input.Tex1.xz);
 
-    float4 CenterSample = tex2D(Sample_Color, TexCoords[1].xz);
-
-    float4 SampleNeighbor[8];
-    SampleNeighbor[0] = tex2D(Sample_Color, TexCoords[0].xy);
-    SampleNeighbor[1] = tex2D(Sample_Color, TexCoords[1].xy);
-    SampleNeighbor[2] = tex2D(Sample_Color, TexCoords[2].xy);
-    SampleNeighbor[3] = tex2D(Sample_Color, TexCoords[0].xz);
-    SampleNeighbor[4] = tex2D(Sample_Color, TexCoords[2].xz);
-    SampleNeighbor[5] = tex2D(Sample_Color, TexCoords[0].xw);
-    SampleNeighbor[6] = tex2D(Sample_Color, TexCoords[1].xw);
-    SampleNeighbor[7] = tex2D(Sample_Color, TexCoords[2].xw);
-    
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)
     {
@@ -55,17 +53,18 @@ void CensusTransform_PS(in float4 Position : SV_POSITION, in float4 TexCoords[3]
     }
 
 	// Convert the 8-bit integer to float, and average the results from each channel
-    OutputColor0 = saturate(dot(OutputColor0.rgb * (1.0 / (exp2(8) - 1)), 1.0 / 3.0));
+    return saturate(dot(OutputColor0.rgb * (1.0 / (exp2(8) - 1)), 1.0 / 3.0));
 }
 
 technique cCensusTransform
 {
     pass
     {
-        VertexShader = CensusTransform_VS;
-        PixelShader = CensusTransform_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Census;
+        PixelShader = PS_Census;
     }
 }

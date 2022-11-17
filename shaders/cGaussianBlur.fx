@@ -1,107 +1,74 @@
 
+#include "cGraphics.fxh"
+#include "cImageProcessing.fxh"
+
 uniform float _Sigma <
     ui_type = "drag";
     ui_min = 0.0;
 > = 1.0;
 
-texture2D Render_Color : COLOR;
-
-sampler2D Sample_Color
+float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 {
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
-};
-
-// Vertex shaders
-
-void Basic_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0)
-{
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-}
-
-// Pixel shaders
-// Linear Gaussian blur based on https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
-
-float Gaussian(float Pixel_Index, float Sigma)
-{
-    const float Pi = 3.1415926535897932384626433832795f;
-    float Output = rsqrt(2.0 * Pi * (Sigma * Sigma));
-    return Output * exp(-(Pixel_Index * Pixel_Index) / (2.0 * Sigma * Sigma));
-}
-
-void Gaussian_Blur(in float2 TexCoord, in bool Is_Horizontal, out float4 OutputColor0)
-{
-    float2 Direction = Is_Horizontal ? float2(1.0, 0.0) : float2(0.0, 1.0);
+    float2 Direction = IsHorizontal ? float2(1.0, 0.0) : float2(0.0, 1.0);
     float2 PixelSize = (1.0 / float2(BUFFER_WIDTH, BUFFER_HEIGHT)) * Direction;
     float KernelSize = _Sigma * 3.0;
 
     if(_Sigma == 0.0)
     {
-        OutputColor0 = tex2Dlod(Sample_Color, float4(TexCoord, 0.0, 0.0));
+        return tex2Dlod(SampleColorTex, float4(Tex, 0.0, 0.0));
     }
     else
     {
         // Sample and weight center first to get even number sides
-        float TotalWeight = Gaussian(0.0, _Sigma);
-        float4 OutputColor = tex2D(Sample_Color, TexCoord) * TotalWeight;
+        float TotalWeight = GetGaussianWeight(0.0, _Sigma);
+        float4 OutputColor = tex2D(SampleColorTex, Tex) * TotalWeight;
 
         for(float i = 1.0; i < KernelSize; i += 2.0)
         {
-            float Offset1 = i;
-            float Offset2 = i + 1.0;
-            float Weight1 = Gaussian(Offset1, _Sigma);
-            float Weight2 = Gaussian(Offset2, _Sigma);
-            float LinearWeight = Weight1 + Weight2;
-            float LinearOffset = ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
-
-            OutputColor += tex2Dlod(Sample_Color, float4(TexCoord - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
-            OutputColor += tex2Dlod(Sample_Color, float4(TexCoord + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
+            float LinearWeight = GetGaussianWeight(i, _Sigma);
+            float LinearOffset = GetGaussianOffset(i, _Sigma);
+            OutputColor += tex2Dlod(SampleColorTex, float4(Tex - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
+            OutputColor += tex2Dlod(SampleColorTex, float4(Tex + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;
         }
 
         // Normalize intensity to prevent altered output
-        OutputColor0 = OutputColor / TotalWeight;
+        return OutputColor / TotalWeight;
     }
 }
 
-void Horizontal_Gaussian_Blur_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_HGaussianBlur(VS2PS_Quad Input) : SV_TARGET0
 {
-    Gaussian_Blur(TexCoord, true, OutputColor0);
+    return GetGaussianBlur(Input.Tex0, true);
 }
 
-void Vertical_Gaussian_Blur_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_VGaussianBlur(VS2PS_Quad Input) : SV_TARGET0
 {
-    Gaussian_Blur(TexCoord, false, OutputColor0);
+    return GetGaussianBlur(Input.Tex0, false);
 }
 
-technique cHorizontalGaussianBlur
+technique cHorizontalBlur
 {
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Horizontal_Gaussian_Blur_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_HGaussianBlur;
     }
 }
 
-technique cVerticalGaussianBlur
+technique cVerticalBlur
 {
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Vertical_Gaussian_Blur_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_VGaussianBlur;
     }
 }
-

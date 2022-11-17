@@ -22,37 +22,26 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "cGraphics.fxh"
+
 uniform float _Falloff <
     ui_label = "Falloff";
     ui_type = "drag";
 > = 0.5f;
 
-// Vertex shaders
-
-void Basic_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0)
-{
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-}
-
-/* [ Pixel Shaders ] */
-
-void Vignette_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {
     const float AspectRatio = BUFFER_WIDTH / BUFFER_HEIGHT;
-    TexCoord = (TexCoord * 2.0 - 1.0) * AspectRatio;
-    float Radius = length(TexCoord) * _Falloff;
+    Input.Tex0 = (Input.Tex0 * 2.0 - 1.0) * AspectRatio;
+    float Radius = length(Input.Tex0) * _Falloff;
     float Radius_2_1 = mad(Radius, Radius, 1.0);
-    OutputColor0 = rcp(Radius_2_1 * Radius_2_1);
+    return rcp(Radius_2_1 * Radius_2_1);
 }
 
-technique KinoVignette
+technique kVignette
 {
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Vignette_PS;
         // Multiplication blend mode
         BlendEnable = TRUE;
         BlendOp = ADD;
@@ -61,5 +50,8 @@ technique KinoVignette
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_Vignette;
     }
 }

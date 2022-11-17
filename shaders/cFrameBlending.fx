@@ -1,4 +1,7 @@
 
+#include "cMacros.fxh"
+#include "cGraphics.fxh"
+
 uniform float _BlendFactor <
     ui_label = "Blend Factor";
     ui_type = "slider";
@@ -6,64 +9,28 @@ uniform float _BlendFactor <
     ui_max = 1.0;
 > = 0.5;
 
-texture2D Render_Color : COLOR;
+CREATE_TEXTURE(BlendTex, BUFFER_SIZE_0, RGBA8, 1)
 
-sampler2D Sample_Color
-{
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
-};
-
-texture2D Render_Blend
-{
-    Width = BUFFER_WIDTH;
-    Height = BUFFER_HEIGHT;
-    Format = RGBA8;
-};
-
-sampler2D Sample_Blend
-{
-    Texture = Render_Blend;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-};
-
-// Vertex shaders
-
-void Basic_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0)
-{
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-}
+CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP)
 
 // Pixel shaders
 
-void Blend_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
 {
     // Copy backbuffer to a that continuously blends with its previous result 
-    OutputColor0 = float4(tex2D(Sample_Color, TexCoord).rgb, _BlendFactor);
+    return float4(tex2D(SampleColorTex, Input.Tex0).rgb, _BlendFactor);
 }
 
-void Display_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 {
     // Display the buffer
-    OutputColor0 = tex2D(Sample_Blend, TexCoord);
+    return tex2D(SampleBlendTex, Input.Tex0);
 }
 
 technique cFrameBlending
 {
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Blend_PS;
-        RenderTarget0 = Render_Blend;
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
         BlendOp = ADD;
@@ -72,11 +39,19 @@ technique cFrameBlending
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_Blend;
+        RenderTarget0 = BlendTex;
     }
 
     pass
     {
-        VertexShader = Basic_VS;
-        PixelShader = Display_PS;
+        #if BUFFER_COLOR_BIT_DEPTH == 8
+            SRGBWriteEnable = TRUE;
+        #endif
+
+        VertexShader = VS_Quad;
+        PixelShader = PS_Display;
     }
 }

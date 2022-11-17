@@ -22,218 +22,201 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ReShade.fxh"
+#include "cGraphics.fxh"
+
+/*
+    Construct options
+*/
+
+uniform int _Method <
+    ui_label = "Edge Detection Method";
+    ui_type = "combo";
+    ui_items = " ddx(), ddy()\0 Bilinear 3x3 Sobel\0 Bilinear 5x5 Prewitt\0 Bilinear 5x5 Sobel\0 3x3 Prewitt\0 3x3 Scharr\0";
+> = 0;
 
 uniform float _Threshold <
     ui_label = "Threshold";
     ui_type = "slider";
-    ui_min = 0.0; ui_max = 1.0;
+    ui_min = 0.0;
+    ui_max = 1.0;
 > = 0.05f;
 
 uniform float _InverseRange <
     ui_label = "Inverse Range";
     ui_type = "slider";
-    ui_min = 0.0; ui_max = 1.0;
+    ui_min = 0.0;
+    ui_max = 1.0;
 > = 0.05f;
 
 uniform float _ColorSensitivity <
     ui_label = "Color Sensitivity";
     ui_type = "slider";
-    ui_min = 0.0; ui_max = 1.0;
+    ui_min = 0.0;
+    ui_max = 1.0;
 > = 0.0f;
 
 uniform float4 _FrontColor <
     ui_label = "Front Color";
     ui_type = "color";
-    ui_min = 0.0; ui_max = 1.0;
+    ui_min = 0.0;
+    ui_max = 1.0;
 > = float4(1.0, 1.0, 1.0, 1.0);
 
 uniform float4 _BackColor <
     ui_label = "Back Color";
     ui_type = "color";
-    ui_min = 0.0; ui_max = 1.0;
+    ui_min = 0.0;
+    ui_max = 1.0;
 > = float4(0.0, 0.0, 0.0, 0.0);
 
-uniform int _Method <
-    ui_type = "combo";
-    ui_items = " ddx(), ddy()\0 Bilinear 3x3 Laplacian\0 Bilinear 3x3 Sobel\0 Bilinear 5x5 Prewitt\0 Bilinear 5x5 Sobel\0 3x3 Prewitt\0 3x3 Scharr\0 None\0";
-    ui_label = "Method";
-    ui_tooltip = "Method Edge Detection";
-> = 0;
-
-uniform bool _ScaleDerivatives <
-    ui_label = "Scale Derivatives to [-1, 1] range";
-    ui_type = "radio";
-> = true;
-
-uniform bool _NormalizeOutput <
-    ui_label = "Normalize Output";
-    ui_type = "radio";
-> = true;
-
-uniform float _NormalizeWeight <
-    ui_label = "Normal Weight";
-    ui_type = "drag";
-    ui_min = 0.0;
-> = 0.1;
-
-texture2D Render_Color : COLOR;
-
-sampler2D Sample_Color
+struct VS2PS_Grad
 {
-    Texture = Render_Color;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
+    float4 HPos : SV_POSITION;
+    float4 Tex0 : TEXCOORD0;
+    float4 Tex1 : TEXCOORD1;
+    float4 Tex2 : TEXCOORD2;
+    float4 Tex3 : TEXCOORD3;
 };
 
-texture2D Render_Normals
+VS2PS_Grad VS_Grad(APP2VS Input)
 {
-    Width = BUFFER_WIDTH;
-    Height = BUFFER_HEIGHT;
-    Format = RG8;
-};
+	const float2 PixelSize = float2(BUFFER_RCP_WIDTH, BUFFER_RCP_HEIGHT);
 
-sampler2D Sample_Normals
-{
-    Texture = Render_Normals;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-};
+    VS2PS_Quad FSQuad = VS_Quad(Input);
 
-// Vertex shaders
+    VS2PS_Grad Output;
 
-void Basic_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float2 TexCoord : TEXCOORD0)
-{
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-}
-
-void Contour_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float4 TexCoords[3] : TEXCOORD0)
-{
-    float2 LocalTexCoord = 0.0;
-    Basic_VS(ID, Position, LocalTexCoord);
-    const float2 PixelSize = 1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT);
-
-    TexCoords[0] = 0.0;
-    TexCoords[1] = 0.0;
-    TexCoords[2] = 0.0;
+    Output.HPos = FSQuad.HPos;
+    Output.Tex0 = FSQuad.Tex0.xyxy;
 
     switch(_Method)
     {
-        case 0: // Fwidth
-            TexCoords[0].xy = LocalTexCoord;
+        case 0: // fwidth()
+            Output.Tex1 = FSQuad.Tex0.xyxy;
             break;
-        case 1: // Bilinear 3x3 Laplacian
-            TexCoords[0].xy = LocalTexCoord;
-            TexCoords[1] = LocalTexCoord.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
+        case 1: // Bilinear 3x3 Sobel
+            Output.Tex1 = FSQuad.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
             break;
-        case 2: // Bilinear 3x3 Sobel
-            TexCoords[0] = LocalTexCoord.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
+        case 2: // Bilinear 5x5 Prewitt
+            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+            Output.Tex2 = FSQuad.Tex0.xyyy + (float4( 0.0, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+            Output.Tex3 = FSQuad.Tex0.xyyy + (float4( 1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
             break;
-        case 3: // Bilinear 5x5 Prewitt
-            TexCoords[0] = LocalTexCoord.xyyy + (float4(-1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
-            TexCoords[1] = LocalTexCoord.xyyy + (float4( 0.0, 1.5, 0.0, -1.5) * PixelSize.xyyy);
-            TexCoords[2] = LocalTexCoord.xyyy + (float4( 1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+        case 3: // Bilinear 5x5 Sobel
+            Output.Tex1 = FSQuad.Tex0.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * PixelSize.xxyy);
+            Output.Tex2 = FSQuad.Tex0.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * PixelSize.xxyy);
             break;
-        case 4: // Bilinear 5x5 Sobel
-            TexCoords[0] = LocalTexCoord.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * PixelSize.xxyy);
-            TexCoords[1] = LocalTexCoord.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * PixelSize.xxyy);
+        case 4: // 3x3 Prewitt
+            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            Output.Tex2 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            Output.Tex3 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
             break;
-        case 5: // 3x3 Prewitt
-            TexCoords[0] = LocalTexCoord.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            TexCoords[1] = LocalTexCoord.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            TexCoords[2] = LocalTexCoord.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            break;
-        case 6: // 3x3 Scharr
-            TexCoords[0] = LocalTexCoord.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            TexCoords[1] = LocalTexCoord.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            TexCoords[2] = LocalTexCoord.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            break;
-    }
-}
-
-// Pixel shaders
-// Generate normals: https://github.com/crosire/reshade-shaders/blob/slim/Shaders/DisplayDepth.fx [MIT]
-// Normal encodes: https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
-// Contour pass: https://github.com/keijiro/KinoContour [MIT]
-
-float3 Get_Screen_Space_Normal(float2 TexCoord)
-{
-    float3 Offset = float3(BUFFER_PIXEL_SIZE, 0.0);
-    float2 PosCenter = TexCoord.xy;
-    float2 PosNorth = PosCenter - Offset.zy;
-    float2 PosEast = PosCenter + Offset.xz;
-
-    float3 VertCenter = float3(PosCenter - 0.5, 1.0) * ReShade::GetLinearizedDepth(PosCenter);
-    float3 VertNorth = float3(PosNorth - 0.5,  1.0) * ReShade::GetLinearizedDepth(PosNorth);
-    float3 VertEast = float3(PosEast - 0.5,   1.0) * ReShade::GetLinearizedDepth(PosEast);
-
-    return normalize(cross(VertCenter - VertNorth, VertCenter - VertEast));
-}
-
-float2 OctWrap(float2 V)
-{
-    return (1.0 - abs(V.yx)) * (V.xy >= 0.0 ? 1.0 : -1.0);
-}
-
-float2 Encode(float3 Normal)
-{
-    // max() divide based on
-    Normal /= max(max(abs(Normal.x), abs(Normal.y)), abs(Normal.z));
-    Normal.xy = Normal.z >= 0.0 ? Normal.xy : OctWrap(Normal.xy);
-    Normal.xy = saturate(Normal.xy * 0.5 + 0.5);
-    return Normal.xy;
-}
-
-float3 Decode(float2 f)
-{
-    f = f * 2.0 - 1.0;
-    // https://twitter.com/Stubbesaurus/status/937994790553227264
-    float3 Normal = float3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
-    float T = saturate(-Normal.z);
-    Normal.xy += Normal.xy >= 0.0 ? -T : T;
-    return normalize(Normal);
-}
-
-void Generate_Normals_PS(in float4 Position : SV_POSITION, in float2 TexCoord : TEXCOORD0, out float2 OutputColor0 : SV_TARGET0)
-{
-    OutputColor0 = Encode(Get_Screen_Space_Normal(TexCoord));
-}
-
-// 0 = Color, 1 = Normal, 2 = Depth
-
-float3 SampleTexture(float2 TexCoord, int Mode)
-{
-    float3 Texture = 0.0;
-
-    switch(Mode)
-    {
-        case 0:
-            Texture = tex2D(Sample_Color, TexCoord).xyz;
-            break;
-        case 1:
-            Texture = Decode(tex2D(Sample_Normals, TexCoord).xy);
-            break;
-        case 2:
-            Texture = ReShade::GetLinearizedDepth(TexCoord);
+        case 5: // 3x3 Scharr
+            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            Output.Tex2 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            Output.Tex3 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
             break;
     }
 
-    return Texture;
+    return Output;
 }
 
-float4 Scale_Derivative(float4 Input)
+struct Grad
 {
-    const float Weights[7] = 
+    float4 Ix;
+    float4 Iy;
+};
+
+Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
+{
+    Grad Output;
+
+    float4 A0, B0, C0;
+    float4 A1, B1, C1;
+    float4 A2, B2, C2;
+
+    switch(_Method)
     {
-        1.0 / 1.0, // Fwidth
-        1.0 / 1.0, // Bilinear 3x3 Laplacian
+        case 0: // ddx(), ddy()
+            A0 = tex2D(SampleSource, Input.Tex1.xy).rgb;
+            Output.Ix = ddx(A0);
+            Output.Iy = ddy(A0);
+            break;
+        case 1: // Bilinear 3x3 Sobel
+            A0 = tex2D(SampleSource, Input.Tex1.xw).rgb * 4.0; // <-0.5, +0.5>
+            C0 = tex2D(SampleSource, Input.Tex1.zw).rgb * 4.0; // <+0.5, +0.5>
+            A2 = tex2D(SampleSource, Input.Tex1.xy).rgb * 4.0; // <-0.5, -0.5>
+            C2 = tex2D(SampleSource, Input.Tex1.zy).rgb * 4.0; // <+0.5, -0.5>
+            Output.Ix = ((C0 + C2) - (A0 + A2));
+            Output.Iy = ((A0 + C0) - (A2 + C2));
+            break;
+        case 2: // Bilinear 5x5 Prewitt
+            // Sampler locations:
+            // A0 B0 C0
+            // A1    C1
+            // A2 B2 C2
+            A0 = tex2D(SampleSource, Input.Tex1.xy) * 4.0; // <-1.5, +1.5>
+            A1 = tex2D(SampleSource, Input.Tex1.xz) * 2.0; // <-1.5,  0.0>
+            A2 = tex2D(SampleSource, Input.Tex1.xw) * 4.0; // <-1.5, -1.5>
+            B0 = tex2D(SampleSource, Input.Tex2.xy) * 2.0; // < 0.0, +1.5>
+            B2 = tex2D(SampleSource, Input.Tex2.xw) * 2.0; // < 0.0, -1.5>
+            C0 = tex2D(SampleSource, Input.Tex3.xy) * 4.0; // <+1.5, +1.5>
+            C1 = tex2D(SampleSource, Input.Tex3.xz) * 2.0; // <+1.5,  0.0>
+            C2 = tex2D(SampleSource, Input.Tex3.xw) * 4.0; // <+1.5, -1.5>
+            Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
+            Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
+            break;
+        case 3: // Bilinear 5x5 Sobel by CeeJayDK
+            // Sampler locations:
+            //   B1 B2
+            // A0     A1
+            // A2     B0
+            //   C0 C1
+            A0 = tex2D(SampleSource, Input.Tex1.xw) * 4.0; // <-1.5, +0.5>
+            A1 = tex2D(SampleSource, Input.Tex1.yw) * 4.0; // <+1.5, +0.5>
+            A2 = tex2D(SampleSource, Input.Tex1.xz) * 4.0; // <-1.5, -0.5>
+            B0 = tex2D(SampleSource, Input.Tex1.yz) * 4.0; // <+1.5, -0.5>
+            B1 = tex2D(SampleSource, Input.Tex2.xw) * 4.0; // <-0.5, +1.5>
+            B2 = tex2D(SampleSource, Input.Tex2.yw) * 4.0; // <+0.5, +1.5>
+            C0 = tex2D(SampleSource, Input.Tex2.xz) * 4.0; // <-0.5, -1.5>
+            C1 = tex2D(SampleSource, Input.Tex2.yz) * 4.0; // <+0.5, -1.5>
+            Output.Ix = (B2 + A1 + B0 + C1) - (B1 + A0 + A2 + C0);
+            Output.Iy = (A0 + B1 + B2 + A1) - (A2 + C0 + C1 + B0);
+            break;
+        case 4: // 3x3 Prewitt
+            A0 = tex2D(SampleSource, Input.Tex1.xy) * 1.0; // <-1.0, 1.0>
+            A1 = tex2D(SampleSource, Input.Tex1.xz) * 1.0; // <-1.0, 0.0>
+            A2 = tex2D(SampleSource, Input.Tex1.xw) * 1.0; // <-1.0, -1.0>
+            B0 = tex2D(SampleSource, Input.Tex2.xy) * 1.0; // <0.0, 1.0>
+            B2 = tex2D(SampleSource, Input.Tex2.xw) * 1.0; // <0.0, -1.0>
+            C0 = tex2D(SampleSource, Input.Tex3.xy) * 1.0; // <1.0, 1.0>
+            C1 = tex2D(SampleSource, Input.Tex3.xz) * 1.0; // <1.0, 0.0>
+            C2 = tex2D(SampleSource, Input.Tex3.xw) * 1.0; // <1.0, -1.0> 
+            Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
+            Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
+            break;
+        case 5: // 3x3 Scharr
+            A0 = tex2D(SampleSource, Input.Tex1.xy) * 3.0;  // <-1.0, 1.0>
+            A1 = tex2D(SampleSource, Input.Tex1.xz) * 10.0; // <-1.0, 0.0>
+            A2 = tex2D(SampleSource, Input.Tex1.xw) * 3.0;  // <-1.0, -1.0>
+            B0 = tex2D(SampleSource, Input.Tex2.xy) * 10.0; // <0.0, 1.0>
+            B2 = tex2D(SampleSource, Input.Tex2.xw) * 10.0; // <0.0, -1.0>
+            C0 = tex2D(SampleSource, Input.Tex3.xy) * 3.0;  // <1.0, 1.0>
+            C1 = tex2D(SampleSource, Input.Tex3.xz) * 10.0; // <1.0, 0.0>
+            C2 = tex2D(SampleSource, Input.Tex3.xw) * 3.0;  // <1.0, -1.0> 
+            Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
+            Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
+            break;
+    }
+
+    return Output;
+}
+
+float3 PS_Grad(VS2PS_Grad Input) : SV_TARGET0
+{
+    const float GradWeights[6] = 
+    {
+        1.0 / 1.0, // ddx(), ddy()
         1.0 / 4.0, // Bilinear 3x3 Sobel
         1.0 / 10.0, // Bilinear 5x5 Prewitt
         1.0 / 12.0, // Bilinear 5x5 Sobel by CeeJayDK
@@ -241,216 +224,31 @@ float4 Scale_Derivative(float4 Input)
         1.0 / 16.0, // 3x3 Scharr
     };
 
-    Input = (_ScaleDerivatives) ? Input * Weights[_Method] : Input;
-    return Input;
-}
+    Grad Grad = GetGrad(Input, SampleColorTex);
+    Grad.Ix = Grad.Ix * GradWeights[_Method];
+    Grad.Iy = Grad.Iy * GradWeights[_Method];
 
-void Contour(in float4 TexCoords[3], in int Mode, out float4 OutputColor0)
-{
-    float4 Ix, Iy, Gradient;
-    float4 A0, B0, C0;
-    float4 A1, B1, C1;
-    float4 A2, B2, C2;
+    float4 I = sqrt(dot(Grad.Ix.rgb, Grad.Ix.rgb) + dot(Grad.Iy.rgb, Grad.Iy.rgb));
 
-    switch(_Method)
-    {
-        case 0: // Fwidth
-            A0 = SampleTexture(TexCoords[0].xy, Mode);
-            Ix = ddx(A0);
-            Iy = ddy(A0);
-            break;
-        case 1: // Bilinear 3x3 Laplacian
-            // A0    C0
-            //    B1
-            // A2    C2
-            A0 = SampleTexture(TexCoords[1].xw, Mode); // <-0.5, +0.5>
-            C0 = SampleTexture(TexCoords[1].zw, Mode); // <+0.5, +0.5>
-            B1 = SampleTexture(TexCoords[0].xy, Mode); // < 0.0,  0.0>
-            A2 = SampleTexture(TexCoords[1].xy, Mode); // <-0.5, -0.5>
-            C2 = SampleTexture(TexCoords[1].zy, Mode); // <+0.5, -0.5>
-            Gradient = (A0 + C0 + A2 + C2) - (B1 * 4.0);
-            break;
-        case 2: // Bilinear 3x3 Sobel
-            A0 = SampleTexture(TexCoords[0].xw, Mode).rgb * 4.0; // <-0.5, +0.5>
-            C0 = SampleTexture(TexCoords[0].zw, Mode).rgb * 4.0; // <+0.5, +0.5>
-            A2 = SampleTexture(TexCoords[0].xy, Mode).rgb * 4.0; // <-0.5, -0.5>
-            C2 = SampleTexture(TexCoords[0].zy, Mode).rgb * 4.0; // <+0.5, -0.5>
-
-            Ix = Scale_Derivative((C0 + C2) - (A0 + A2));
-            Iy = Scale_Derivative((A0 + C0) - (A2 + C2));
-            break;
-        case 3: // Bilinear 5x5 Prewitt
-            // A0 B0 C0
-            // A1    C1
-            // A2 B2 C2
-            A0 = SampleTexture(TexCoords[0].xy, Mode) * 4.0; // <-1.5, +1.5>
-            A1 = SampleTexture(TexCoords[0].xz, Mode) * 2.0; // <-1.5,  0.0>
-            A2 = SampleTexture(TexCoords[0].xw, Mode) * 4.0; // <-1.5, -1.5>
-            B0 = SampleTexture(TexCoords[1].xy, Mode) * 2.0; // < 0.0, +1.5>
-            B2 = SampleTexture(TexCoords[1].xw, Mode) * 2.0; // < 0.0, -1.5>
-            C0 = SampleTexture(TexCoords[2].xy, Mode) * 4.0; // <+1.5, +1.5>
-            C1 = SampleTexture(TexCoords[2].xz, Mode) * 2.0; // <+1.5,  0.0>
-            C2 = SampleTexture(TexCoords[2].xw, Mode) * 4.0; // <+1.5, -1.5>
-
-            // -1 -1  0  +1 +1
-            // -1 -1  0  +1 +1
-            // -1 -1  0  +1 +1
-            // -1 -1  0  +1 +1
-            // -1 -1  0  +1 +1
-            Ix = Scale_Derivative((C0 + C1 + C2) - (A0 + A1 + A2));
-
-            // +1 +1 +1 +1 +1
-            // +1 +1 +1 +1 +1
-            //  0  0  0  0  0
-            // -1 -1 -1 -1 -1
-            // -1 -1 -1 -1 -1
-            Iy = Scale_Derivative((A0 + B0 + C0) - (A2 + B2 + C2));
-            break;
-        case 4: // Bilinear 5x5 Sobel by CeeJayDK
-            //   B1 B2
-            // A0     A1
-            // A2     B0
-            //   C0 C1
-            A0 = SampleTexture(TexCoords[0].xw, Mode) * 4.0; // <-1.5, +0.5>
-            A1 = SampleTexture(TexCoords[0].yw, Mode) * 4.0; // <+1.5, +0.5>
-            A2 = SampleTexture(TexCoords[0].xz, Mode) * 4.0; // <-1.5, -0.5>
-            B0 = SampleTexture(TexCoords[0].yz, Mode) * 4.0; // <+1.5, -0.5>
-            B1 = SampleTexture(TexCoords[1].xw, Mode) * 4.0; // <-0.5, +1.5>
-            B2 = SampleTexture(TexCoords[1].yw, Mode) * 4.0; // <+0.5, +1.5>
-            C0 = SampleTexture(TexCoords[1].xz, Mode) * 4.0; // <-0.5, -1.5>
-            C1 = SampleTexture(TexCoords[1].yz, Mode) * 4.0; // <+0.5, -1.5>
-
-            //    -1 0 +1
-            // -1 -2 0 +2 +1
-            // -2 -2 0 +2 +2
-            // -1 -2 0 +2 +1
-            //    -1 0 +1
-            Ix = Scale_Derivative((B2 + A1 + B0 + C1) - (B1 + A0 + A2 + C0));
-
-            //    +1 +2 +1
-            // +1 +2 +2 +2 +1
-            //  0  0  0  0  0
-            // -1 -2 -2 -2 -1
-            //    -1 -2 -1
-            Iy = Scale_Derivative((A0 + B1 + B2 + A1) - (A2 + C0 + C1 + B0));
-            break;
-        case 5: // 3x3 Prewitt
-            // A0 B0 C0
-            // A1     C1
-            // A2 B2 C2
-            A0 = SampleTexture(TexCoords[0].xy, Mode);
-            A1 = SampleTexture(TexCoords[0].xz, Mode);
-            A2 = SampleTexture(TexCoords[0].xw, Mode);
-            B0 = SampleTexture(TexCoords[1].xy, Mode);
-            B2 = SampleTexture(TexCoords[1].xw, Mode);
-            C0 = SampleTexture(TexCoords[2].xy, Mode);
-            C1 = SampleTexture(TexCoords[2].xz, Mode);
-            C2 = SampleTexture(TexCoords[2].xw, Mode);
-
-            Ix = Scale_Derivative((C0 + C1 + C2) - (A0 + A1 + A2));
-            Iy = Scale_Derivative((A0 + B0 + C0) - (A2 + B2 + C2));
-            break;
-        case 6: // 3x3 Scharr
-        {
-            A0 = SampleTexture(TexCoords[0].xy, Mode) * 3.0;
-            A1 = SampleTexture(TexCoords[0].xz, Mode) * 10.0;
-            A2 = SampleTexture(TexCoords[0].xw, Mode) * 3.0;
-            B0 = SampleTexture(TexCoords[1].xy, Mode) * 10.0;
-            B2 = SampleTexture(TexCoords[1].xw, Mode) * 10.0;
-            C0 = SampleTexture(TexCoords[2].xy, Mode) * 3.0;
-            C1 = SampleTexture(TexCoords[2].xz, Mode) * 10.0;
-            C2 = SampleTexture(TexCoords[2].xw, Mode) * 3.0;
-
-            Ix = Scale_Derivative((C0 + C1 + C2) - (A0 + A1 + A2));
-            Iy = Scale_Derivative((A0 + B0 + C0) - (A2 + B2 + C2));
-            break;
-        }
-    }
-
-    if(_Method == 1)
-    {
-        Gradient = length(Gradient) * rsqrt(3.0);
-    }
-    else
-    {
-        Ix.rgb = (_NormalizeOutput) ?  Ix.rgb * rsqrt(dot(Ix.rgb, Ix.rgb) + _NormalizeWeight) : Ix.rgb;
-        Iy.rgb = (_NormalizeOutput) ?  Iy.rgb * rsqrt(dot(Iy.rgb, Iy.rgb) + _NormalizeWeight) : Iy.rgb;
-        Gradient = sqrt(dot(Ix.rgb, Ix.rgb) + dot(Iy.rgb, Iy.rgb));
-    }
 
     // Thresholding
-    Gradient = Gradient * _ColorSensitivity;
+    I = I * _ColorSensitivity;
 
-    float3 Base = 0.0;
-
-    if(_Method == 0 || _Method == 1)
-    {
-        Base = tex2D(Sample_Color, TexCoords[0].xy).rgb;
-    }
-    else
-    {
-        Base = tex2D(Sample_Color, TexCoords[1].xz).rgb;
-    }
-
-    Gradient = saturate((Gradient - _Threshold) * _InverseRange);
-    float3 Color_Background = lerp(Base, _BackColor.rgb, _BackColor.a);
-    OutputColor0 = lerp(Color_Background, _FrontColor.rgb, Gradient.a * _FrontColor.a);
+    float3 Base = tex2D(SampleColorTex, Input.Tex0.xy).rgb;
+    I = saturate((I - _Threshold) * _InverseRange);
+    float3 BackgoundColor = lerp(Base.rgb, _BackColor.rgb, _BackColor.a);
+    return lerp(BackgoundColor, _FrontColor.rgb, I.a * _FrontColor.a);
 }
 
-void Contour_Color_PS(in float4 Position : SV_POSITION, in float4 TexCoords[3] : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
-{
-    Contour(TexCoords, 0, OutputColor0);
-}
-
-void Contour_Normal_PS(in float4 Position : SV_POSITION, in float4 TexCoords[3] : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
-{
-    Contour(TexCoords, 1, OutputColor0);
-}
-
-void Contour_Depth_PS(in float4 Position : SV_POSITION, in float4 TexCoords[3] : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
-{
-    Contour(TexCoords, 2, OutputColor0);
-}
-
-technique KinoContourColor
+technique kContour
 {
     pass
     {
-        VertexShader = Contour_VS;
-        PixelShader = Contour_Color_PS;
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
-    }
-}
-
-technique KinoContourDepth
-{
-    pass
-    {
-        VertexShader = Contour_VS;
-        PixelShader = Contour_Depth_PS;
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
-    }
-}
-
-technique KinoContourNormal
-{
-    pass
-    {
-        VertexShader = Basic_VS;
-        PixelShader = Generate_Normals_PS;
-        RenderTarget0 = Render_Normals;
-    }
-
-    pass
-    {
-        VertexShader = Contour_VS;
-        PixelShader = Contour_Normal_PS;
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        
+        VertexShader = VS_Grad;
+        PixelShader = PS_Grad;
     }
 }

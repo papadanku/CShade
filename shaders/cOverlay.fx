@@ -4,7 +4,7 @@ uniform float2 _TexScale <
     ui_category = "Texture";
     ui_type = "drag";
     ui_step = 0.001;
-> = 1.0;
+> = float2(0.5, 0.5);
 
 uniform float2 _TexOffset <
     ui_label = "Offset";
@@ -18,19 +18,17 @@ uniform float2 _MaskScale <
     ui_label = "Scale";
     ui_category = "Mask";
     ui_min = 0.0;
-> = float2(0.0, 0.0);
+> = float2(0.5, 0.25);
 
 #ifndef ENABLE_POINT_SAMPLING
     #define ENABLE_POINT_SAMPLING 0
 #endif
 
-texture2D Render_Color : COLOR;
+texture2D ColorTex : COLOR;
 
-sampler2D Sample_Color
+sampler2D SampleColorTex
 {
-    Texture = Render_Color;
-    AddressU = MIRROR;
-    AddressV = MIRROR;
+    Texture = ColorTex;
     #if ENABLE_POINT_SAMPLING
         MagFilter = POINT;
         MinFilter = POINT;
@@ -40,46 +38,58 @@ sampler2D Sample_Color
         MinFilter = LINEAR;
         MipFilter = LINEAR;
     #endif
+    AddressU = MIRROR;
+    AddressV = MIRROR;
     #if BUFFER_COLOR_BIT_DEPTH == 8
         SRGBTexture = TRUE;
     #endif
 };
 
-void Overlay_VS(in uint ID : SV_VERTEXID, out float4 Position : SV_POSITION, out float4 TexCoord : TEXCOORD0)
+struct APP2VS
 {
-    TexCoord = 0.0;
-    TexCoord.x = (ID == 2) ? 2.0 : 0.0;
-    TexCoord.y = (ID == 1) ? 2.0 : 0.0;
-    Position = float4(TexCoord.xy * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+    uint ID : SV_VERTEXID;
+};
+
+struct VS2PS
+{
+    float4 HPos : SV_POSITION;
+    float4 Tex0 : TEXCOORD0;
+};
+
+VS2PS VS_Overlay(APP2VS Input)
+{
+    VS2PS Output;
+    Output.Tex0.x = (Input.ID == 2) ? 2.0 : 0.0;
+    Output.Tex0.y = (Input.ID == 1) ? 2.0 : 0.0;
+    Output.HPos = float4(Output.Tex0.xy * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
 
     // Scale texture coordinates from [0, 1] to [-1, 1] range
-    TexCoord.zw = TexCoord.xy * 2.0 - 1.0;
+    Output.Tex0.zw = (Output.Tex0.xy * 2.0) - 1.0;
     // Scale and offset in [-1, 1] range
-    TexCoord.zw = TexCoord.zw * _TexScale + _TexOffset;
+    Output.Tex0.zw = (Output.Tex0.zw * _TexScale) + _TexOffset;
     // Scale texture coordinates from [-1, 1] to [0, 1] range
-    TexCoord.zw = TexCoord.zw * 0.5 + 0.5;
+    Output.Tex0.zw = (Output.Tex0.zw * 0.5) + 0.5;
+
+    return Output;
 }
 
-void Overlay_PS(in float4 Position : SV_POSITION, in float4 TexCoord : TEXCOORD0, out float4 OutputColor0 : SV_TARGET0)
+float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 {
-    float4 Color = tex2D(Sample_Color, TexCoord.zw);
+    float4 Color = tex2D(SampleColorTex, Input.Tex0.zw);
 
     // Output a rectangle
-    float2 MaskCoord = TexCoord.xy;
-    float2 Scale = -_MaskScale * 0.5 + 0.5;
+    float2 MaskCoord = Input.Tex0.xy;
+    float2 Scale = (-_MaskScale * 0.5) + 0.5;
     float2 Shaper = step(Scale, MaskCoord.xy) * step(Scale, 1.0 - MaskCoord.xy);
     float Crop = Shaper.x * Shaper.y;
 
-    OutputColor0.rgb = Color.rgb;
-    OutputColor0.a = Crop;
+    return float4(Color.rgb, Crop);
 }
 
 technique cOverlay
 {
     pass
     {
-        VertexShader = Overlay_VS;
-        PixelShader = Overlay_PS;
         // Blend the rectangle with the backbuffer
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
@@ -89,5 +99,8 @@ technique cOverlay
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
+
+        VertexShader = VS_Overlay;
+        PixelShader = PS_Overlay;
     }
 }
