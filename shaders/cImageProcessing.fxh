@@ -13,14 +13,14 @@
         return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
     }
 
-    float GetGaussianOffset(float SampleIndex, float Sigma)
+    float GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
     {
         float Offset1 = SampleIndex;
         float Offset2 = SampleIndex + 1.0;
         float Weight1 = GetGaussianWeight(Offset1, Sigma);
         float Weight2 = GetGaussianWeight(Offset2, Sigma);
-        float Weight = Weight1 + Weight2;
-        return ((Offset1 * Weight1) + (Offset2 * Weight2)) / Weight;
+        LinearWeight = Weight1 + Weight2;
+        return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
 
     #define BLUR9_KERNEL 10
@@ -39,7 +39,7 @@
         float4 Tex8 : TEXCOORD8;
         float4 Tex9 : TEXCOORD9;
     };
-    
+
     VS2PS_Blur GetVertexBlur(APP2VS Input, float2 PixelSize, float2 IsHorizontal)
     {
         VS2PS_Quad FSQuad = VS_Quad(Input);
@@ -81,7 +81,7 @@
     {
         float4 OutputColor = 0.0;
 
-        float4 BlurTex[BLUR9_KERNEL] = 
+        float4 BlurTex[BLUR9_KERNEL] =
         {
             Input.Tex0, Input.Tex1, Input.Tex2, Input.Tex3, Input.Tex4,
             Input.Tex5, Input.Tex6, Input.Tex7, Input.Tex8, Input.Tex9,
@@ -103,7 +103,7 @@
             OutputColor += tex2D(SampleSource, BlurTex[i].zw) * BlurWeights[i];
             TotalWeight += BlurWeights[i] * 2.0;
         }
-        
+
         // Normalize intensity to prevent altered output
         return OutputColor / TotalWeight;
     }

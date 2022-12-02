@@ -25,8 +25,8 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 
         for(float i = 1.0; i < KernelSize; i += 2.0)
         {
-            float LinearWeight = GetGaussianWeight(i, _Sigma);
-            float LinearOffset = GetGaussianOffset(i, _Sigma);
+            float LinearWeight = 0.0;
+            float LinearOffset = GetGaussianOffset(i, _Sigma, LinearWeight);
             OutputColor += tex2Dlod(SampleColorTex, float4(Tex - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             OutputColor += tex2Dlod(SampleColorTex, float4(Tex + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;

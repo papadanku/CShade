@@ -13,8 +13,6 @@
         float4 Tex0 : TEXCOORD0;
         float4 Tex1 : TEXCOORD1;
         float4 Tex2 : TEXCOORD2;
-        float4 Tex3 : TEXCOORD3;
-        float4 Tex4 : TEXCOORD4;
     };
 
     VS2PS_LK GetVertexPyLK(APP2VS Input, float2 PixelSize)
@@ -24,11 +22,9 @@
         VS2PS_LK Output;
 
         Output.HPos = FSQuad.HPos;
-        Output.Tex0 = FSQuad.Tex0.xyxy;
-        Output.Tex1 = FSQuad.Tex0.xxyy + (float4(-1.5, -0.5, 0.5, 1.5) * PixelSize.xxyy);
-        Output.Tex2 = FSQuad.Tex0.xxyy + (float4(0.5, 1.5, 0.5, 1.5) * PixelSize.xxyy);
-        Output.Tex3 = FSQuad.Tex0.xxyy + (float4(-1.5, -0.5, -0.5, -1.5) * PixelSize.xxyy);
-        Output.Tex4 = FSQuad.Tex0.xxyy + (float4(0.5, 1.5, -0.5, -1.5) * PixelSize.xxyy);
+        Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+        Output.Tex1 = FSQuad.Tex0.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+        Output.Tex2 = FSQuad.Tex0.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
 
         return Output;
     }
@@ -45,47 +41,84 @@
         B2 = IyIt
     */
 
-    float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors)
+    float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
     {
+        Vectors = Vectors * 2.0;
+
         // The spatial(S) and temporal(T) derivative neighbors to sample
-        const int WindowSize = 16;
-        float4 G[WindowSize];
-        float2 I0[WindowSize];
+        const int WindowSize = 9;
+
+        float2 WindowTex[WindowSize] =
+        {
+            Input.Tex0.xy, Input.Tex0.xz, Input.Tex0.xw,
+            Input.Tex1.xy, Input.Tex1.xz, Input.Tex1.xw,
+            Input.Tex2.xy, Input.Tex2.xz, Input.Tex2.xw,
+        };
+
+        float2 PxSize = float2(ddx(Input.Tex1.x), ddy(Input.Tex1.z));
 
         // Windows matrices to sum
         float3 A = 0.0;
         float2 B = 0.0;
+
         float Determinant = 0.0;
         float2 MotionVectors = 0.0;
 
-        float2 WindowTex[WindowSize] =
-        {
-            Input.Tex1.xz, Input.Tex1.xw, Input.Tex1.yz, Input.Tex1.yw,
-            Input.Tex2.xz, Input.Tex2.xw, Input.Tex2.yz, Input.Tex2.yw,
-            Input.Tex3.xz, Input.Tex3.xw, Input.Tex3.yz, Input.Tex3.yw,
-            Input.Tex4.xz, Input.Tex4.xw, Input.Tex4.yz, Input.Tex4.yw,
-        };
+        // Calculate resigual from previous run
+        float2 R = 0.0;
+        R += tex2Dlod(SampleI1, float4(Input.Tex1.xz + (Vectors * PxSize), 0.0, MipLevel)).rg;
+        R -= tex2Dlod(SampleI0, float4(Input.Tex1.xz, 0.0, MipLevel)).rg;
+        R = pow(abs(R), 2.0);
 
-        // Precalculate gradient matrix and I0
-        for (int i = 0; i < WindowSize; i++)
-        {
-            // S[i].x = IxR; S[i].y = IxG; S[i].z = IyR; S[i].w = IyG;
-            G[i] = tex2D(SampleG, WindowTex[i]).xyzw;
-            I0[i] = tex2D(SampleI0, WindowTex[i]).rg;
 
-            // A.x = A11; A.y = A22; A.z = A12/A22
-            A.xyz += (G[i].xzx * G[i].xzz);
-            A.xyz += (G[i].ywy * G[i].yww);
+        bool2 Converged = false;
+
+        if((CoarseLevel == false) && (R.r < 0.5))
+        {
+            Converged.r = true;
         }
 
-        // Calculate right-hand-side
-        for(int j = 0; j < WindowSize; j++)
+        if((CoarseLevel == false) && (R.g < 0.5))
         {
-            // B.x = B1; B.y = B2
-            float2 I1 = tex2D(SampleI1, WindowTex[j]).rg;
-            float2 T = I0[j] - I1;
-            B.xy += (G[j].xz * T.rr);
-            B.xy += (G[j].yw * T.gg);
+            Converged.g = true;
+        }
+
+        [branch]
+        if(Converged.r == false)
+        {
+            [unroll]
+            for(int i = 0; i < WindowSize; i++)
+            {
+                // B.x = B1; B.y = B2
+                float2 WarpedTex = WindowTex[i] + (Vectors * PxSize);
+                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, MipLevel)).r;
+                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, MipLevel)).r;
+                float IT = I0 - I1;
+
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, MipLevel)).xz;
+                A.xyz += (G.xyx * G.xyy);
+                B.xy += (G.xy * IT);
+            }
+        }
+
+       [branch]
+        if(Converged.g == false)
+        {
+            [unroll]
+            for(int i = 0; i < WindowSize; i++)
+            {
+                // B.x = B1; B.y = B2
+                float2 WarpedTex = WindowTex[i] + (Vectors * PxSize);
+                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, MipLevel)).g;
+                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, MipLevel)).g;
+                float IT = I0 - I1;
+
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, MipLevel)).yw;
+                A.xyz += (G.xyx * G.xyy);
+                B.xy += (G.xy * IT);
+            }
         }
 
         // Create -IxIy (A12) for A^-1 and its determinant
@@ -106,7 +139,7 @@
 
         // Propagate (add) vectors
         // Do not multiply on the finest level
-        MotionVectors = ((Vectors * 2.0) + MotionVectors);
+        MotionVectors = (Vectors + MotionVectors);
         return MotionVectors;
     }
 #endif

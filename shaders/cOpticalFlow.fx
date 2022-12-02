@@ -71,7 +71,7 @@ float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
     float4 Color = max(tex2D(SampleColorTex, Input.Tex0), exp2(-8.0));
-    return float4(normalize(Color.rgb).xy, 0.0, 1.0);
+    return float4(Color.xy / dot(Color.rgb, 1.0), 0.0, 1.0);
 }
 
 // Prefiler buffer
@@ -103,24 +103,25 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 float2 PS_PyLK_Level4(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 3, true);
 }
 
 float2 PS_PyLK_Level3(VS2PS_LK Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex5, Input.Tex0.xy).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors);
+    float2 Vectors = tex2D(SampleTex5, Input.Tex1.xz).xy;
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 2, false);
 }
+
 float2 PS_PyLK_Level2(VS2PS_LK Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex4, Input.Tex0.xy).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors);
+    float2 Vectors = tex2D(SampleTex4, Input.Tex1.xz).xy;
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 1, false);
 }
 
 float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex3, Input.Tex0.xy).xy;
-    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors), 0.0, _BlendFactor);
+    float2 Vectors = tex2D(SampleTex3, Input.Tex1.xz).xy;
+    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 0, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -138,8 +139,8 @@ float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
 float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Velocity = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    float3 NormVelocity = normalize(float3(Velocity, 1.0));
-    return float4(saturate((NormVelocity * 0.5) + 0.5), 1.0);
+    float3 Normal = normalize(float3(Velocity, 1.0));
+    return float4(saturate(Normal * 0.5 + 0.5), 1.0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
@@ -173,26 +174,26 @@ technique cOpticalFlow
         BlendOp = ADD;
         SrcBlend = INVSRCALPHA;
         DestBlend = SRCALPHA;
-        
+
         VertexShader = VS_PyLK_Level1;
         PixelShader = PS_PyLK_Level1;
         RenderTarget0 = OFlowTex;
     }
-    
-	// Copy current convolved frame for next frame
+
+    // Copy current convolved frame for next frame
     CREATE_PASS(VS_Quad, PS_Copy, Tex2c)
 
     // Prefilter blur
     CREATE_PASS(VS_HBlur, PS_HBlur_Postfilter, Tex2a)
     CREATE_PASS(VS_VBlur, PS_VBlur_Postfilter, Tex2b)
-    
+
     // Display
     pass
     {
         #if BUFFER_COLOR_BIT_DEPTH == 8
             SRGBWriteEnable = TRUE;
         #endif
-        
+
         VertexShader = VS_Quad;
         PixelShader = PS_Display;
     }
