@@ -47,6 +47,7 @@
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         const int WindowSize = 9;
+        float2 PxSize = 1.0 / int2(ldexp(BUFFER_SIZE_2, -MipLevel));
 
         float2 WindowTex[WindowSize] =
         {
@@ -54,8 +55,6 @@
             Input.Tex1.xy, Input.Tex1.xz, Input.Tex1.xw,
             Input.Tex2.xy, Input.Tex2.xz, Input.Tex2.xw,
         };
-
-        float2 PxSize = float2(ddx(Input.Tex1.x), ddy(Input.Tex1.z));
 
         // Windows matrices to sum
         float3 A = 0.0;
