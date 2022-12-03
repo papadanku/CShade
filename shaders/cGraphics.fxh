@@ -58,7 +58,7 @@
         float LengthY = length(Iy);
 
         Output.Size.x = Ix.x;
-        Output.Size.y = Ix.y;
+        Output.Size.y = Iy.y;
         Output.LOD = log2(max(LengthX, LengthY));
 
         return Output;
