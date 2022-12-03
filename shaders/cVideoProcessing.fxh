@@ -41,6 +41,55 @@
         B2 = IyIt
     */
 
+    struct PackedTex
+    {
+        float4 Tex;
+        float4 WarpedTex;
+        float4 Size;
+        float3 LOD;
+    };
+
+    struct UnpackedTex
+    {
+        float2 Tex;
+        float2 WarpedTex;
+        float2 Size;
+        float LOD;
+    };
+
+    void UnpackTex(in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
+    {
+        // Calculate texture attributes of each packed column of tex
+        PackedTex Packed;
+
+        float4 Ix = ddx(Tex);
+        float4 Iy = ddy(Tex);
+
+        Packed.Tex = Tex;
+        Packed.Size = float4(Ix.x, Iy.yzw);
+        Packed.WarpedTex = Tex + (Vectors.xyyy * Packed.Size);
+        Packed.LOD[0] = log2(max(length(Ix.xy), length(Iy.xy)));
+        Packed.LOD[1] = log2(max(length(Ix.xz), length(Iy.xz)));
+        Packed.LOD[2] = log2(max(length(Ix.xw), length(Iy.xw)));
+
+        // Unpack texture and its attributes
+        Output[0].Tex = Packed.Tex.xy;
+        Output[1].Tex = Packed.Tex.xz;
+        Output[2].Tex = Packed.Tex.xw;
+
+        Output[0].WarpedTex = Packed.WarpedTex.xy;
+        Output[1].WarpedTex = Packed.WarpedTex.xz;
+        Output[2].WarpedTex = Packed.WarpedTex.xw;
+
+        Output[0].Size = Packed.Size.xy;
+        Output[1].Size = Packed.Size.xz;
+        Output[2].Size = Packed.Size.xw;
+
+        Output[0].LOD = Packed.LOD[0];
+        Output[1].LOD = Packed.LOD[1];
+        Output[2].LOD = Packed.LOD[2];
+    }
+
     float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
     {
         Vectors = Vectors * 2.0;
@@ -48,18 +97,20 @@
         // The spatial(S) and temporal(T) derivative neighbors to sample
         const int WindowSize = 9;
 
-        float2 WindowTex[WindowSize] =
-        {
-            Input.Tex0.xy, Input.Tex0.xz, Input.Tex0.xw,
-            Input.Tex1.xy, Input.Tex1.xz, Input.Tex1.xw,
-            Input.Tex2.xy, Input.Tex2.xz, Input.Tex2.xw,
-        };
+        UnpackedTex TexA[3];
+        UnpackedTex TexB[3];
+        UnpackedTex TexC[3];
 
-        TexInfo Tex[WindowSize];
-        for(int i = 0; i < WindowSize; i++)
+        UnpackTex(Input.Tex0, Vectors, TexA);
+        UnpackTex(Input.Tex1, Vectors, TexB);
+        UnpackTex(Input.Tex2, Vectors, TexC);
+
+        UnpackedTex Pixel[WindowSize] =
         {
-            Tex[i] = GetTexInfo(WindowTex[i]);
-        }
+            TexA[0], TexA[1], TexA[2],
+            TexB[0], TexB[1], TexB[2],
+            TexC[0], TexC[1], TexC[2],
+        };
 
         // Windows matrices to sum
         float3 A = 0.0;
@@ -70,8 +121,8 @@
 
         // Calculate resigual from previous run
         float2 R = 0.0;
-        R += tex2Dlod(SampleI1, float4(WindowTex[5] + (Vectors * Tex[5].Size), 0.0, Tex[5].LOD)).rg;
-        R -= tex2Dlod(SampleI0, float4(WindowTex[5], 0.0, Tex[5].LOD)).rg;
+        R += tex2Dlod(SampleI1, float4(Pixel[5].WarpedTex, 0.0, Pixel[5].LOD)).rg;
+        R -= tex2Dlod(SampleI0, float4(Pixel[5].Tex, 0.0, Pixel[5].LOD)).rg;
         R = pow(abs(R), 2.0);
 
         bool2 Converged = false;
@@ -93,13 +144,12 @@
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float2 WarpedTex = WindowTex[i] + (Vectors * Tex[i].Size);
-                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, Tex[i].LOD)).r;
-                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, Tex[i].LOD)).r;
+                float I1 = tex2Dlod(SampleI1, float4(Pixel[i].WarpedTex, 0.0, Pixel[i].LOD)).r;
+                float I0 = tex2Dlod(SampleI0, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).r;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, Tex[i].LOD)).xz;
+                float2 G = tex2Dlod(SampleG, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).xz;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }
@@ -112,13 +162,12 @@
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float2 WarpedTex = WindowTex[i] + (Vectors * Tex[i].Size);
-                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, Tex[i].LOD)).g;
-                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, Tex[i].LOD)).g;
+                float I1 = tex2Dlod(SampleI1, float4(Pixel[i].WarpedTex, 0.0, Pixel[i].LOD)).g;
+                float I0 = tex2Dlod(SampleI0, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).g;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, Tex[i].LOD)).yw;
+                float2 G = tex2Dlod(SampleG, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).yw;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }
