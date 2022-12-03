@@ -41,53 +41,33 @@
         B2 = IyIt
     */
 
-    struct PackedTex
-    {
-        float4 Tex;
-        float4 WarpedTex;
-        float4 Size;
-        float3 LOD;
-    };
-
     struct UnpackedTex
     {
         float2 Tex;
         float2 WarpedTex;
-        float2 Size;
         float LOD;
     };
 
     void UnpackTex(in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
     {
         // Calculate texture attributes of each packed column of tex
-        PackedTex Packed;
-
         float4 Ix = ddx(Tex);
         float4 Iy = ddy(Tex);
-
-        Packed.Tex = Tex;
-        Packed.Size = float4(Ix.x, Iy.yzw);
-        Packed.WarpedTex = Tex + (Vectors.xyyy * Packed.Size);
-        Packed.LOD[0] = log2(max(length(Ix.xy), length(Iy.xy)));
-        Packed.LOD[1] = log2(max(length(Ix.xz), length(Iy.xz)));
-        Packed.LOD[2] = log2(max(length(Ix.xw), length(Iy.xw)));
+        float4 TexSize = float4(Ix.x, Iy.yzw);
+        float4 WarpPackedTex = Tex + (Vectors.xyyy * TexSize);
 
         // Unpack texture and its attributes
-        Output[0].Tex = Packed.Tex.xy;
-        Output[1].Tex = Packed.Tex.xz;
-        Output[2].Tex = Packed.Tex.xw;
+        Output[0].Tex = Tex.xy;
+        Output[1].Tex = Tex.xz;
+        Output[2].Tex = Tex.xw;
 
-        Output[0].WarpedTex = Packed.WarpedTex.xy;
-        Output[1].WarpedTex = Packed.WarpedTex.xz;
-        Output[2].WarpedTex = Packed.WarpedTex.xw;
+        Output[0].WarpedTex = WarpPackedTex.xy;
+        Output[1].WarpedTex = WarpPackedTex.xz;
+        Output[2].WarpedTex = WarpPackedTex.xw;
 
-        Output[0].Size = Packed.Size.xy;
-        Output[1].Size = Packed.Size.xz;
-        Output[2].Size = Packed.Size.xw;
-
-        Output[0].LOD = Packed.LOD[0];
-        Output[1].LOD = Packed.LOD[1];
-        Output[2].LOD = Packed.LOD[2];
+        Output[0].LOD = log2(max(length(Ix.xy), length(Iy.xy)));
+        Output[1].LOD = log2(max(length(Ix.xz), length(Iy.xz)));
+        Output[2].LOD = log2(max(length(Ix.xw), length(Iy.xw)));
     }
 
     float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
