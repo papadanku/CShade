@@ -47,7 +47,6 @@
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         const int WindowSize = 9;
-        float2 PxSize = 1.0 / int2(ldexp(BUFFER_SIZE_2, -MipLevel));
 
         float2 WindowTex[WindowSize] =
         {
@@ -55,6 +54,12 @@
             Input.Tex1.xy, Input.Tex1.xz, Input.Tex1.xw,
             Input.Tex2.xy, Input.Tex2.xz, Input.Tex2.xw,
         };
+
+        TexInfo Tex[WindowSize];
+        for(int i = 0; i < WindowSize; i++)
+        {
+            Tex[i] = GetTexInfo(WindowTex[i]);
+        }
 
         // Windows matrices to sum
         float3 A = 0.0;
@@ -65,10 +70,9 @@
 
         // Calculate resigual from previous run
         float2 R = 0.0;
-        R += tex2Dlod(SampleI1, float4(Input.Tex1.xz + (Vectors * PxSize), 0.0, MipLevel)).rg;
-        R -= tex2Dlod(SampleI0, float4(Input.Tex1.xz, 0.0, MipLevel)).rg;
+        R += tex2Dlod(SampleI1, float4(WindowTex[5] + (Vectors * Tex[5].Size), 0.0, Tex[5].LOD)).rg;
+        R -= tex2Dlod(SampleI0, float4(WindowTex[5], 0.0, Tex[5].LOD)).rg;
         R = pow(abs(R), 2.0);
-
 
         bool2 Converged = false;
 
@@ -89,32 +93,32 @@
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float2 WarpedTex = WindowTex[i] + (Vectors * PxSize);
-                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, MipLevel)).r;
-                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, MipLevel)).r;
+                float2 WarpedTex = WindowTex[i] + (Vectors * Tex[i].Size);
+                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, Tex[i].LOD)).r;
+                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, Tex[i].LOD)).r;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, MipLevel)).xz;
+                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, Tex[i].LOD)).xz;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }
         }
 
-       [branch]
+        [branch]
         if(Converged.g == false)
         {
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float2 WarpedTex = WindowTex[i] + (Vectors * PxSize);
-                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, MipLevel)).g;
-                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, MipLevel)).g;
+                float2 WarpedTex = WindowTex[i] + (Vectors * Tex[i].Size);
+                float I1 = tex2Dlod(SampleI1, float4(WarpedTex, 0.0, Tex[i].LOD)).g;
+                float I0 = tex2Dlod(SampleI0, float4(WindowTex[i], 0.0, Tex[i].LOD)).g;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, MipLevel)).yw;
+                float2 G = tex2Dlod(SampleG, float4(WindowTex[i], 0.0, Tex[i].LOD)).yw;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }

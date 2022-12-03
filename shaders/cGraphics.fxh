@@ -41,4 +41,26 @@
     {
         return tex2D(SampleSource, Input.Tex0);
     }
+
+    struct TexInfo
+    {
+        float2 Size;
+        float LOD;
+    };
+
+    TexInfo GetTexInfo(float2 Tex)
+    {
+        TexInfo Output;
+
+        float2 Ix = ddx(Tex);
+        float2 Iy = ddy(Tex);
+        float LengthX = length(Ix);
+        float LengthY = length(Iy);
+
+        Output.Size.x = Ix.x;
+        Output.Size.y = Ix.y;
+        Output.LOD = log2(max(LengthX, LengthY));
+
+        return Output;
+    }
 #endif
