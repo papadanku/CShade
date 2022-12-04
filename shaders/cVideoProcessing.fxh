@@ -73,13 +73,14 @@
         LOD = 0.5 * LOD;
 
         // Unpack and assemble the column's texture coordinates
-        Output[0].Tex = float4(Tex.xy, 0.0, LOD[0]);
-        Output[1].Tex = float4(Tex.xz, 0.0, LOD[1]);
-        Output[2].Tex = float4(Tex.xw, 0.0, LOD[2]);
+        const float4 TexMask = float4(1.0, 1.0, 0.0, 1.0);
+        Output[0].Tex = float4(Tex.xy, (float2)LOD[0]) * TexMask;
+        Output[1].Tex = float4(Tex.xz, (float2)LOD[1]) * TexMask;
+        Output[2].Tex = float4(Tex.xw, (float2)LOD[2]) * TexMask;
 
-        Output[0].WarpedTex = float4(WarpPackedTex.xy, 0.0, LOD[0]);
-        Output[1].WarpedTex = float4(WarpPackedTex.xz, 0.0, LOD[1]);
-        Output[2].WarpedTex = float4(WarpPackedTex.xw, 0.0, LOD[2]);
+        Output[0].WarpedTex = float4(WarpPackedTex.xy, (float2)LOD[0]) * TexMask;
+        Output[1].WarpedTex = float4(WarpPackedTex.xz, (float2)LOD[1]) * TexMask;
+        Output[2].WarpedTex = float4(WarpPackedTex.xw, (float2)LOD[2]) * TexMask;
     }
 
     float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
