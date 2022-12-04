@@ -70,8 +70,11 @@ CREATE_VS_PYLK(VS_PyLK_Level4, 1.0 / BUFFER_SIZE_5)
 float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
-    float4 Color = max(tex2D(SampleColorTex, Input.Tex0), exp2(-8.0));
-    return float4(Color.xy / dot(Color.rgb, 1.0), 0.0, 1.0);
+    float4 Color = tex2D(SampleColorTex, Input.Tex0);
+    float SumRGB = dot(Color.rgb, 1.0);
+    float2 Chroma = saturate(Color.xy / SumRGB);
+    Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
+    return float4(Chroma, 0.0, 1.0);
 }
 
 // Prefiler buffer
@@ -140,7 +143,7 @@ float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Velocity = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
     float3 Normal = normalize(float3(Velocity, 1.0));
-    return float4(saturate(Normal * 0.5 + 0.5), 1.0);
+    return float4(saturate((Normal * 0.5) + 0.5), 1.0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
