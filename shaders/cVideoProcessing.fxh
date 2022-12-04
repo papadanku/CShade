@@ -57,21 +57,20 @@
 
         // Calculate LOD for each texture coordinate in the column
         float3 LengthX = 0.0;
-        LengthX[0] = length(Ix.xy);
-        LengthX[1] = length(Ix.xz);
-        LengthX[2] = length(Ix.xw);
+        LengthX += (Ix.xxx * Ix.xxx);
+        LengthX += (Ix.yzw * Ix.yzw);
 
         float3 LengthY = 0.0;
-        LengthY[0] = length(Iy.xy);
-        LengthY[1] = length(Iy.xz);
-        LengthY[2] = length(Iy.xw);
+        LengthY += (Iy.xxx * Iy.xxx);
+        LengthY += (Iy.yzw * Iy.yzw);
 
+        // log2(x^n) = n*log2(x)
+        float3 LOD = 0.0;
         float3 MaxI = max(LengthX, LengthY);
-
-        float LOD[3];
         LOD[0] = log2(MaxI[0]);
         LOD[1] = log2(MaxI[1]);
         LOD[2] = log2(MaxI[2]);
+        LOD = 0.5 * LOD;
 
         // Unpack and assemble the column's texture coordinates
         Output[0].Tex = float4(Tex.xy, 0.0, LOD[0]);
