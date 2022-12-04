@@ -53,7 +53,9 @@
         float4 Ix = ddx(Tex);
         float4 Iy = ddy(Tex);
         float4 WarpPackedTex = 0.0;
+        // Warp horizontal texture coordinates with horizontal motion vector
         WarpPackedTex.x = Tex.x + (Vectors.x * Ix.x);
+        // Warp vertical texture coordinates with vertical motion vector
         WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Iy.yzw);
 
         // Calculate LOD for each texture coordinate in the column
@@ -71,9 +73,12 @@
         LOD[0] = log2(MaxI[0]);
         LOD[1] = log2(MaxI[1]);
         LOD[2] = log2(MaxI[2]);
+
+        // Outputs float4(LOD.xyz, 0.0) in 1 MUL
         LOD = float4(0.5, 0.5, 0.5, 0.0) * LOD.xyzz;
 
         // Unpack and assemble the column's texture coordinates
+        // Outputs float4(Tex, 0.0, LOD) in one MAD
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
         Output[0].Tex = (Tex.xyyy * TexMask) + LOD.wwwx;
         Output[1].Tex = (Tex.xzzz * TexMask) + LOD.wwwy;
