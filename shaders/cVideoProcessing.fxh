@@ -56,10 +56,22 @@
         float4 WarpPackedTex = Tex + (Vectors.xyyy * TexSize);
 
         // Calculate LOD for each texture coordinate in the column
+        float3 LengthX = 0.0;
+        LengthX[0] = length(Ix.xy);
+        LengthX[1] = length(Ix.xz);
+        LengthX[2] = length(Ix.xw);
+
+        float3 LengthY = 0.0;
+        LengthY[0] = length(Iy.xy);
+        LengthY[1] = length(Iy.xz);
+        LengthY[2] = length(Iy.xw);
+
+        float3 MaxI = max(LengthX, LengthY);
+
         float LOD[3];
-        LOD[0] = log2(max(length(Ix.xy), length(Iy.xy)));
-        LOD[1] = log2(max(length(Ix.xz), length(Iy.xz)));
-        LOD[2] = log2(max(length(Ix.xw), length(Iy.xw)));
+        LOD[0] = log2(MaxI[0]);
+        LOD[1] = log2(MaxI[1]);
+        LOD[2] = log2(MaxI[2]);
 
         // Unpack and assemble the column's texture coordinates
         Output[0].Tex = float4(Tex.xy, 0.0, LOD[0]);
