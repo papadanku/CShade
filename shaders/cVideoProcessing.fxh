@@ -52,8 +52,9 @@
         // Calculate texture attributes of each packed column of tex
         float4 Ix = ddx(Tex);
         float4 Iy = ddy(Tex);
-        float4 TexSize = float4(Ix.x, Iy.yzw);
-        float4 WarpPackedTex = Tex + (Vectors.xyyy * TexSize);
+        float4 WarpPackedTex = 0.0;
+        WarpPackedTex.x = Tex.x + (Vectors.x * Ix.x);
+        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Iy.yzw);
 
         // Calculate LOD for each texture coordinate in the column
         float3 LengthX = 0.0;
@@ -65,22 +66,22 @@
         LengthY += (Iy.yzw * Iy.yzw);
 
         // log2(x^n) = n*log2(x)
-        float3 LOD = 0.0;
+        float4 LOD = 0.0;
         float3 MaxI = max(LengthX, LengthY);
         LOD[0] = log2(MaxI[0]);
         LOD[1] = log2(MaxI[1]);
         LOD[2] = log2(MaxI[2]);
-        LOD = 0.5 * LOD;
+        LOD = float4(0.5, 0.5, 0.5, 0.0) * LOD.xyzz;
 
         // Unpack and assemble the column's texture coordinates
-        const float4 TexMask = float4(1.0, 1.0, 0.0, 1.0);
-        Output[0].Tex = float4(Tex.xy, (float2)LOD[0]) * TexMask;
-        Output[1].Tex = float4(Tex.xz, (float2)LOD[1]) * TexMask;
-        Output[2].Tex = float4(Tex.xw, (float2)LOD[2]) * TexMask;
+        const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
+        Output[0].Tex = (Tex.xyyy * TexMask) + LOD.wwwx;
+        Output[1].Tex = (Tex.xzzz * TexMask) + LOD.wwwy;
+        Output[2].Tex = (Tex.xwww * TexMask) + LOD.wwwz;
 
-        Output[0].WarpedTex = float4(WarpPackedTex.xy, (float2)LOD[0]) * TexMask;
-        Output[1].WarpedTex = float4(WarpPackedTex.xz, (float2)LOD[1]) * TexMask;
-        Output[2].WarpedTex = float4(WarpPackedTex.xw, (float2)LOD[2]) * TexMask;
+        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + LOD.wwwx;
+        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + LOD.wwwy;
+        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + LOD.wwwz;
     }
 
     float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
