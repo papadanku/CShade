@@ -78,7 +78,7 @@
         LOD = float4(0.5, 0.5, 0.5, 0.0) * LOD.xyzz;
 
         // Unpack and assemble the column's texture coordinates
-        // Outputs float4(Tex, 0.0, LOD) in one MAD
+        // Outputs float4(Tex, 0.0, LOD) in 1 MAD
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
         Output[0].Tex = (Tex.xyyy * TexMask) + LOD.wwwx;
         Output[1].Tex = (Tex.xzzz * TexMask) + LOD.wwwy;
