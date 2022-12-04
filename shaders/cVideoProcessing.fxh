@@ -43,9 +43,8 @@
 
     struct UnpackedTex
     {
-        float2 Tex;
-        float2 WarpedTex;
-        float LOD;
+        float4 Tex;
+        float4 WarpedTex;
     };
 
     void UnpackTex(in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
@@ -56,18 +55,20 @@
         float4 TexSize = float4(Ix.x, Iy.yzw);
         float4 WarpPackedTex = Tex + (Vectors.xyyy * TexSize);
 
-        // Unpack texture and its attributes
-        Output[0].Tex = Tex.xy;
-        Output[1].Tex = Tex.xz;
-        Output[2].Tex = Tex.xw;
+        // Calculate LOD for each texture coordinate in the column
+        float LOD[3];
+        LOD[0] = log2(max(length(Ix.xy), length(Iy.xy)));
+        LOD[1] = log2(max(length(Ix.xz), length(Iy.xz)));
+        LOD[2] = log2(max(length(Ix.xw), length(Iy.xw)));
 
-        Output[0].WarpedTex = WarpPackedTex.xy;
-        Output[1].WarpedTex = WarpPackedTex.xz;
-        Output[2].WarpedTex = WarpPackedTex.xw;
+        // Unpack and assemble the column's texture coordinates
+        Output[0].Tex = float4(Tex.xy, 0.0, LOD[0]);
+        Output[1].Tex = float4(Tex.xz, 0.0, LOD[1]);
+        Output[2].Tex = float4(Tex.xw, 0.0, LOD[2]);
 
-        Output[0].LOD = log2(max(length(Ix.xy), length(Iy.xy)));
-        Output[1].LOD = log2(max(length(Ix.xz), length(Iy.xz)));
-        Output[2].LOD = log2(max(length(Ix.xw), length(Iy.xw)));
+        Output[0].WarpedTex = float4(WarpPackedTex.xy, 0.0, LOD[0]);
+        Output[1].WarpedTex = float4(WarpPackedTex.xz, 0.0, LOD[1]);
+        Output[2].WarpedTex = float4(WarpPackedTex.xw, 0.0, LOD[2]);
     }
 
     float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
@@ -101,8 +102,8 @@
 
         // Calculate resigual from previous run
         float2 R = 0.0;
-        R += tex2Dlod(SampleI1, float4(Pixel[5].WarpedTex, 0.0, Pixel[5].LOD)).rg;
-        R -= tex2Dlod(SampleI0, float4(Pixel[5].Tex, 0.0, Pixel[5].LOD)).rg;
+        R += tex2Dlod(SampleI1, Pixel[5].WarpedTex).rg;
+        R -= tex2Dlod(SampleI0, Pixel[5].Tex).rg;
         R = pow(abs(R), 2.0);
 
         bool2 Converged = false;
@@ -124,12 +125,12 @@
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float I1 = tex2Dlod(SampleI1, float4(Pixel[i].WarpedTex, 0.0, Pixel[i].LOD)).r;
-                float I0 = tex2Dlod(SampleI0, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).r;
+                float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
+                float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).xz;
+                float2 G = tex2Dlod(SampleG, Pixel[i].Tex).xz;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }
@@ -142,12 +143,12 @@
             for(int i = 0; i < WindowSize; i++)
             {
                 // B.x = B1; B.y = B2
-                float I1 = tex2Dlod(SampleI1, float4(Pixel[i].WarpedTex, 0.0, Pixel[i].LOD)).g;
-                float I0 = tex2Dlod(SampleI0, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).g;
+                float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).g;
+                float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).g;
                 float IT = I0 - I1;
 
                 // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleG, float4(Pixel[i].Tex, 0.0, Pixel[i].LOD)).yw;
+                float2 G = tex2Dlod(SampleG, Pixel[i].Tex).yw;
                 A.xyz += (G.xyx * G.xyy);
                 B.xy += (G.xy * IT);
             }
