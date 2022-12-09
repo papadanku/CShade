@@ -162,25 +162,25 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 float2 PS_PyLK_Level4(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 3, true);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, true);
 }
 
 float2 PS_PyLK_Level3(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex5, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 2, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float2 PS_PyLK_Level2(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 1, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex1.xz).xy;
-    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 0, false), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -216,8 +216,8 @@ float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
 
     // Motion vector
     float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
-    MotionVectors = MotionVectors * BUFFER_SIZE_2; // Normalized screen space -> Pixel coordinates
     MotionVectors *= _Scale;
+    MotionVectors *= BUFFER_SIZE_2; // Normalized screen space -> Pixel coordinates
     MotionVectors += (Random.xy - 0.5)  * _Diffusion; // Small random displacement (diffusion)
     MotionVectors = round(MotionVectors); // Pixel perfect snapping
 
@@ -260,19 +260,19 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
 
     float4 Source = tex2D(SampleColorTex, Input.Tex0); // Color from the original image
     float Displacement = tex2D(SampleAccumTex, Input.Tex0).r; // Displacement vector
-    float4 Working = tex2D(SampleFeedbackTex, Input.Tex0 + (MotionVectors * DisplacementTexel));
+    float4 Working = tex2D(SampleFeedbackTex, Input.Tex0 + MotionVectors);
 
-    MotionVectors *= BUFFER_SIZE_2; // Normalized screen space -> Pixel coordinates
+    MotionVectors *= ScreenSize; // Normalized screen space -> Pixel coordinates
     MotionVectors += (Random.xy - 0.5) * _Diffusion; // Small random displacement (diffusion)
     MotionVectors = round(MotionVectors); // Pixel perfect snapping
-    MotionVectors /= BUFFER_SIZE_2; // Pixel coordinates -> Normalized screen space
+    MotionVectors /= ScreenSize; // Pixel coordinates -> Normalized screen space
 
     // Generate some pseudo random numbers.
     float RandomMotion = RandomNoise(Input.Tex0 + length(MotionVectors));
     float4 RandomNumbers = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
 
     // Generate noise patterns that look like DCT bases.
-    float2 Frequency = Input.Tex0 * DisplacementTexel * (RandomNumbers.x * 80.0 / _Contrast);
+    float2 Frequency = Input.Tex0 * ((RandomNumbers.x * 80.0 / _Contrast) * DisplacementTexel);
 
     // - Basis wave (vertical or horizontal)
     float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < RandomNumbers.y));

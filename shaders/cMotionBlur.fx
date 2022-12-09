@@ -111,25 +111,25 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 float2 PS_PyLK_Level4(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 3, true);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, true);
 }
 
 float2 PS_PyLK_Level3(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex5, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 2, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float2 PS_PyLK_Level2(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 1, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex1.xz).xy;
-    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 0, false), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -154,7 +154,7 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
     float FrameTimeRatio = _TargetFrameRate / FrameRate;
 
     float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    float2 ScreenCoord = Input.Tex0.xy * ScreenSize;
+    float2 ScreenCoord = Input.Tex0.xy;
 
     float2 Velocity = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
 
@@ -164,8 +164,8 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
     for (int k = 0; k < Samples; ++k)
     {
         float2 Offset = ScaledVelocity * (Noise + k);
-        OutputColor += tex2D(SampleColorTex, (ScreenCoord + Offset) / ScreenSize);
-        OutputColor += tex2D(SampleColorTex, (ScreenCoord - Offset) / ScreenSize);
+        OutputColor += tex2D(SampleColorTex, (ScreenCoord + Offset));
+        OutputColor += tex2D(SampleColorTex, (ScreenCoord - Offset));
     }
 
     return OutputColor / (Samples * 2.0);

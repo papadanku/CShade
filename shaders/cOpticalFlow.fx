@@ -106,25 +106,25 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 float2 PS_PyLK_Level4(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 3, true);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, true);
 }
 
 float2 PS_PyLK_Level3(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex5, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 2, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float2 PS_PyLK_Level2(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex1.xz).xy;
-    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 1, false);
+    return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
 float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex1.xz).xy;
-    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, 0, false), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -141,9 +141,11 @@ float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
 
 float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 {
+    float2 InvTexSize = 1.0 / float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
     float2 Velocity = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    float3 Normal = normalize(float3(Velocity, 1.0));
-    return float4(saturate((Normal * 0.5) + 0.5), 1.0);
+    Velocity = Velocity * InvTexSize;
+    float3 NVelocity = normalize(float3(Velocity, 1.0));
+    return float4(saturate((NVelocity * 0.5) + 0.5),  1.0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

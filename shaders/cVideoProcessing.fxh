@@ -41,57 +41,76 @@
         B2 = IyIt
     */
 
+    struct Texel
+    {
+        float2 Size;
+        float2 LOD;
+    };
+
     struct UnpackedTex
     {
         float4 Tex;
         float4 WarpedTex;
     };
 
-    void UnpackTex(in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
+    void UnpackTex(in Texel Tx, in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
     {
         // Calculate texture attributes of each packed column of tex
-        float4 Ix = ddx(Tex);
-        float4 Iy = ddy(Tex);
         float4 WarpPackedTex = 0.0;
         // Warp horizontal texture coordinates with horizontal motion vector
-        WarpPackedTex.x = Tex.x + (Vectors.x * Ix.x);
+        WarpPackedTex.x = Tex.x + (Vectors.x * Tx.Size.x);
         // Warp vertical texture coordinates with vertical motion vector
-        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Iy.yzw);
-
-        // Calculate LOD for each texture coordinate in the column
-        float3 LengthX = 0.0;
-        LengthX += (Ix.xxx * Ix.xxx);
-        LengthX += (Ix.yzw * Ix.yzw);
-
-        float3 LengthY = 0.0;
-        LengthY += (Iy.xxx * Iy.xxx);
-        LengthY += (Iy.yzw * Iy.yzw);
-
-        // log2(x^n) = n*log2(x)
-        float4 LOD = 0.0;
-        float3 MaxI = max(LengthX, LengthY);
-        LOD[0] = log2(MaxI[0]);
-        LOD[1] = log2(MaxI[1]);
-        LOD[2] = log2(MaxI[2]);
-
-        // Outputs float4(LOD.xyz, 0.0) in 1 MUL
-        LOD = float4(0.5, 0.5, 0.5, 0.0) * LOD.xyzz;
+        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Tx.Size.yyy);
 
         // Unpack and assemble the column's texture coordinates
         // Outputs float4(Tex, 0.0, LOD) in 1 MAD
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
-        Output[0].Tex = (Tex.xyyy * TexMask) + LOD.wwwx;
-        Output[1].Tex = (Tex.xzzz * TexMask) + LOD.wwwy;
-        Output[2].Tex = (Tex.xwww * TexMask) + LOD.wwwz;
+        Output[0].Tex = (Tex.xyyy * TexMask) + Tx.LOD.xxxy;
+        Output[1].Tex = (Tex.xzzz * TexMask) + Tx.LOD.xxxy;
+        Output[2].Tex = (Tex.xwww * TexMask) + Tx.LOD.xxxy;
 
-        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + LOD.wwwx;
-        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + LOD.wwwy;
-        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + LOD.wwwz;
+        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + Tx.LOD.xxxy;
+        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + Tx.LOD.xxxy;
+        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tx.LOD.xxxy;
     }
 
-    float2 GetPixelPyLK(VS2PS_LK Input, sampler2D SampleG, sampler2D SampleI0, sampler2D SampleI1, float2 Vectors, int MipLevel, bool CoarseLevel)
+    // [0,1] -> [DestSize.x, DestSize.y]
+    float2 DecodeVectors(float2 Vectors, float2 ImgSize)
     {
-        Vectors = Vectors * 2.0;
+        return Vectors * ImgSize;
+    }
+
+    // [DestSize.x, DestSize.y] -> [0,1]
+    float2 EncodeVectors(float2 Vectors, float2 ImgSize)
+    {
+        return Vectors / ImgSize;
+    }
+
+    float2 GetPixelPyLK
+    (
+        VS2PS_LK Input,
+        sampler2D SampleG,
+        sampler2D SampleI0,
+        sampler2D SampleI1,
+        float2 Vectors,
+        bool CoarseLevel
+    )
+    {
+        // Calculate main texel information (TexelSize, TexelLOD)
+        Texel Tx;
+        float2 MainTex = Input.Tex1.xz;
+        float2 Ix = ddx(MainTex);
+        float2 Iy = ddy(MainTex);
+        float2 DPX = dot(Ix, Ix);
+        float2 DPY = dot(Iy, Iy);
+        Tx.Size.x = Ix.x;
+        Tx.Size.y = Iy.y;
+        // log2(x^n) = n*log2(x)
+        Tx.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
+        float2 InvTxSize = 1.0 / Tx.Size;
+
+        // Decode written vectors from coarser level
+        Vectors = DecodeVectors(Vectors, InvTxSize * 0.5);
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         const int WindowSize = 9;
@@ -100,9 +119,9 @@
         UnpackedTex TexB[3];
         UnpackedTex TexC[3];
 
-        UnpackTex(Input.Tex0, Vectors, TexA);
-        UnpackTex(Input.Tex1, Vectors, TexB);
-        UnpackTex(Input.Tex2, Vectors, TexC);
+        UnpackTex(Tx, Input.Tex0, Vectors, TexA);
+        UnpackTex(Tx, Input.Tex1, Vectors, TexB);
+        UnpackTex(Tx, Input.Tex2, Vectors, TexC);
 
         UnpackedTex Pixel[WindowSize] =
         {
@@ -188,9 +207,8 @@
         MotionVectors = mul(-B.xy, float2x2(A.yzzx));
         MotionVectors = (Determinant != 0.0) ? MotionVectors : 0.0;
 
-        // Propagate (add) vectors
-        // Do not multiply on the finest level
-        MotionVectors = (Vectors + MotionVectors);
+        // Propagate and encode vectors
+        MotionVectors = EncodeVectors(Vectors + MotionVectors, InvTxSize);
         return MotionVectors;
     }
 #endif

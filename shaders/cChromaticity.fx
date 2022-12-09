@@ -16,7 +16,7 @@ uniform int _Select <
 
 float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = max(tex2D(SampleColorTex, Input.Tex0).rgb, exp2(-10.0));
+    float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
     float Sum = 0.0;
     float3 Chromaticity = 0.0;
 
