@@ -207,7 +207,7 @@ technique cMotionBlur
     }
 
     // Postfilter blur
-    pass
+    pass MRT_CopyAndBlur
     {
         VertexShader = VS_HBlur;
         PixelShader = PS_HBlur_Postfilter;
