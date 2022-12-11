@@ -91,11 +91,6 @@ float4 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 
 // Process spatial derivatives
 
-float4 PS_Copy(VS2PS_Quad Input) : SV_TARGET0
-{
-    return tex2D(SampleTex2b, Input.Tex0);
-}
-
 float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 {
     return GetPixelSobel_Chroma(Input, SampleTex2c);
@@ -129,8 +124,10 @@ float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
 
 // Postfilter blur
 
-float4 PS_HBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
+// We use MRT to immeduately copy the current blurred frame for the next frame
+float4 PS_HBlur_Postfilter(VS2PS_Blur Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
+    Copy = tex2D(SampleTex2b, Input.Tex0.xy);
     return float4(GetPixelBlur(Input, SampleOFlowTex).rg, 0.0, 1.0);
 }
 
@@ -172,7 +169,8 @@ technique cOpticalFlow
     CREATE_PASS(VS_PyLK_Level4, PS_PyLK_Level4, Tex5)
     CREATE_PASS(VS_PyLK_Level3, PS_PyLK_Level3, Tex4)
     CREATE_PASS(VS_PyLK_Level2, PS_PyLK_Level2, Tex3)
-    pass
+
+    pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
@@ -185,12 +183,21 @@ technique cOpticalFlow
         RenderTarget0 = OFlowTex;
     }
 
-    // Copy current convolved frame for next frame
-    CREATE_PASS(VS_Quad, PS_Copy, Tex2c)
+    // Postfilter blur
+    pass
+    {
+        VertexShader = VS_HBlur;
+        PixelShader = PS_HBlur_Postfilter;
+        RenderTarget0 = Tex2c;
+        RenderTarget1 = Tex2a;
+    }
 
-    // Prefilter blur
-    CREATE_PASS(VS_HBlur, PS_HBlur_Postfilter, Tex2a)
-    CREATE_PASS(VS_VBlur, PS_VBlur_Postfilter, Tex2b)
+    pass
+    {
+        VertexShader = VS_VBlur;
+        PixelShader = PS_VBlur_Postfilter;
+        RenderTarget0 = Tex2b;
+    }
 
     // Display
     pass
