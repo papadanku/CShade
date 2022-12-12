@@ -66,11 +66,11 @@
 
     float2 GetPixelPyLK
     (
-        VS2PS_Quad Input,
+        float2 MainTex,
+        float2 Vectors,
         sampler2D SampleG,
         sampler2D SampleI0,
         sampler2D SampleI1,
-        float2 Vectors,
         bool CoarseLevel
     )
     {
@@ -83,7 +83,6 @@
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel Tx;
-        float2 MainTex = Input.Tex0;
         float2 Ix = ddx(MainTex);
         float2 Iy = ddy(MainTex);
         float2 DPX = dot(Ix, Ix);
