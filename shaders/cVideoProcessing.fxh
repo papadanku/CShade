@@ -7,28 +7,6 @@
 
     // Lucas-Kanade optical flow with bilinear fetches
 
-    struct VS2PS_LK
-    {
-        float4 HPos : SV_POSITION;
-        float4 Tex0 : TEXCOORD0;
-        float4 Tex1 : TEXCOORD1;
-        float4 Tex2 : TEXCOORD2;
-    };
-
-    VS2PS_LK GetVertexPyLK(APP2VS Input, float2 PixelSize)
-    {
-        VS2PS_Quad FSQuad = VS_Quad(Input);
-
-        VS2PS_LK Output;
-
-        Output.HPos = FSQuad.HPos;
-        Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-        Output.Tex1 = FSQuad.Tex0.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-        Output.Tex2 = FSQuad.Tex0.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-
-        return Output;
-    }
-
     /*
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
         [A11 A12]^-1 [-B1] -> [ A11 -A12] [-B1]
@@ -58,9 +36,9 @@
         // Calculate texture attributes of each packed column of tex
         float4 WarpPackedTex = 0.0;
         // Warp horizontal texture coordinates with horizontal motion vector
-        WarpPackedTex.x = Tex.x + (Vectors.x * Tx.Size.x);
+        WarpPackedTex.x = Tex.x + (Vectors.x * abs(Tx.Size.x));
         // Warp vertical texture coordinates with vertical motion vector
-        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * Tx.Size.yyy);
+        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * abs(Tx.Size.yyy));
 
         // Unpack and assemble the column's texture coordinates
         // Outputs float4(Tex, 0.0, LOD) in 1 MAD
@@ -88,7 +66,7 @@
 
     float2 GetPixelPyLK
     (
-        VS2PS_LK Input,
+        VS2PS_Quad Input,
         sampler2D SampleG,
         sampler2D SampleI0,
         sampler2D SampleI1,
@@ -96,9 +74,16 @@
         bool CoarseLevel
     )
     {
+        // Initialize variables
+        float3 A = 0.0;
+        float2 B = 0.0;
+        float2 R = 0.0;
+        float Determinant = 0.0;
+        float2 MVectors = 0.0;
+
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel Tx;
-        float2 MainTex = Input.Tex1.xz;
+        float2 MainTex = Input.Tex0;
         float2 Ix = ddx(MainTex);
         float2 Iy = ddy(MainTex);
         float2 DPX = dot(Ix, Ix);
@@ -107,21 +92,22 @@
         Tx.Size.y = Iy.y;
         // log2(x^n) = n*log2(x)
         Tx.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
-        float2 InvTxSize = 1.0 / Tx.Size;
+        float2 InvTexSize = 1.0 / abs(Tx.Size);
 
         // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, InvTxSize * 0.5);
+        Vectors = DecodeVectors(Vectors, InvTexSize * 0.5);
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         const int WindowSize = 9;
 
         UnpackedTex TexA[3];
-        UnpackedTex TexB[3];
-        UnpackedTex TexC[3];
+        UnpackTex(Tx, MainTex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexA);
 
-        UnpackTex(Tx, Input.Tex0, Vectors, TexA);
-        UnpackTex(Tx, Input.Tex1, Vectors, TexB);
-        UnpackTex(Tx, Input.Tex2, Vectors, TexC);
+        UnpackedTex TexB[3];
+        UnpackTex(Tx, MainTex.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexB);
+
+        UnpackedTex TexC[3];
+        UnpackTex(Tx, MainTex.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexC);
 
         UnpackedTex Pixel[WindowSize] =
         {
@@ -131,14 +117,8 @@
         };
 
         // Windows matrices to sum
-        float3 A = 0.0;
-        float2 B = 0.0;
 
-        float Determinant = 0.0;
-        float2 MotionVectors = 0.0;
-
-        // Calculate resigual from previous run
-        float2 R = 0.0;
+        // Calculate residual from previous run
         R += tex2Dlod(SampleI1, Pixel[5].WarpedTex).rg;
         R -= tex2Dlod(SampleI0, Pixel[5].Tex).rg;
         R = pow(abs(R), 2.0);
@@ -204,11 +184,11 @@
         A = A / Determinant;
 
         // Calculate Lucas-Kanade matrix
-        MotionVectors = mul(-B.xy, float2x2(A.yzzx));
-        MotionVectors = (Determinant != 0.0) ? MotionVectors : 0.0;
+        MVectors = mul(-B.xy, float2x2(A.yzzx));
+        MVectors = (Determinant != 0.0) ? MVectors : 0.0;
 
         // Propagate and encode vectors
-        MotionVectors = EncodeVectors(Vectors + MotionVectors, InvTxSize);
-        return MotionVectors;
+        MVectors = EncodeVectors(Vectors + MVectors, InvTexSize);
+        return MVectors;
     }
 #endif

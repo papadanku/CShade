@@ -57,17 +57,6 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
     return GetVertexSobel(Input, 1.0 / BUFFER_SIZE_2);
 }
 
-#define CREATE_VS_PYLK(METHOD_NAME, INV_BUFFER_SIZE) \
-    VS2PS_LK METHOD_NAME(APP2VS Input) \
-    { \
-        return GetVertexPyLK(Input, INV_BUFFER_SIZE); \
-    }
-
-CREATE_VS_PYLK(VS_PyLK_Level1, 1.0 / BUFFER_SIZE_2)
-CREATE_VS_PYLK(VS_PyLK_Level2, 1.0 / BUFFER_SIZE_3)
-CREATE_VS_PYLK(VS_PyLK_Level3, 1.0 / BUFFER_SIZE_4)
-CREATE_VS_PYLK(VS_PyLK_Level4, 1.0 / BUFFER_SIZE_5)
-
 // Pixel shaders
 
 // Normalize buffer
@@ -103,27 +92,27 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 
 // Run Lucas-Kanade
 
-float2 PS_PyLK_Level4(VS2PS_LK Input) : SV_TARGET0
+float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
     return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, true);
 }
 
-float2 PS_PyLK_Level3(VS2PS_LK Input) : SV_TARGET0
+float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex5, Input.Tex1.xz).xy;
+    float2 Vectors = tex2D(SampleTex5, Input.Tex0).xy;
     return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
-float2 PS_PyLK_Level2(VS2PS_LK Input) : SV_TARGET0
+float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex4, Input.Tex1.xz).xy;
+    float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
     return GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false);
 }
 
-float4 PS_PyLK_Level1(VS2PS_LK Input) : SV_TARGET0
+float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = tex2D(SampleTex3, Input.Tex1.xz).xy;
+    float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
     return float4(GetPixelPyLK(Input, SampleTex2a, SampleTex2c, SampleTex2b, Vectors, false), 0.0, _BlendFactor);
 }
 
@@ -189,9 +178,9 @@ technique cMotionBlur
     CREATE_PASS(VS_Sobel, PS_Sobel, Tex2a)
 
     // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(VS_PyLK_Level4, PS_PyLK_Level4, Tex5)
-    CREATE_PASS(VS_PyLK_Level3, PS_PyLK_Level3, Tex4)
-    CREATE_PASS(VS_PyLK_Level2, PS_PyLK_Level2, Tex3)
+    CREATE_PASS(VS_Quad, PS_PyLK_Level4, Tex5)
+    CREATE_PASS(VS_Quad, PS_PyLK_Level3, Tex4)
+    CREATE_PASS(VS_Quad, PS_PyLK_Level2, Tex3)
 
     pass GetFineOpticalFlow
     {
@@ -201,7 +190,7 @@ technique cMotionBlur
         SrcBlend = INVSRCALPHA;
         DestBlend = SRCALPHA;
 
-        VertexShader = VS_PyLK_Level1;
+        VertexShader = VS_Quad;
         PixelShader = PS_PyLK_Level1;
         RenderTarget0 = OFlowTex;
     }
