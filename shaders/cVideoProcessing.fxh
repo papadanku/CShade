@@ -84,16 +84,16 @@
     {
         // Setup constants
         const int WindowSize = 9;
-        const float EThreshold = 0.0001;
 
         // Initialize variables
         float3 A = 0.0;
         float2 B = 0.0;
         float2 E = 0.0;
         float4 G[WindowSize];
+        float EThreshold = 0.0;
+        bool Refine = false;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
-        bool Refine = false;
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel Tx;
@@ -138,6 +138,7 @@
         }
 
         E = GetEigenValue(A);
+        EThreshold = ldexp(1e-5, -Tx.LOD[1]);
 
         if(CoarseLevel == true)
         {
