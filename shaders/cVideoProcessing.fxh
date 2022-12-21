@@ -76,7 +76,7 @@
     (
         float2 MainTex,
         float2 Vectors,
-        sampler2D SampleG,
+        sampler2D SampleI0_G,
         sampler2D SampleI0,
         sampler2D SampleI1,
         bool CoarseLevel
@@ -131,7 +131,7 @@
         [unroll]
         for(int i = 0; i < WindowSize; i++)
         {
-            G[i] = tex2Dlod(SampleG, Pixel[i].Tex);
+            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex);
             // A.x = A11; A.y = A22; A.z = A12/A22
             A.xyz += (G[i].xzx * G[i].xzz);
             A.xyz += (G[i].ywy * G[i].yww);
@@ -160,8 +160,8 @@
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
-                float2 I0 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
-                float2 I1 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
+                float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
+                float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
                 float2 IT = I0 - I1;
 
                 // B.x = B1; B.y = B2
