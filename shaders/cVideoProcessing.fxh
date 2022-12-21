@@ -21,6 +21,7 @@
 
     struct Texel
     {
+        float2 MainTex;
         float2 Size;
         float2 LOD;
     };
@@ -31,25 +32,28 @@
         float4 WarpedTex;
     };
 
-    void UnpackTex(in Texel Tx, in float4 Tex, in float2 Vectors, out UnpackedTex Output[3])
+    void UnpackTex(in Texel Tex, in float4 Column, in float2 Vectors, out UnpackedTex Output[3])
     {
+        // Calculate column tex
+        float4 ColumnTex = Tex.MainTex.xyyy + (Column * abs(Tex.Size.xyyy));
+
         // Calculate texture attributes of each packed column of tex
         float4 WarpPackedTex = 0.0;
         // Warp horizontal texture coordinates with horizontal motion vector
-        WarpPackedTex.x = Tex.x + (Vectors.x * abs(Tx.Size.x));
+        WarpPackedTex.x = ColumnTex.x + (Vectors.x * abs(Tex.Size.x));
         // Warp vertical texture coordinates with vertical motion vector
-        WarpPackedTex.yzw = Tex.yzw + (Vectors.yyy * abs(Tx.Size.yyy));
+        WarpPackedTex.yzw = ColumnTex.yzw + (Vectors.yyy * abs(Tex.Size.yyy));
 
         // Unpack and assemble the column's texture coordinates
-        // Outputs float4(Tex, 0.0, LOD) in 1 MAD
+        // Outputs float4(ColumnTex, 0.0, LOD) in 1 MAD
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
-        Output[0].Tex = (Tex.xyyy * TexMask) + Tx.LOD.xxxy;
-        Output[1].Tex = (Tex.xzzz * TexMask) + Tx.LOD.xxxy;
-        Output[2].Tex = (Tex.xwww * TexMask) + Tx.LOD.xxxy;
+        Output[0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
+        Output[1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
+        Output[2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
 
-        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + Tx.LOD.xxxy;
-        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + Tx.LOD.xxxy;
-        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tx.LOD.xxxy;
+        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + Tex.LOD.xxxy;
+        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + Tex.LOD.xxxy;
+        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tex.LOD.xxxy;
     }
 
     // [-1,1] -> [DestSize.x, DestSize.y]
@@ -90,35 +94,35 @@
         float2 B = 0.0;
         float2 E = 0.0;
         float4 G[WindowSize];
-        float EThreshold = 0.0;
         bool Refine = false;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
 
         // Calculate main texel information (TexelSize, TexelLOD)
-        Texel Tx;
-        float2 Ix = ddx(MainTex);
-        float2 Iy = ddy(MainTex);
+        Texel Tex;
+        Tex.MainTex = MainTex;
+        float2 Ix = ddx(Tex.MainTex);
+        float2 Iy = ddy(Tex.MainTex);
         float2 DPX = dot(Ix, Ix);
         float2 DPY = dot(Iy, Iy);
-        Tx.Size.x = Ix.x;
-        Tx.Size.y = Iy.y;
+        Tex.Size.x = Ix.x;
+        Tex.Size.y = Iy.y;
         // log2(x^n) = n*log2(x)
-        Tx.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
-        float2 InvTexSize = 1.0 / abs(Tx.Size);
+        Tex.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
+        float2 InvTexSize = 1.0 / abs(Tex.Size);
 
         // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, InvTexSize * 0.5);
+        Vectors = DecodeVectors(Vectors, InvTexSize);
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         UnpackedTex TexA[3];
-        UnpackTex(Tx, MainTex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexA);
+        UnpackTex(Tex, float4(-1.0, 1.0, 0.0, -1.0), Vectors, TexA);
 
         UnpackedTex TexB[3];
-        UnpackTex(Tx, MainTex.xyyy + (float4( 0.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexB);
+        UnpackTex(Tex, float4( 0.0, 1.0, 0.0, -1.0), Vectors, TexB);
 
         UnpackedTex TexC[3];
-        UnpackTex(Tx, MainTex.xyyy + (float4( 1.0, 1.0, 0.0, -1.0) * abs(Tx.Size.xyyy)), Vectors, TexC);
+        UnpackTex(Tex, float4( 1.0, 1.0, 0.0, -1.0), Vectors, TexC);
 
         UnpackedTex Pixel[WindowSize] =
         {
@@ -138,13 +142,12 @@
         }
 
         E = GetEigenValue(A);
-        EThreshold = ldexp(1e-5, -Tx.LOD[1]);
 
         if(CoarseLevel == true)
         {
             Refine = true;
         }
-        else if(min(E[0], E[1]) > EThreshold)
+        else if(min(E[0], E[1]) > 1e-3)
         {
             Refine = true;
         }
