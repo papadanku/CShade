@@ -57,15 +57,15 @@
     }
 
     // [-1,1] -> [DestSize.x, DestSize.y]
-    float2 DecodeVectors(float2 Vectors, float2 ImgSize)
+    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
     {
-        return Vectors * ImgSize;
+        return Vectors * ImageSize;
     }
 
     // [DestSize.x, DestSize.y] -> [-1,1]
-    float2 EncodeVectors(float2 Vectors, float2 ImgSize)
+    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
     {
-        return clamp(Vectors / ImgSize, -1.0, 1.0);
+        return clamp(Vectors / ImageSize, -1.0, 1.0);
     }
 
     float2 GetEigenValue(float3 G)
