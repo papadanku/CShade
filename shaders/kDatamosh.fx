@@ -202,8 +202,7 @@ float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
 
     // Motion vector
     float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
-    MotionVectors *= _Scale;
-    MotionVectors *= BUFFER_SIZE_2; // Normalized screen space -> Pixel coordinates
+    MotionVectors = DecodeVectors(MotionVectors, Input.Tex0) * _Scale; // Normalized screen space -> Pixel coordinates
     MotionVectors += (Random.xy - 0.5)  * _Diffusion; // Small random displacement (diffusion)
     MotionVectors = round(MotionVectors); // Pixel perfect snapping
 
@@ -241,17 +240,15 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
     Random.y = RandomNoise(Input.HPos.xy + Time.yx);
     Random.z = RandomNoise(Input.HPos.yx - Time.xx);
 
-    float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
-    MotionVectors *= _Scale;
-
+    float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy * _Scale;
     float4 Source = tex2D(SampleColorTex, Input.Tex0); // Color from the original image
     float Displacement = tex2D(SampleAccumTex, Input.Tex0).r; // Displacement vector
     float4 Working = tex2D(SampleFeedbackTex, Input.Tex0 + MotionVectors);
 
-    MotionVectors *= ScreenSize; // Normalized screen space -> Pixel coordinates
+    MotionVectors = DecodeVectors(MotionVectors, Input.Tex0); // Normalized screen space -> Pixel coordinates
     MotionVectors += (Random.xy - 0.5) * _Diffusion; // Small random displacement (diffusion)
     MotionVectors = round(MotionVectors); // Pixel perfect snapping
-    MotionVectors /= ScreenSize; // Pixel coordinates -> Normalized screen space
+    MotionVectors = EncodeVectors(MotionVectors, Input.Tex0); // Pixel coordinates -> Normalized screen space
 
     // Generate some pseudo random numbers.
     float RandomMotion = RandomNoise(Input.Tex0 + length(MotionVectors));
