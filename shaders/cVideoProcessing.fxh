@@ -9,14 +9,12 @@
 
     /*
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
+        ---------------------------------------------------------
         [A11 A12]^-1 [-B1] -> [ A11 -A12] [-B1]
         [A21 A22]^-1 [-B2] -> [-A21  A22] [-B2]
-        A11 = Ix^2
-        A12 = IxIy
-        A21 = IxIy
-        A22 = Iy^2
-        B1 = IxIt
-        B2 = IyIt
+        ---------------------------------------------------------
+        [ Ix^2 -IxIy] [-IxIt]
+        [-IxIy  Iy^2] [-IyIt]
     */
 
     struct Texel
@@ -56,24 +54,16 @@
         Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tex.LOD.xxxy;
     }
 
-    // [-1,1] -> [DestSize.x, DestSize.y]
+    // [-1.0, 1.0] -> [DestSize.x, DestSize.y]
     float2 DecodeVectors(float2 Vectors, float2 ImageSize)
     {
         return Vectors * ImageSize;
     }
 
-    // [DestSize.x, DestSize.y] -> [-1,1]
+    // [DestSize.x, DestSize.y] -> [-1.0, 1.0]
     float2 EncodeVectors(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors / ImageSize, -1.0, 1.0);
-    }
-
-    float2 GetEigenValue(float3 G)
-    {
-        // A.x = A11; A.y = A22; A.z = A12/A22
-        float A = (G.x + G.y) * 0.5;
-        float B = sqrt((4.0 * (G.z * G.z)) + pow(G.x - G.y, 2.0)) * 0.5;
-        return float2(A + B, A - B);
     }
 
     float2 GetPixelPyLK
@@ -88,13 +78,14 @@
     {
         // Setup constants
         const int WindowSize = 9;
+        const float E = 0.5;
 
         // Initialize variables
         float3 A = 0.0;
         float2 B = 0.0;
-        float2 E = 0.0;
-        float4 G[WindowSize];
-        bool Refine = false;
+        float2 R = 0.0;
+        float2 IT[WindowSize];
+        bool2 Refine = true;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
 
@@ -103,8 +94,8 @@
         Tex.MainTex = MainTex;
         float2 Ix = ddx(Tex.MainTex);
         float2 Iy = ddy(Tex.MainTex);
-        float2 DPX = dot(Ix, Ix);
-        float2 DPY = dot(Iy, Iy);
+        float DPX = dot(Ix, Ix);
+        float DPY = dot(Iy, Iy);
         Tex.Size.x = Ix.x;
         Tex.Size.y = Iy.y;
         // log2(x^n) = n*log2(x)
@@ -119,10 +110,10 @@
         UnpackTex(Tex, float4(-1.0, 1.0, 0.0, -1.0), Vectors, TexA);
 
         UnpackedTex TexB[3];
-        UnpackTex(Tex, float4( 0.0, 1.0, 0.0, -1.0), Vectors, TexB);
+        UnpackTex(Tex, float4(0.0, 1.0, 0.0, -1.0), Vectors, TexB);
 
         UnpackedTex TexC[3];
-        UnpackTex(Tex, float4( 1.0, 1.0, 0.0, -1.0), Vectors, TexC);
+        UnpackTex(Tex, float4(1.0, 1.0, 0.0, -1.0), Vectors, TexC);
 
         UnpackedTex Pixel[WindowSize] =
         {
@@ -131,63 +122,79 @@
             TexC[0], TexC[1], TexC[2],
         };
 
-        // Sum gradient matrix
-        [unroll]
+        /*
+            Calculate sum of squared differences
+        */
+
         for(int i = 0; i < WindowSize; i++)
         {
-            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex);
-            // A.x = A11; A.y = A22; A.z = A12/A22
-            A.xyz += (G[i].xzx * G[i].xzz);
-            A.xyz += (G[i].ywy * G[i].yww);
+            float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
+            float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
+            IT[i] = I0 - I1;
+            R += (abs(IT[i]) * abs(IT[i]));
         }
 
-        E = GetEigenValue(A);
+        /*
+            Calculate red channel of optical flow
+        */
 
-        if(CoarseLevel == true)
+        if((CoarseLevel == false) && (R.r < E))
         {
-            Refine = true;
-        }
-        else if(min(E[0], E[1]) > 1e-3)
-        {
-            Refine = true;
-        }
-        else
-        {
-            Refine = false;
+            Refine.r = false;
         }
 
-        // Calculate optical flow
         [branch]
-        if(Refine)
+        if(Refine.r)
         {
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
-                float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
-                float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
-                float2 IT = I0 - I1;
-
+                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).xz;
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                A.xyz += (G.xyx * G.xyy);
                 // B.x = B1; B.y = B2
-                B.xy += (G[i].xz * IT.rr);
-                B.xy += (G[i].yw * IT.gg);
+                B.xy += (G.xy * IT[i].rr);
             }
-
-            // Create -IxIy (A12) for A^-1 and its determinant
-            A.z = -A.z;
-
-            // Make determinant non-zero
-            A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
-
-            // Calculate A^-1 determinant
-            Determinant = ((A.x * A.y) - (A.z * A.z));
-
-            // Solve A^-1
-            A = A / Determinant;
-
-            // Calculate Lucas-Kanade matrix
-            MVectors = mul(-B.xy, float2x2(A.yzzx));
-            MVectors = (Determinant != 0.0) ? MVectors : 0.0;
         }
+
+        /*
+            Calculate green channel of optical flow
+        */
+
+        if((CoarseLevel == false) && (R.g < E))
+        {
+            Refine.g = false;
+        }
+
+        [branch]
+        if(Refine.g)
+        {
+            [unroll]
+            for(int i = 0; i < WindowSize; i++)
+            {
+                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).yw;
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                A.xyz += (G.xyx * G.xyy);
+                // B.x = B1; B.y = B2
+                B.xy += (G.xy * IT[i].gg);
+            }
+        }
+
+        // Create -IxIy (A12) for A^-1 and its determinant
+        A.z = -A.z;
+
+        // Make determinant non-zero
+        A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
+
+        // Calculate A^-1 determinant
+        Determinant = ((A.x * A.y) - (A.z * A.z));
+
+        // Solve A^-1
+        A = A / Determinant;
+
+        // Calculate Lucas-Kanade matrix
+        MVectors = mul(-B.xy, float2x2(A.yzzx));
+        MVectors = (Determinant != 0.0) ? MVectors : 0.0;
 
         // Propagate and encode vectors
         MVectors = EncodeVectors(Vectors + MVectors, InvTexSize);
