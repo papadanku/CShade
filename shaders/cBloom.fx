@@ -18,6 +18,9 @@ namespace cBloom
         Construct textures and its samplers
     */
 
+    CREATE_TEXTURE(Tex0, BUFFER_SIZE_0, RGB10A2, 1)
+    CREATE_SAMPLER(SampleTex0, Tex0, LINEAR, CLAMP)
+
     CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA16F, 1)
     CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
@@ -75,13 +78,14 @@ namespace cBloom
             return GetVertexDownscale(Input, INV_BUFFER_SIZE); \
         } \
 
-    CREATE_VS_DOWNSCALE(VS_Downscale1, 1.0 / BUFFER_SIZE_1)
-    CREATE_VS_DOWNSCALE(VS_Downscale2, 1.0 / BUFFER_SIZE_2)
-    CREATE_VS_DOWNSCALE(VS_Downscale3, 1.0 / BUFFER_SIZE_3)
-    CREATE_VS_DOWNSCALE(VS_Downscale4, 1.0 / BUFFER_SIZE_4)
-    CREATE_VS_DOWNSCALE(VS_Downscale5, 1.0 / BUFFER_SIZE_5)
-    CREATE_VS_DOWNSCALE(VS_Downscale6, 1.0 / BUFFER_SIZE_6)
-    CREATE_VS_DOWNSCALE(VS_Downscale7, 1.0 / BUFFER_SIZE_7)
+    CREATE_VS_DOWNSCALE(VS_Downscale1, 1.0 / BUFFER_SIZE_0)
+    CREATE_VS_DOWNSCALE(VS_Downscale2, 1.0 / BUFFER_SIZE_1)
+    CREATE_VS_DOWNSCALE(VS_Downscale3, 1.0 / BUFFER_SIZE_2)
+    CREATE_VS_DOWNSCALE(VS_Downscale4, 1.0 / BUFFER_SIZE_3)
+    CREATE_VS_DOWNSCALE(VS_Downscale5, 1.0 / BUFFER_SIZE_4)
+    CREATE_VS_DOWNSCALE(VS_Downscale6, 1.0 / BUFFER_SIZE_5)
+    CREATE_VS_DOWNSCALE(VS_Downscale7, 1.0 / BUFFER_SIZE_6)
+    CREATE_VS_DOWNSCALE(VS_Downscale8, 1.0 / BUFFER_SIZE_7)
 
     struct VS2PS_Upscale
     {
@@ -133,7 +137,7 @@ namespace cBloom
 
     float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        const float Knee = mad(_Threshold, _Smooth, 1e-5f);
+        const float Knee = mad(_Threshold, _Smooth, 1e-5);
         const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
         float4 Color = tex2D(SampleColorTex, Input.Tex0);
 
@@ -189,13 +193,14 @@ namespace cBloom
             return GetPixelDownscale(Input, SAMPLER); \
         }
 
-    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTex1)
-    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex2)
-    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex3)
-    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex4)
-    CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTex5)
-    CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTex6)
-    CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTex7)
+    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTex0)
+    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex1)
+    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex2)
+    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex3)
+    CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTex4)
+    CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTex5)
+    CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTex6)
+    CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTex7)
 
     float4 GetPixelUpscale(VS2PS_Upscale Input, sampler2D SampleSource)
     {
@@ -237,36 +242,26 @@ namespace cBloom
     CREATE_PS_UPSCALE(PS_Upscale2, SampleTex3)
     CREATE_PS_UPSCALE(PS_Upscale1, SampleTex2)
 
-    // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
-    static const float3x3 ACESInputMat = float3x3
-    (
-        0.59719, 0.35458, 0.04823,
-        0.07600, 0.90834, 0.01566,
-        0.02840, 0.13383, 0.83777
-    );
-
-    // ODT_SAT => XYZ => D60_2_D65 => sRGB
-    static const float3x3 ACESOutputMat = float3x3
-    (
-        1.60475, -0.53108, -0.07367,
-        -0.10208,  1.10813, -0.00605,
-        -0.00327, -0.07276,  1.07602
-    );
-
-    float3 RRTODTFit(float3 V)
+    // ACES Filmic tonemap operator
+    // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+    float3 ToneMapACESFilmic(float3 x)
     {
-        float3 A = V * (V + 0.0245786f) - 0.000090537f;
-        float3 B = V * (0.983729f * V + 0.4329510f) + 0.238081f;
-        return A / B;
+        float a = 2.51f;
+        float b = 0.03f;
+        float c = 2.43f;
+        float d = 0.59f;
+        float e = 0.14f;
+        return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
     }
 
     float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
     {
-        float4 Color = tex2D(SampleTex1, Input.Tex0);
-        Color *= _Intensity;
-        Color = mul(ACESInputMat, Color.rgb);
-        Color = RRTODTFit(Color.rgb);
-        return float4(saturate(mul(ACESOutputMat, Color.rgb)), 1.0);
+        float3 BaseColor = tex2D(SampleColorTex, Input.Tex0).rgb;
+        float3 BloomColor = tex2D(SampleTex1, Input.Tex0).rgb;
+
+        float4 Color = 1.0;
+        Color.rgb = ToneMapACESFilmic(BaseColor + (BloomColor* _Intensity));
+        return Color;
     }
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -284,16 +279,16 @@ namespace cBloom
 
     technique cBloom
     {
-        CREATE_PASS(VS_Quad, PS_Prefilter, Tex1, FALSE)
+        CREATE_PASS(VS_Quad, PS_Prefilter, Tex0, FALSE)
 
-    
-        CREATE_PASS(VS_Downscale1, PS_Downscale1, Tex2, FALSE)
-        CREATE_PASS(VS_Downscale2, PS_Downscale2, Tex3, FALSE)
-        CREATE_PASS(VS_Downscale3, PS_Downscale3, Tex4, FALSE)
-        CREATE_PASS(VS_Downscale4, PS_Downscale4, Tex5, FALSE)
-        CREATE_PASS(VS_Downscale5, PS_Downscale5, Tex6, FALSE)
-        CREATE_PASS(VS_Downscale6, PS_Downscale6, Tex7, FALSE)
-        CREATE_PASS(VS_Downscale7, PS_Downscale7, Tex8, FALSE)
+        CREATE_PASS(VS_Downscale1, PS_Downscale1, Tex1, FALSE)
+        CREATE_PASS(VS_Downscale2, PS_Downscale2, Tex2, FALSE)
+        CREATE_PASS(VS_Downscale3, PS_Downscale3, Tex3, FALSE)
+        CREATE_PASS(VS_Downscale4, PS_Downscale4, Tex4, FALSE)
+        CREATE_PASS(VS_Downscale5, PS_Downscale5, Tex5, FALSE)
+        CREATE_PASS(VS_Downscale6, PS_Downscale6, Tex6, FALSE)
+        CREATE_PASS(VS_Downscale7, PS_Downscale7, Tex7, FALSE)
+        CREATE_PASS(VS_Downscale8, PS_Downscale8, Tex8, FALSE)
 
         CREATE_PASS(VS_Upscale7, PS_Upscale7, Tex7, TRUE)
         CREATE_PASS(VS_Upscale6, PS_Upscale6, Tex6, TRUE)
@@ -301,19 +296,14 @@ namespace cBloom
         CREATE_PASS(VS_Upscale4, PS_Upscale4, Tex4, TRUE)
         CREATE_PASS(VS_Upscale3, PS_Upscale3, Tex3, TRUE)
         CREATE_PASS(VS_Upscale2, PS_Upscale2, Tex2, TRUE)
-        CREATE_PASS(VS_Upscale1, PS_Upscale1, Tex1, FALSE)
+        CREATE_PASS(VS_Upscale1, PS_Upscale1, Tex1, TRUE)
 
         pass
         {
             ClearRenderTargets = FALSE;
-            BlendEnable = TRUE;
-            BlendOp = ADD;
-            SrcBlend = ONE;
-            DestBlend = INVSRCCOLOR;
             #if BUFFER_COLOR_BIT_DEPTH == 8
                 SRGBWriteEnable = TRUE;
             #endif
-
             VertexShader = VS_Quad;
             PixelShader = PS_Composite;
         }
