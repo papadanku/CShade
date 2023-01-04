@@ -78,7 +78,7 @@
     {
         // Setup constants
         const int WindowSize = 9;
-        const float E = 0.5;
+        const float E = 1.0;
 
         // Initialize variables
         float3 A = 0.0;
@@ -122,10 +122,7 @@
             TexC[0], TexC[1], TexC[2],
         };
 
-        /*
-            Calculate sum of squared differences
-        */
-
+        // Calculate sum of squared differences
         for(int i = 0; i < WindowSize; i++)
         {
             float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
@@ -134,9 +131,7 @@
             R += (abs(IT[i]) * abs(IT[i]));
         }
 
-        /*
-            Calculate red channel of optical flow
-        */
+        // Calculate red channel of optical flow
 
         if((CoarseLevel == false) && (R.r < E))
         {
@@ -157,9 +152,7 @@
             }
         }
 
-        /*
-            Calculate green channel of optical flow
-        */
+        // Calculate green channel of optical flow
 
         if((CoarseLevel == false) && (R.g < E))
         {
