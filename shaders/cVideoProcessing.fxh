@@ -57,13 +57,13 @@
     // [-1.0, 1.0] -> [DestSize.x, DestSize.y]
     float2 DecodeVectors(float2 Vectors, float2 ImageSize)
     {
-        return Vectors * ImageSize;
+        return Vectors / abs(ImageSize);
     }
 
     // [DestSize.x, DestSize.y] -> [-1.0, 1.0]
     float2 EncodeVectors(float2 Vectors, float2 ImageSize)
     {
-        return clamp(Vectors / ImageSize, -1.0, 1.0);
+        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
     float2 GetPixelPyLK
@@ -100,10 +100,9 @@
         Tex.Size.y = Iy.y;
         // log2(x^n) = n*log2(x)
         Tex.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
-        float2 InvTexSize = 1.0 / abs(Tex.Size);
 
         // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, InvTexSize);
+        Vectors = DecodeVectors(Vectors, Tex.Size);
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
         UnpackedTex TexA[3];
@@ -190,7 +189,7 @@
         MVectors = (Determinant != 0.0) ? MVectors : 0.0;
 
         // Propagate and encode vectors
-        MVectors = EncodeVectors(Vectors + MVectors, InvTexSize);
+        MVectors = EncodeVectors(Vectors + MVectors, Tex.Size);
         return MVectors;
     }
 #endif
