@@ -127,11 +127,15 @@ float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
 
 float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 InvTexSize = 1.0 / float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
-    float2 Velocity = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    Velocity = Velocity * InvTexSize;
-    float3 NVelocity = normalize(float3(Velocity, 1.0));
-    return float4(saturate((NVelocity * 0.5) + 0.5),  1.0);
+    float2 InvTexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
+
+    float2 Vectors = tex2Dlod(SampleTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
+    Vectors = DecodeVectors(Vectors, InvTexSize);
+
+    float3 NVectors = normalize(float3(Vectors, 1.0));
+    NVectors = saturate((NVectors * 0.5) + 0.5);
+
+    return float4(NVectors, 1.0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
