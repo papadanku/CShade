@@ -85,7 +85,7 @@ CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
 CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
 CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
-CREATE_TEXTURE(AccumTex, BUFFER_SIZE_2, R16F, 1)
+CREATE_TEXTURE(AccumTex, BUFFER_SIZE_0, R16F, 1)
 CREATE_SAMPLER(SampleAccumTex, AccumTex, FILTERING, MIRROR)
 
 CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
@@ -183,45 +183,63 @@ float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
 
 // Datamosh
 
-float RandomNoise(float2 TexCoord)
+float RandUV(float2 Tex)
 {
-    float f = dot(float2(12.9898, 78.233), TexCoord);
+    float f = dot(float2(12.9898, 78.233), Tex);
     return frac(43758.5453 * sin(f));
+}
+
+float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
+{
+    float2 TexSize = float2(ddx(Tex.x), ddy(Tex.y));
+    float2 Time = float2(_Time, 0.0);
+
+    // Random numbers
+    Random.x = RandUV(Tex.xy + Time.xy);
+    Random.y = RandUV(Tex.xy + Time.yx);
+    Random.z = RandUV(Tex.yx - Time.xx);
+
+    // Normalized screen space -> Pixel coordinates
+    MV = DecodeVectors(MV * _Scale, TexSize);
+
+    // Small random displacement (diffusion)
+    MV += (Random.xy - 0.5)  * _Diffusion;
+
+    // Pixel perfect snapping
+    return round(MV);
 }
 
 float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
 {
     float Quality = 1.0 - _Entropy;
-    float2 Time = float2(_Time, 0.0);
+    float3 Random = 0.0;
 
-    // Random numbers
-    float3 Random;
-    Random.x = RandomNoise(Input.HPos.xy + Time.xy);
-    Random.y = RandomNoise(Input.HPos.xy + Time.yx);
-    Random.z = RandomNoise(Input.HPos.yx - Time.xx);
+    // Motion vectors
+    float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
 
-    // Motion vector
-    float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
-    MotionVectors = DecodeVectors(MotionVectors, Input.Tex0) * _Scale; // Normalized screen space -> Pixel coordinates
-    MotionVectors += (Random.xy - 0.5)  * _Diffusion; // Small random displacement (diffusion)
-    MotionVectors = round(MotionVectors); // Pixel perfect snapping
+    // Get motion blocks
+    MV = GetMVBlocks(MV, Input.Tex0, Random);
 
     // Accumulates the amount of motion.
-    float MotionVectorLength = length(MotionVectors);
+    float MVLength = length(MV);
 
-    // - Simple update
-    float UpdateAccumulation = min(MotionVectorLength, _BlockSize) * 0.005;
-    UpdateAccumulation = saturate(UpdateAccumulation + Random.z * lerp(-0.02, 0.02, Quality));
+    float4 OutputColor = 0.0;
 
-    // - Reset to random level
-    float ResetAccumulation = saturate(Random.z * 0.5 + Quality);
+    // Simple update
+    float UpdateAcc = min(MVLength, _BlockSize) * 0.005;
+    UpdateAcc += (Random.z * lerp(-0.02, 0.02, Quality));
 
-    float4 OutputColor = float4((float3)UpdateAccumulation, 1.0);
+    // Reset to random level
+    float ResetAcc = saturate(Random.z * 0.5 + Quality);
 
-    // - Reset if the amount of motion is larger than the block size.
-    if(MotionVectorLength > _BlockSize)
+    // Reset if the amount of motion is larger than the block size.
+    if(MVLength > _BlockSize)
     {
-        OutputColor = float4((float3)ResetAccumulation, 0.0);
+        OutputColor = float4((float3)ResetAcc, 0.0);
+    }
+    else
+    {
+        OutputColor = float4((float3)UpdateAcc, 1.0);
     }
 
     return OutputColor;
@@ -229,49 +247,50 @@ float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    const float2 DisplacementTexel = 1.0 / ScreenSize;
+    float2 TexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
+    const float2 DisplacementTexel = BUFFER_SIZE_0;
     const float Quality = 1.0 - _Entropy;
+    float3 Random = 0.0;
 
-    // Random numbers
-    float2 Time = float2(_Time, 0.0);
-    float3 Random;
-    Random.x = RandomNoise(Input.HPos.xy + Time.xy);
-    Random.y = RandomNoise(Input.HPos.xy + Time.yx);
-    Random.z = RandomNoise(Input.HPos.yx - Time.xx);
+    // Motion vectors
+    float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
 
-    float2 MotionVectors = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy * _Scale;
-    float4 Source = tex2D(SampleColorTex, Input.Tex0); // Color from the original image
-    float Displacement = tex2D(SampleAccumTex, Input.Tex0).r; // Displacement vector
-    float4 Working = tex2D(SampleFeedbackTex, Input.Tex0 + MotionVectors);
+    // Get motion blocks
+    MV = GetMVBlocks(MV, Input.Tex0, Random);
 
-    MotionVectors = DecodeVectors(MotionVectors, Input.Tex0); // Normalized screen space -> Pixel coordinates
-    MotionVectors += (Random.xy - 0.5) * _Diffusion; // Small random displacement (diffusion)
-    MotionVectors = round(MotionVectors); // Pixel perfect snapping
-    MotionVectors = EncodeVectors(MotionVectors, Input.Tex0); // Pixel coordinates -> Normalized screen space
+    // Get random motion
+    float RandomMotion = RandUV(Input.Tex0 + length(MV));
+
+    // Pixel coordinates -> Normalized screen space
+    MV = EncodeVectors(MV, TexSize);
+
+    // Color from the original image
+    float4 Source = tex2D(SampleColorTex, Input.Tex0);
+
+    // Displacement vector
+    float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
+    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 + MV);
 
     // Generate some pseudo random numbers.
-    float RandomMotion = RandomNoise(Input.Tex0 + length(MotionVectors));
-    float4 RandomNumbers = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
+    float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
 
     // Generate noise patterns that look like DCT bases.
-    float2 Frequency = Input.Tex0 * ((RandomNumbers.x * 80.0 / _Contrast) * DisplacementTexel);
+    float2 Frequency = (Input.Tex0 * DisplacementTexel) * (Rand.x * 80.0 / _Contrast);
 
-    // - Basis wave (vertical or horizontal)
-    float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < RandomNumbers.y));
+    // Basis wave (vertical or horizontal)
+    float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < Rand.y));
 
-    // - Random amplitude (the high freq, the less amp)
-    DCT *= RandomNumbers.z * (1.0 - RandomNumbers.x) * _Contrast;
+    // Random amplitude (the high freq, the less amp)
+    DCT *= Rand.z * (1.0 - Rand.x) * _Contrast;
 
     // Conditional weighting
-    // - DCT-ish noise: acc > 0.5
-    float ConditionalWeight = (Displacement > 0.5) * DCT;
+    // DCT-ish noise: acc > 0.5
+    float CW = (Disp > 0.5) * DCT;
+    // Original image: rand < (Q * 0.8 + 0.2) && acc == 1.0
+    CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
 
-    // - Original image: rand < (Q * 0.8 + 0.2) && acc == 1.0
-    ConditionalWeight = lerp(ConditionalWeight, 1.0, RandomNumbers.w < lerp(0.2, 1.0, Quality) * (Displacement > 1.0 - 1e-3));
-
-    // - If the conditions above are not met, choose work.
-    return lerp(Working, Source, ConditionalWeight);
+    // If the conditions above are not met, choose work.
+    return lerp(Work, Source, CW);
 }
 
 float4 PS_CopyColorTex(VS2PS_Quad Input) : SV_TARGET0
