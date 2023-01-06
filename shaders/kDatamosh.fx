@@ -39,9 +39,9 @@ uniform float _Time < source = "timer"; >;
 
 CREATE_OPTION(int, _BlockSize, "Datamosh", "Block Size", "slider", 32, 16)
 CREATE_OPTION(float, _Entropy, "Datamosh", "Entropy", "slider", 1.0, 0.5)
-CREATE_OPTION(float, _Contrast, "Datamosh", "Contrast of noise", "slider", 4.0, 2.0)
-CREATE_OPTION(float, _Scale, "Datamosh", "Velocity scale", "slider", 2.0, 1.0)
-CREATE_OPTION(float, _Diffusion, "Datamosh", "Amount of random displacement", "slider", 4.0, 2.0)
+CREATE_OPTION(float, _Contrast, "Datamosh", "Contrast of noise", "slider", 4.0, 1.0)
+CREATE_OPTION(float, _Scale, "Datamosh", "Velocity scale", "slider", 2.0, 0.8)
+CREATE_OPTION(float, _Diffusion, "Datamosh", "Amount of random displacement", "slider", 4.0, 0.4)
 
 CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 6.0, 2.0)
 CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.5)
