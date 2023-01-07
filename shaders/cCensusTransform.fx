@@ -29,31 +29,36 @@ VS2PS_Census VS_Census(APP2VS Input)
     return Output;
 }
 
+float GetGreyScale(float4 Color)
+{
+    return max(max(Color.r, Color.g), Color.b);
+}
+
 float4 PS_Census(VS2PS_Census Input) : SV_TARGET0
 {
     float4 OutputColor0 = 0.0;
-
     const int Neighbors = 8;
-    float4 SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = tex2D(SampleColorTex, Input.Tex0.xy);
-    SampleNeighbor[1] = tex2D(SampleColorTex, Input.Tex1.xy);
-    SampleNeighbor[2] = tex2D(SampleColorTex, Input.Tex2.xy);
-    SampleNeighbor[3] = tex2D(SampleColorTex, Input.Tex0.xz);
-    SampleNeighbor[4] = tex2D(SampleColorTex, Input.Tex2.xz);
-    SampleNeighbor[5] = tex2D(SampleColorTex, Input.Tex0.xw);
-    SampleNeighbor[6] = tex2D(SampleColorTex, Input.Tex1.xw);
-    SampleNeighbor[7] = tex2D(SampleColorTex, Input.Tex2.xw);
-    float4 CenterSample = tex2D(SampleColorTex, Input.Tex1.xz);
+    float SampleNeighbor[Neighbors];
+
+    float CenterSample = GetGreyScale(tex2D(SampleColorTex, Input.Tex1.xz));
+    SampleNeighbor[0] = GetGreyScale(tex2D(SampleColorTex, Input.Tex0.xy));
+    SampleNeighbor[1] = GetGreyScale(tex2D(SampleColorTex, Input.Tex1.xy));
+    SampleNeighbor[2] = GetGreyScale(tex2D(SampleColorTex, Input.Tex2.xy));
+    SampleNeighbor[3] = GetGreyScale(tex2D(SampleColorTex, Input.Tex0.xz));
+    SampleNeighbor[4] = GetGreyScale(tex2D(SampleColorTex, Input.Tex2.xz));
+    SampleNeighbor[5] = GetGreyScale(tex2D(SampleColorTex, Input.Tex0.xw));
+    SampleNeighbor[6] = GetGreyScale(tex2D(SampleColorTex, Input.Tex1.xw));
+    SampleNeighbor[7] = GetGreyScale(tex2D(SampleColorTex, Input.Tex2.xw));
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)
     {
-        float4 Comparison = step(SampleNeighbor[i], CenterSample);
+        float Comparison = step(SampleNeighbor[i], CenterSample);
         OutputColor0 += ldexp(Comparison, i);
     }
 
 	// Convert the 8-bit integer to float, and average the results from each channel
-    return saturate(dot(OutputColor0.rgb * (1.0 / (exp2(8) - 1)), 1.0 / 3.0));
+    return OutputColor0 * (1.0 / (exp2(8) - 1));
 }
 
 technique cCensusTransform
