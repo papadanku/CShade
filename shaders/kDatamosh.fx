@@ -37,11 +37,11 @@
 
 uniform float _Time < source = "timer"; >;
 
-CREATE_OPTION(int, _BlockSize, "Datamosh", "Block Size", "slider", 32, 16)
-CREATE_OPTION(float, _Entropy, "Datamosh", "Entropy", "slider", 1.0, 0.5)
-CREATE_OPTION(float, _Contrast, "Datamosh", "Contrast of noise", "slider", 4.0, 1.0)
-CREATE_OPTION(float, _Scale, "Datamosh", "Velocity scale", "slider", 2.0, 0.8)
-CREATE_OPTION(float, _Diffusion, "Datamosh", "Amount of random displacement", "slider", 4.0, 0.4)
+CREATE_OPTION(int, _BlockSize, "Datamosh", "Block Size", "slider", 32, 4)
+CREATE_OPTION(float, _Entropy, "Datamosh", "Entropy", "slider", 1.0, 0.1)
+CREATE_OPTION(float, _Contrast, "Datamosh", "Contrast of noise", "slider", 4.0, 0.1)
+CREATE_OPTION(float, _Scale, "Datamosh", "Velocity scale", "slider", 2.0, 0.5)
+CREATE_OPTION(float, _Diffusion, "Datamosh", "Amount of random displacement", "slider", 4.0, 2.0)
 
 CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 6.0, 2.0)
 CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.5)
@@ -233,6 +233,7 @@ float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
     float ResetAcc = saturate(Random.z * 0.5 + Quality);
 
     // Reset if the amount of motion is larger than the block size.
+    [branch]
     if(MVLength > _BlockSize)
     {
         OutputColor = float4((float3)ResetAcc, 0.0);
