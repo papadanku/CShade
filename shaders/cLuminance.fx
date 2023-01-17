@@ -1,5 +1,5 @@
 
-#include "cGraphics.fxh"
+#include "shared/cGraphics.fxh"
 
 uniform int _Select <
     ui_type = "combo";

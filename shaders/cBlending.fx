@@ -1,6 +1,6 @@
 
-#include "cMacros.fxh"
-#include "cGraphics.fxh"
+#include "shared/cMacros.fxh"
+#include "shared/cGraphics.fxh"
 
 uniform int _Blend <
     ui_label = "Blend Mode";

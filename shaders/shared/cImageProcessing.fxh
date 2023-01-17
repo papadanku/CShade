@@ -2,7 +2,7 @@
 #if !defined(CIMAGEPROCESSING_FXH)
     #define CIMAGEPROCESSING_FXH
 
-    #include "cGraphics.fxh"
+    #include "shared/cGraphics.fxh"
 
     // Linear Gaussian blur based on https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
 

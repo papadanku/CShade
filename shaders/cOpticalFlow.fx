@@ -1,8 +1,8 @@
 
-#include "cMacros.fxh"
-#include "cGraphics.fxh"
-#include "cImageProcessing.fxh"
-#include "cVideoProcessing.fxh"
+#include "shared/cMacros.fxh"
+#include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
+#include "shared/cVideoProcessing.fxh"
 
 /*
     [Shader parameters]
@@ -72,6 +72,7 @@ float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     // Return maximum chroma
     return float4(NewChroma.xy, 0.0, 1.0);
 }
+
 // Prefiler buffer
 
 float4 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0

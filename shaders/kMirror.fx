@@ -22,7 +22,7 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "cGraphics.fxh"
+#include "shared/cGraphics.fxh"
 
 uniform float _Divisor <
     ui_type = "drag";

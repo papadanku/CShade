@@ -1,8 +1,8 @@
 
-#include "cMacros.fxh"
-#include "cGraphics.fxh"
-#include "cImageProcessing.fxh"
-#include "cVideoProcessing.fxh"
+#include "shared/cMacros.fxh"
+#include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
+#include "shared/cVideoProcessing.fxh"
 
 /*
     [Shader parameters]

@@ -1,6 +1,6 @@
 
-#include "cGraphics.fxh"
-#include "cImageProcessing.fxh"
+#include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
 
 uniform float _Radius <
     ui_label = "Convolution radius";

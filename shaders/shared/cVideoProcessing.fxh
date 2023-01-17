@@ -2,8 +2,8 @@
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
 
-    #include "cMacros.fxh"
-    #include "cGraphics.fxh"
+    #include "shared/cMacros.fxh"
+    #include "shared/cGraphics.fxh"
 
     // Lucas-Kanade optical flow with bilinear fetches
 
@@ -168,9 +168,6 @@
 
         // Create -IxIy (A12) for A^-1 and its determinant
         A.z = -A.z;
-
-        // Make determinant non-zero
-        A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
 
         // Calculate A^-1 determinant
         Determinant = (A.x * A.y) - (A.z * A.z);

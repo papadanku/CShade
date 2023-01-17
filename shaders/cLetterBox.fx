@@ -1,5 +1,5 @@
 
-#include "cGraphics.fxh"
+#include "shared/cGraphics.fxh"
 
 uniform float2 _Scale <
     ui_min = 0.0;
