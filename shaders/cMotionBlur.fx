@@ -70,12 +70,7 @@ float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     float3 Chroma = saturate(Color.rgb / SumRGB);
     Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
 
-    // Calculate maximum normalized RGB
-    float MaxChroma = max(max(Chroma.r, Chroma.g), Chroma.b);
-    float3 NewChroma = (MaxChroma != 0.0) ? Chroma / MaxChroma : 1.0;
-
-    // Return maximum chroma
-    return float4(NewChroma.xy, 0.0, 1.0);
+    return float4(Chroma.xy, 0.0, 1.0);
 }
 
 // Prefiler buffer
