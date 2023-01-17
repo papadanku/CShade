@@ -44,8 +44,8 @@ namespace SumAbsoluteDifferences
 
     float4 PS_SAD(VS2PS_SAD Input) : SV_TARGET0
     {
-    	float4 OutputColor0 = 0.0;
- 
+        float4 OutputColor0 = 0.0;
+
         float2 SamplePos[9] =
         {
             Input.Tex0.xy, Input.Tex1.xy, Input.Tex2.xy,
@@ -57,7 +57,8 @@ namespace SumAbsoluteDifferences
         {
             float I0 = tex2D(SamplePreviousTex, SamplePos[i]).r;
             float I1 = tex2D(SampleCurrentTex, SamplePos[i]).r;
-            OutputColor0 += abs(I1 - I0);
+            float IT = I1 - I0;
+            OutputColor0 += (abs(IT) * abs(IT));
         }
 
         return saturate(OutputColor0 / 9.0);
@@ -68,7 +69,7 @@ namespace SumAbsoluteDifferences
         return tex2D(SampleCurrentTex, Input.Tex0);
     }
 
-    technique cSumAbsoluteDifferences
+    technique cSumSquaredDifferences
     {
         pass
         {

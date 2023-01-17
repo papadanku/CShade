@@ -30,37 +30,31 @@
         float4 WarpedTex;
     };
 
-    void UnpackTex(in Texel Tex, in float4 Column, in float2 Vectors, out UnpackedTex Output[3])
+    // Unpacks and assembles a column of texture coordinates
+    void UnpackTex(in Texel Tex, in float4 ColumnOffsets, in float2 Vectors, out UnpackedTex Output[3])
     {
-        // Calculate column tex
-        float4 ColumnTex = Tex.MainTex.xyyy + (Column * abs(Tex.Size.xyyy));
-
-        // Calculate texture attributes of each packed column of tex
-        float4 WarpPackedTex = 0.0;
-        // Warp horizontal texture coordinates with horizontal motion vector
-        WarpPackedTex.x = ColumnTex.x + (Vectors.x * abs(Tex.Size.x));
-        // Warp vertical texture coordinates with vertical motion vector
-        WarpPackedTex.yzw = ColumnTex.yzw + (Vectors.yyy * abs(Tex.Size.yyy));
-
-        // Unpack and assemble the column's texture coordinates
-        // Outputs float4(ColumnTex, 0.0, LOD) in 1 MAD
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
+
+        // Calculate tex column in 1 MAD
+        float4 ColumnTex = Tex.MainTex.xyyy + (ColumnOffsets * abs(Tex.Size.xyyy));
         Output[0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
         Output[1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
         Output[2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
 
-        Output[0].WarpedTex = (WarpPackedTex.xyyy * TexMask) + Tex.LOD.xxxy;
-        Output[1].WarpedTex = (WarpPackedTex.xzzz * TexMask) + Tex.LOD.xxxy;
-        Output[2].WarpedTex = (WarpPackedTex.xwww * TexMask) + Tex.LOD.xxxy;
+        // Calculate warped tex column in 1 MAD
+        float4 WarpedColumnTex = ColumnTex + (Vectors.xyyy * abs(Tex.Size.xyyy));
+        Output[0].WarpedTex = (WarpedColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
+        Output[1].WarpedTex = (WarpedColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
+        Output[2].WarpedTex = (WarpedColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
     }
 
-    // [-1.0, 1.0] -> [DestSize.x, DestSize.y]
+    // [-1.0, 1.0] -> [Width, Height]
     float2 DecodeVectors(float2 Vectors, float2 ImageSize)
     {
         return Vectors / abs(ImageSize);
     }
 
-    // [DestSize.x, DestSize.y] -> [-1.0, 1.0]
+    // [Width, Height] -> [-1.0, 1.0]
     float2 EncodeVectors(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
@@ -121,7 +115,7 @@
             TexC[0], TexC[1], TexC[2],
         };
 
-        // Calculate sum of squared differences
+        // Calculate IT and Sum of Squared Differences
         for(int i = 0; i < WindowSize; i++)
         {
             float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
@@ -179,7 +173,7 @@
         A.xy = A.xy + FP16_SMALLEST_SUBNORMAL;
 
         // Calculate A^-1 determinant
-        Determinant = ((A.x * A.y) - (A.z * A.z));
+        Determinant = (A.x * A.y) - (A.z * A.z);
 
         // Solve A^-1
         A = A / Determinant;
