@@ -72,7 +72,7 @@
     {
         // Setup constants
         const int WindowSize = 9;
-        const float E = 1.0;
+        const float E = 3.0;
 
         // Initialize variables
         float3 A = 0.0;

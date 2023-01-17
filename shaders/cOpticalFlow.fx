@@ -58,14 +58,20 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 
 float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 OutputColor = 0.0;
     float4 Color = tex2D(SampleColorTex, Input.Tex0);
-    float SumRGB = dot(Color.rgb, 1.0);
-    float2 Chroma = saturate(Color.xy / SumRGB);
-    Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
-    return float4(Chroma, 0.0, 1.0);
-}
 
+    // Calculate normalized RGB
+    float SumRGB = dot(Color.rgb, 1.0);
+    float3 Chroma = saturate(Color.rgb / SumRGB);
+    Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
+
+    // Calculate maximum normalized RGB
+    float MaxChroma = max(max(Chroma.r, Chroma.g), Chroma.b);
+    float3 NewChroma = (MaxChroma != 0.0) ? Chroma / MaxChroma : 1.0;
+
+    // Return maximum chroma
+    return float4(NewChroma.xy, 0.0, 1.0);
+}
 // Prefiler buffer
 
 float4 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
