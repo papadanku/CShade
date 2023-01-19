@@ -152,7 +152,6 @@
         [flatten]
         if(Refine == true)
         {
-            // Calculate IT and Sum of Squared Differences
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
