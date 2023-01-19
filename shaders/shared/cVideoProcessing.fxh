@@ -17,6 +17,16 @@
         [-IxIy  Iy^2] [-IyIt]
     */
 
+    float2 GetEigenValue(float3 G)
+    {
+        float A = (G.x + G.y) * 0.5;
+        float C = sqrt((4.0 * pow(G.z, 2)) + pow(G.x - G.y, 2)) * 0.5;
+        float2 E = 0.0;
+        E[0] = (A + C);
+        E[1] = (A - C);
+        return E;
+    }
+
     struct Texel
     {
         float2 MainTex;
@@ -84,14 +94,13 @@
     {
         // Setup constants
         const int WindowSize = 9;
-        const float E = 3.0;
 
         // Initialize variables
         float3 A = 0.0;
-        float2 B = 0.0;
-        float2 R = 0.0;
-        float2 IT[WindowSize];
-        bool2 Refine = true;
+        float4 B = 0.0;
+        float2 E = 0.0;
+        float4 G[WindowSize];
+        bool Refine = false;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
 
@@ -114,56 +123,49 @@
         UnpackedTex Pixel[WindowSize];
         UnpackTex(TexInfo, Vectors, Pixel);
 
-        // Calculate IT and Sum of Squared Differences
+        [unroll]
         for(int i = 0; i < WindowSize; i++)
         {
-            float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
-            float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
-            IT[i] = I0 - I1;
-            R += (abs(IT[i]) * abs(IT[i]));
+            // A.x = A11; A.y = A22; A.z = A12/A22
+            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex);
+            A.xyz += (G[i].xzx * G[i].xzz);
+            A.xyz += (G[i].ywy * G[i].yww);
         }
 
-        // Calculate red channel of optical flow
-
-        if((CoarseLevel == false) && (R.r < E))
-        {
-            Refine.r = false;
-        }
-
-        [branch]
-        if(Refine.r)
-        {
-            [unroll]
-            for(int i = 0; i < WindowSize; i++)
-            {
-                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).xz;
-                // A.x = A11; A.y = A22; A.z = A12/A22
-                A.xyz += (G.xyx * G.xyy);
-                // B.x = B1; B.y = B2
-                B.xy += (G.xy * IT[i].rr);
-            }
-        }
+        E = GetEigenValue(A);
 
         // Calculate green channel of optical flow
 
-        if((CoarseLevel == false) && (R.g < E))
+        if(CoarseLevel == true)
         {
-            Refine.g = false;
+            Refine = true;
+        }
+        else if(min(E[0], E[1]) <= 0.001)
+        {
+            Refine = false;
+        }
+        else
+        {
+            Refine = true;
         }
 
-        [branch]
-        if(Refine.g)
+        [flatten]
+        if(Refine == true)
         {
+            // Calculate IT and Sum of Squared Differences
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
-                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).yw;
-                // A.x = A11; A.y = A22; A.z = A12/A22
-                A.xyz += (G.xyx * G.xyy);
+                float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
+                float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
+                float2 IT = I0 - I1;
+
                 // B.x = B1; B.y = B2
-                B.xy += (G.xy * IT[i].gg);
+                B += (G[i].xzyw * IT.rrgg);
             }
         }
+
+        B.xy = B.xy + B.zw;
 
         // Create -IxIy (A12) for A^-1 and its determinant
         A.z = -A.z;
