@@ -1,5 +1,5 @@
 
-# CrimsonFX
+# CShade
 
 Shaders for ReShade
 
