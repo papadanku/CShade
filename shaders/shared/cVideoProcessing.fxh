@@ -31,21 +31,33 @@
     };
 
     // Unpacks and assembles a column of texture coordinates
-    void UnpackTex(in Texel Tex, in float4 ColumnOffsets, in float2 Vectors, out UnpackedTex Output[3])
+    void UnpackTex(in Texel Tex, in float2 Vectors, out UnpackedTex Output[9])
     {
         const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
+        float4 TexOffsets[3];
+        TexOffsets[0] = float4(-1.0, 1.0, 0.0, -1.0);
+        TexOffsets[1] = float4(0.0, 1.0, 0.0, -1.0);
+        TexOffsets[2] = float4(1.0, 1.0, 0.0, -1.0);
 
-        // Calculate tex column in 1 MAD
-        float4 ColumnTex = Tex.MainTex.xyyy + (ColumnOffsets * abs(Tex.Size.xyyy));
-        Output[0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
-        Output[1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
-        Output[2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
+        // Calculate tex columns in 1 MAD
+        int Index = 0;
+        int TexIndex = 0;
 
-        // Calculate warped tex column in 1 MAD
-        float4 WarpedColumnTex = ColumnTex + (Vectors.xyyy * abs(Tex.Size.xyyy));
-        Output[0].WarpedTex = (WarpedColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
-        Output[1].WarpedTex = (WarpedColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
-        Output[2].WarpedTex = (WarpedColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
+        while(Index < 3)
+        {
+            float4 ColumnTex = Tex.MainTex.xyyy + (TexOffsets[Index] * abs(Tex.Size.xyyy));
+            Output[TexIndex + 0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
+            Output[TexIndex + 1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
+            Output[TexIndex + 2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
+
+            float4 WarpedColumnTex = ColumnTex + (Vectors.xyyy * abs(Tex.Size.xyyy));
+            Output[TexIndex + 0].WarpedTex = (WarpedColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
+            Output[TexIndex + 1].WarpedTex = (WarpedColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
+            Output[TexIndex + 2].WarpedTex = (WarpedColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
+
+            Index = Index + 1;
+            TexIndex = TexIndex + 3;
+        }
     }
 
     // [-1.0, 1.0] -> [Width, Height]
@@ -84,36 +96,23 @@
         float2 MVectors = 0.0;
 
         // Calculate main texel information (TexelSize, TexelLOD)
-        Texel Tex;
-        Tex.MainTex = MainTex;
-        float2 Ix = ddx(Tex.MainTex);
-        float2 Iy = ddy(Tex.MainTex);
+        Texel TexInfo;
+        TexInfo.MainTex = MainTex;
+        float2 Ix = ddx(TexInfo.MainTex);
+        float2 Iy = ddy(TexInfo.MainTex);
         float DPX = dot(Ix, Ix);
         float DPY = dot(Iy, Iy);
-        Tex.Size.x = Ix.x;
-        Tex.Size.y = Iy.y;
+        TexInfo.Size.x = Ix.x;
+        TexInfo.Size.y = Iy.y;
         // log2(x^n) = n*log2(x)
-        Tex.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
+        TexInfo.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
 
         // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, Tex.Size);
+        Vectors = DecodeVectors(Vectors, TexInfo.Size);
 
         // The spatial(S) and temporal(T) derivative neighbors to sample
-        UnpackedTex TexA[3];
-        UnpackTex(Tex, float4(-1.0, 1.0, 0.0, -1.0), Vectors, TexA);
-
-        UnpackedTex TexB[3];
-        UnpackTex(Tex, float4(0.0, 1.0, 0.0, -1.0), Vectors, TexB);
-
-        UnpackedTex TexC[3];
-        UnpackTex(Tex, float4(1.0, 1.0, 0.0, -1.0), Vectors, TexC);
-
-        UnpackedTex Pixel[WindowSize] =
-        {
-            TexA[0], TexA[1], TexA[2],
-            TexB[0], TexB[1], TexB[2],
-            TexC[0], TexC[1], TexC[2],
-        };
+        UnpackedTex Pixel[WindowSize];
+        UnpackTex(TexInfo, Vectors, Pixel);
 
         // Calculate IT and Sum of Squared Differences
         for(int i = 0; i < WindowSize; i++)
@@ -180,7 +179,7 @@
         MVectors = (Determinant != 0.0) ? MVectors : 0.0;
 
         // Propagate and encode vectors
-        MVectors = EncodeVectors(Vectors + MVectors, Tex.Size);
+        MVectors = EncodeVectors(Vectors + MVectors, TexInfo.Size);
         return MVectors;
     }
 #endif
