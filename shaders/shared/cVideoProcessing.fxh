@@ -89,7 +89,8 @@
         sampler2D SampleI0_G,
         sampler2D SampleI0,
         sampler2D SampleI1,
-        bool CoarseLevel
+        int Level,
+        bool Coarse
     )
     {
         // Setup constants
@@ -100,21 +101,16 @@
         float4 B = 0.0;
         float2 E = 0.0;
         float4 G[WindowSize];
-        bool Refine = false;
+        bool Refine = true;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
         TexInfo.MainTex = MainTex;
-        float2 Ix = ddx(TexInfo.MainTex);
-        float2 Iy = ddy(TexInfo.MainTex);
-        float DPX = dot(Ix, Ix);
-        float DPY = dot(Iy, Iy);
-        TexInfo.Size.x = Ix.x;
-        TexInfo.Size.y = Iy.y;
-        // log2(x^n) = n*log2(x)
-        TexInfo.LOD = float2(0.0, 0.5) * log2(max(DPX, DPY));
+        TexInfo.Size.x = ddx(MainTex.x);
+        TexInfo.Size.y = ddy(MainTex.y);
+        TexInfo.LOD = float2(0.0, float(Level));
 
         // Decode written vectors from coarser level
         Vectors = DecodeVectors(Vectors, TexInfo.Size);
@@ -134,22 +130,13 @@
 
         E = GetEigenValue(A);
 
-        // Calculate green channel of optical flow
-
-        if(CoarseLevel == true)
-        {
-            Refine = true;
-        }
-        else if(min(E[0], E[1]) <= 0.001)
+        // Calculate optical flow
+        if((Coarse == false) && (min(E[0], E[1]) <= 0.001))
         {
             Refine = false;
         }
-        else
-        {
-            Refine = true;
-        }
 
-        [flatten]
+        [branch]
         if(Refine == true)
         {
             [unroll]

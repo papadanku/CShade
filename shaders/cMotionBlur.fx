@@ -98,25 +98,25 @@ float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, true);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 3, true);
 }
 
 float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex5, Input.Tex0).xy;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, false);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 2, false);
 }
 
 float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, false);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 1, false);
 }
 
 float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
-    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, false), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 0, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
