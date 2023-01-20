@@ -98,9 +98,9 @@
 
         // Initialize variables
         float3 A = 0.0;
-        float4 B = 0.0;
+        float2 B = 0.0;
         float2 E = 0.0;
-        float4 G[WindowSize];
+        float2 G[WindowSize];
         bool Refine = true;
         float Determinant = 0.0;
         float2 MVectors = 0.0;
@@ -123,9 +123,8 @@
         for(int i = 0; i < WindowSize; i++)
         {
             // A.x = A11; A.y = A22; A.z = A12/A22
-            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex);
-            A.xyz += (G[i].xzx * G[i].xzz);
-            A.xyz += (G[i].ywy * G[i].yww);
+            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex).xy;
+            A.xyz += (G[i].xyx * G[i].xyy);
         }
 
         E = GetEigenValue(A);
@@ -142,16 +141,14 @@
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
-                float2 I0 = tex2Dlod(SampleI0, Pixel[i].Tex).rg;
-                float2 I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).rg;
-                float2 IT = I0 - I1;
+                float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
+                float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
+                float IT = I0 - I1;
 
                 // B.x = B1; B.y = B2
-                B += (G[i].xzyw * IT.rrgg);
+                B += (G[i] * IT);
             }
         }
-
-        B.xy = B.xy + B.zw;
 
         // Create -IxIy (A12) for A^-1 and its determinant
         A.z = -A.z;

@@ -126,11 +126,31 @@
         return Radius * SinCosTheta;
     }
 
-    // Chromaticity
+    // Color processing
 
     float2 NormalizeRGB(float3 Color)
     {
         return Color.xy / dot(Color, 1.0);
+    }
+
+    // 
+    // RGB to saturation value.
+    //
+    // Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
+    // Computer Vision and Image Understanding 68, no. 3 (1997): 346-362.
+    // http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
+    //
+    float SaturateRGB(float3 Color)
+    {
+        // Calculate min and max RGB
+        float MinColor = min(min(Color.r, Color.g), Color.b);
+        float MaxColor = max(max(Color.r, Color.g), Color.b);
+
+        // Calculate normalized RGB
+        float SatRGB = (MaxColor - MinColor) / MaxColor;
+        SatRGB = (SatRGB != 0.0) ? SatRGB : 1.0;
+
+        return SatRGB;
     }
 
     // Linear filtered Sobel filter
@@ -151,15 +171,15 @@
         return Output;
     }
 
-    float4 GetPixelSobel_Chroma(VS2PS_Sobel Input, sampler2D SampleSource)
+    float2 GetPixelSobel(VS2PS_Sobel Input, sampler2D SampleSource)
     {
-        float4 OutputColor0 = 0.0;
-        float2 A = tex2D(SampleSource, Input.Tex0.xw).xy * 4.0; // <-0.5, +0.5>
-        float2 B = tex2D(SampleSource, Input.Tex0.zw).xy * 4.0; // <+0.5, +0.5>
-        float2 C = tex2D(SampleSource, Input.Tex0.xy).xy * 4.0; // <-0.5, -0.5>
-        float2 D = tex2D(SampleSource, Input.Tex0.zy).xy * 4.0; // <+0.5, -0.5>
-        OutputColor0.xy = ((B + D) - (A + C)) / 4.0;
-        OutputColor0.zw = ((A + B) - (C + D)) / 4.0;
+        float2 OutputColor0 = 0.0;
+        float A = tex2D(SampleSource, Input.Tex0.xw).r * 4.0; // <-0.5, +0.5>
+        float B = tex2D(SampleSource, Input.Tex0.zw).r * 4.0; // <+0.5, +0.5>
+        float C = tex2D(SampleSource, Input.Tex0.xy).r * 4.0; // <-0.5, -0.5>
+        float D = tex2D(SampleSource, Input.Tex0.zy).r * 4.0; // <+0.5, -0.5>
+        OutputColor0.x = ((B + D) - (A + C)) / 4.0;
+        OutputColor0.y = ((A + B) - (C + D)) / 4.0;
         return OutputColor0;
     }
 #endif

@@ -11,10 +11,10 @@
 CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 0.0)
 CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.0)
 
-CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
+CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, R8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
 
-CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RGBA16F, 8)
+CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RG16F, 8)
 CREATE_SAMPLER(SampleTex2a, Tex2a, LINEAR, MIRROR)
 
 CREATE_TEXTURE(Tex2b, BUFFER_SIZE_2, RG16F, 8)
@@ -54,22 +54,18 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 
 // Pixel shaders
 
-// Normalize buffer
-
-float4 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
+float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(SampleColorTex, Input.Tex0);
+    float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
+    float MinColor = min(min(Color.r, Color.g), Color.b);
+    float MaxColor = max(max(Color.r, Color.g), Color.b);
 
     // Calculate normalized RGB
-    float SumRGB = dot(Color.rgb, 1.0);
-    float3 Chroma = saturate(Color.rgb / SumRGB);
-    Chroma = (SumRGB != 0.0) ? Chroma : 1.0 / 3.0;
+    float SatRGB = (MaxColor - MinColor) / MaxColor;
+    SatRGB = (SatRGB != 0.0) ? SatRGB : 1.0;
 
-    // Return maximum chroma
-    return float4(Chroma.xy, 0.0, 1.0);
+    return SatRGB;
 }
-
-// Prefiler buffer
 
 float4 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
@@ -83,9 +79,9 @@ float4 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 
 // Process spatial derivatives
 
-float4 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
+float2 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 {
-    return GetPixelSobel_Chroma(Input, SampleTex2c);
+    return GetPixelSobel(Input, SampleTex2c);
 }
 
 // Run Lucas-Kanade
@@ -152,7 +148,7 @@ float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 technique cOpticalFlow
 {
     // Normalize current frame
-    CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
+    CREATE_PASS(VS_Quad, PS_Saturation, Tex1)
 
     // Prefilter blur
     CREATE_PASS(VS_HBlur, PS_HBlur_Prefilter, Tex2a)
