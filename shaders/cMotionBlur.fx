@@ -62,14 +62,7 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
-    float MinColor = min(min(Color.r, Color.g), Color.b);
-    float MaxColor = max(max(Color.r, Color.g), Color.b);
-
-    // Calculate normalized RGB
-    float SatRGB = (MaxColor - MinColor) / MaxColor;
-    SatRGB = (SatRGB != 0.0) ? SatRGB : 1.0;
-
-    return SatRGB;
+    return SaturateRGB(Color);
 }
 
 float4 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0

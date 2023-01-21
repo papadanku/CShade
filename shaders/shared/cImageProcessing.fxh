@@ -148,7 +148,7 @@
 
         // Calculate normalized RGB
         float SatRGB = (MaxColor - MinColor) / MaxColor;
-        SatRGB = (SatRGB != 0.0) ? SatRGB : 1.0;
+        SatRGB = (SatRGB != 0.0) ? SatRGB : 0.0;
 
         return SatRGB;
     }
