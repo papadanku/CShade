@@ -116,14 +116,14 @@ float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
     return SaturateRGB(Color);
 }
 
-float4 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
-    return float4(GetPixelBlur(Input, SampleTex1).rg, 0.0, 1.0);
+    return GetPixelBlur(Input, SampleTex1).r;
 }
 
-float4 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
-    return float4(GetPixelBlur(Input, SampleTex2a).rg, 0.0, 1.0);
+    return GetPixelBlur(Input, SampleTex2a).r;
 }
 
 // Process spatial derivatives
