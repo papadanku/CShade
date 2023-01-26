@@ -10,11 +10,11 @@
     /*
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
         ---------------------------------------------------------
-        [A11 A12]^-1 [-B1] -> [ A11 -A12] [-B1]
-        [A21 A22]^-1 [-B2] -> [-A21  A22] [-B2]
+        [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
+        [A21 A22]^-1 [-B2] -> [-A21/D  A22/D] [-B2]
         ---------------------------------------------------------
-        [ Ix^2 -IxIy] [-IxIt]
-        [-IxIy  Iy^2] [-IyIt]
+        [ Ix^2/D -IxIy/D] [-IxIt]
+        [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
     float2 GetEigenValue(float3 G)
@@ -103,7 +103,7 @@
         float2 G[WindowSize];
         bool Refine = true;
         float Determinant = 0.0;
-        float2 MVectors = 0.0;
+        float2 NewVectors = 0.0;
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
@@ -160,11 +160,18 @@
         A = A / Determinant;
 
         // Calculate Lucas-Kanade matrix
-        MVectors = mul(-B.xy, float2x2(A.yzzx));
-        MVectors = (Determinant != 0.0) ? MVectors : 0.0;
+        // [ Ix^2/D -IxIy/D] [-IxIt]
+        // [-IxIy/D  Iy^2/D] [-IyIt]
+
+        NewVectors.x = (A.x * -B.x) + (-A.z * -B.y);
+        NewVectors.y = (-A.z * -B.x) + (A.y * -B.y);
+
+        if(isinf(NewVectors.x) || isinf(NewVectors.y) || isnan(NewVectors.x) || isnan(NewVectors.y))
+        {
+            NewVectors = 0.0;
+        }
 
         // Propagate and encode vectors
-        MVectors = EncodeVectors(Vectors + MVectors, TexInfo.Size);
-        return MVectors;
+        return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
     }
 #endif
