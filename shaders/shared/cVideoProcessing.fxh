@@ -163,8 +163,7 @@
         // [ Ix^2/D -IxIy/D] [-IxIt]
         // [-IxIy/D  Iy^2/D] [-IyIt]
 
-        NewVectors.x = (A.x * -B.x) + (-A.z * -B.y);
-        NewVectors.y = (-A.z * -B.x) + (A.y * -B.y);
+        NewVectors = mul(-B.xy, float2x2(A.yzzx));
 
         if(isinf(NewVectors.x) || isinf(NewVectors.y) || isnan(NewVectors.x) || isnan(NewVectors.y))
         {
