@@ -17,14 +17,12 @@
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
-    float2 GetEigenValue(float3 G)
+    float GetEigenValue(float3 G)
     {
         float A = (G.x + G.y) * 0.5;
         float C = sqrt((4.0 * pow(G.z, 2)) + pow(G.x - G.y, 2)) * 0.5;
-        float2 E = 0.0;
-        E[0] = (A + C);
-        E[1] = (A - C);
-        return E;
+        float2 E = float2(A + C, A - C);
+        return min(E[0], E[1]);
     }
 
     struct Texel
@@ -99,9 +97,7 @@
         // Initialize variables
         float3 A = 0.0;
         float2 B = 0.0;
-        float2 E = 0.0;
         float2 G[WindowSize];
-        bool Refine = true;
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
 
@@ -127,16 +123,10 @@
             A.xyz += (G[i].xyx * G[i].xyy);
         }
 
-        E = GetEigenValue(A);
-
-        // Calculate optical flow
-        if((Coarse == false) && (min(E[0], E[1]) <= 0.001))
-        {
-            Refine = false;
-        }
+        bool NoRefine = (Coarse == false) && (GetEigenValue(A) <= 0.001);
 
         [branch]
-        if(Refine == true)
+        if(!NoRefine)
         {
             [unroll]
             for(int i = 0; i < WindowSize; i++)
@@ -162,13 +152,7 @@
         // Calculate Lucas-Kanade matrix
         // [ Ix^2/D -IxIy/D] [-IxIt]
         // [-IxIy/D  Iy^2/D] [-IyIt]
-
-        NewVectors = mul(-B.xy, float2x2(A.yzzx));
-
-        if(isinf(NewVectors.x) || isinf(NewVectors.y) || isnan(NewVectors.x) || isnan(NewVectors.y))
-        {
-            NewVectors = 0.0;
-        }
+        NewVectors = (Determinant != 0.0) ? mul(-B.xy, float2x2(A.yzzx)) : 0.0;
 
         // Propagate and encode vectors
         return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
