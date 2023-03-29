@@ -55,8 +55,6 @@
 
         while(Index < 3)
         {
-            float Mask = 0.0;
-
             float4 ColumnTex = Tex.MainTex.xyyy + TexOffsets[Index];
             Output[TexIndex + 0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
             Output[TexIndex + 1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
