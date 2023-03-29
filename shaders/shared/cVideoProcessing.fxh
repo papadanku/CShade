@@ -41,11 +41,13 @@
     // Unpacks and assembles a column of texture coordinates
     void UnpackTex(in Texel Tex, in float2 Vectors, out UnpackedTex Output[9])
     {
-        const float4 TexMask = float4(1.0, 1.0, 0.0, 0.0);
         float4 TexOffsets[3];
         TexOffsets[0] = float4(-1.0, 1.0, 0.0, -1.0);
         TexOffsets[1] = float4(0.0, 1.0, 0.0, -1.0);
         TexOffsets[2] = float4(1.0, 1.0, 0.0, -1.0);
+
+        // Pack normalization and masking into 1 operation
+        float4 TexMask = abs(Tex.Size.xyyy) * float4(1.0, 1.0, 0.0, 0.0);
 
         // Calculate tex columns in 1 MAD
         int Index = 0;
@@ -53,12 +55,14 @@
 
         while(Index < 3)
         {
-            float4 ColumnTex = Tex.MainTex.xyyy + (TexOffsets[Index] * abs(Tex.Size.xyyy));
+            float Mask = 0.0;
+
+            float4 ColumnTex = Tex.MainTex.xyyy + TexOffsets[Index];
             Output[TexIndex + 0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
             Output[TexIndex + 1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
             Output[TexIndex + 2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
 
-            float4 WarpedColumnTex = ColumnTex + (Vectors.xyyy * abs(Tex.Size.xyyy));
+            float4 WarpedColumnTex = ColumnTex + Vectors.xyyy;
             Output[TexIndex + 0].WarpedTex = (WarpedColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
             Output[TexIndex + 1].WarpedTex = (WarpedColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
             Output[TexIndex + 2].WarpedTex = (WarpedColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
@@ -103,9 +107,9 @@
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
-        TexInfo.MainTex = MainTex;
         TexInfo.Size.x = ddx(MainTex.x);
         TexInfo.Size.y = ddy(MainTex.y);
+        TexInfo.MainTex = MainTex * (1.0 / TexInfo.Size);
         TexInfo.LOD = float2(0.0, float(Level));
 
         // Decode written vectors from coarser level

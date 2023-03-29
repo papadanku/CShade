@@ -12,7 +12,7 @@ uniform float _FrameTime < source = "frametime"; > ;
 
 CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 4.5)
 CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.25)
-CREATE_OPTION(float, _Scale, "Main", "Blur scale", "slider", 1.0, 0.15)
+CREATE_OPTION(float, _Scale, "Main", "Blur scale", "slider", 1.0, 0.75)
 CREATE_OPTION(bool, _FrameRateScaling, "Other", "Enable frame-rate scaling", "radio", 1.0, false)
 CREATE_OPTION(float, _TargetFrameRate, "Other", "Target frame-rate", "drag", 144.0, 60.0)
 
@@ -122,11 +122,16 @@ float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
     return float4(GetPixelBlur(Input, SampleTex2a).rg, 0.0, 1.0);
 }
 
+float Noise(float2 Pos)
+{
+    return frac(52.9829189 * frac(dot(Pos, float2(0.06711056, 0.00583715))));
+}
+
 float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
-    const int Samples = 4;
-    float Noise = frac(52.9829189 * frac(dot(Input.HPos.xy, float2(0.06711056, 0.00583715))));
+    const int Samples = 8;
+
 
     float FrameRate = 1e+3 / _FrameTime;
     float FrameTimeRatio = _TargetFrameRate / FrameRate;
@@ -141,9 +146,9 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
 
     for (int k = 0; k < Samples; ++k)
     {
-        float2 Offset = ScaledVelocity * (Noise + k);
-        OutputColor += tex2D(SampleColorTex, (ScreenCoord + Offset));
-        OutputColor += tex2D(SampleColorTex, (ScreenCoord - Offset));
+        float2 Offset = ScaledVelocity * ((Noise(Input.HPos.xy + k) * 2.0) - 1.0);
+        OutputColor += tex2D(SampleColorTex, ScreenCoord + Offset);
+        OutputColor += tex2D(SampleColorTex, ScreenCoord - Offset);
     }
 
     return OutputColor / (Samples * 2.0);
