@@ -109,7 +109,7 @@
         Texel TexInfo;
         TexInfo.Size.x = ddx(MainTex.x);
         TexInfo.Size.y = ddy(MainTex.y);
-        TexInfo.MainTex = MainTex * (1.0 / TexInfo.Size);
+        TexInfo.MainTex = MainTex * (1.0 / abs(TexInfo.Size));
         TexInfo.LOD = float2(0.0, float(Level));
 
         // Decode written vectors from coarser level
