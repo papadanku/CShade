@@ -45,6 +45,8 @@
 
     #if BUFFER_COLOR_BIT_DEPTH == 8
         #define IS_SRGB TRUE
+    #else
+        #define IS_SRGB FALSE
     #endif
 
     #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESS) \
