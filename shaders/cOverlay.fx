@@ -28,7 +28,7 @@ uniform float2 _MaskScale <
 
 sampler2D SampleColorTex_Overlay
 {
-    Texture = ColorTex;
+    Texture = CShade_ColorTex;
     #if ENABLE_POINT_SAMPLING
         MagFilter = POINT;
         MinFilter = POINT;
@@ -81,7 +81,7 @@ float4 PS_Overlay(VS2PS Input) : SV_TARGET0
     return float4(Color.rgb, Crop);
 }
 
-technique cOverlay
+technique CShade_Overlay
 {
     pass
     {

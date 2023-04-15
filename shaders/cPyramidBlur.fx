@@ -185,7 +185,7 @@ namespace cPyramidBlur
             return GetPixelScale(Input, SAMPLER, _Downscale); \
         }
 
-    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleColorTex)
+    CREATE_PS_DOWNSCALE(PS_Downscale1, CShade_SampleColorTex)
     CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex1)
     CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex2)
     CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex3)
@@ -210,7 +210,7 @@ namespace cPyramidBlur
             SRGBWriteEnable = WRITE_SRGB; \
         }
 
-    technique cDualFilter
+    technique CShade_DualFilter
     {
         CREATE_PASS(VS_Downscale1, PS_Downscale1, Tex1)
         CREATE_PASS(VS_Downscale2, PS_Downscale2, Tex2)

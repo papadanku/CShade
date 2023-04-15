@@ -17,7 +17,7 @@ float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
 }
 
 // Use BlendOp to multiple the backbuffer with this quad's color
-technique cColorBlendOp
+technique CShade_ColorBlendOp
 {
     pass
     {

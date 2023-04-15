@@ -37,7 +37,7 @@ namespace SumAbsoluteDifferences
 
     float PS_Blit0(VS2PS_Quad Input) : SV_TARGET0
     {
-        float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
+        float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
         return max(max(Color.r, Color.g), Color.b);
     }
 
@@ -68,7 +68,7 @@ namespace SumAbsoluteDifferences
         return tex2D(SampleCurrentTex, Input.Tex0);
     }
 
-    technique cSumSquaredDifferences
+    technique CShade_SumSquaredDifferences
     {
         pass
         {

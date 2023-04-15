@@ -16,7 +16,7 @@ float4 PS_Letterbox(VS2PS_Quad Input) : SV_TARGET0
     return Shaper.xxxx * Shaper.yyyy;
 }
 
-technique cLetterBox
+technique CShade_LetterBox
 {
     pass
     {

@@ -111,7 +111,7 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 
 float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
+    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     return SaturateRGB(Color);
 }
 
@@ -257,7 +257,7 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
     MV = EncodeVectors(MV, TexSize);
 
     // Color from the original image
-    float4 Source = tex2D(SampleColorTex, Input.Tex0);
+    float4 Source = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     // Displacement vector
     float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
@@ -287,7 +287,7 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_CopyColorTex(VS2PS_Quad Input) : SV_TARGET0
 {
-    return tex2D(SampleColorTex, Input.Tex0);
+    return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

@@ -55,7 +55,7 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 
 float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
+    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     return SaturateRGB(Color);
 }
 
@@ -137,7 +137,7 @@ float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique cOpticalFlow
+technique CShade_OpticalFlow
 {
     // Normalize current frame
     CREATE_PASS(VS_Quad, PS_Saturation, Tex1)

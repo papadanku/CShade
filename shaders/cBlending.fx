@@ -22,13 +22,13 @@ CREATE_TEXTURE(SrcTex, BUFFER_SIZE_0, RGBA8, 1)
 
 // Inputs in cBlendBuffer
 CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, CLAMP)
-CREATE_SRGB_SAMPLER(SampleDestTex, ColorTex, LINEAR, CLAMP)
+CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, CLAMP)
 
 // Pixel shaders
 
 float4 PS_Copy(VS2PS_Quad Input) : SV_TARGET0
 {
-    return tex2D(SampleColorTex, Input.Tex0);
+    return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
@@ -66,7 +66,7 @@ float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
     return OutputColor;
 }
 
-technique cCopyBuffer
+technique CShade_CopyBuffer
 {
     pass
     {
@@ -78,7 +78,7 @@ technique cCopyBuffer
     }
 }
 
-technique cBlendBuffer
+technique CShade_BlendBuffer
 {
     pass
     {

@@ -41,7 +41,7 @@ float4 PS_FilmGrain(VS2PS_Quad Input) : SV_TARGET0
     return GaussianWeights(Noise, _Variance) * _Intensity;
 }
 
-technique cFilmGrain
+technique CShade_FilmGrain
 {
     pass
     {

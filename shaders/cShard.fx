@@ -27,16 +27,16 @@ VS2PS_Shard VS_Shard(APP2VS Input)
 
 float4 PS_Shard(VS2PS_Shard Input) : SV_TARGET0
 {
-    float4 OriginalSample = tex2D(SampleColorTex, Input.Tex0.xy);
+    float4 OriginalSample = tex2D(CShade_SampleColorTex, Input.Tex0.xy);
     float4 BlurSample = 0.0;
-    BlurSample += tex2D(SampleColorTex, Input.Tex1.xw) * 0.25;
-    BlurSample += tex2D(SampleColorTex, Input.Tex1.zw) * 0.25;
-    BlurSample += tex2D(SampleColorTex, Input.Tex1.xy) * 0.25;
-    BlurSample += tex2D(SampleColorTex, Input.Tex1.zy) * 0.25;
+    BlurSample += tex2D(CShade_SampleColorTex, Input.Tex1.xw) * 0.25;
+    BlurSample += tex2D(CShade_SampleColorTex, Input.Tex1.zw) * 0.25;
+    BlurSample += tex2D(CShade_SampleColorTex, Input.Tex1.xy) * 0.25;
+    BlurSample += tex2D(CShade_SampleColorTex, Input.Tex1.zy) * 0.25;
     return OriginalSample + (OriginalSample - BlurSample) * _Weight;
 }
 
-technique cShard
+technique CShade_Shard
 {
     pass
     {

@@ -60,7 +60,7 @@ VS2PS_Sobel VS_Sobel(APP2VS Input)
 
 float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = tex2D(SampleColorTex, Input.Tex0).rgb;
+    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     return SaturateRGB(Color);
 }
 
@@ -146,8 +146,8 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
     for (int k = 0; k < Samples; ++k)
     {
         float2 Offset = ScaledVelocity * ((Noise(Input.HPos.xy + k) * 2.0) - 1.0);
-        OutputColor += tex2D(SampleColorTex, ScreenCoord + Offset);
-        OutputColor += tex2D(SampleColorTex, ScreenCoord - Offset);
+        OutputColor += tex2D(CShade_SampleColorTex, ScreenCoord + Offset);
+        OutputColor += tex2D(CShade_SampleColorTex, ScreenCoord - Offset);
     }
 
     return OutputColor / (Samples * 2.0);
@@ -161,7 +161,7 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique cMotionBlur
+technique CShade_MotionBlur
 {
     // Normalize current frame
     CREATE_PASS(VS_Quad, PS_Saturation, Tex1)
