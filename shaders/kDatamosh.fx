@@ -298,7 +298,7 @@ float4 PS_CopyColorTex(VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique kDatamosh
+technique CShade_KinoDatamosh
 {
     // Normalize current frame
     CREATE_PASS(VS_Quad, PS_Saturation, Tex1)

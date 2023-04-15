@@ -61,7 +61,7 @@ float4 PS_Mirror(VS2PS_Quad Input) : SV_TARGET0
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-technique kMirror
+technique CShade_KinoMirror
 {
     pass
     {

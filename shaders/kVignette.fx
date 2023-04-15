@@ -38,7 +38,7 @@ float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
     return rcp(Radius_2_1 * Radius_2_1);
 }
 
-technique kVignette
+technique CShade_KinoVignette
 {
     pass
     {

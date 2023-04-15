@@ -240,7 +240,7 @@ float3 PS_Grad(VS2PS_Grad Input) : SV_TARGET0
     return lerp(BackgoundColor, _FrontColor.rgb, I.a * _FrontColor.a);
 }
 
-technique kContour
+technique CShade_KinoContour
 {
     pass
     {
