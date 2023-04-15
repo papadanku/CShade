@@ -124,15 +124,6 @@
             A.xyz += (G[i].xyx * G[i].xyy);
         }
 
-        // Create -IxIy (A12) for A^-1 and its determinant
-        A.z = -A.z;
-
-        // Calculate A^-1 determinant
-        Determinant = (A.x * A.y) - (A.z * A.z);
-
-        // Solve A^-1
-        A = A / Determinant;
-
         bool NoRefine = (Coarse == false) && (GetEigenValue(A) <= 0.001);
 
         [branch]
@@ -150,6 +141,15 @@
             }
         }
 
+        // Create -IxIy (A12) for A^-1 and its determinant
+        A.z = -A.z;
+
+        // Calculate A^-1 determinant
+        Determinant = (A.x * A.y) - (A.z * A.z);
+
+        // Solve A^-1
+        A = A / Determinant;
+ 
         // Calculate Lucas-Kanade matrix
         // [ Ix^2/D -IxIy/D] [-IxIt]
         // [-IxIy/D  Iy^2/D] [-IyIt]
