@@ -1,7 +1,6 @@
 
 namespace cBloom
 {
-    #include "shared/cMacros.fxh"
     #include "shared/cGraphics.fxh"
 
     /*

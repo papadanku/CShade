@@ -1,7 +1,6 @@
 
 namespace SumAbsoluteDifferences
 {
-    #include "shared/cMacros.fxh"
     #include "shared/cGraphics.fxh"
 
     CREATE_TEXTURE(CurrentTex, BUFFER_SIZE_0, R8, 1)

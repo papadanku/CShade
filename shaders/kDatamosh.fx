@@ -26,7 +26,6 @@
     For more information, please refer to <http://unlicense.org/>
 */
 
-#include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
@@ -360,9 +359,7 @@ technique kDatamosh
 
     pass
     {
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
         PixelShader = PS_Datamosh;
@@ -371,9 +368,7 @@ technique kDatamosh
     // Copy frame for feedback
     pass
     {
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
         PixelShader = PS_CopyColorTex;

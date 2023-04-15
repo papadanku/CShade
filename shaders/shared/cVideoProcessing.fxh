@@ -2,8 +2,7 @@
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
 
-    #include "shared/cMacros.fxh"
-    #include "shared/cGraphics.fxh"
+    #include "cGraphics.fxh"
 
     // Lucas-Kanade optical flow with bilinear fetches
 

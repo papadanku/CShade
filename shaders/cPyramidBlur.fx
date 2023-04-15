@@ -1,6 +1,5 @@
 namespace cPyramidBlur
 {
-    #include "shared/cMacros.fxh"
     #include "shared/cGraphics.fxh"
 
     /*
@@ -201,10 +200,6 @@ namespace cPyramidBlur
     CREATE_PS_UPSCALE(PS_Upscale2, SampleTex3)
     CREATE_PS_UPSCALE(PS_Upscale1, SampleTex2)
     CREATE_PS_UPSCALE(PS_Upscale0, SampleTex1)
-
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        #define WRITE_SRGB TRUE
-    #endif
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
         pass \

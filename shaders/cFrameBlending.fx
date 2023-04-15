@@ -1,5 +1,4 @@
 
-#include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
 
 uniform float _BlendFactor <
@@ -36,9 +35,7 @@ technique cFrameBlending
         BlendOp = ADD;
         SrcBlend = INVSRCALPHA;
         DestBlend = SRCALPHA;
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
         PixelShader = PS_Blend;
@@ -47,9 +44,7 @@ technique cFrameBlending
 
     pass
     {
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
         PixelShader = PS_Display;

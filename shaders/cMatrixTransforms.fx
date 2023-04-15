@@ -70,9 +70,7 @@ technique cMatrixTransforms
 {
     pass
     {
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBWriteEnable = TRUE;
-        #endif
+        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Matrix;
         PixelShader = PS_Matrix;
