@@ -7,9 +7,9 @@ Shaders for ReShade
 
 Practice | Elements
 -------- | --------
-**ALLCAPS** | system semantics, state parameters
-**ALL_CAPS** | preprocessor macros, preprocessor arguments
-**_SnakeCase** | uniform variables
-**SnakeCase** | local and global variables, method arguments
-**Snake_Case** | data subcatagory
+**ALLCAPS** | System semantics • State parameters
+**ALL_CAPS** | Preprocessor (macros & arguments)
+**_SnakeCase** | Variables (uniform)
+**SnakeCase** | Variables (local & global) • Method arguments
+**Snake_Case** | Data subcatagory
 **PREFIX_Data** | structs, `PixelShader`, and `VertexShader`
