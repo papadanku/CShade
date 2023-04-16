@@ -102,7 +102,7 @@
         float IT[WindowSize];
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
-        const float T = 0.5;
+        const float T = sqrt(0.5);
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
