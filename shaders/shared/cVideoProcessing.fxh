@@ -16,14 +16,6 @@
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
-    float GetEigenValue(float3 G)
-    {
-        float A = (G.x + G.y) * 0.5;
-        float C = sqrt((4.0 * pow(G.z, 2)) + pow(G.x - G.y, 2)) * 0.5;
-        float2 E = float2(A + C, A - C);
-        return min(E[0], E[1]);
-    }
-
     struct Texel
     {
         float2 MainTex;
