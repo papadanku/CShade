@@ -98,9 +98,11 @@
         // Initialize variables
         float3 A = 0.0;
         float2 B = 0.0;
-        float2 G[WindowSize];
+        float R = 0.0;
+        float IT[WindowSize];
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
+        const float T = 0.5;
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
@@ -119,12 +121,13 @@
         [unroll]
         for(int i = 0; i < WindowSize; i++)
         {
-            // A.x = A11; A.y = A22; A.z = A12/A22
-            G[i] = tex2Dlod(SampleI0_G, Pixel[i].Tex).xy;
-            A.xyz += (G[i].xyx * G[i].xyy);
+            float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
+            float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
+            IT[i] = I0 - I1;
+            R += abs(IT[i]) * abs(IT[i]);
         }
 
-        bool NoRefine = (Coarse == false) && (GetEigenValue(A) <= 0.001);
+        bool NoRefine = (Coarse == false) && (sqrt(R / 9.0) <= T);
 
         [branch]
         if(!NoRefine)
@@ -132,12 +135,12 @@
             [unroll]
             for(int i = 0; i < WindowSize; i++)
             {
-                float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
-                float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
-                float IT = I0 - I1;
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).xy;
+                A.xyz += (G.xyx * G.xyy);
 
                 // B.x = B1; B.y = B2
-                B += (G[i] * IT);
+                B += (G * IT[i]);
             }
         }
 
