@@ -116,7 +116,7 @@
             float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
             float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
             IT[i] = I0 - I1;
-            R += abs(IT[i]) * abs(IT[i]);
+            R += (IT[i] * IT[i]);
         }
 
         bool NoRefine = (Coarse == false) && (sqrt(R / 9.0) <= T);

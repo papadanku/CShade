@@ -258,7 +258,7 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
 
     // Generate noise patterns that look like DCT bases.
-    float2 Frequency = (Input.Tex0 * DisplacementTexel) * (Rand.x * 80.0 / _Contrast);
+    float2 Frequency = Input.HPos.xy * (Rand.x * 80.0 / _Contrast);
 
     // Basis wave (vertical or horizontal)
     float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < Rand.y));
