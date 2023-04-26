@@ -71,7 +71,7 @@ namespace CrossCorrelation
             NCC += (Images_D.xyx * Images_D.xyy);
         }
         float D = sqrt(NCC[0] * NCC[1]);
-        float Output = (D != 0.0) ? NCC[2] / D : 0.0;
+        float Output = (D != 0.0) ? NCC[2] / D : 1.0;
         return Output * 0.5 + 0.5;
     }
 
