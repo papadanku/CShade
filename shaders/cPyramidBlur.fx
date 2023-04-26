@@ -204,10 +204,10 @@ namespace cPyramidBlur
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
         pass \
         { \
+            SRGBWriteEnable = WRITE_SRGB; \
             VertexShader = VERTEX_SHADER; \
             PixelShader = PIXEL_SHADER; \
             RenderTarget0 = RENDER_TARGET; \
-            SRGBWriteEnable = WRITE_SRGB; \
         }
 
     technique CShade_DualFilter
@@ -223,9 +223,10 @@ namespace cPyramidBlur
 
         pass
         {
+            SRGBWriteEnable = WRITE_SRGB;
+
             VertexShader = VS_Upscale0;
             PixelShader = PS_Upscale0;
-            SRGBWriteEnable = WRITE_SRGB;
         }
     }
 }

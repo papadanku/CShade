@@ -40,9 +40,7 @@ sampler2D SampleColorTex_Overlay
     #endif
     AddressU = MIRROR;
     AddressV = MIRROR;
-    #if BUFFER_COLOR_BIT_DEPTH == 8
-        SRGBTexture = TRUE;
-    #endif
+    SRGBTexture = READ_SRGB;
 };
 
 struct VS2PS

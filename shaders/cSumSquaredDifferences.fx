@@ -38,7 +38,7 @@ namespace SumAbsoluteDifferences
     float PS_Blit0(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return max(max(Color.r, Color.g), Color.b);
+        return dot(Color, 1.0 / 3.0);
     }
 
     float4 PS_SAD(VS2PS_SAD Input) : SV_TARGET0
@@ -74,22 +74,23 @@ namespace SumAbsoluteDifferences
         {
             VertexShader = VS_Quad;
             PixelShader = PS_Blit0;
+
             RenderTarget0 = CurrentTex;
         }
 
         pass
         {
+            SRGBWriteEnable = WRITE_SRGB;
+
             VertexShader = VS_SAD;
             PixelShader = PS_SAD;
-            #if BUFFER_COLOR_BIT_DEPTH == 8
-                SRGBWriteEnable = TRUE;
-            #endif
         }
 
         pass
         {
             VertexShader = VS_Quad;
             PixelShader = PS_Blit1;
+
             RenderTarget0 = PreviousTex;
         }
     }

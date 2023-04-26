@@ -14,9 +14,7 @@
         MagFilter = LINEAR;
         MinFilter = LINEAR;
         MipFilter = LINEAR;
-        #if BUFFER_COLOR_BIT_DEPTH == 8
-            SRGBTexture = TRUE;
-        #endif
+        SRGBTexture = READ_SRGB;
     };
 
     struct APP2VS
