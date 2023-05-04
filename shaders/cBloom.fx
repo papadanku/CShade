@@ -1,9 +1,8 @@
-#line 2 "cBloom.fx"
+#include "shared/cGraphics.fxh"
+#line 3 "cBloom.fx"
 
 namespace cBloom
 {
-    #include "shared/cGraphics.fxh"
-
     /*
         Construct options
     */

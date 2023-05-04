@@ -1,4 +1,7 @@
-#line 2 "kDatamosh.fx"
+#include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
+#include "shared/cVideoProcessing.fxh"
+#line 5 "kDatamosh.fx"
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -26,10 +29,6 @@
 
     For more information, please refer to <http://unlicense.org/>
 */
-
-#include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
-#include "shared/cVideoProcessing.fxh"
 
 /*
     [Shader parameters]

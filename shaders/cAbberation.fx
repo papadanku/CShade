@@ -1,6 +1,5 @@
-#line 2 "cAbberation.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cAbberation.fx"
 
 /*
     Construct options

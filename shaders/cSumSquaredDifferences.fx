@@ -1,9 +1,8 @@
-#line 2 "cSumAbsoluteDifferences.fx"
+#include "shared/cGraphics.fxh"
+#line 3 "cSumAbsoluteDifferences.fx"
 
 namespace SumAbsoluteDifferences
 {
-    #include "shared/cGraphics.fxh"
-
     CREATE_TEXTURE(CurrentTex, BUFFER_SIZE_0, R8, 1)
     CREATE_SAMPLER(SampleCurrentTex, CurrentTex, LINEAR, CLAMP)
 

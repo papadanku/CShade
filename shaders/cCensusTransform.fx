@@ -1,6 +1,5 @@
-#line 2 "cCensusTransform.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cCensusTransform.fx"
 
 struct VS2PS_Census
 {

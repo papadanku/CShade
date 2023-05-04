@@ -1,6 +1,5 @@
-#line 2 "cThreshold.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cThreshold.fx"
 
 uniform float _Threshold <
     ui_type = "drag";

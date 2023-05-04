@@ -1,10 +1,9 @@
-#line 2 "cDiscBlur.fx"
+#include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
+#line 4 "cDiscBlur.fx"
 
 namespace DiscBlur
 {
-    #include "shared/cGraphics.fxh"
-    #include "shared/cImageProcessing.fxh"
-
     /*
         Construct options
     */

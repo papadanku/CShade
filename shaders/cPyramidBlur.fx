@@ -1,9 +1,8 @@
-#line 2 "cPyramidBlur.fx"
+#include "shared/cGraphics.fxh"
+#line 3 "cPyramidBlur.fx"
 
 namespace cPyramidBlur
 {
-    #include "shared/cGraphics.fxh"
-
     /*
         Construct options
     */

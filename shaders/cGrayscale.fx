@@ -1,6 +1,5 @@
-#line 2 "cGrayScale.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cGrayScale.fx"
 
 uniform int _Select <
     ui_type = "combo";

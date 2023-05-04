@@ -1,6 +1,5 @@
-#line 2 "cLetterBox.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cLetterBox.fx"
 
 uniform float2 _Scale <
     ui_min = 0.0;

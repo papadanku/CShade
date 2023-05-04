@@ -1,8 +1,7 @@
-#line 2 "cOpticalFlow.fx"
-
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
+#line 5 "cOpticalFlow.fx"
 
 /*
     [Shader parameters]

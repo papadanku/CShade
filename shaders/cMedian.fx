@@ -1,6 +1,5 @@
-#line 2 "cMedian.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cMedian.fx"
 
 struct VS2PS_Median
 {

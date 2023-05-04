@@ -1,6 +1,5 @@
-#line 2 "cColorBlendOp.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cColorBlendOp.fx"
 
 /*
     Construct options

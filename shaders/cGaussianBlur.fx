@@ -1,7 +1,6 @@
-#line 2 "cGaussianBlur.fx"
-
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
+#line 4 "cGaussianBlur.fx"
 
 uniform float _Sigma <
     ui_type = "drag";

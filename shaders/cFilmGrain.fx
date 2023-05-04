@@ -1,6 +1,5 @@
-#line 2 "cFilmGrain.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cFilmGrain.fx"
 
 /*
     Construct options

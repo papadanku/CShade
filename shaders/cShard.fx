@@ -1,6 +1,5 @@
-#line 2 "cShard.fx"
-
 #include "shared/cGraphics.fxh"
+#line 3 "cShard.fx"
 
 uniform float _Weight <
     ui_type = "drag";

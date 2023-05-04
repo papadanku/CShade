@@ -1,4 +1,5 @@
-#line 2 "kVignette.fx"
+#include "shared/cGraphics.fxh"
+#line 3 "kVignette.fx"
 
 /*
     MIT License
@@ -22,8 +23,6 @@
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
-#include "shared/cGraphics.fxh"
 
 uniform float _Falloff <
     ui_label = "Falloff";
