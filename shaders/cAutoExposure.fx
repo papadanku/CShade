@@ -1,3 +1,4 @@
+#line 2 "cAutoExposure.fx"
 
 #include "shared/cGraphics.fxh"
 

@@ -1,5 +1,6 @@
+#line 2 "cDiscBlur.fx"
 
-namespace cDiscBlur
+namespace DiscBlur
 {
     #include "shared/cGraphics.fxh"
     #include "shared/cImageProcessing.fxh"

@@ -1,3 +1,4 @@
+#line 2 "cImageProcessing.fxh"
 
 #if !defined(CIMAGEPROCESSING_FXH)
     #define CIMAGEPROCESSING_FXH

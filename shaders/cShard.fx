@@ -1,3 +1,4 @@
+#line 2 "cShard.fx"
 
 #include "shared/cGraphics.fxh"
 

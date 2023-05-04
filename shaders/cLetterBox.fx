@@ -1,3 +1,4 @@
+#line 2 "cLetterBox.fx"
 
 #include "shared/cGraphics.fxh"
 

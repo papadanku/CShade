@@ -1,3 +1,4 @@
+#line 2 "kMirror.fx"
 
 /*
     MIT License

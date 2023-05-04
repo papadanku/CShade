@@ -1,3 +1,4 @@
+#line 2 "cFilmGrain.fx"
 
 #include "shared/cGraphics.fxh"
 

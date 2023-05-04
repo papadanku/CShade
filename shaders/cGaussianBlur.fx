@@ -1,3 +1,4 @@
+#line 2 "cGaussianBlur.fx"
 
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"

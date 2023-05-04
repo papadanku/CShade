@@ -1,3 +1,4 @@
+#line 2 "cVideoProcessing.fxh"
 
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH

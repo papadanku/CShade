@@ -1,3 +1,5 @@
+#line 2 "cPyramidBlur.fx"
+
 namespace cPyramidBlur
 {
     #include "shared/cGraphics.fxh"

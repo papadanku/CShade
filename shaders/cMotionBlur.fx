@@ -1,3 +1,4 @@
+#line 2 "cMotionBlur.fx"
 
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"

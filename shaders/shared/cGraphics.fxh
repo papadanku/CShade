@@ -1,3 +1,4 @@
+#line 2 "cGraphics.fxh"
 
 #if !defined(CGRAPHICS_FXH)
     #define CGRAPHICS_FXH

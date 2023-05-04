@@ -1,3 +1,4 @@
+#line 2 "cCheckerBoard.fx"
 
 #include "shared/cGraphics.fxh"
 

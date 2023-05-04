@@ -1,3 +1,4 @@
+#line 2 "cBloom.fx"
 
 namespace cBloom
 {

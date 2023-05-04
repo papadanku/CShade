@@ -1,3 +1,4 @@
+#line 2 "cBlending.fx"
 
 #include "shared/cGraphics.fxh"
 

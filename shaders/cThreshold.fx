@@ -1,3 +1,4 @@
+#line 2 "cThreshold.fx"
 
 #include "shared/cGraphics.fxh"
 

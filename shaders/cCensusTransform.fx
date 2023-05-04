@@ -1,3 +1,4 @@
+#line 2 "cCensusTransform.fx"
 
 #include "shared/cGraphics.fxh"
 

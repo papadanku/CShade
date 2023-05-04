@@ -1,3 +1,4 @@
+#line 2 "cMacros.fxh"
 
 #if !defined(CMACROS_FXH)
     #define CMACROS_FXH

@@ -1,3 +1,4 @@
+#line 2 "cChromaticity.fx"
 
 #include "shared/cGraphics.fxh"
 
