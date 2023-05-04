@@ -1,5 +1,5 @@
 #include "shared/cGraphics.fxh"
-#line 2 "cCheckerBoard.fx"
+#line 3 "cCheckerBoard.fx"
 
 /*
     Construct options
