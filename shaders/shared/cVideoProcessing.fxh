@@ -1,9 +1,8 @@
-#line 2 "cVideoProcessing.fxh"
+#include "cGraphics.fxh"
+#line 3 "cVideoProcessing.fxh"
 
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
-
-    #include "cGraphics.fxh"
 
     // Lucas-Kanade optical flow with bilinear fetches
 
