@@ -1,7 +1,6 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
-#line 5 "cMotionBlur.fx"
 
 /*
     [Shader parameters]

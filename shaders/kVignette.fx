@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "kVignette.fx"
 
 /*
     MIT License

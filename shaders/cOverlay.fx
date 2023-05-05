@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "cOverlay.fx"
 
 uniform float2 _TexScale <
     ui_label = "Scale";

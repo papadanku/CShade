@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "kMirror.fx"
 
 /*
     MIT License

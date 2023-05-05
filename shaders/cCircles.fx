@@ -1,6 +1,5 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cMacros.fxh"
-#line 4 "cCircles.fx"
 
 CREATE_OPTION(float, _TileAmount, "Tiles", "Amount", "drag", 64.0, 8.0)
 CREATE_OPTION(float, _TileRadius, "Tiles", "Radius", "drag", 0.5, 0.45)

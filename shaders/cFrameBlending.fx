@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "cFrameBlending.fx"
 
 uniform float _BlendFactor <
     ui_label = "Blend Factor";

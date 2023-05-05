@@ -1,5 +1,4 @@
 #include "cGraphics.fxh"
-#line 3 "cVideoProcessing.fxh"
 
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH

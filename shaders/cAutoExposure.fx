@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "cAutoExposure.fx"
 
 uniform float _TimeRate <
     ui_label = "Smoothing";

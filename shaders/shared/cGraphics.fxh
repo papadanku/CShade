@@ -1,5 +1,4 @@
 #include "cMacros.fxh"
-#line 3 "cGraphics.fxh"
 
 #if !defined(CGRAPHICS_FXH)
     #define CGRAPHICS_FXH

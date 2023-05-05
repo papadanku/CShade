@@ -1,7 +1,6 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
-#line 5 "kDatamosh.fx"
 
 /*
     This is free and unencumbered software released into the public domain.

@@ -1,4 +1,3 @@
-#line 2 "cDefault.fx"
 
 float4 VS_Quad() : SV_POSITION
 {

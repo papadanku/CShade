@@ -1,5 +1,4 @@
 #include "shared/cGraphics.fxh"
-#line 3 "cBlending.fx"
 
 uniform int _Blend <
     ui_label = "Blend Mode";
