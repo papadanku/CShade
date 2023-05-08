@@ -130,22 +130,22 @@ float2 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
 
 // Run Lucas-Kanade
 
-float2 PS_MFlow_Level3(VS2PS_Quad Input) : SV_TARGET0
+float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 2, false);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 2, true);
 }
 
-float2 PS_MFlow_Level2(VS2PS_Quad Input) : SV_TARGET0
+float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
-    return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 1, false);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 1, false);
 }
 
-float4 PS_MFlow_Level1(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
-    return float4(GetPixelMFlow(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 0, true), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2a, SampleTex2c, SampleTex2b, 0, false), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -251,7 +251,7 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
 
     // Displacement vector
     float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
-    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 - MV);
+    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 + MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
@@ -297,8 +297,12 @@ technique CShade_KinoDatamosh
     CREATE_PASS(VS_HBlur, PS_HBlur_Prefilter, Tex2a)
     CREATE_PASS(VS_VBlur, PS_VBlur_Prefilter, Tex2b)
 
-    CREATE_PASS(VS_Quad, PS_MFlow_Level3, Tex4)
-    CREATE_PASS(VS_Quad, PS_MFlow_Level2, Tex3)
+    // Calculate derivatives
+    CREATE_PASS(VS_Sobel, PS_Sobel, Tex2a)
+
+    // Bilinear Lucas-Kanade Optical Flow
+    CREATE_PASS(VS_Quad, PS_PyLK_Level3, Tex4)
+    CREATE_PASS(VS_Quad, PS_PyLK_Level2, Tex3)
 
     pass GetFineOpticalFlow
     {
@@ -309,7 +313,7 @@ technique CShade_KinoDatamosh
         DestBlend = SRCALPHA;
 
         VertexShader = VS_Quad;
-        PixelShader = PS_MFlow_Level1;
+        PixelShader = PS_PyLK_Level1;
         RenderTarget0 = OFlowTex;
     }
 
