@@ -152,4 +152,77 @@
         // Propagate and encode vectors
         return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
     }
+
+    float4 SampleBlock(sampler2D Source, Texel Tex, float2 TexShift)
+    {
+        // Pack normalization and masking into 1 operation
+        float4 Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(Tex.Size.xyyy);
+        float4 HalfPixel = (Tex.MainTex.xxyy + TexShift.xxyy) + float4(-0.5, 0.5, -0.5, 0.5);
+
+        float4 OutputColor = 0.0;
+        OutputColor.x = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).r;
+        OutputColor.y = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).r;
+        OutputColor.z = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).r;
+        OutputColor.w = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).r;
+
+        return OutputColor;
+    }
+
+    float GetMSE(float4 P, float4 C)
+    {
+        return sqrt(dot(pow(abs(P - C), 2.0), 1.0));
+    }
+
+    float2 SearchArea(sampler2D S1, Texel Tex, float4 PBlock, float Minimum)
+    {
+        float2 Vectors;
+        for (int x = 1; x < 4; ++x)
+        for (int y = 0; y < (4 * x); ++y)
+        {
+            float F = 6.28 / (4 * x);
+            float2 Shift = float2(sin(F * y), cos(F * y)) * x;
+
+            float4 CBlock = SampleBlock(S1, Tex, Shift);
+            float MSE = GetMSE(PBlock, CBlock);
+
+            if (abs(MSE) < Minimum)
+            {
+                Vectors = Shift;
+                Minimum = MSE;
+            }
+        }
+        return Vectors;
+    }
+
+    float2 GetPixelMFlow
+    (
+        float2 MainTex,
+        float2 Vectors,
+        sampler2D SampleI0,
+        sampler2D SampleI1,
+        int Level
+    )
+    {  
+        // Calculate main texel information (TexelSize, TexelLOD)
+        Texel TexInfo;
+        TexInfo.Size.x = ddx(MainTex.x);
+        TexInfo.Size.y = ddy(MainTex.y);
+
+        // Decode written vectors from coarser level
+        Vectors = DecodeVectors(Vectors, TexInfo.Size);
+        TexInfo.MainTex = (MainTex / abs(TexInfo.Size)) + Vectors;
+        TexInfo.LOD = float2(0.0, float(Level));
+
+        // Initialize variables
+        float2 NewVectors = 0.0;
+        float4 CBlock = SampleBlock(SampleI0, TexInfo, 0.0);
+        float4 PBlock = SampleBlock(SampleI1, TexInfo, 0.0);
+        float Minimum = GetMSE(PBlock, CBlock);
+
+        // Calculate three-step search
+        NewVectors = SearchArea(SampleI1, TexInfo, CBlock, Minimum);
+
+        // Propagate and encode vectors
+        return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
+    }
 #endif
