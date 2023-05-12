@@ -201,7 +201,7 @@
             NCC[1] += (C[i] * C[i]);
             NCC[2] += (P[i] * C[i]);
         }
-        return NCC[2] / (sqrt(NCC[0]) * sqrt(NCC[1]));
+        return NCC[2] * rsqrt(NCC[0] * NCC[1]);
     }
 
     float2 SearchArea(sampler2D S1, Texel Tex, float4 PBlock, float Minimum)
@@ -248,7 +248,7 @@
         float2 NewVectors = 0.0;
         float4 CBlock = SampleBlock(SampleI0, TexInfo, 0.0);
         float4 PBlock = SampleBlock(SampleI1, TexInfo, 0.0);
-        float Minimum = GetNCC(PBlock, CBlock);
+        float Minimum = GetNCC(PBlock, CBlock) + 0.00001;
 
         // Calculate three-step search
         NewVectors = SearchArea(SampleI1, TexInfo, CBlock, Minimum);
