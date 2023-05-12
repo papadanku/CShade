@@ -192,9 +192,16 @@
         return OutputColor;
     }
 
-    float GetMSE(float4 P, float4 C)
+    float GetNCC(float4 P, float4 C)
     {
-        return sqrt(dot(pow(abs(P - C), 2.0), 1.0));
+        float3 NCC = 0.0;
+        for (int i = 0; i < 4; i++)
+        {
+            NCC[0] += (P[i] * P[i]);
+            NCC[1] += (C[i] * C[i]);
+            NCC[2] += (P[i] * C[i]);
+        }
+        return NCC[2] / (sqrt(NCC[0]) * sqrt(NCC[1]));
     }
 
     float2 SearchArea(sampler2D S1, Texel Tex, float4 PBlock, float Minimum)
@@ -207,12 +214,12 @@
             float2 Shift = float2(sin(F * y), cos(F * y)) * x;
 
             float4 CBlock = SampleBlock(S1, Tex, Shift);
-            float MSE = GetMSE(PBlock, CBlock);
+            float NCC = GetNCC(PBlock, CBlock);
 
-            if (abs(MSE) < Minimum)
+            if (abs(NCC) > Minimum)
             {
                 Vectors = Shift;
-                Minimum = MSE;
+                Minimum = NCC;
             }
         }
         return Vectors;
@@ -241,7 +248,7 @@
         float2 NewVectors = 0.0;
         float4 CBlock = SampleBlock(SampleI0, TexInfo, 0.0);
         float4 PBlock = SampleBlock(SampleI1, TexInfo, 0.0);
-        float Minimum = GetMSE(PBlock, CBlock);
+        float Minimum = GetNCC(PBlock, CBlock);
 
         // Calculate three-step search
         NewVectors = SearchArea(SampleI1, TexInfo, CBlock, Minimum);
