@@ -216,7 +216,7 @@
             float4 CBlock = SampleBlock(S1, Tex, Shift);
             float NCC = GetNCC(PBlock, CBlock);
 
-            if (abs(NCC) > Minimum)
+            if (NCC > Minimum)
             {
                 Vectors = Shift;
                 Minimum = NCC;
