@@ -98,11 +98,6 @@ VS2PS_Blur VS_VBlur(APP2VS Input)
     return GetVertexBlur(Input, 1.0 / BUFFER_SIZE_2, false);
 }
 
-VS2PS_Sobel VS_Sobel(APP2VS Input)
-{
-    return GetVertexSobel(Input, 1.0 / BUFFER_SIZE_2);
-}
-
 // Pixel shaders
 
 float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
@@ -119,13 +114,6 @@ float PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 float PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
     return GetPixelBlur(Input, SampleTex2a).r;
-}
-
-// Process spatial derivatives
-
-float2 PS_Sobel(VS2PS_Sobel Input) : SV_TARGET0
-{
-    return GetPixelSobel(Input, SampleTex2c);
 }
 
 // Run Lucas-Kanade
@@ -297,13 +285,9 @@ technique CShade_KinoDatamosh
     CREATE_PASS(VS_HBlur, PS_HBlur_Prefilter, Tex2a)
     CREATE_PASS(VS_VBlur, PS_VBlur_Prefilter, Tex2b)
 
-    // Calculate derivatives
-    CREATE_PASS(VS_Sobel, PS_Sobel, Tex2a)
-
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(VS_Quad, PS_PyLK_Level3, Tex4)
     CREATE_PASS(VS_Quad, PS_PyLK_Level2, Tex3)
-
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;

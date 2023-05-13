@@ -28,38 +28,6 @@
         float4 WarpedTex;
     };
 
-    // Unpacks and assembles a column of texture coordinates
-    void UnpackTex(in Texel Tex, in float2 Vectors, out UnpackedTex Output[9])
-    {
-        float4 TexOffsets[3];
-        TexOffsets[0] = float4(-1.0, 1.0, 0.0, -1.0);
-        TexOffsets[1] = float4(0.0, 1.0, 0.0, -1.0);
-        TexOffsets[2] = float4(1.0, 1.0, 0.0, -1.0);
-
-        // Pack normalization and masking into 1 operation
-        float4 TexMask = abs(Tex.Size.xyyy) * float4(1.0, 1.0, 0.0, 0.0);
-
-        // Calculate tex columns in 1 MAD
-        int Index = 0;
-        int TexIndex = 0;
-
-        while(Index < 3)
-        {
-            float4 ColumnTex = Tex.MainTex.xyyy + TexOffsets[Index];
-            Output[TexIndex + 0].Tex = (ColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
-            Output[TexIndex + 1].Tex = (ColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
-            Output[TexIndex + 2].Tex = (ColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
-
-            float4 WarpedColumnTex = ColumnTex + Vectors.xyyy;
-            Output[TexIndex + 0].WarpedTex = (WarpedColumnTex.xyyy * TexMask) + Tex.LOD.xxxy;
-            Output[TexIndex + 1].WarpedTex = (WarpedColumnTex.xzzz * TexMask) + Tex.LOD.xxxy;
-            Output[TexIndex + 2].WarpedTex = (WarpedColumnTex.xwww * TexMask) + Tex.LOD.xxxy;
-
-            Index = Index + 1;
-            TexIndex = TexIndex + 3;
-        }
-    }
-
     // [-1.0, 1.0] -> [Width, Height]
     float2 DecodeVectors(float2 Vectors, float2 ImageSize)
     {
@@ -72,28 +40,37 @@
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
+    float2 GetSobel(sampler2D Source, Texel Tex, float2 TexShift, float4 Mask)
+    {
+        // Pack normalization and masking into 1 operation
+        float4 HalfPixel = (Tex.MainTex.xxyy + TexShift.xxyy) + float4(-0.5, 0.5, -0.5, 0.5);
+
+        float2 OutputColor = 0.0;
+        float A = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).r; // <-0.5, +0.5>
+        float B = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).r; // <+0.5, +0.5>
+        float C = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).r; // <-0.5, -0.5>
+        float D = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).r; // <+0.5, -0.5>
+        OutputColor.x = ((B + D) - (A + C));
+        OutputColor.y = ((A + B) - (C + D));
+
+        return OutputColor;
+    }
+
     float2 GetPixelPyLK
     (
         float2 MainTex,
         float2 Vectors,
-        sampler2D SampleI0_G,
         sampler2D SampleI0,
         sampler2D SampleI1,
         int Level,
         bool Coarse
     )
     {
-        // Setup constants
-        const int WindowSize = 9;
-
         // Initialize variables
         float3 A = 0.0;
         float2 B = 0.0;
-        float R = 0.0;
-        float IT[WindowSize];
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
-        const float T = 0.5;
 
         // Calculate main texel information (TexelSize, TexelLOD)
         Texel TexInfo;
@@ -101,38 +78,29 @@
         TexInfo.Size.y = ddy(MainTex.y);
         TexInfo.MainTex = MainTex * (1.0 / abs(TexInfo.Size));
         TexInfo.LOD = float2(0.0, float(Level));
+        float4 Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexInfo.Size.xyyy);
 
         // Decode written vectors from coarser level
         Vectors = DecodeVectors(Vectors, TexInfo.Size);
 
-        // The spatial(S) and temporal(T) derivative neighbors to sample
-        UnpackedTex Pixel[WindowSize];
-        UnpackTex(TexInfo, Vectors, Pixel);
-
-        [unroll]
-        for(int i = 0; i < WindowSize; i++)
+        for (int x = -2; x <= 2; x++)
+        for (int y = -2; y <= 2; y++)
         {
-            float I0 = tex2Dlod(SampleI0, Pixel[i].Tex).r;
-            float I1 = tex2Dlod(SampleI1, Pixel[i].WarpedTex).r;
-            IT[i] = I0 - I1;
-            R += (IT[i] * IT[i]);
-        }
+            int2 Shift = int2(x, y);
+            float2 Tex = TexInfo.MainTex + Shift;
+            float4 Tex0 = (Tex.xyyy * Mask) + TexInfo.LOD.xxxy;
+            float4 Tex1 = ((Tex.xyyy + Vectors.xyyy) * Mask) + TexInfo.LOD.xxxy;
 
-        bool NoRefine = (Coarse == false) && (sqrt(R / 9.0) <= T);
+            float I0 = tex2Dlod(SampleI0, Tex0).r;
+            float I1 = tex2Dlod(SampleI1, Tex1).r;
+            float2 G = GetSobel(SampleI0, TexInfo, Shift, Mask);
 
-        [branch]
-        if(!NoRefine)
-        {
-            [unroll]
-            for(int i = 0; i < WindowSize; i++)
-            {
-                // A.x = A11; A.y = A22; A.z = A12/A22
-                float2 G = tex2Dlod(SampleI0_G, Pixel[i].Tex).xy;
-                A.xyz += (G.xyx * G.xyy);
+            // A.x = A11; A.y = A22; A.z = A12/A22
+            A.xyz += (G.xyx * G.xyy);
 
-                // B.x = B1; B.y = B2
-                B += (G * IT[i]);
-            }
+            // B.x = B1; B.y = B2
+            float IT = I0 - I1;
+            B += (G * IT);
         }
 
         // Create -IxIy (A12) for A^-1 and its determinant
@@ -206,7 +174,7 @@
 
     float2 SearchArea(sampler2D S1, Texel Tex, float4 PBlock, float Minimum)
     {
-        float2 Vectors;
+        float2 Vectors = 0.0;
         for (int x = 1; x < 4; ++x)
         for (int y = 0; y < (4 * x); ++y)
         {
@@ -248,7 +216,7 @@
         float2 NewVectors = 0.0;
         float4 CBlock = SampleBlock(SampleI0, TexInfo, 0.0);
         float4 PBlock = SampleBlock(SampleI1, TexInfo, 0.0);
-        float Minimum = GetNCC(PBlock, CBlock) + 0.00001;
+        float Minimum = GetNCC(PBlock, CBlock) + 1e-6;
 
         // Calculate three-step search
         NewVectors = SearchArea(SampleI1, TexInfo, CBlock, Minimum);
