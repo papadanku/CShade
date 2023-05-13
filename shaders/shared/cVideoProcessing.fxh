@@ -83,8 +83,8 @@
         // Decode written vectors from coarser level
         Vectors = DecodeVectors(Vectors, TexInfo.Size);
 
-        for (int x = -2; x <= 2; x++)
-        for (int y = -2; y <= 2; y++)
+        for (int x = -3; x <= 3; x++)
+        for (int y = -3; y <= 3; y++)
         {
             int2 Shift = int2(x, y);
             float2 Tex = TexInfo.MainTex + Shift;
