@@ -9,7 +9,7 @@
 CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 0.0)
 CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.0)
 
-CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, R8, 3)
+CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
 
 CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RG16F, 8)
@@ -44,20 +44,20 @@ VS2PS_Blur VS_VBlur(APP2VS Input)
 
 // Pixel shaders
 
-float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
+float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-    return SaturateRGB(Color);
+    return NormalizeRGB(Color);
 }
 
-float PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float2 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
-    return GetPixelBlur(Input, SampleTex1).r;
+    return GetPixelBlur(Input, SampleTex1).rg;
 }
 
-float PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float2 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 {
-    return GetPixelBlur(Input, SampleTex2a).r;
+    return GetPixelBlur(Input, SampleTex2a).rg;
 }
 
 // Run Lucas-Kanade
@@ -118,7 +118,7 @@ float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
 technique CShade_OpticalFlow
 {
     // Normalize current frame
-    CREATE_PASS(VS_Quad, PS_Saturation, Tex1)
+    CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
 
     // Prefilter blur
     CREATE_PASS(VS_HBlur, PS_HBlur_Prefilter, Tex2a)

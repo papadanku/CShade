@@ -28,36 +28,39 @@ VS2PS_Census VS_Census(APP2VS Input)
     return Output;
 }
 
-float GetGreyScale(float4 Color)
+float Med3(float A, float B, float C)
 {
-    return max(max(Color.r, Color.g), Color.b);
+    return clamp(A, min(B, C), max(B, C));
 }
 
 float4 PS_Census(VS2PS_Census Input) : SV_TARGET0
 {
     float4 OutputColor0 = 0.0;
-    const int Neighbors = 8;
-    float SampleNeighbor[Neighbors];
+    float3 Transform = 0.0;
 
-    float CenterSample = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex1.xz));
-    SampleNeighbor[0] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex0.xy));
-    SampleNeighbor[1] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex1.xy));
-    SampleNeighbor[2] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex2.xy));
-    SampleNeighbor[3] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex0.xz));
-    SampleNeighbor[4] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex2.xz));
-    SampleNeighbor[5] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex0.xw));
-    SampleNeighbor[6] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex1.xw));
-    SampleNeighbor[7] = GetGreyScale(tex2D(CShade_SampleColorTex, Input.Tex2.xw));
+    const int Neighbors = 8;
+    float3 SampleNeighbor[Neighbors];
+    SampleNeighbor[0] = tex2D(CShade_SampleColorTex, Input.Tex0.xy).rgb;
+    SampleNeighbor[1] = tex2D(CShade_SampleColorTex, Input.Tex1.xy).rgb;
+    SampleNeighbor[2] = tex2D(CShade_SampleColorTex, Input.Tex2.xy).rgb;
+    SampleNeighbor[3] = tex2D(CShade_SampleColorTex, Input.Tex0.xz).rgb;
+    SampleNeighbor[4] = tex2D(CShade_SampleColorTex, Input.Tex2.xz).rgb;
+    SampleNeighbor[5] = tex2D(CShade_SampleColorTex, Input.Tex0.xw).rgb;
+    SampleNeighbor[6] = tex2D(CShade_SampleColorTex, Input.Tex1.xw).rgb;
+    SampleNeighbor[7] = tex2D(CShade_SampleColorTex, Input.Tex2.xw).rgb;
+    float3 CenterSample = tex2D(CShade_SampleColorTex, Input.Tex1.xz).rgb;
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)
     {
-        float Comparison = step(SampleNeighbor[i], CenterSample);
-        OutputColor0 += ldexp(Comparison, i);
+        float3 Comparison = step(SampleNeighbor[i], CenterSample);
+        Transform += ldexp(Comparison, i);
     }
 
-	// Convert the 8-bit integer to float, and average the results from each channel
-    return OutputColor0 * (1.0 / (exp2(8) - 1));
+    float OTransform = Med3(Transform.r, Transform.g, Transform.b);
+
+    // Convert the 8-bit integer to float, and average the results from each channel
+    return OTransform * (1.0 / (exp2(8) - 1));
 }
 
 technique CShade_CensusTransform

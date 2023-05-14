@@ -129,7 +129,9 @@
 
     float2 NormalizeRGB(float3 Color)
     {
-        return Color.xy / dot(Color, 1.0);
+        float SumRGB = dot(Color, 1.0);
+        float2 NRGB = (SumRGB != 0.0) ? Color.xy / SumRGB : 1.0 / 3.0;
+        return NRGB;
     }
 
     // 

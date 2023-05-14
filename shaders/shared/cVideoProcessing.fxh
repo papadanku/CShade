@@ -40,18 +40,18 @@
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
-    float2 GetSobel(sampler2D Source, Texel Tex, float2 TexShift, float4 Mask)
+    float4 GetSobel(sampler2D Source, Texel Tex, float2 TexShift, float4 Mask)
     {
         // Pack normalization and masking into 1 operation
         float4 HalfPixel = (Tex.MainTex.xxyy + TexShift.xxyy) + float4(-0.5, 0.5, -0.5, 0.5);
 
-        float2 OutputColor = 0.0;
-        float A = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).r; // <-0.5, +0.5>
-        float B = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).r; // <+0.5, +0.5>
-        float C = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).r; // <-0.5, -0.5>
-        float D = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).r; // <+0.5, -0.5>
-        OutputColor.x = ((B + D) - (A + C));
-        OutputColor.y = ((A + B) - (C + D));
+        float4 OutputColor = 0.0;
+        float2 A = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).rg; // <-0.5, +0.5>
+        float2 B = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).rg; // <+0.5, +0.5>
+        float2 C = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).rg; // <-0.5, -0.5>
+        float2 D = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).rg; // <+0.5, -0.5>
+        OutputColor.xz = ((B + D) - (A + C));
+        OutputColor.yw = ((A + B) - (C + D));
 
         return OutputColor;
     }
@@ -91,16 +91,18 @@
             float4 Tex0 = (Tex.xyyy * Mask) + TexInfo.LOD.xxxy;
             float4 Tex1 = ((Tex.xyyy + Vectors.xyyy) * Mask) + TexInfo.LOD.xxxy;
 
-            float I0 = tex2Dlod(SampleI0, Tex0).r;
-            float I1 = tex2Dlod(SampleI1, Tex1).r;
-            float2 G = GetSobel(SampleI0, TexInfo, Shift, Mask);
+            float2 I0 = tex2Dlod(SampleI0, Tex0).rg;
+            float2 I1 = tex2Dlod(SampleI1, Tex1).rg;
+            float4 G = GetSobel(SampleI0, TexInfo, Shift, Mask);
 
             // A.x = A11; A.y = A22; A.z = A12/A22
             A.xyz += (G.xyx * G.xyy);
+            A.xyz += (G.zwz * G.zww);
 
             // B.x = B1; B.y = B2
-            float IT = I0 - I1;
-            B += (G * IT);
+            float2 IT = I0 - I1;
+            B += (G.xy * IT.rr);
+            B += (G.zw * IT.gg);
         }
 
         // Create -IxIy (A12) for A^-1 and its determinant
