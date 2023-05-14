@@ -17,15 +17,9 @@
 
     struct Texel
     {
-        float2 MainTex;
-        float2 Size;
+        float4 MainTex;
+        float4 Mask;
         float2 LOD;
-    };
-
-    struct UnpackedTex
-    {
-        float4 Tex;
-        float4 WarpedTex;
     };
 
     // [-1.0, 1.0] -> [Width, Height]
@@ -40,16 +34,16 @@
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
-    float4 GetSobel(sampler2D Source, Texel Tex, float2 TexShift, float4 Mask)
+    float4 GetSobel(sampler2D Source, float2 Tex, Texel TexData)
     {
         // Pack normalization and masking into 1 operation
-        float4 HalfPixel = (Tex.MainTex.xxyy + TexShift.xxyy) + float4(-0.5, 0.5, -0.5, 0.5);
+        float4 HalfPixel = Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5);
 
         float4 OutputColor = 0.0;
-        float2 A = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).rg; // <-0.5, +0.5>
-        float2 B = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).rg; // <+0.5, +0.5>
-        float2 C = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).rg; // <-0.5, -0.5>
-        float2 D = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).rg; // <+0.5, -0.5>
+        float2 A = tex2Dlod(Source, (HalfPixel.xwww * TexData.Mask) + TexData.LOD.xxxy).rg; // <-0.5, +0.5>
+        float2 B = tex2Dlod(Source, (HalfPixel.ywww * TexData.Mask) + TexData.LOD.xxxy).rg; // <+0.5, +0.5>
+        float2 C = tex2Dlod(Source, (HalfPixel.xzzz * TexData.Mask) + TexData.LOD.xxxy).rg; // <-0.5, -0.5>
+        float2 D = tex2Dlod(Source, (HalfPixel.yzzz * TexData.Mask) + TexData.LOD.xxxy).rg; // <+0.5, -0.5>
         OutputColor.xz = ((B + D) - (A + C));
         OutputColor.yw = ((A + B) - (C + D));
 
@@ -71,29 +65,29 @@
         float2 B = 0.0;
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
+        Texel TexData;
 
-        // Calculate main texel information (TexelSize, TexelLOD)
-        Texel TexInfo;
-        TexInfo.Size.x = ddx(MainTex.x);
-        TexInfo.Size.y = ddy(MainTex.y);
-        TexInfo.MainTex = MainTex * (1.0 / abs(TexInfo.Size));
-        TexInfo.LOD = float2(0.0, float(Level));
-        float4 Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexInfo.Size.xyyy);
+        // Get required data to calculate main texel data
+        float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
+        Vectors = DecodeVectors(Vectors, TexSize);
 
-        // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, TexInfo.Size);
+        // Calculate main texel data (TexelSize, TexelLOD)
+        TexData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
+        TexData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
+        TexData.MainTex.zw = TexData.MainTex.xy + Vectors;
+        TexData.LOD = float2(0.0, float(Level));
 
         for (int x = -3; x <= 3; x++)
         for (int y = -3; y <= 3; y++)
         {
             int2 Shift = int2(x, y);
-            float2 Tex = TexInfo.MainTex + Shift;
-            float4 Tex0 = (Tex.xyyy * Mask) + TexInfo.LOD.xxxy;
-            float4 Tex1 = ((Tex.xyyy + Vectors.xyyy) * Mask) + TexInfo.LOD.xxxy;
+            float4 Tex = TexData.MainTex + Shift.xyxy;
+            float4 Tex0 = (Tex.xyyy * TexData.Mask) + TexData.LOD.xxxy;
+            float4 Tex1 = (Tex.zwww * TexData.Mask) + TexData.LOD.xxxy;
 
             float2 I0 = tex2Dlod(SampleI0, Tex0).rg;
             float2 I1 = tex2Dlod(SampleI1, Tex1).rg;
-            float4 G = GetSobel(SampleI0, TexInfo, Shift, Mask);
+            float4 G = GetSobel(SampleI0, Tex.xy, TexData);
 
             // A.x = A11; A.y = A22; A.z = A12/A22
             A.xyz += (G.xyx * G.xyy);
@@ -120,7 +114,7 @@
         NewVectors = (Determinant != 0.0) ? mul(-B.xy, float2x2(A.yzzx)) : 0.0;
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
+        return EncodeVectors(Vectors + NewVectors, TexData.Mask.xy);
     }
 
     /*
@@ -147,17 +141,16 @@
         SOFTWARE.
     */
 
-    float4 SampleBlock(sampler2D Source, Texel Tex, float2 TexShift)
+    float4 SampleBlock(sampler2D Source, float2 Tex, Texel TexData)
     {
         // Pack normalization and masking into 1 operation
-        float4 Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(Tex.Size.xyyy);
-        float4 HalfPixel = (Tex.MainTex.xxyy + TexShift.xxyy) + float4(-0.5, 0.5, -0.5, 0.5);
+        float4 HalfPixel = Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5);
 
         float4 OutputColor = 0.0;
-        OutputColor.x = tex2Dlod(Source, (HalfPixel.xzzz * Mask) + Tex.LOD.xxxy).r;
-        OutputColor.y = tex2Dlod(Source, (HalfPixel.xwww * Mask) + Tex.LOD.xxxy).r;
-        OutputColor.z = tex2Dlod(Source, (HalfPixel.yzzz * Mask) + Tex.LOD.xxxy).r;
-        OutputColor.w = tex2Dlod(Source, (HalfPixel.ywww * Mask) + Tex.LOD.xxxy).r;
+        OutputColor.x = tex2Dlod(Source, (HalfPixel.xzzz * TexData.Mask) + TexData.LOD.xxxy).r;
+        OutputColor.y = tex2Dlod(Source, (HalfPixel.xwww * TexData.Mask) + TexData.LOD.xxxy).r;
+        OutputColor.z = tex2Dlod(Source, (HalfPixel.yzzz * TexData.Mask) + TexData.LOD.xxxy).r;
+        OutputColor.w = tex2Dlod(Source, (HalfPixel.ywww * TexData.Mask) + TexData.LOD.xxxy).r;
 
         return OutputColor;
     }
@@ -174,7 +167,7 @@
         return NCC[2] * rsqrt(NCC[0] * NCC[1]);
     }
 
-    float2 SearchArea(sampler2D S1, Texel Tex, float4 PBlock, float Minimum)
+    float2 SearchArea(sampler2D S1, Texel TexData, float4 PBlock, float Minimum)
     {
         float2 Vectors = 0.0;
         for (int x = 1; x < 4; ++x)
@@ -183,7 +176,7 @@
             float F = 6.28 / (4 * x);
             float2 Shift = float2(sin(F * y), cos(F * y)) * x;
 
-            float4 CBlock = SampleBlock(S1, Tex, Shift);
+            float4 CBlock = SampleBlock(S1, TexData.MainTex.xy + Shift, TexData);
             float NCC = GetNCC(PBlock, CBlock);
 
             if (NCC > Minimum)
@@ -203,27 +196,30 @@
         sampler2D SampleI1,
         int Level
     )
-    {  
-        // Calculate main texel information (TexelSize, TexelLOD)
-        Texel TexInfo;
-        TexInfo.Size.x = ddx(MainTex.x);
-        TexInfo.Size.y = ddy(MainTex.y);
+    {
+        // Initialize data
+        Texel TexData;
 
-        // Decode written vectors from coarser level
-        Vectors = DecodeVectors(Vectors, TexInfo.Size);
-        TexInfo.MainTex = (MainTex / abs(TexInfo.Size)) + Vectors;
-        TexInfo.LOD = float2(0.0, float(Level));
+        // Get required data to calculate main texel data
+        float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
+        Vectors = DecodeVectors(Vectors, TexSize);
+
+        // Calculate main texel data (TexelSize, TexelLOD)
+        TexData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
+        TexData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
+        TexData.MainTex.zw = MainTex + Vectors;
+        TexData.LOD = float2(0.0, float(Level));
 
         // Initialize variables
         float2 NewVectors = 0.0;
-        float4 CBlock = SampleBlock(SampleI0, TexInfo, 0.0);
-        float4 PBlock = SampleBlock(SampleI1, TexInfo, 0.0);
+        float4 CBlock = SampleBlock(SampleI0, TexData.MainTex.xy, TexData);
+        float4 PBlock = SampleBlock(SampleI1, TexData.MainTex.xy, TexData);
         float Minimum = GetNCC(PBlock, CBlock) + 1e-6;
 
         // Calculate three-step search
-        NewVectors = SearchArea(SampleI1, TexInfo, CBlock, Minimum);
+        NewVectors = SearchArea(SampleI1, TexData, CBlock, Minimum);
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + NewVectors, TexInfo.Size);
+        return EncodeVectors(Vectors + NewVectors, TexData.Mask.xy);
     }
 #endif
