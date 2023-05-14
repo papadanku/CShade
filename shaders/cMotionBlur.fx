@@ -70,19 +70,19 @@ float2 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 2, true);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 2);
 }
 
 float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 1, false);
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 1);
 }
 
 float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
-    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 0, false), 0.0, _BlendFactor);
+    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 0), 0.0, _BlendFactor);
 }
 
 // Postfilter blur

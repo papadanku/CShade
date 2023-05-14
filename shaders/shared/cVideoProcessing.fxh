@@ -56,16 +56,15 @@
         float2 Vectors,
         sampler2D SampleI0,
         sampler2D SampleI1,
-        int Level,
-        bool Coarse
+        int Level
     )
     {
         // Initialize variables
+        Texel TexData;
         float3 A = 0.0;
         float2 B = 0.0;
         float Determinant = 0.0;
         float2 NewVectors = 0.0;
-        Texel TexData;
 
         // Get required data to calculate main texel data
         float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
