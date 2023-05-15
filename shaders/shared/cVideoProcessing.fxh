@@ -178,11 +178,8 @@
             float4 CBlock = SampleBlock(S1, TexData.MainTex.xy + Shift, TexData);
             float NCC = GetNCC(PBlock, CBlock);
 
-            if (NCC > Minimum)
-            {
-                Vectors = Shift;
-                Minimum = NCC;
-            }
+            Vectors = (NCC > Minimum) ? Shift : Vectors;
+            Minimum = max(NCC, Minimum);
         }
         return Vectors;
     }
