@@ -24,11 +24,14 @@ CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, MIRROR)
 CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR)
 
-CREATE_TEXTURE(Tex3, BUFFER_SIZE_4, RG16F, 1)
+CREATE_TEXTURE(Tex3, BUFFER_SIZE_3, RG16F, 1)
 CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, MIRROR)
 
-CREATE_TEXTURE(Tex4, BUFFER_SIZE_6, RG16F, 1)
+CREATE_TEXTURE(Tex4, BUFFER_SIZE_4, RG16F, 1)
 CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
+
+CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
+CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
 // Vertex shaders
 
@@ -62,9 +65,15 @@ float2 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
 
 // Run Lucas-Kanade
 
-float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
+float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
+    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 3);
+}
+
+float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
+{
+    float2 Vectors = tex2D(SampleTex5, Input.Tex0).xy;
     return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 2);
 }
 
@@ -125,6 +134,7 @@ technique CShade_OpticalFlow
     CREATE_PASS(VS_VBlur, PS_VBlur_Prefilter, Tex2b)
 
     // Bilinear Lucas-Kanade Optical Flow
+    CREATE_PASS(VS_Quad, PS_PyLK_Level4, Tex5)
     CREATE_PASS(VS_Quad, PS_PyLK_Level3, Tex4)
     CREATE_PASS(VS_Quad, PS_PyLK_Level2, Tex3)
     pass GetFineOpticalFlow
