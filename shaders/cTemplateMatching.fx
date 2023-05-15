@@ -44,7 +44,7 @@ namespace cTemplateMatching
     }
 
     // Copy-back
-    float4 PS_Copy_0(VS2PS_Blur Input) : SV_TARGET0
+    float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
     {
         return tex2D(SampleTex1, Input.Tex0.xy);
     }
@@ -82,7 +82,7 @@ namespace cTemplateMatching
     }
 
     // Copy-back
-    float4 PS_Copy_1(VS2PS_Blur Input) : SV_TARGET0
+    float4 PS_Copy_1(VS2PS_Quad Input) : SV_TARGET0
     {
         return tex2D(SampleTex2a, Input.Tex0.xy);
     }
