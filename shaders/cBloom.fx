@@ -197,12 +197,14 @@ namespace cBloom
             float LC = 1.0 / (Max3(C.rgb) + 1.0);
             float LD = 1.0 / (Max3(D.rgb) + 1.0);
             float LE = 1.0 / (Max3(E.rgb) + 1.0);
+            float RcpSumL = 1.0 / (LA + LB + LC + LD + LE);
 
             OutputColor += (A * LA);
             OutputColor += (B * LB);
             OutputColor += (C * LC);
             OutputColor += (D * LD);
             OutputColor += (E * LE);
+            OutputColor *= RcpSumL;
         }
         else
         {
