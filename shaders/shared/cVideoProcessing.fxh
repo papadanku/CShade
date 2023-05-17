@@ -36,16 +36,16 @@
 
     float4 GetSobel(sampler2D Source, float2 Tex, Texel TexData)
     {
-        // Pack normalization and masking into 1 operation
-        float4 HalfPixel = Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5);
+        float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+        float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
 
         float4 OutputColor = 0.0;
-        float2 A = tex2Dlod(Source, (HalfPixel.xwww * TexData.Mask) + TexData.LOD.xxxy).rg; // <-0.5, +0.5>
-        float2 B = tex2Dlod(Source, (HalfPixel.ywww * TexData.Mask) + TexData.LOD.xxxy).rg; // <+0.5, +0.5>
-        float2 C = tex2Dlod(Source, (HalfPixel.xzzz * TexData.Mask) + TexData.LOD.xxxy).rg; // <-0.5, -0.5>
-        float2 D = tex2Dlod(Source, (HalfPixel.yzzz * TexData.Mask) + TexData.LOD.xxxy).rg; // <+0.5, -0.5>
-        OutputColor.xz = ((B + D) - (A + C));
-        OutputColor.yw = ((A + B) - (C + D));
+        float2 N = tex2Dlod(Source, (NS.xyyy * TexData.Mask) + TexData.LOD.xxxy).rg;
+        float2 S = tex2Dlod(Source, (NS.zwww * TexData.Mask) + TexData.LOD.xxxy).rg;
+        float2 E = tex2Dlod(Source, (EW.xyyy * TexData.Mask) + TexData.LOD.xxxy).rg;
+        float2 W = tex2Dlod(Source, (EW.zwww * TexData.Mask) + TexData.LOD.xxxy).rg;
+        OutputColor.xz = E - W;
+        OutputColor.yw = N - S;
 
         return OutputColor;
     }
@@ -76,8 +76,8 @@
         TexData.MainTex.zw = TexData.MainTex.xy + Vectors;
         TexData.LOD = float2(0.0, float(Level));
 
-        for (int x = -3; x <= 3; x++)
-        for (int y = -3; y <= 3; y++)
+        for (int x = -2.5; x <= 2.5; x++)
+        for (int y = -2.5; y <= 2.5; y++)
         {
             int2 Shift = int2(x, y);
             float4 Tex = TexData.MainTex + Shift.xyxy;
