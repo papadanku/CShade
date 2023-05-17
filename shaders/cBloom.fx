@@ -7,10 +7,10 @@ namespace cBloom
     */
 
     CREATE_OPTION(float, _Threshold, "Main", "Threshold", "drag", 1.0, 0.8)
-    CREATE_OPTION(float, _Smooth, "Main", "Smoothing", "drag", 1.0, 0.5)
+    CREATE_OPTION(float, _Smooth, "Main", "Smoothing", "drag", 1.0, 0.25)
     CREATE_OPTION(float, _Saturation, "Main", "Saturation", "drag", 4.0, 1.0)
     CREATE_OPTION(float3, _ColorShift, "Main", "Color shift", "color", 1.0, 1.0)
-    CREATE_OPTION(float, _Intensity, "Main", "Color Intensity", "drag", 4.0, 1.0)
+    CREATE_OPTION(float, _Intensity, "Main", "Color Intensity", "drag", 1.0, 0.5)
 
     /*
         Construct textures and its samplers
@@ -133,6 +133,12 @@ namespace cBloom
         return max(min(x, y), min(max(x, y), z));
     }
 
+    // Brightness function
+    float Max3(float3 c)
+    {
+        return max(max(c.r, c.g), c.b);
+    }
+
     float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
         const float Knee = mad(_Threshold, _Smooth, 1e-5);
@@ -150,7 +156,8 @@ namespace cBloom
         return float4(saturate(lerp(Brightness, Color.rgb, _Saturation)) * _ColorShift, 1.0);
     }
 
-    float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource)
+    // 13-tap downsampling with Karis luma filtering
+    float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool LumaFilter)
     {
         // A0    B0    C0
         //    D0    D1
@@ -175,30 +182,56 @@ namespace cBloom
         float4 C1 = tex2D(SampleSource, Input.Tex3.xz);
         float4 C2 = tex2D(SampleSource, Input.Tex3.xw);
 
-        const float2 Weights = float2(0.5, 0.125) / 4.0;
         float4 OutputColor = 0.0;
-        OutputColor += (D0 + D1 + D2 + D3) * Weights[0];
-        OutputColor += (A0 + B0 + A1 + B1) * Weights[1];
-        OutputColor += (B0 + C0 + B1 + C1) * Weights[1];
-        OutputColor += (A1 + B1 + A2 + B2) * Weights[1];
-        OutputColor += (B1 + C1 + B2 + C2) * Weights[1];
+        const float2 Weights = float2(0.5, 0.125) / 4.0;
+        float4 A = D0 + D1 + D2 + D3;
+        float4 B = A0 + B0 + A1 + B1;
+        float4 C = B0 + C0 + B1 + C1;
+        float4 D = A1 + B1 + A2 + B2;
+        float4 E = B1 + C1 + B2 + C2;
+
+        if (LumaFilter)
+        {
+            float LA = 1.0 / (Max3(A.rgb) + 1.0);
+            float LB = 1.0 / (Max3(B.rgb) + 1.0);
+            float LC = 1.0 / (Max3(C.rgb) + 1.0);
+            float LD = 1.0 / (Max3(D.rgb) + 1.0);
+            float LE = 1.0 / (Max3(E.rgb) + 1.0);
+            float RcpSumL = 1.0 / (LA + LB + LC + LD + LE);
+
+            OutputColor += (A * LA);
+            OutputColor += (B * LB);
+            OutputColor += (C * LC);
+            OutputColor += (D * LD);
+            OutputColor += (E * LE);
+            OutputColor *= RcpSumL;
+        }
+        else
+        {
+            OutputColor += (A * Weights[0]);
+            OutputColor += (B * Weights[1]);
+            OutputColor += (C * Weights[1]);
+            OutputColor += (D * Weights[1]);
+            OutputColor += (E * Weights[1]);
+        }
+
         return OutputColor;
     }
 
-    #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER) \
+    #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
         float4 METHOD_NAME(VS2PS_Downscale Input) : SV_TARGET0 \
         { \
-            return GetPixelDownscale(Input, SAMPLER); \
+            return GetPixelDownscale(Input, SAMPLER, FLICKER_FILTER); \
         }
 
-    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTex0)
-    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex1)
-    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex2)
-    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex3)
-    CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTex4)
-    CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTex5)
-    CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTex6)
-    CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTex7)
+    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTex0, true)
+    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex1, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex2, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex3, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTex4, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTex5, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTex6, false)
+    CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTex7, false)
 
     float4 GetPixelUpscale(VS2PS_Upscale Input, sampler2D SampleSource)
     {
