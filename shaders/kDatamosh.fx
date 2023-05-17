@@ -248,7 +248,7 @@ float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
 
     // Displacement vector
     float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
-    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 + MV);
+    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 - MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
