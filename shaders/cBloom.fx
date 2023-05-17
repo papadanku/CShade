@@ -154,7 +154,7 @@ namespace cBloom
         // Combine and apply the brightness response curve
         Color = Color * max(Response_Curve, Brightness - _Threshold) / max(Brightness, 1e-10);
         Brightness = Med3(Color.r, Color.g, Color.b);
-        return float4(lerp(Brightness, Color.rgb, _Saturation) * (_Intensity * _ColorShift), 1.0);
+        return float4(lerp(Brightness, Color.rgb, _Saturation) * _ColorShift, 1.0);
     }
 
     // 13-tap downsampling with Karis luma filtering
@@ -279,7 +279,7 @@ namespace cBloom
         float3 BloomColor = tex2D(SampleTex1, Input.Tex0).rgb;
 
         float4 Color = 1.0;
-        Color.rgb = ToneMapACESFilmic(BaseColor + BloomColor);
+        Color.rgb = ToneMapACESFilmic(BaseColor + (BloomColor * _Intensity));
         return Color;
     }
 
