@@ -134,9 +134,10 @@ namespace cBloom
     }
 
     // Brightness function
-    float Max3(float3 c)
+    float KarisAverage(float3 c)
     {
-        return max(max(c.r, c.g), c.b);
+        float Brightness = max(max(c.r, c.g), c.b);
+        return 1.0 / (Brightness + 1.0);
     }
 
     float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
@@ -157,7 +158,7 @@ namespace cBloom
     }
 
     // 13-tap downsampling with Karis luma filtering
-    float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool LumaFilter)
+    float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool PartialKaris)
     {
         // A0    B0    C0
         //    D0    D1
@@ -182,39 +183,26 @@ namespace cBloom
         float4 C1 = tex2D(SampleSource, Input.Tex3.xz);
         float4 C2 = tex2D(SampleSource, Input.Tex3.xw);
 
-        float4 OutputColor = 0.0;
-        const float2 Weights = float2(0.5, 0.125) / 4.0;
         float4 A = D0 + D1 + D2 + D3;
         float4 B = A0 + B0 + A1 + B1;
         float4 C = B0 + C0 + B1 + C1;
         float4 D = A1 + B1 + A2 + B2;
         float4 E = B1 + C1 + B2 + C2;
 
-        if (LumaFilter)
-        {
-            float LA = 1.0 / (Max3(A.rgb) + 1.0);
-            float LB = 1.0 / (Max3(B.rgb) + 1.0);
-            float LC = 1.0 / (Max3(C.rgb) + 1.0);
-            float LD = 1.0 / (Max3(D.rgb) + 1.0);
-            float LE = 1.0 / (Max3(E.rgb) + 1.0);
-            float RcpSumL = 1.0 / (LA + LB + LC + LD + LE);
+        float W1 = (PartialKaris) ? KarisAverage(A.rgb) : 0.500 / 4.0;
+        float W2 = (PartialKaris) ? KarisAverage(B.rgb) : 0.125 / 4.0;
+        float W3 = (PartialKaris) ? KarisAverage(C.rgb) : 0.125 / 4.0;
+        float W4 = (PartialKaris) ? KarisAverage(D.rgb) : 0.125 / 4.0;
+        float W5 = (PartialKaris) ? KarisAverage(E.rgb) : 0.125 / 4.0;
+        float SumW = (PartialKaris) ? 1.0 / (W1 + W2 + W3 + W4 + W5) : 1.0;
 
-            OutputColor += (A * LA);
-            OutputColor += (B * LB);
-            OutputColor += (C * LC);
-            OutputColor += (D * LD);
-            OutputColor += (E * LE);
-            OutputColor *= RcpSumL;
-        }
-        else
-        {
-            OutputColor += (A * Weights[0]);
-            OutputColor += (B * Weights[1]);
-            OutputColor += (C * Weights[1]);
-            OutputColor += (D * Weights[1]);
-            OutputColor += (E * Weights[1]);
-        }
-
+        float4 OutputColor = 0.0;
+        OutputColor += (A * W1);
+        OutputColor += (B * W2);
+        OutputColor += (C * W3);
+        OutputColor += (D * W4);
+        OutputColor += (E * W5);
+        OutputColor *= SumW;
         return OutputColor;
     }
 
