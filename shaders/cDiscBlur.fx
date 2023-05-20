@@ -29,9 +29,11 @@ namespace cDiscBlur
 
     CREATE_SRGB_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
-    // Pixel shaders
-    // Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution
-    // http://maxest.gct-game.net/content/chss.pdf
+    /*
+        Pixel shaders
+        Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution
+        http://maxest.gct-game.net/content/chss.pdf
+    */
 
     float4 PS_GenMipLevels(VS2PS_Quad Input) : SV_TARGET0
     {

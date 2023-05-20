@@ -3,7 +3,7 @@
 #if !defined(CIMAGEPROCESSING_FXH)
     #define CIMAGEPROCESSING_FXH
 
-    // Linear Gaussian blur based on https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
+    // Linear Gaussian blur (https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/)
 
     float GetGaussianWeight(float SampleIndex, float Sigma)
     {
@@ -107,11 +107,12 @@
         return OutputColor / TotalWeight;
     }
 
-    // Vogel disk sampling
-    // Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution
-    // http://maxest.gct-game.net/content/chss.pdf
-    // Vogel disk sampling: http://blog.marmakoide.org/?p=1
-    // Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
+    /*
+        Vogel disk sampling
+        Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution (http://maxest.gct-game.net/content/chss.pdf)
+        Vogel disk sampling: http://blog.marmakoide.org/?p=1
+        Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
+    */
 
     float2 SampleVogel(int Index, int SamplesCount)
     {
@@ -134,13 +135,14 @@
         return NRGB;
     }
 
-    // 
-    // RGB to saturation value.
-    //
-    // Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
-    // Computer Vision and Image Understanding 68, no. 3 (1997): 346-362.
-    // http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
-    //
+    /*
+        RGB to saturation value.
+
+        Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
+        Computer Vision and Image Understanding 68, no. 3 (1997): 346-362.
+        http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
+    */
+
     float SaturateRGB(float3 Color)
     {
         // Calculate min and max RGB
