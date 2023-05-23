@@ -2,35 +2,25 @@
 
 namespace cTemplateMatching
 {
+    uniform int _Method <
+        ui_label = "Template Matching Method";
+        ui_type = "combo";
+        ui_items = " SSD\0 NCC\0";
+    > = 0;
+
+    uniform int _Size <
+        ui_label = "Window Size";
+        ui_type = "slider";
+        ui_min = 1;
+        ui_max = 3;
+    > = 1;
+
     CREATE_TEXTURE(CurrentTex, BUFFER_SIZE_0, R8, 1)
     CREATE_SAMPLER(SampleCurrentTex, CurrentTex, LINEAR, CLAMP)
 
     CREATE_TEXTURE(PreviousTex, BUFFER_SIZE_0, R8, 1)
     CREATE_SAMPLER(SamplePreviousTex, PreviousTex, LINEAR, CLAMP)
 
-    // Vertex shaders
-
-    struct VS2PS_SAD
-    {
-        float4 HPos : SV_POSITION;
-        float4 Tex0 : TEXCOORD0;
-        float4 Tex1 : TEXCOORD1;
-        float4 Tex2 : TEXCOORD2;
-    };
-
-    VS2PS_SAD VS_SAD(APP2VS Input)
-    {
-        float2 PixelSize = 1.0 / (float2(BUFFER_WIDTH, BUFFER_HEIGHT));
-
-        VS2PS_Quad FSQuad = VS_Quad(Input);
-
-        VS2PS_SAD Output;
-        Output.HPos = FSQuad.HPos;
-        Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-        Output.Tex1 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-        Output.Tex2 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-        return Output;
-    }
 
     // Pixel shaders
 
@@ -40,38 +30,51 @@ namespace cTemplateMatching
         return dot(Color, 1.0 / 3.0);
     }
 
-    float4 PS_SAD(VS2PS_SAD Input) : SV_TARGET0
+    float4 PS_TemplateMatching(VS2PS_Quad Input) : SV_TARGET0
     {
-        const int Window = 9;
-        const float MeanWeight = 1.0 / Window;
+        float4 PixelSize = float4(1.0, 1.0, 0.0, 0.0) / BUFFER_SIZE_0.xyyy;
+        float SumIT = 0.0;
+        float SumT2 = 0.0;
+        float SumI2 = 0.0;
+        float M = 0.0;
 
-        float2 SamplePos[Window] =
+        switch(_Method)
         {
-            Input.Tex0.xy, Input.Tex1.xy, Input.Tex2.xy,
-            Input.Tex0.xz, Input.Tex1.xz, Input.Tex2.xz,
-            Input.Tex0.xw, Input.Tex1.xw, Input.Tex2.xw
-        };
-
-        float2 Images[Window];
-        float2 Images_mean = 0.0;
-
-        for (int i = 0; i < Window; i++)
-        {
-            Images[i][0] = tex2D(SamplePreviousTex, SamplePos[i]).r;
-            Images[i][1] = tex2D(SampleCurrentTex, SamplePos[i]).r;
-            Images_mean += (Images[i] * MeanWeight);
+            case 0:
+                M = 0.0;
+                break;
+            case 1:
+                M = 1.0;
+                break;
         }
 
-        // [0] = Numerator; [1] = Denominator A; [2] = Denominator B
-        float3 NCC = 0.0;
-        for (int j = 0; j < Window; j++)
+        for (int x = -_Size; x <= _Size; x++)
+        for (int y = -_Size; y <= _Size; y++)
         {
-            float2 Images_D = Images[j] - Images_mean;
-            NCC += (Images_D.xyx * Images_D.xyy);
+            int2 Shift = int2(x, y);
+            float4 Tex = Input.Tex0.xyyy + (Shift.xyyy * PixelSize);
+            float I = tex2Dlod(SamplePreviousTex, Tex).r;
+            float T = tex2Dlod(SampleCurrentTex, Tex).r;
+
+            switch(_Method)
+            {
+                case 0:
+                    float D = T - I;
+                    SumIT += (D * D);
+                    break;
+                case 1:
+                    SumIT += (T * I);
+                    break;
+            }
+
+            SumT2 += (T * T);
+            SumI2 += (I * I);
         }
-        float D = sqrt(NCC[0] * NCC[1]);
-        float Output = (D != 0.0) ? NCC[2] / D : 1.0;
-        return Output * 0.5 + 0.5;
+
+        float N = sqrt(SumT2 * SumI2);
+        float O = (N != 0.0) ? SumIT / N : M;
+
+        return O;
     }
 
     float4 PS_Blit1(VS2PS_Quad Input) : SV_TARGET0
@@ -93,8 +96,8 @@ namespace cTemplateMatching
         {
             SRGBWriteEnable = WRITE_SRGB;
 
-            VertexShader = VS_SAD;
-            PixelShader = PS_SAD;
+            VertexShader = VS_Quad;
+            PixelShader = PS_TemplateMatching;
         }
 
         pass
