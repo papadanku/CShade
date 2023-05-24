@@ -5,10 +5,10 @@
 */
 
 uniform int _Select <
-    ui_type = "combo";
-    ui_items = " Length (RG)\0 Length (RGB)\0 Average (RG)\0 Average (RGB)\0 Sum (RG)\0 Sum (RGB)\0";
     ui_label = "Method";
     ui_tooltip = "Select Chromaticity";
+    ui_type = "combo";
+    ui_items = " Length (RG)\0 Length (RGB)\0 Average (RG)\0 Average (RGB)\0 Sum (RG)\0 Sum (RGB)\0";
 > = 0;
 
 // Pixel shaders

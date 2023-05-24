@@ -3,16 +3,48 @@
 #include "shared/cVideoProcessing.fxh"
 
 /*
-    [Shader parameters]
+    Construct options
 */
 
 uniform float _FrameTime < source = "frametime"; > ;
 
-CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 4.5)
-CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.25)
-CREATE_OPTION(float, _Scale, "Main", "Blur scale", "slider", 2.0, 1.0)
-CREATE_OPTION(bool, _FrameRateScaling, "Other", "Enable frame-rate scaling", "radio", 1.0, false)
-CREATE_OPTION(float, _TargetFrameRate, "Other", "Target frame-rate", "drag", 144.0, 60.0)
+uniform float _MipBias <
+    ui_category = "Optical Flow";
+    ui_label = "Mipmap Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 4.5;
+
+uniform float _BlendFactor <
+    ui_category = "Optical Flow";
+    ui_label = "Temporal Blending Factor";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 0.9;
+> = 0.25;
+
+uniform float _Scale <
+    ui_category = "Motion Blur";
+    ui_label = "Scale";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 2.0;
+> = 1.0;
+
+uniform float _TargetFrameRate <
+    ui_category = "Motion Blur";
+    ui_label = "Target Frame-Rate";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 144.0;
+> = 60.0;
+
+uniform bool _FrameRateScaling <
+    ui_category = "Motion Blur";
+    ui_label = "Frame-Rate Scaling";
+    ui_type = "radio";
+> = false;
 
 CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)

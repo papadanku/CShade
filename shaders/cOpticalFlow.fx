@@ -3,11 +3,22 @@
 #include "shared/cVideoProcessing.fxh"
 
 /*
-    [Shader parameters]
+    Construct options
 */
 
-CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 0.0)
-CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.0)
+uniform float _MipBias <
+    ui_label = "Mipmap Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 0.0;
+
+uniform float _BlendFactor <
+    ui_label = "Temporal Blending Factor";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 0.9;
+> = 0.0;
 
 CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)

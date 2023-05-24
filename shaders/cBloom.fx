@@ -6,11 +6,40 @@ namespace cBloom
         Construct options
     */
 
-    CREATE_OPTION(float, _Threshold, "Main", "Threshold", "drag", 1.0, 0.8)
-    CREATE_OPTION(float, _Smooth, "Main", "Smoothing", "drag", 1.0, 0.25)
-    CREATE_OPTION(float, _Saturation, "Main", "Saturation", "drag", 4.0, 1.0)
-    CREATE_OPTION(float3, _ColorShift, "Main", "Color shift", "color", 1.0, 1.0)
-    CREATE_OPTION(float, _Intensity, "Main", "Color Intensity", "drag", 1.0, 0.5)
+    uniform float _Threshold <
+        ui_label = "Threshold";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 0.8;
+
+    uniform float _Smooth <
+        ui_label = "Smoothing";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 0.25;
+
+    uniform float _Saturation <
+        ui_label = "Saturation";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 4.0;
+    > = 1.0;
+
+    uniform float3 _ColorShift <
+        ui_label = "Color Shift (RGB)";
+        ui_type = "color";
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 1.0;
+
+    uniform float _Intensity <
+        ui_label = "Intensity";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 4.0;
+    > = 0.5;
 
     /*
         Construct textures and its samplers
@@ -265,11 +294,11 @@ namespace cBloom
     // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     float3 ToneMapACESFilmic(float3 x)
     {
-        float a = 2.51f;
-        float b = 0.03f;
-        float c = 2.43f;
-        float d = 0.59f;
-        float e = 0.14f;
+        float a = 2.51;
+        float b = 0.03;
+        float c = 2.43;
+        float d = 0.59;
+        float e = 0.14;
         return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
     }
 

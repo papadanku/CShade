@@ -1,27 +1,27 @@
 #include "shared/cGraphics.fxh"
 
 uniform float _Threshold <
+    ui_label = "Threshold";
     ui_type = "drag";
     ui_min = 0.0;
-    ui_label = "Threshold";
 > = 0.8;
 
 uniform float _Smooth <
+    ui_label = "Smoothing";
     ui_type = "drag";
     ui_min = 0.0;
-    ui_label = "Smoothing";
 > = 0.5;
 
 uniform float _Saturation <
+    ui_label = "Saturation";
     ui_type = "drag";
     ui_min = 0.0;
-    ui_label = "Saturation";
 > = 1.0;
 
 uniform float _Intensity <
+    ui_label = "Intensity";
     ui_type = "drag";
     ui_min = 0.0;
-    ui_label = "Intensity";
 > = 1.0;
 
 // Vertex shaders

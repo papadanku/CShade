@@ -2,15 +2,17 @@
 #include "shared/cImageProcessing.fxh"
 
 uniform float _Radius <
-    ui_label = "Convolution radius";
-    ui_type = "drag";
+    ui_label = "Radius";
+    ui_type = "slider";
     ui_min = 0.0;
+    ui_max = 64.0;
 > = 32.0;
 
 uniform int _Samples <
-    ui_label = "Convolution sample count";
-    ui_type = "drag";
-    ui_min = 0;
+    ui_label = "Sample Count";
+    ui_type = "slider";
+    ui_min = 4;
+    ui_max = 64;
 > = 8;
 
 float GradientNoise(float2 Position)

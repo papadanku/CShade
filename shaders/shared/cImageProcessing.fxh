@@ -7,7 +7,7 @@
 
     float GetGaussianWeight(float SampleIndex, float Sigma)
     {
-        const float Pi = 3.1415926535897932384626433832795f;
+        const float Pi = 3.1415926535897932384626433832795;
         float Output = rsqrt(2.0 * Pi * (Sigma * Sigma));
         return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
     }

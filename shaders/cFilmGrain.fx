@@ -9,17 +9,17 @@ uniform float _Time < source = "timer"; >;
 uniform float _Speed <
     ui_label = "Speed";
     ui_type = "drag";
-> = 2.0f;
+> = 2.0;
 
 uniform float _Variance <
     ui_label = "Variance";
     ui_type = "drag";
-> = 0.5f;
+> = 0.5;
 
 uniform float _Intensity <
-    ui_label = "Variance";
+    ui_label = "Intensity";
     ui_type = "drag";
-> = 0.005f;
+> = 0.005;
 
 // Pixel shaders
 // "Well ill believe it when i see it."

@@ -5,9 +5,9 @@
 */
 
 uniform float4 _Color <
-    ui_min = 0.0;
     ui_label = "Color";
     ui_type = "color";
+    ui_min = 0.0;
 > = 1.0;
 
 float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0

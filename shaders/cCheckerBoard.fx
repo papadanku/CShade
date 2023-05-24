@@ -5,20 +5,20 @@
 */
 
 uniform float4 _Color1 <
-    ui_min = 0.0;
     ui_label = "Color 1";
     ui_type = "color";
+    ui_min = 0.0;
 > = 1.0;
 
 uniform float4 _Color2 <
-    ui_min = 0.0;
     ui_label = "Color 2";
     ui_type = "color";
+    ui_min = 0.0;
 > = 0.0;
 
 uniform bool _InvertCheckerboard <
-    ui_type = "radio";
     ui_label = "Invert Checkerboard Pattern";
+    ui_type = "radio";
 > = false;
 
 

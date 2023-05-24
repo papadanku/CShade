@@ -30,19 +30,66 @@
 */
 
 /*
-    [Shader parameters]
+    Construct options
 */
 
 uniform float _Time < source = "timer"; >;
 
-CREATE_OPTION(int, _BlockSize, "Datamosh", "Block Size", "slider", 32, 4)
-CREATE_OPTION(float, _Entropy, "Datamosh", "Entropy", "slider", 1.0, 0.1)
-CREATE_OPTION(float, _Contrast, "Datamosh", "Contrast of noise", "slider", 4.0, 0.1)
-CREATE_OPTION(float, _Scale, "Datamosh", "Velocity scale", "slider", 1.0, 0.25)
-CREATE_OPTION(float, _Diffusion, "Datamosh", "Amount of random displacement", "slider", 4.0, 2.0)
+uniform float _MipBias <
+    ui_category = "Optical Flow";
+    ui_label = "Mipmap Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 4.5;
 
-CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 6.0, 0.0)
-CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.5)
+uniform float _BlendFactor <
+    ui_category = "Optical Flow";
+    ui_label = "Temporal Blending Factor";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 0.9;
+> = 0.25;
+
+uniform int _BlockSize <
+    ui_category = "Datamosh";
+    ui_label = "Block Size";
+    ui_type = "slider";
+    ui_min = 0;
+    ui_max = 32;
+> = 4;
+
+uniform float _Entropy <
+    ui_category = "Datamosh";
+    ui_label = "Entropy";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.1;
+
+uniform float _Contrast <
+    ui_category = "Datamosh";
+    ui_label = "Noise Contrast";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 4.0;
+> = 0.1;
+
+uniform float _Scale <
+    ui_category = "Datamosh";
+    ui_label = "Velocity Scale";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.25;
+
+uniform float _Diffusion <
+    ui_category = "Datamosh";
+    ui_label = "Amount of Random Displacement";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 4.0;
+> = 2.0;
 
 #ifndef LINEAR_SAMPLING
     #define LINEAR_SAMPLING 0

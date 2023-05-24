@@ -25,15 +25,15 @@
 
 uniform float _Divisor <
     ui_type = "drag";
-> = 0.05f;
+> = 0.05;
 
 uniform float _Offset <
     ui_type = "drag";
-> = 0.05f;
+> = 0.05;
 
 uniform float _Roll <
     ui_type = "drag";
-> = 0.0f;
+> = 0.0;
 
 uniform bool _Symmetry <
 > = true;

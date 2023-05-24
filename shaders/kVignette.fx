@@ -26,7 +26,7 @@
 uniform float _Falloff <
     ui_label = "Falloff";
     ui_type = "drag";
-> = 0.5f;
+> = 0.5;
 
 float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {

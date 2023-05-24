@@ -8,19 +8,19 @@ namespace cDiscBlur
     */
 
     uniform float _Offset <
-        ui_label = "Sample offset";
+        ui_label = "Sample Offset";
         ui_type = "drag";
         ui_min = 0.0;
     > = 0.0;
 
     uniform float _Radius <
-        ui_label = "Convolution radius";
+        ui_label = "Radius";
         ui_type = "drag";
         ui_min = 0.0;
     > = 64.0;
 
     uniform int _Samples <
-        ui_label = "Convolution sample count";
+        ui_label = "Sample Count";
         ui_type = "drag";
         ui_min = 0;
     > = 16;

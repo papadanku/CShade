@@ -1,9 +1,9 @@
 #include "shared/cGraphics.fxh"
 
 uniform float2 _Scale <
-    ui_min = 0.0;
     ui_label = "Scale";
     ui_type = "drag";
+    ui_min = 0.0;
 > = float2(1.0, 0.8);
 
 float4 PS_Letterbox(VS2PS_Quad Input) : SV_TARGET0

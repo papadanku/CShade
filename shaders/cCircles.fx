@@ -1,8 +1,23 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cMacros.fxh"
 
-CREATE_OPTION(float, _TileAmount, "Tiles", "Amount", "drag", 64.0, 8.0)
-CREATE_OPTION(float, _TileRadius, "Tiles", "Radius", "drag", 0.5, 0.45)
+/*
+    Construct options
+*/
+
+uniform float _TileAmount <
+    ui_label = "Amount";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 64.0;
+> = 8.0;
+
+uniform float _TileRadius <
+    ui_label = "Radius";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 0.5;
+> = 0.45;
 
 float GetMod(float X, float Y)
 {

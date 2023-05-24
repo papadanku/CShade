@@ -1,10 +1,10 @@
 #include "shared/cGraphics.fxh"
 
 uniform int _Select <
-    ui_type = "combo";
-    ui_items = " Average\0 Min\0 Median\0 Max\0 Length\0 None\0";
     ui_label = "Method";
+    ui_type = "combo";
     ui_tooltip = "Select Luminance";
+    ui_items = " Average\0 Min\0 Median\0 Max\0 Length\0 None\0";
 > = 0;
 
 float4 PS_Luminance(VS2PS_Quad Input) : SV_TARGET0

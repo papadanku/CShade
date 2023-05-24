@@ -2,6 +2,10 @@
 
 namespace cTemplateMatching
 {
+    /*
+        Construct options
+    */
+
     uniform int _Method <
         ui_label = "Template Matching Method";
         ui_type = "combo";

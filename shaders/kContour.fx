@@ -38,21 +38,21 @@ uniform float _Threshold <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = 0.05f;
+> = 0.05;
 
 uniform float _InverseRange <
     ui_label = "Inverse Range";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = 0.05f;
+> = 0.05;
 
 uniform float _ColorSensitivity <
     ui_label = "Color Sensitivity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = 0.0f;
+> = 0.0;
 
 uniform float4 _FrontColor <
     ui_label = "Front Color";

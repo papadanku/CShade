@@ -7,15 +7,15 @@ namespace cPyramidBlur
     */
 
     uniform int _Downscale <
+        ui_label = "Downscale kernel";
         ui_type = "combo";
         ui_items = " 2x2 Box\0 3x3 Tent\0 Jorge\0 Kawase\0";
-        ui_label = "Downscale kernel";
     > = 0;
 
     uniform int _Upscale <
+        ui_label = "Upscale kernel";
         ui_type = "combo";
         ui_items = " 2x2 Box\0 3x3 Tent\0 Jorge\0 Kawase\0";
-        ui_label = "Upscale kernel";
     > = 0;
 
     CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 1)

@@ -5,11 +5,22 @@
 namespace cBlockMatching
 {
     /*
-        [Shader parameters]
+        Construct options
     */
 
-    CREATE_OPTION(float, _MipBias, "Optical flow", "Optical flow mipmap bias", "slider", 7.0, 0.0)
-    CREATE_OPTION(float, _BlendFactor, "Optical flow", "Temporal blending factor", "slider", 0.9, 0.0)
+    uniform float _MipBias <
+        ui_label = "Optical flow mipmap bias";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 7.0;
+    > = 4.5;
+
+    uniform float _BlendFactor <
+        ui_label = "Temporal blending factor";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 0.9;
+    > = 0.5;
 
     CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, R8, 3)
     CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
