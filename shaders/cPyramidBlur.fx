@@ -210,7 +210,7 @@ namespace cPyramidBlur
             RenderTarget0 = RENDER_TARGET; \
         }
 
-    technique CShade_DualFilter
+    technique CShade_PyramidBlur
     {
         CREATE_PASS(VS_Downscale1, PS_Downscale1, Tex1)
         CREATE_PASS(VS_Downscale2, PS_Downscale2, Tex2)
