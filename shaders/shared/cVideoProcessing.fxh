@@ -106,7 +106,7 @@
 
         // Solve A^-1
         A = A / Determinant;
- 
+
         // Calculate Lucas-Kanade matrix
         // [ Ix^2/D -IxIy/D] [-IxIt]
         // [-IxIy/D  Iy^2/D] [-IyIt]
@@ -154,16 +154,15 @@
         return OutputColor;
     }
 
-    float GetNCC(float4 P, float4 C)
+    float GetSSD(float4 P, float4 C)
     {
-        float3 NCC = 0.0;
+        float SSD = 0.0;
         for (int i = 0; i < 4; i++)
         {
-            NCC[0] += (P[i] * P[i]);
-            NCC[1] += (C[i] * C[i]);
-            NCC[2] += (P[i] * C[i]);
+            float D = P[i] - C[i];
+            SSD += (D * D);
         }
-        return NCC[2] * rsqrt(NCC[0] * NCC[1]);
+        return sqrt(SSD / 4.0);
     }
 
     float2 SearchArea(sampler2D S1, Texel TexData, float4 PBlock, float Minimum)
@@ -176,10 +175,10 @@
             float2 Shift = float2(sin(F * y), cos(F * y)) * x;
 
             float4 CBlock = SampleBlock(S1, TexData.MainTex.xy + Shift, TexData);
-            float NCC = GetNCC(PBlock, CBlock);
+            float NCC = GetSSD(PBlock, CBlock);
 
-            Vectors = (NCC > Minimum) ? Shift : Vectors;
-            Minimum = max(NCC, Minimum);
+            Vectors = (NCC < Minimum) ? Shift : Vectors;
+            Minimum = min(NCC, Minimum);
         }
         return Vectors;
     }
@@ -210,7 +209,7 @@
         float2 NewVectors = 0.0;
         float4 CBlock = SampleBlock(SampleI0, TexData.MainTex.xy, TexData);
         float4 PBlock = SampleBlock(SampleI1, TexData.MainTex.xy, TexData);
-        float Minimum = GetNCC(PBlock, CBlock) + 1e-6;
+        float Minimum = GetSSD(PBlock, CBlock);
 
         // Calculate three-step search
         NewVectors = SearchArea(SampleI1, TexData, CBlock, Minimum);

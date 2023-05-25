@@ -33,6 +33,7 @@ float2 GetTiles(float2 Tex)
 
     // Offset every odd row by 0.5
     Tex.x += (RowIndex * 0.5);
+    Tex.x = (RowIndex == 1.0) ? -Tex.x : Tex.x;
 
     return frac(Tex);
 }
