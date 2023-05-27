@@ -126,13 +126,42 @@
         return Radius * SinCosTheta;
     }
 
-    // Color processing
+    /*
+        Color processing
+    */
 
     float2 NormalizeRGB(float3 Color)
     {
         float SumRGB = dot(Color, 1.0);
         float2 NRGB = (SumRGB != 0.0) ? Color.xy / SumRGB : 1.0 / 3.0;
         return NRGB;
+    }
+
+    /*
+        https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/
+
+        YCoCg-R: A Color Space with RGB Reversibility and Low Dynamic Range
+
+        Henrique S. Malvar, Gary Sullivan
+
+        MSR-TR-2003-103 | July 2003
+
+        Technical contribution to the H.264 Video Coding Standard. Joint Video Team (JVT) of ISO/IEC MPEG & ITU-T VCEG (ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q.6) Document JVT-I014r3.
+    */
+
+    float2 GetCoCg(float3 Color)
+    {
+        float2 CoCg = 0.0;
+        float2x3 MatCoCg = float2x3
+        (
+            float3(1.0, 0.0, -1.0),
+            float3(-0.5, 1.0, -0.5)
+        );
+
+        CoCg.x = dot(Color, MatCoCg[0]);
+        CoCg.y = dot(Color, MatCoCg[1]);
+
+        return (CoCg * 0.5) + 0.5;
     }
 
     /*
