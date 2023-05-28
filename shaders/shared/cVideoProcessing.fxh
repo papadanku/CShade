@@ -140,32 +140,30 @@
         SOFTWARE.
     */
 
-    float4 SampleBlock(sampler2D Source, float2 Tex, Texel TexData)
+    void SampleBlock(sampler2D Source, float2 Tex, Texel TexData, out float2 Pixel[4])
     {
         // Pack normalization and masking into 1 operation
         float4 HalfPixel = Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5);
-
-        float4 OutputColor = 0.0;
-        OutputColor.x = tex2Dlod(Source, (HalfPixel.xzzz * TexData.Mask) + TexData.LOD.xxxy).r;
-        OutputColor.y = tex2Dlod(Source, (HalfPixel.xwww * TexData.Mask) + TexData.LOD.xxxy).r;
-        OutputColor.z = tex2Dlod(Source, (HalfPixel.yzzz * TexData.Mask) + TexData.LOD.xxxy).r;
-        OutputColor.w = tex2Dlod(Source, (HalfPixel.ywww * TexData.Mask) + TexData.LOD.xxxy).r;
-
-        return OutputColor;
+        Pixel[0] = tex2Dlod(Source, (HalfPixel.xzzz * TexData.Mask) + TexData.LOD.xxxy).xy;
+        Pixel[1] = tex2Dlod(Source, (HalfPixel.xwww * TexData.Mask) + TexData.LOD.xxxy).xy;
+        Pixel[2] = tex2Dlod(Source, (HalfPixel.yzzz * TexData.Mask) + TexData.LOD.xxxy).xy;
+        Pixel[3] = tex2Dlod(Source, (HalfPixel.ywww * TexData.Mask) + TexData.LOD.xxxy).xy;
     }
 
-    float GetSSD(float4 P, float4 C)
+    float GetSSD(float2 T[4], float2 I[4])
     {
-        float SSD = 0.0;
+        float2 SSD = 0.0;
         for (int i = 0; i < 4; i++)
         {
-            float D = P[i] - C[i];
+            float2 D = T[i] - I[i];
             SSD += (D * D);
         }
-        return sqrt(SSD / 4.0);
+
+        float2 MSSD = sqrt(SSD / 4.0);
+        return max(MSSD[0], MSSD[1]);
     }
 
-    float2 SearchArea(sampler2D S1, Texel TexData, float4 PBlock, float Minimum)
+    float2 SearchArea(sampler2D S1, Texel TexData, float2 TBlock[4], float Minimum)
     {
         float2 Vectors = 0.0;
         for (int x = 1; x < 4; ++x)
@@ -174,8 +172,9 @@
             float F = 6.28 / (4 * x);
             float2 Shift = float2(sin(F * y), cos(F * y)) * x;
 
-            float4 CBlock = SampleBlock(S1, TexData.MainTex.xy + Shift, TexData);
-            float NCC = GetSSD(PBlock, CBlock);
+            float2 IBlock[4];
+            SampleBlock(S1, TexData.MainTex.xy + Shift, TexData, IBlock);
+            float NCC = GetSSD(TBlock, IBlock);
 
             Vectors = (NCC < Minimum) ? Shift : Vectors;
             Minimum = min(NCC, Minimum);
@@ -207,12 +206,14 @@
 
         // Initialize variables
         float2 NewVectors = 0.0;
-        float4 CBlock = SampleBlock(SampleI0, TexData.MainTex.xy, TexData);
-        float4 PBlock = SampleBlock(SampleI1, TexData.MainTex.xy, TexData);
-        float Minimum = GetSSD(PBlock, CBlock);
+        float2 TBlock[4];
+        float2 IBlock[4];
+        SampleBlock(SampleI0, TexData.MainTex.xy, TexData, TBlock);
+        SampleBlock(SampleI1, TexData.MainTex.xy, TexData, IBlock);
+        float Minimum = GetSSD(TBlock, IBlock);
 
         // Calculate three-step search
-        NewVectors = SearchArea(SampleI1, TexData, CBlock, Minimum);
+        NewVectors = SearchArea(SampleI1, TexData, TBlock, Minimum);
 
         // Propagate and encode vectors
         return EncodeVectors(Vectors + NewVectors, TexData.Mask.xy);

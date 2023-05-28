@@ -22,13 +22,13 @@ namespace cBlockMatching
         ui_max = 0.9;
     > = 0.5;
 
-    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, R8, 3)
+    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
     CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
 
-    CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, R8, 8)
+    CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RG8, 8)
     CREATE_SAMPLER(SampleTex2a, Tex2a, LINEAR, MIRROR)
 
-    CREATE_TEXTURE(Tex2b, BUFFER_SIZE_2, R8, 8)
+    CREATE_TEXTURE(Tex2b, BUFFER_SIZE_2, RG8, 8)
     CREATE_SAMPLER(SampleTex2b, Tex2b, LINEAR, MIRROR)
 
     CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
@@ -48,10 +48,10 @@ namespace cBlockMatching
 
     // Pixel shaders
 
-    float PS_Saturation(VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return SaturateRGB(Color);
+        return GetRG(Color);
     }
 
     // Copy-back
@@ -122,7 +122,7 @@ namespace cBlockMatching
     technique CShade_BlockMatching
     {
         // Normalize current frame
-        CREATE_PASS(VS_Quad, PS_Saturation, Tex1)
+        CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
 
         // Prefilter blur
         CREATE_PASS(VS_Quad, PS_Copy_0, Tex2a)
