@@ -114,7 +114,7 @@
         NewVectors = (Determinant != 0.0) ? mul(-B.xy, float2x2(A.yzzx)) : 0.0;
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + NewVectors, Input.Mask.xy);
+        return EncodeVectors(Vectors + NewVectors, TxData.Mask.xy);
     }
 
     void SampleBlock(sampler2D Source, float2 Tex, Texel Input, out float4 Pixel[8])
@@ -220,7 +220,7 @@
         float4 IBlock[8];
         SampleBlock(SampleT, TxData.MainTex.xy, TxData, TBlock);
         SampleBlock(SampleI, TxData.MainTex.xy, TxData, IBlock);
-        float Minimum = GetNCC(TBlock, IBlock);
+        float Minimum = GetNCC(TBlock, IBlock) + 1e-7;
 
         // Calculate three-step search
         NewVectors = SearchArea(SampleI, TxData, TBlock, Minimum);
