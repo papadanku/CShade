@@ -105,7 +105,7 @@ namespace cBlockMatching
         float2 Vectors = tex2Dlod(SampleOFlowTex, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
         Vectors = DecodeVectors(Vectors, InvTexSize);
 
-        float3 NVectors = normalize(float3(Vectors, 1.0));
+        float3 NVectors = normalize(float3(Vectors, 3.0));
         NVectors = saturate((NVectors * 0.5) + 0.5);
 
         return float4(NVectors, 1.0);
