@@ -119,14 +119,8 @@
         return EncodeVectors(Vectors + NewVectors, TxData.Mask.xy);
     }
 
-    void SampleBlock(sampler2D Source, float2 Tex, Texel Input, out float4 Pixel[8])
+    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Texel Input, out float4 Pixel[8])
     {
-        float4 HalfPixel[4];
-        HalfPixel[0] = Tex.xxyy + Input.Shifts[0];
-        HalfPixel[1] = Tex.xxyy + Input.Shifts[1];
-        HalfPixel[2] = Tex.xxyy + Input.Shifts[2];
-        HalfPixel[3] = Tex.xxyy + Input.Shifts[3];
-
         Pixel[0].xy = tex2Dlod(Source, (HalfPixel[0].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
         Pixel[1].xy = tex2Dlod(Source, (HalfPixel[0].xwww * Input.Mask) + Input.LOD.xxxy).xy;
         Pixel[2].xy = tex2Dlod(Source, (HalfPixel[0].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
@@ -167,6 +161,16 @@
         return min(NCC[0], NCC[1]);
     }
 
+    float4x4 GetHalfPixel(Texel Input, float2 Tex)
+    {
+        float4x4 HalfPixel;
+        HalfPixel[0] = Tex.xxyy + Input.Shifts[0];
+        HalfPixel[1] = Tex.xxyy + Input.Shifts[1];
+        HalfPixel[2] = Tex.xxyy + Input.Shifts[2];
+        HalfPixel[3] = Tex.xxyy + Input.Shifts[3];
+        return HalfPixel;
+    }
+
     float2 SearchArea(sampler2D SI, Texel Input, float4 TBlock[8], float Minimum)
     {
         float2 Vectors = 0.0;
@@ -182,8 +186,9 @@
                 continue;
             }
 
+            float4x4 HalfPixel = GetHalfPixel(Input, Input.MainTex.zw + Shift);
             float4 IBlock[8];
-            SampleBlock(SI, Input.MainTex.zw + Shift, Input, IBlock);
+            SampleBlock(SI, HalfPixel, Input, IBlock);
             float NCC = GetNCC(TBlock, IBlock);
 
             Vectors = (NCC > Minimum) ? Shift : Vectors;
@@ -225,8 +230,9 @@
         // Initialize variables
         float4 TBlock[8];
         float4 IBlock[8];
-        SampleBlock(SampleT, TxData.MainTex.xy, TxData, TBlock);
-        SampleBlock(SampleI, TxData.MainTex.xy, TxData, IBlock);
+        float4x4 HalfPixel = GetHalfPixel(TxData, TxData.MainTex.xy);
+        SampleBlock(SampleT, HalfPixel, TxData, TBlock);
+        SampleBlock(SampleI, HalfPixel, TxData, IBlock);
         float Minimum = GetNCC(TBlock, IBlock) + 1e-7;
 
         // Calculate three-step search
