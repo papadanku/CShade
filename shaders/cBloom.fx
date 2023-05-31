@@ -18,13 +18,13 @@ namespace cBloom
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
-    > = 0.25;
+    > = 0.5;
 
     uniform float _Saturation <
         ui_label = "Saturation";
         ui_type = "slider";
         ui_min = 0.0;
-        ui_max = 4.0;
+        ui_max = 10.0;
     > = 1.0;
 
     uniform float3 _ColorShift <
@@ -38,8 +38,8 @@ namespace cBloom
         ui_label = "Intensity";
         ui_type = "slider";
         ui_min = 0.0;
-        ui_max = 4.0;
-    > = 0.5;
+        ui_max = 10.0;
+    > = 5.0;
 
     /*
         Construct textures and its samplers
@@ -156,16 +156,15 @@ namespace cBloom
         Tonemapping: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     */
 
+    struct Sample
+    {
+        float3 Color;
+        float Weight;
+    };
+
     float Med3(float x, float y, float z)
     {
         return max(min(x, y), min(max(x, y), z));
-    }
-
-    // Brightness function
-    float KarisAverage(float3 c)
-    {
-        float Brightness = max(max(c.r, c.g), c.b);
-        return 1.0 / (Brightness + 1.0);
     }
 
     float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
@@ -185,53 +184,109 @@ namespace cBloom
         return float4(lerp(Brightness, Color.rgb, _Saturation) * _ColorShift, 1.0);
     }
 
+    float GetKarisWeight(float3 c)
+    {
+        float Brightness = max(max(c.r, c.g), c.b);
+        return 1.0 / (Brightness + 1.0);
+    }
+
+    Sample GetKarisSample(sampler2D SamplerSource, float2 Tex)
+    {
+        Sample Output;
+        Output.Color = tex2D(SamplerSource, Tex).rgb;
+        Output.Weight = GetKarisWeight(Output.Color);
+        return Output;
+    }
+
+    float3 GetKarisAverage(Sample Group[4])
+    {
+        float3 OutputColor = 0.0;
+        float WeightSum = 0.0;
+
+        for (int i = 0; i < 4; i++)
+        {
+            OutputColor += (Group[i].Color * Group[i].Weight);
+            WeightSum += Group[i].Weight;
+        }
+
+        return OutputColor / WeightSum;
+    }
+
     // 13-tap downsampling with Karis luma filtering
     float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool PartialKaris)
     {
-        // A0    B0    C0
-        //    D0    D1
-        // A1    B1    C1
-        //    D2    D3
-        // A2    B2    C2
+        float4 OutputColor0 = 0.0;
 
-        float4 D0 = tex2D(SampleSource, Input.Tex0.xw);
-        float4 D1 = tex2D(SampleSource, Input.Tex0.zw);
-        float4 D2 = tex2D(SampleSource, Input.Tex0.xy);
-        float4 D3 = tex2D(SampleSource, Input.Tex0.zy);
+        // A0 -- B0 -- C0
+        // -- D0 -- D1 --
+        // A1 -- B1 -- C1
+        // -- D2 -- D3 --
+        // A2 -- B2 -- C2
 
-        float4 A0 = tex2D(SampleSource, Input.Tex1.xy);
-        float4 A1 = tex2D(SampleSource, Input.Tex1.xz);
-        float4 A2 = tex2D(SampleSource, Input.Tex1.xw);
+        if (PartialKaris)
+        {
+            Sample D0 = GetKarisSample(SampleSource, Input.Tex0.xw);
+            Sample D1 = GetKarisSample(SampleSource, Input.Tex0.zw);
+            Sample D2 = GetKarisSample(SampleSource, Input.Tex0.xy);
+            Sample D3 = GetKarisSample(SampleSource, Input.Tex0.zy);
 
-        float4 B0 = tex2D(SampleSource, Input.Tex2.xy);
-        float4 B1 = tex2D(SampleSource, Input.Tex2.xz);
-        float4 B2 = tex2D(SampleSource, Input.Tex2.xw);
+            Sample A0 = GetKarisSample(SampleSource, Input.Tex1.xy);
+            Sample A1 = GetKarisSample(SampleSource, Input.Tex1.xz);
+            Sample A2 = GetKarisSample(SampleSource, Input.Tex1.xw);
 
-        float4 C0 = tex2D(SampleSource, Input.Tex3.xy);
-        float4 C1 = tex2D(SampleSource, Input.Tex3.xz);
-        float4 C2 = tex2D(SampleSource, Input.Tex3.xw);
+            Sample B0 = GetKarisSample(SampleSource, Input.Tex2.xy);
+            Sample B1 = GetKarisSample(SampleSource, Input.Tex2.xz);
+            Sample B2 = GetKarisSample(SampleSource, Input.Tex2.xw);
 
-        float4 A = D0 + D1 + D2 + D3;
-        float4 B = A0 + B0 + A1 + B1;
-        float4 C = B0 + C0 + B1 + C1;
-        float4 D = A1 + B1 + A2 + B2;
-        float4 E = B1 + C1 + B2 + C2;
+            Sample C0 = GetKarisSample(SampleSource, Input.Tex3.xy);
+            Sample C1 = GetKarisSample(SampleSource, Input.Tex3.xz);
+            Sample C2 = GetKarisSample(SampleSource, Input.Tex3.xw);
 
-        float W1 = (PartialKaris) ? KarisAverage(A.rgb) : 0.500 / 4.0;
-        float W2 = (PartialKaris) ? KarisAverage(B.rgb) : 0.125 / 4.0;
-        float W3 = (PartialKaris) ? KarisAverage(C.rgb) : 0.125 / 4.0;
-        float W4 = (PartialKaris) ? KarisAverage(D.rgb) : 0.125 / 4.0;
-        float W5 = (PartialKaris) ? KarisAverage(E.rgb) : 0.125 / 4.0;
-        float SumW = (PartialKaris) ? 1.0 / (W1 + W2 + W3 + W4 + W5) : 1.0;
+            Sample GroupA[4] = { D0, D1, D2, D3 };
+            Sample GroupB[4] = { A0, B0, A1, B1 };
+            Sample GroupC[4] = { B0, C0, B1, C1 };
+            Sample GroupD[4] = { A1, B1, A2, B2 };
+            Sample GroupE[4] = { B1, C1, B2, C2 };
 
-        float4 OutputColor = 0.0;
-        OutputColor += (A * W1);
-        OutputColor += (B * W2);
-        OutputColor += (C * W3);
-        OutputColor += (D * W4);
-        OutputColor += (E * W5);
-        OutputColor *= SumW;
-        return OutputColor;
+            OutputColor0 += (GetKarisAverage(GroupA) * 0.500);
+            OutputColor0 += (GetKarisAverage(GroupB) * 0.125);
+            OutputColor0 += (GetKarisAverage(GroupC) * 0.125);
+            OutputColor0 += (GetKarisAverage(GroupD) * 0.125);
+            OutputColor0 += (GetKarisAverage(GroupE) * 0.125);
+        }
+        else
+        {
+            float4 D0 = tex2D(SampleSource, Input.Tex0.xw);
+            float4 D1 = tex2D(SampleSource, Input.Tex0.zw);
+            float4 D2 = tex2D(SampleSource, Input.Tex0.xy);
+            float4 D3 = tex2D(SampleSource, Input.Tex0.zy);
+
+            float4 A0 = tex2D(SampleSource, Input.Tex1.xy);
+            float4 A1 = tex2D(SampleSource, Input.Tex1.xz);
+            float4 A2 = tex2D(SampleSource, Input.Tex1.xw);
+
+            float4 B0 = tex2D(SampleSource, Input.Tex2.xy);
+            float4 B1 = tex2D(SampleSource, Input.Tex2.xz);
+            float4 B2 = tex2D(SampleSource, Input.Tex2.xw);
+
+            float4 C0 = tex2D(SampleSource, Input.Tex3.xy);
+            float4 C1 = tex2D(SampleSource, Input.Tex3.xz);
+            float4 C2 = tex2D(SampleSource, Input.Tex3.xw);
+
+            float4 GroupA = D0 + D1 + D2 + D3;
+            float4 GroupB = A0 + B0 + A1 + B1;
+            float4 GroupC = B0 + C0 + B1 + C1;
+            float4 GroupD = A1 + B1 + A2 + B2;
+            float4 GroupE = B1 + C1 + B2 + C2;
+
+            OutputColor0 += (GroupA * (0.500 / 4.0));
+            OutputColor0 += (GroupB * (0.125 / 4.0));
+            OutputColor0 += (GroupC * (0.125 / 4.0));
+            OutputColor0 += (GroupD * (0.125 / 4.0));
+            OutputColor0 += (GroupE * (0.125 / 4.0));
+        }
+
+        return OutputColor0;
     }
 
     #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
