@@ -96,11 +96,14 @@ namespace cPyramidBlur
     CREATE_VS_UPSCALE(VS_Upscale1, 1.0 / BUFFER_SIZE_1)
     CREATE_VS_UPSCALE(VS_Upscale0, 1.0 / BUFFER_SIZE_0)
 
-    // Pixel Shaders
-    // 1: https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
-    // 2: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
-    // 3: https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_slides.pdf
-    // More: https://github.com/powervr-graphics/Native_SDK
+    /*
+        Pixel Shaders
+        ---
+        Case 1: https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
+        Case 2: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+        Case 3: https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_slides.pdf
+        More: https://github.com/powervr-graphics/Native_SDK
+    */
 
     float4 GetPixelScale(VS2PS_Scale Input, sampler2D SampleSource, int ScaleMethod)
     {

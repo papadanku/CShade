@@ -150,12 +150,11 @@ namespace cBloom
     CREATE_VS_UPSCALE(VS_Upscale1, 1.0 / BUFFER_SIZE_1)
 
     /*
-        Construct pixel shaders
+        Pixel shaders
+        ---
+        Thresholding: https://github.com/keijiro/Kino [MIT]
+        Tonemapping: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     */
-
-    // Pixel shaders
-    // Thresholding: https://github.com/keijiro/Kino [MIT]
-    // Tonemapping: https://github.com/TheRealMJP/BakingLab [MIT]
 
     float Med3(float x, float y, float z)
     {
@@ -290,8 +289,6 @@ namespace cBloom
     CREATE_PS_UPSCALE(PS_Upscale2, SampleTex3)
     CREATE_PS_UPSCALE(PS_Upscale1, SampleTex2)
 
-    // ACES Filmic tonemap operator
-    // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     float3 ToneMapACESFilmic(float3 x)
     {
         float a = 2.51;

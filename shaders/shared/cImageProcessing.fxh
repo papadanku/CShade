@@ -3,7 +3,11 @@
 #if !defined(CIMAGEPROCESSING_FXH)
     #define CIMAGEPROCESSING_FXH
 
-    // Linear Gaussian blur (https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/)
+    /*
+        Linear Gaussian blur
+        ---
+        https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
+    */ 
 
     float GetGaussianWeight(float SampleIndex, float Sigma)
     {
@@ -108,8 +112,8 @@
     }
 
     /*
-        Vogel disk sampling
-        Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution (http://maxest.gct-game.net/content/chss.pdf)
+        Wojciech Sterna's shadow sampling code as a screen-space convolution (http://maxest.gct-game.net/content/chss.pdf)
+        ---
         Vogel disk sampling: http://blog.marmakoide.org/?p=1
         Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
     */
@@ -139,13 +143,11 @@
 
     /*
         https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/
-
+        ---
         YCoCg-R: A Color Space with RGB Reversibility and Low Dynamic Range
-
         Henrique S. Malvar, Gary Sullivan
-
         MSR-TR-2003-103 | July 2003
-
+        ---
         Technical contribution to the H.264 Video Coding Standard. Joint Video Team (JVT) of ISO/IEC MPEG & ITU-T VCEG (ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q.6) Document JVT-I014r3.
     */
 
@@ -166,9 +168,10 @@
 
     /*
         RGB to saturation value.
-
+        ---
         Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
         Computer Vision and Image Understanding 68, no. 3 (1997): 346-362.
+        ---
         http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
     */
 

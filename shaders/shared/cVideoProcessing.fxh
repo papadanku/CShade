@@ -3,14 +3,13 @@
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
 
-    // Lucas-Kanade optical flow with bilinear fetches
-
     /*
+        Lucas-Kanade optical flow with bilinear fetches
+        ---
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
-        ---------------------------------------------------------
         [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
         [A21 A22]^-1 [-B2] -> [-A21/D  A22/D] [-B2]
-        ---------------------------------------------------------
+        ---
         [ Ix^2/D -IxIy/D] [-IxIt]
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
@@ -109,9 +108,12 @@
         // Solve A^-1
         A = A / Determinant;
 
-        // Calculate Lucas-Kanade matrix
-        // [ Ix^2/D -IxIy/D] [-IxIt]
-        // [-IxIy/D  Iy^2/D] [-IyIt]
+        /* 
+            Calculate Lucas-Kanade matrix
+            ---
+            [ Ix^2/D -IxIy/D] [-IxIt]
+            [-IxIy/D  Iy^2/D] [-IyIt]
+        */
         NewVectors = (Determinant != 0.0) ? mul(-B.xy, float2x2(A.yzzx)) : 0.0;
 
         // Propagate and encode vectors
