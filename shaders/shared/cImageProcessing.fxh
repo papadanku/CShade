@@ -141,6 +141,11 @@
         return NRGB;
     }
 
+    float3 GetRGB(float2 Color)
+    {
+        return float3(Color.rg, 1.0 - dot(Color.rg, 1.0));
+    }
+
     /*
         https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/
         ---

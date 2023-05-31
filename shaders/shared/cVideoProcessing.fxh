@@ -1,4 +1,5 @@
-#include "shared/cGraphics.fxh"
+#include "cGraphics.fxh"
+#include "cImageProcessing.fxh"
 
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
@@ -33,19 +34,19 @@
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
-    float4 GetSobel(sampler2D Source, float2 Tex, Texel Input)
+    float2x3 GetSobel(sampler2D Source, float2 Tex, Texel Input)
     {
         float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
         float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
 
-        float4 OutputColor = 0.0;
-        float2 N = tex2Dlod(Source, (NS.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 S = tex2Dlod(Source, (NS.zwww * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 E = tex2Dlod(Source, (EW.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 W = tex2Dlod(Source, (EW.zwww * Input.Mask) + Input.LOD.xxxy).rg;
-        OutputColor.xz = E - W;
-        OutputColor.yw = N - S;
+        float3 N = GetRGB(tex2Dlod(Source, (NS.xyyy * Input.Mask) + Input.LOD.xxxy).rg);
+        float3 S = GetRGB(tex2Dlod(Source, (NS.zwww * Input.Mask) + Input.LOD.xxxy).rg);
+        float3 E = GetRGB(tex2Dlod(Source, (EW.xyyy * Input.Mask) + Input.LOD.xxxy).rg);
+        float3 W = GetRGB(tex2Dlod(Source, (EW.zwww * Input.Mask) + Input.LOD.xxxy).rg);
 
+        float2x3 OutputColor;
+        OutputColor[0] = E - W;
+        OutputColor[1] = N - S;
         return OutputColor;
     }
 
@@ -85,18 +86,19 @@
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
             float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.xxxy;
 
-            float2 I0 = tex2Dlod(SampleI0, Tex0).rg;
-            float2 I1 = tex2Dlod(SampleI1, Tex1).rg;
-            float4 G = GetSobel(SampleI0, Tex.xy, TxData);
+            float3 I0 = GetRGB(tex2Dlod(SampleI0, Tex0).rg);
+            float3 I1 = GetRGB(tex2Dlod(SampleI1, Tex1).rg);
+            float2x3 G = GetSobel(SampleI0, Tex.xy, TxData);
 
             // A.x = A11; A.y = A22; A.z = A12/A22
-            A.xyz += (G.xyx * G.xyy);
-            A.xyz += (G.zwz * G.zww);
+            A.x += dot(G[0], G[0]);
+            A.y += dot(G[1], G[1]);
+            A.z += dot(G[0], G[1]);
 
             // B.x = B1; B.y = B2
-            float2 IT = I0 - I1;
-            B += (G.xy * IT.rr);
-            B += (G.zw * IT.gg);
+            float3 IT = I0 - I1;
+            B.x += dot(G[0], IT);
+            B.y += dot(G[1], IT);
         }
 
         // Create -IxIy (A12) for A^-1 and its determinant
