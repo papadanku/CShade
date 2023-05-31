@@ -20,7 +20,6 @@
         float4 MainTex;
         float4 Mask;
         float2 LOD;
-        float4x4 Shifts;
     };
 
     // [-1.0, 1.0] -> [Width, Height]
@@ -119,7 +118,15 @@
         return EncodeVectors(Vectors + NewVectors, TxData.Mask.xy);
     }
 
-    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Texel Input, out float4 Pixel[8])
+    struct Block
+    {
+        float4 MainTex;
+        float4 Mask;
+        float2 LOD;
+        float4x4 Shifts;
+    };
+
+    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Block Input, out float4 Pixel[8])
     {
         Pixel[0].xy = tex2Dlod(Source, (HalfPixel[0].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
         Pixel[1].xy = tex2Dlod(Source, (HalfPixel[0].xwww * Input.Mask) + Input.LOD.xxxy).xy;
@@ -161,7 +168,7 @@
         return min(NCC[0], NCC[1]);
     }
 
-    float4x4 GetHalfPixel(Texel Input, float2 Tex)
+    float4x4 GetHalfPixel(Block Input, float2 Tex)
     {
         float4x4 HalfPixel;
         HalfPixel[0] = Tex.xxyy + Input.Shifts[0];
@@ -171,7 +178,7 @@
         return HalfPixel;
     }
 
-    float2 SearchArea(sampler2D SI, Texel Input, float4 TBlock[8], float Minimum)
+    float2 SearchArea(sampler2D SI, Block Input, float4 TBlock[8], float Minimum)
     {
         float2 Vectors = 0.0;
 
@@ -208,18 +215,18 @@
     )
     {
         // Initialize data
-        Texel TxData;
+        Block BlockData;
 
         // Get required data to calculate main texel data
         float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
         Vectors = DecodeVectors(Vectors, TexSize);
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
-        TxData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
-        TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
-        TxData.LOD = float2(0.0, float(Level));
-        TxData.Shifts = float4x4
+        BlockData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
+        BlockData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
+        BlockData.MainTex.zw = BlockData.MainTex.xy + Vectors;
+        BlockData.LOD = float2(0.0, float(Level));
+        BlockData.Shifts = float4x4
         (
             float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0,  1.0,  1.0),
             float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0,  1.0,  1.0),
@@ -230,15 +237,15 @@
         // Initialize variables
         float4 TBlock[8];
         float4 IBlock[8];
-        float4x4 HalfPixel = GetHalfPixel(TxData, TxData.MainTex.xy);
-        SampleBlock(SampleT, HalfPixel, TxData, TBlock);
-        SampleBlock(SampleI, HalfPixel, TxData, IBlock);
+        float4x4 HalfPixel = GetHalfPixel(BlockData, BlockData.MainTex.xy);
+        SampleBlock(SampleT, HalfPixel, BlockData, TBlock);
+        SampleBlock(SampleI, HalfPixel, BlockData, IBlock);
         float Minimum = GetNCC(TBlock, IBlock) + 1e-7;
 
         // Calculate three-step search
-        Vectors += SearchArea(SampleI, TxData, TBlock, Minimum);
+        Vectors += SearchArea(SampleI, BlockData, TBlock, Minimum);
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors, TxData.Mask.xy);
+        return EncodeVectors(Vectors, BlockData.Mask.xy);
     }
 #endif
