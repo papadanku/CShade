@@ -77,7 +77,9 @@
         TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
         TxData.LOD = float2(0.0, float(Level));
 
+        [loop]
         for (int x = -2.5; x <= 2.5; x++)
+        [loop]
         for (int y = -2.5; y <= 2.5; y++)
         {
             int2 Shift = int2(x, y);
@@ -149,6 +151,8 @@
         float4 N1 = 0.0;
         float4 N2 = 0.0;
         float4 N3 = 0.0;
+
+        [unroll]
         for (int i = 0; i < 8; i++)
         {
             N1 += (T[i] * I[i]);
@@ -156,15 +160,20 @@
             N3 += (I[i] * I[i]);
         }
 
-        float4 NCC = N1 * rsqrt(N2 * N3);
-        float2 ONCC = NCC.xy + NCC.zw;
-        return min(ONCC[0], ONCC[1]);
+        float2 ON1 = N1.xy + N1.zw;
+        float2 ON2 = N2.xy + N2.zw;
+        float2 ON3 = N3.xy + N3.zw;
+        float2 NCC = ON1 * rsqrt(ON2 * ON3);
+        return min(NCC[0], NCC[1]);
     }
 
     float2 SearchArea(sampler2D SI, Texel Input, float4 TBlock[8], float Minimum)
     {
         float2 Vectors = 0.0;
+
+        [loop]
         for (int x = -1; x <= 1; x++)
+        [loop]
         for (int y = -1; y <= 1; y++)
         {
             float2 Shift = int2(x, y);
@@ -180,6 +189,7 @@
             Vectors = (NCC > Minimum) ? Shift : Vectors;
             Minimum = max(NCC, Minimum);
         }
+
         return Vectors;
     }
 
@@ -195,14 +205,6 @@
         // Initialize data
         Texel TxData;
 
-        const float4x4 Shifts = float4x4
-        (
-            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0,  1.0,  1.0),
-            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0,  1.0,  1.0),
-            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0, -1.0, -1.0),
-            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0, -1.0, -1.0)
-        );
-
         // Get required data to calculate main texel data
         float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
         Vectors = DecodeVectors(Vectors, TexSize);
@@ -212,10 +214,15 @@
         TxData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
         TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
         TxData.LOD = float2(0.0, float(Level));
-        TxData.Shifts = Shifts;
+        TxData.Shifts = float4x4
+        (
+            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0,  1.0,  1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0,  1.0,  1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0, -1.0, -1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0, -1.0, -1.0)
+        );
 
         // Initialize variables
-        float2 NewVectors = 0.0;
         float4 TBlock[8];
         float4 IBlock[8];
         SampleBlock(SampleT, TxData.MainTex.xy, TxData, TBlock);
@@ -223,9 +230,9 @@
         float Minimum = GetNCC(TBlock, IBlock) + 1e-7;
 
         // Calculate three-step search
-        NewVectors = SearchArea(SampleI, TxData, TBlock, Minimum);
+        Vectors += SearchArea(SampleI, TxData, TBlock, Minimum);
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + NewVectors, TxData.Mask.xy);
+        return EncodeVectors(Vectors, TxData.Mask.xy);
     }
 #endif
