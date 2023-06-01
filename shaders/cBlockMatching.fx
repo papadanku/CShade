@@ -43,6 +43,9 @@ namespace cBlockMatching
     CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
     CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
+    CREATE_TEXTURE(Tex6, BUFFER_SIZE_6, RG16F, 1)
+    CREATE_SAMPLER(SampleTex6, Tex6, LINEAR, MIRROR)
+
     // Pixel shaders
 
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
@@ -59,9 +62,15 @@ namespace cBlockMatching
 
     // Run motion estimation
 
+    float2 PS_MFlow_Level5(VS2PS_Quad Input) : SV_TARGET0
+    {
+        float2 Vectors = 0.0;
+        return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 4);
+    }
+
     float2 PS_MFlow_Level4(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors =  0.0;
+        float2 Vectors = tex2D(SampleTex6, Input.Tex0).xy;
         return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 3);
     }
 
@@ -119,6 +128,7 @@ namespace cBlockMatching
         CREATE_PASS(VS_Quad, PS_Copy_0, Tex2a)
 
         // Block matching
+        CREATE_PASS(VS_Quad, PS_MFlow_Level5, Tex6)
         CREATE_PASS(VS_Quad, PS_MFlow_Level4, Tex5)
         CREATE_PASS(VS_Quad, PS_MFlow_Level3, Tex4)
         CREATE_PASS(VS_Quad, PS_MFlow_Level2, Tex3)
