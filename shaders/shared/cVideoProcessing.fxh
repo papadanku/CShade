@@ -91,14 +91,14 @@
             float2x3 G = GetSobel(SampleI0, Tex.xy, TxData);
 
             // A.x = A11; A.y = A22; A.z = A12/A22
-            A.x += dot(G[0], G[0]);
-            A.y += dot(G[1], G[1]);
-            A.z += dot(G[0], G[1]);
+            A.x += dot(G[0].rgb, G[0].rgb);
+            A.y += dot(G[1].rgb, G[1].rgb);
+            A.z += dot(G[0].rgb, G[1].rgb);
 
             // B.x = B1; B.y = B2
             float3 IT = I0 - I1;
-            B.x += dot(G[0], IT);
-            B.y += dot(G[1], IT);
+            B.x += dot(G[0].rgb, IT.rgb);
+            B.y += dot(G[1].rgb, IT.rgb);
         }
 
         // Create -IxIy (A12) for A^-1 and its determinant
@@ -110,7 +110,7 @@
         // Solve A^-1
         A = A / Determinant;
 
-        /* 
+        /*
             Calculate Lucas-Kanade matrix
             ---
             [ Ix^2/D -IxIy/D] [-IxIt]
@@ -153,22 +153,23 @@
 
     float GetNCC(float4 T[8], float4 I[8])
     {
-        float4 N1 = 0.0;
-        float4 N2 = 0.0;
-        float4 N3 = 0.0;
+        float2 N1;
+        float2 N2;
+        float2 N3;
 
         [unroll]
         for (int i = 0; i < 8; i++)
         {
-            N1 += (T[i] * I[i]);
-            N2 += (T[i] * T[i]);
-            N3 += (I[i] * I[i]);
+            N1.r += dot(T[i].xz, I[i].xz);
+            N2.r += dot(T[i].xz, T[i].xz);
+            N3.r += dot(I[i].xz, I[i].xz);
+
+            N1.g += dot(T[i].yw, I[i].yw);
+            N2.g += dot(T[i].yw, T[i].yw);
+            N3.g += dot(I[i].yw, I[i].yw);
         }
 
-        float2 ON1 = N1.xy + N1.zw;
-        float2 ON2 = N2.xy + N2.zw;
-        float2 ON3 = N3.xy + N3.zw;
-        float2 NCC = ON1 * rsqrt(ON2 * ON3);
+        float2 NCC = N1 * rsqrt(N2 * N3);
         return min(NCC[0], NCC[1]);
     }
 
