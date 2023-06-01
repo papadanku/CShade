@@ -70,18 +70,6 @@ CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
 CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
 CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
-// Vertex shaders
-
-VS2PS_Blur VS_HBlur(APP2VS Input)
-{
-    return GetVertexBlur(Input, 1.0 / BUFFER_SIZE_2, true);
-}
-
-VS2PS_Blur VS_VBlur(APP2VS Input)
-{
-    return GetVertexBlur(Input, 1.0 / BUFFER_SIZE_2, false);
-}
-
 // Pixel shaders
 
 float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
@@ -90,14 +78,14 @@ float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     return GetRG(Color);
 }
 
-float2 PS_HBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {
-    return GetPixelBlur(Input, SampleTex1).rg;
+    return GetPixelBlur(Input, SampleTex1, true).rg;
 }
 
-float2 PS_VBlur_Prefilter(VS2PS_Blur Input) : SV_TARGET0
+float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {
-    return GetPixelBlur(Input, SampleTex2a).rg;
+    return GetPixelBlur(Input, SampleTex2a, false).rg;
 }
 
 // Run Lucas-Kanade
@@ -129,15 +117,15 @@ float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
 // Postfilter blur
 
 // We use MRT to immeduately copy the current blurred frame for the next frame
-float4 PS_HBlur_Postfilter(VS2PS_Blur Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
+float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTex2b, Input.Tex0.xy);
-    return float4(GetPixelBlur(Input, SampleOFlowTex).rg, 0.0, 1.0);
+    return float4(GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
 }
 
-float4 PS_VBlur_Postfilter(VS2PS_Blur Input) : SV_TARGET0
+float4 PS_VBlur_Postfilter(VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(GetPixelBlur(Input, SampleTex2a).rg, 0.0, 1.0);
+    return float4(GetPixelBlur(Input, SampleTex2a, false).rg, 0.0, 1.0);
 }
 
 float Noise(float2 Pos)
@@ -186,8 +174,8 @@ technique CShade_MotionBlur
     CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
 
     // Prefilter blur
-    CREATE_PASS(VS_HBlur, PS_HBlur_Prefilter, Tex2a)
-    CREATE_PASS(VS_VBlur, PS_VBlur_Prefilter, Tex2b)
+    CREATE_PASS(VS_Quad, PS_HBlur_Prefilter, Tex2a)
+    CREATE_PASS(VS_Quad, PS_VBlur_Prefilter, Tex2b)
 
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(VS_Quad, PS_PyLK_Level4, Tex5)
@@ -209,7 +197,7 @@ technique CShade_MotionBlur
     // Postfilter blur
     pass MRT_CopyAndBlur
     {
-        VertexShader = VS_HBlur;
+        VertexShader = VS_Quad;
         PixelShader = PS_HBlur_Postfilter;
         RenderTarget0 = Tex2c;
         RenderTarget1 = Tex2a;
@@ -217,7 +205,7 @@ technique CShade_MotionBlur
 
     pass
     {
-        VertexShader = VS_VBlur;
+        VertexShader = VS_Quad;
         PixelShader = PS_VBlur_Postfilter;
         RenderTarget0 = Tex2b;
     }
