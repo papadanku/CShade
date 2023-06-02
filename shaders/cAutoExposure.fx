@@ -4,25 +4,32 @@
     Automatic exposure shader using hardware blending
 */
 
-uniform float _Frametime < source = "frametime"; >;
+uniform float _Frametime : FrameTime;
+uniform float _SmoothingSpeed : Smoothing;
+uniform float _ManualBias : Bias;
 
-uniform float _SmoothingSpeed <
-    ui_label = "Smoothing";
-    ui_type = "drag";
-    ui_tooltip = "Exposure time smoothing";
-    ui_min = 0.0;
-    ui_max = 10.0;
-> = 2.0;
+uniform texture2D ColorTex: TEXLAYER0;
+uniform texture2D LumaTex: TEXLAYER1;
 
-uniform float _ManualBias <
-    ui_label = "Exposure";
-    ui_type = "drag";
-    ui_tooltip = "Optional manual bias ";
-    ui_min = 0.0;
-> = 2.0;
+sampler2D SampleColorTex
+{
+    Texture = ColorTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+};
 
-CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
-CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
+sampler2D SampleLumaTex
+{
+    Texture = LumaTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+};
 
 /*
     Pixel shaders
@@ -32,7 +39,7 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
     AutoExposure(): https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
 */
 
-float3 AutoExposure(float3 Color, float Average)
+float3 GetAutoExposure(float3 Color, float Average)
 {
     // NOTE: KeyValue is an exposure compensation curve
     float KeyValue = 1.03 - (2.0 / (log10(Average + 1.0) + 2.0));
@@ -54,8 +61,8 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
     float AverageLuma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    return AutoExposure(Color.rgb, AverageLuma);
+    float4 Color = tex2D(SampleColorTex, Input.Tex0);
+    return GetAutoExposure(Color.rgb, AverageLuma);
 }
 
 technique CShade_AutoExposure
