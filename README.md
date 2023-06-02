@@ -12,4 +12,4 @@ Practice | Elements
 **_SnakeCase** | Variables (uniform)
 **SnakeCase** | Variables (local & global) • Method arguments
 **Snake_Case** | Data subcatagory
-**PREFIX_Data** | structs, `PixelShader`, and `VertexShader`
+**PREFIX_Data** | structs • `PixelShader` • `VertexShader`
