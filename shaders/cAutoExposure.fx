@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    Automatic exposure shader using hardware blending
+*/
+
 uniform float _TimeRate <
     ui_label = "Smoothing";
     ui_type = "drag";
@@ -15,12 +19,24 @@ uniform float _ManualBias <
     ui_min = 0.0;
 > = 2.0;
 
-CREATE_TEXTURE(LumaTex, int2(256, 256), 9, R16F)
-
+CREATE_TEXTURE(LumaTex, BUFFER_SIZE_1, 9, R16F)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
-// Pixel shaders
-// TODO: Add average, spot, and center-weighted metering with adjustable radius and slope
+/*
+    Pixel shaders
+    ---
+    TODO: Add average, spot, and center-weighted metering with adjustable radius and slope
+    ---
+    AutoExposure(): https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
+*/
+
+float3 AutoExposure(float3 Color, float Average)
+{
+    // NOTE: KeyValue is an exposure compensation curve
+    float KeyValue = 1.03 - (2.0 / (log10(Average + 1.0) + 2.0));
+    float ExposureValue = log2(KeyValue / Average) + _ManualBias;
+    return Color * exp2(ExposureValue);
+}
 
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
@@ -31,17 +47,11 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     return float4(max(Color.r, max(Color.g, Color.b)).rrr, _TimeRate);
 }
 
-float4 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
+float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
-    // Average Luma = Average value (1x1) for all of the pixels
-    float AverageLuma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 8.0)).r;
+    float AverageLuma = tex2Dlod(SampleLumaTex, float4(0.5, 0.5, 0.0, 9.0)).r;
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-
-    // KeyValue is an exposure compensation curve
-    // Source: https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
-    float KeyValue = 1.03 - (2.0 / (log10(AverageLuma + 1.0) + 2.0));
-    float ExposureValue = log2(KeyValue / AverageLuma) + _ManualBias;
-    return Color * exp2(ExposureValue);
+    return AutoExposure(Color.rgb, AverageLuma);
 }
 
 technique CShade_AutoExposure
