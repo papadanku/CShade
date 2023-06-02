@@ -41,7 +41,7 @@ uniform float _MipBias <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
-> = 4.5;
+> = 0.0;
 
 uniform float _BlendFactor <
     ui_category = "Optical Flow";
@@ -80,8 +80,8 @@ uniform float _Scale <
     ui_label = "Velocity Scale";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.25;
+    ui_max = 2.0;
+> = 1.0;
 
 uniform float _Diffusion <
     ui_category = "Datamosh";
