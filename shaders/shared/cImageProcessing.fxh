@@ -29,13 +29,12 @@
     float4 GetPixelBlur(VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
     {
         // Initialize variables
-        float4 OutputColor = 0.0;
         const int KernelSize = 10;
-        const float4 Direction = (Horizontal) ? float4(1.0, 0.0, -1.0, 0.0) : float4(0.0, 1.0, 0.0, -1.0);
+        const float4 HShift = float4(-1.0, 0.0, 1.0, 0.0);
+        const float4 VShift = float4(0.0, -1.0, 0.0, 1.0);
 
-        // Get texel information
+        float4 OutputColor = 0.0;
         float4 PSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y)).xyxy;
-        PSize = (Horizontal) ? abs(PSize) * Direction : abs(PSize) * Direction;
 
         const float Offsets[KernelSize] =
         {
@@ -52,9 +51,12 @@
         // Sample and weight center first to get even number sides
         float TotalWeight = Weights[0];
         OutputColor = tex2D(SampleSource, Input.Tex0 + (Offsets[0] * PSize.xy)) * Weights[0];
+
+        // Sample neighboring pixels
         for(int i = 1; i < KernelSize; i++)
         {
-            float4 Tex = Input.Tex0.xyxy + (Offsets[i] * PSize);
+            const float4 Offset = (Horizontal) ? Offsets[i] * HShift: Offsets[i] * VShift;
+            float4 Tex = Input.Tex0.xyxy + (Offset * PSize);
             OutputColor += tex2D(SampleSource, Tex.xy) * Weights[i];
             OutputColor += tex2D(SampleSource, Tex.zw) * Weights[i];
             TotalWeight += (Weights[i] * 2.0);
