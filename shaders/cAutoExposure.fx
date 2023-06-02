@@ -4,13 +4,15 @@
     Automatic exposure shader using hardware blending
 */
 
-uniform float _TimeRate <
+uniform float _Frametime < source = "frametime"; >;
+
+uniform float _SmoothingSpeed <
     ui_label = "Smoothing";
     ui_type = "drag";
     ui_tooltip = "Exposure time smoothing";
     ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.95;
+    ui_max = 10.0;
+> = 2.0;
 
 uniform float _ManualBias <
     ui_label = "Exposure";
@@ -21,7 +23,7 @@ uniform float _ManualBias <
 
 #define LUMA_SIZE GET_EVEN(GET_MAX(BUFFER_SIZE_1.x, BUFFER_SIZE_1.y))
 
-CREATE_TEXTURE(LumaTex, int2(LUMA_SIZE, LUMA_SIZE), R16F, 9)
+CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
@@ -43,15 +45,17 @@ float3 AutoExposure(float3 Color, float Average)
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float3 Luma = max(Color.r, max(Color.g, Color.b));
 
     // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
     // OutputColor0.a = Output the weight for temporal blending
-    return float4(max(Color.r, max(Color.g, Color.b)).rrr, _TimeRate);
+    float Delay = 1e-3 * _Frametime;
+    return float4(Luma, saturate(Delay * _SmoothingSpeed));
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
-    float AverageLuma = tex2Dlod(SampleLumaTex, float4(0.5, 0.5, 0.0, 9.0)).r;
+    float AverageLuma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     return AutoExposure(Color.rgb, AverageLuma);
 }
@@ -63,8 +67,8 @@ technique CShade_AutoExposure
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
         BlendOp = ADD;
-        SrcBlend = INVSRCALPHA;
-        DestBlend = SRCALPHA;
+        SrcBlend = SRCALPHA;
+        DestBlend = INVSRCALPHA;
 
         VertexShader = VS_Quad;
         PixelShader = PS_Blit;
