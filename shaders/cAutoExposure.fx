@@ -19,7 +19,9 @@ uniform float _ManualBias <
     ui_min = 0.0;
 > = 2.0;
 
-CREATE_TEXTURE(LumaTex, BUFFER_SIZE_1, 9, R16F)
+#define LUMA_SIZE GET_EVEN(GET_MAX(BUFFER_SIZE_1.x, BUFFER_SIZE_1.y))
+
+CREATE_TEXTURE(LumaTex, int2(LUMA_SIZE, LUMA_SIZE), R16F, 9)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
