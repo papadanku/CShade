@@ -1,4 +1,5 @@
 #include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
 
 /*
     Construct options
@@ -25,19 +26,12 @@ uniform float _Intensity <
 // "Well ill believe it when i see it."
 // Yoinked code by Luluco250 (RIP) [https://www.shadertoy.com/view/4t2fRz] [MIT]
 
-float GaussianWeights(float x, float Sigma)
-{
-    const float Pi = 3.14159265359;
-    Sigma = Sigma * Sigma;
-    return rsqrt(Pi * Sigma) * exp(-((x * x) / (2.0 * Sigma)));
-}
-
 float4 PS_FilmGrain(VS2PS_Quad Input) : SV_TARGET0
 {
     float Time = rcp(1e+3 / _Time) * _Speed;
     float Seed = dot(Input.HPos.xy, float2(12.9898, 78.233));
     float Noise = frac(sin(Seed) * 43758.5453 + Time);
-    return GaussianWeights(Noise, _Variance) * _Intensity;
+    return GetGaussianWeight(Noise, _Variance) * _Intensity;
 }
 
 technique CShade_FilmGrain

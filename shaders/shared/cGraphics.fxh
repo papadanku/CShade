@@ -40,4 +40,9 @@
     {
         return tex2D(SampleSource, Input.Tex0);
     }
+
+    float GetMod(float X, float Y)
+    {
+        return X - Y * floor(X / Y);
+    }
 #endif

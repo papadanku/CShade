@@ -65,7 +65,7 @@ float4 PS_Matrix(VS2PS_Quad Input) : SV_TARGET0
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-technique CShade_MatrixTransforms
+technique CShade_Transform
 {
     pass
     {

@@ -19,11 +19,6 @@ uniform float _TileRadius <
     ui_max = 0.5;
 > = 0.45;
 
-float GetMod(float X, float Y)
-{
-    return X - Y * floor(X / Y);
-}
-
 float2 GetTiles(float2 Tex)
 {
     Tex *= _TileAmount;

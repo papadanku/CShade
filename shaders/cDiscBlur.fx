@@ -31,7 +31,9 @@ namespace cDiscBlur
 
     /*
         Pixel shaders
+        ---
         Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution
+        ---
         http://maxest.gct-game.net/content/chss.pdf
     */
 
