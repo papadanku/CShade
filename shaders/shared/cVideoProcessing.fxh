@@ -34,7 +34,7 @@
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
 
-    float2x3 GetSobel(sampler2D Source, float2 Tex, Texel Input)
+    float2x3 GetGradients(sampler2D Source, float2 Tex, Texel Input)
     {
         float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
         float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
@@ -86,9 +86,10 @@
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
             float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.xxxy;
 
+            float2x3 G = GetGradients(SampleI0, Tex.xy, TxData);
             float3 I0 = GetRGB(tex2Dlod(SampleI0, Tex0).rg);
             float3 I1 = GetRGB(tex2Dlod(SampleI1, Tex1).rg);
-            float2x3 G = GetSobel(SampleI0, Tex.xy, TxData);
+            float3 IT = I0 - I1;
 
             // A.x = A11; A.y = A22; A.z = A12/A22
             A.x += dot(G[0].rgb, G[0].rgb);
@@ -96,7 +97,6 @@
             A.z += dot(G[0].rgb, G[1].rgb);
 
             // B.x = B1; B.y = B2
-            float3 IT = I0 - I1;
             B.x += dot(G[0].rgb, IT.rgb);
             B.y += dot(G[1].rgb, IT.rgb);
         }
