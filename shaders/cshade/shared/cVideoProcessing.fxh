@@ -161,19 +161,19 @@
             float4 Tex = Input.MainTex.xyxy + Shift.xyxy;
 
             float4 T = Template[ID];
-            float4 I =
-            {
+            float4 I = float4
+            (
                 tex2Dlod(SampleImage, (Tex.xyyy * Input.Mask) + Input.LOD.xxxy).rg,
                 tex2Dlod(SampleImage, (Tex.zwww * Input.Mask) + Input.LOD.xxxy).rg
-            };
+            );
 
-            N1.r += dot(T[i].xz, I[i].xz);
-            N2.r += dot(T[i].xz, T[i].xz);
-            N3.r += dot(I[i].xz, I[i].xz);
+            N1.r += dot(T.xz, I.xz);
+            N2.r += dot(T.xz, T.xz);
+            N3.r += dot(I.xz, I.xz);
 
-            N1.g += dot(T[i].yw, I[i].yw);
-            N2.g += dot(T[i].yw, T[i].yw);
-            N3.g += dot(I[i].yw, I[i].yw);
+            N1.g += dot(T.yw, I.yw);
+            N2.g += dot(T.yw, T.yw);
+            N3.g += dot(I.yw, I.yw);
 
             ID += 1;
         }
