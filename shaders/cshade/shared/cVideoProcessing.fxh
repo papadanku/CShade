@@ -145,7 +145,7 @@
         }
     }
 
-    float GetNCC(sampler2D SampleImage, Block Input, float2 Tex, float2 Template[16])
+    float GetNCC(sampler2D SampleImage, Block Input, float2 Tex, float4 Template[8])
     {
         int ID = 0;
         float2 N1;
@@ -182,7 +182,7 @@
         return min(NCC[0], NCC[1]);
     }
 
-    float2 SearchArea(sampler2D SampleImage, Block Input, float2 Template[16], float Minimum)
+    float2 SearchArea(sampler2D SampleImage, Block Input, float4 Template[8], float Minimum)
     {
         float2 Vectors = 0.0;
 
