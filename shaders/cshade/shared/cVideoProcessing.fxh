@@ -4,18 +4,6 @@
 #if !defined(CVIDEOPROCESSING_FXH)
     #define CVIDEOPROCESSING_FXH
 
-    // [-1.0, 1.0] -> [Width, Height]
-    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
-    {
-        return Vectors / abs(ImageSize);
-    }
-
-    // [Width, Height] -> [-1.0, 1.0]
-    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
-    {
-        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
-    }
-
     /*
         Lucas-Kanade optical flow with bilinear fetches
         ---
@@ -33,6 +21,18 @@
         float4 Mask;
         float2 LOD;
     };
+
+    // [-1.0, 1.0] -> [Width, Height]
+    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
+    {
+        return Vectors / abs(ImageSize);
+    }
+
+    // [Width, Height] -> [-1.0, 1.0]
+    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
+    {
+        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
+    }
 
     float2x3 GetGradients(sampler2D Source, float2 Tex, Texel Input)
     {
@@ -77,9 +77,9 @@
         TxData.LOD = float2(0.0, float(Level));
 
         [loop]
-        for (float x = -2.5; x <= 2.5; x++)
+        for (float x = -1.5; x <= 1.5; x++)
         [loop]
-        for (float y = -2.5; y <= 2.5; y++)
+        for (float y = -1.5; y <= 1.5; y++)
         {
             const float2 Shift = float2(x, y);
             float4 Tex = TxData.MainTex + Shift.xyxy;
