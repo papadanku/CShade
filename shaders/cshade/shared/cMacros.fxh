@@ -14,6 +14,7 @@
 
     #define FP16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
 
+    #define ASPECT_RATIO float(BUFFER_WIDTH * (1.0 / BUFFER_HEIGHT))
     #define BUFFER_SIZE_0 int2(BUFFER_WIDTH, BUFFER_HEIGHT)
     #define BUFFER_SIZE_1 int2(BUFFER_SIZE_0 >> 1)
     #define BUFFER_SIZE_2 int2(BUFFER_SIZE_0 >> 2)

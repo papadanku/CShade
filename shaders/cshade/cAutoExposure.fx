@@ -1,3 +1,4 @@
+#include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
 
 /*
@@ -7,6 +8,7 @@
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _SmoothingSpeed <
+    ui_category = "Exposure";
     ui_label = "Smoothing";
     ui_type = "drag";
     ui_tooltip = "Exposure time smoothing";
@@ -15,13 +17,43 @@ uniform float _SmoothingSpeed <
 > = 2.0;
 
 uniform float _ManualBias <
+    ui_category = "Exposure";
     ui_label = "Exposure";
     ui_type = "drag";
     ui_tooltip = "Optional manual bias ";
     ui_min = 0.0;
 > = 2.0;
 
-CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
+uniform float _Scale <
+    ui_category = "Spot Metering";
+    ui_label = "Area Scale";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.5;
+
+uniform float2 _Offset <
+    ui_category = "Spot Metering";
+    ui_label = "Area Offset";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = 0.0;
+
+uniform int _Meter <
+    ui_category = "Spot Metering";
+    ui_label = "Method";
+    ui_type = "combo";
+    ui_items = " Average\0 Centered\0";
+> = 0;
+
+uniform bool _Debug <
+    ui_category = "Spot Metering";
+    ui_label = "Display Center Metering";
+    ui_type = "radio";
+> = false;
+
+CREATE_TEXTURE(LumaTex, int2(256, 256), RGBA8, 9)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
@@ -40,22 +72,54 @@ float3 GetAutoExposure(float3 Color, float Average)
     return Color * exp2(ExposureValue);
 }
 
+float2 Expand(float2 X)
+{
+    return (X * 2.0) - 1.0;
+}
+
+float2 Contract(float2 X)
+{
+    return (X * 0.5) + 0.5;
+}
+
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float2 Tex = Input.Tex0;
+
+    if (_Meter == 1)
+    {
+        Tex = Expand(Tex);
+        Tex.x /= ASPECT_RATIO;
+        Tex = (Tex * _Scale) + _Offset;
+        Tex = Contract(Tex);
+    }
+
+    float4 Color = tex2D(CShade_SampleColorTex, Tex);
     float3 Luma = max(Color.r, max(Color.g, Color.b));
 
     // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
     // OutputColor0.a = Output the weight for temporal blending
     float Delay = 1e-3 * _Frametime;
-    return float4(Luma, saturate(Delay * _SmoothingSpeed));
+    return float4(Color.rgb, 1.0);
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
     float AverageLuma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    return GetAutoExposure(Color.rgb, AverageLuma);
+    float3 ExposedColor = GetAutoExposure(Color.rgb, AverageLuma);
+
+    if (_Debug)
+    {
+        float2 Pos = (Expand(Input.Tex0) - _Offset) * BUFFER_SIZE_0;
+        float Factor = 256.0 * (BUFFER_SIZE_0.y * (1.0 / 256.0));
+        bool Mask = all(step(abs(Pos), Factor * _Scale));
+        return lerp(ExposedColor.rgb, Color.rgb * 0.5, Mask).rgb;
+    }
+    else
+    {
+        return ExposedColor;
+    }
 }
 
 technique CShade_AutoExposure
