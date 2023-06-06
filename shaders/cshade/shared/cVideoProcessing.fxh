@@ -127,59 +127,60 @@
         float4 MainTex;
         float4 Mask;
         float2 LOD;
+        float4x4 Shifts;
     };
 
-    void StoreTemplate(sampler2D Source, Block Input, out float4 Template[8])
+    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Block Input, out float4 Pixel[8])
     {
-        int ID = 0;
-        [unroll]
-        for (float y = -1.5; y <= 1.5; y += 1.0)
-        [unroll]
-        for (float x = -1.5; x <= 1.5; x += 2.0)
-        {
-            const float4 Shift = float4(x, y, x + 1.0, y);
-            float4 Tex = Input.MainTex.xyxy + Shift.xyxy;
-            Template[ID].xy = tex2Dlod(Source, (Tex.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
-            Template[ID].zw = tex2Dlod(Source, (Tex.zwww * Input.Mask) + Input.LOD.xxxy).rg;
-            ID += 1;
-        }
+        Pixel[0].xy = tex2Dlod(Source, (HalfPixel[0].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[1].xy = tex2Dlod(Source, (HalfPixel[0].xwww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[2].xy = tex2Dlod(Source, (HalfPixel[0].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[3].xy = tex2Dlod(Source, (HalfPixel[0].ywww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[4].xy = tex2Dlod(Source, (HalfPixel[1].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[5].xy = tex2Dlod(Source, (HalfPixel[1].xwww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[6].xy = tex2Dlod(Source, (HalfPixel[1].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[7].xy = tex2Dlod(Source, (HalfPixel[1].ywww * Input.Mask) + Input.LOD.xxxy).xy;
+
+        Pixel[0].zw = tex2Dlod(Source, (HalfPixel[2].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[1].zw = tex2Dlod(Source, (HalfPixel[2].xwww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[2].zw = tex2Dlod(Source, (HalfPixel[2].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[3].zw = tex2Dlod(Source, (HalfPixel[2].ywww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[4].zw = tex2Dlod(Source, (HalfPixel[3].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[5].zw = tex2Dlod(Source, (HalfPixel[3].xwww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[6].zw = tex2Dlod(Source, (HalfPixel[3].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[7].zw = tex2Dlod(Source, (HalfPixel[3].ywww * Input.Mask) + Input.LOD.xxxy).xy;
     }
 
-    float GetNCC(sampler2D SampleImage, Block Input, float2 Tex, float4 Template[8])
+    float GetNCC(float4 T[8], float4 I[8])
     {
-        int ID = 0;
         float2 N1;
         float2 N2;
         float2 N3;
 
         [unroll]
-        for (float y = -1.5; y <= 1.5; y += 1.0)
-        [unroll]
-        for (float x = -1.5; x <= 1.5; x += 2.0)
+        for (int i = 0; i < 8; i++)
         {
-            const float4 Shift = float4(x, y, x + 1.0, y);
-            float4 Tex = Input.MainTex.xyxy + Shift.xyxy;
+            N1.r += dot(T[i].xz, I[i].xz);
+            N2.r += dot(T[i].xz, T[i].xz);
+            N3.r += dot(I[i].xz, I[i].xz);
 
-            float4 T = Template[ID];
-            float4 I = float4
-            (
-                tex2Dlod(SampleImage, (Tex.xyyy * Input.Mask) + Input.LOD.xxxy).rg,
-                tex2Dlod(SampleImage, (Tex.zwww * Input.Mask) + Input.LOD.xxxy).rg
-            );
-
-            N1.r += dot(T.xz, I.xz);
-            N2.r += dot(T.xz, T.xz);
-            N3.r += dot(I.xz, I.xz);
-
-            N1.g += dot(T.yw, I.yw);
-            N2.g += dot(T.yw, T.yw);
-            N3.g += dot(I.yw, I.yw);
-
-            ID += 1;
+            N1.g += dot(T[i].yw, I[i].yw);
+            N2.g += dot(T[i].yw, T[i].yw);
+            N3.g += dot(I[i].yw, I[i].yw);
         }
 
         float2 NCC = N1 * rsqrt(N2 * N3);
         return min(NCC[0], NCC[1]);
+    }
+
+    float4x4 GetHalfPixel(Block Input, float2 Tex)
+    {
+        float4x4 HalfPixel;
+        HalfPixel[0] = Tex.xxyy + Input.Shifts[0];
+        HalfPixel[1] = Tex.xxyy + Input.Shifts[1];
+        HalfPixel[2] = Tex.xxyy + Input.Shifts[2];
+        HalfPixel[3] = Tex.xxyy + Input.Shifts[3];
+        return HalfPixel;
     }
 
     float2 SearchArea(sampler2D SampleImage, Block Input, float4 Template[8], float Minimum)
@@ -197,8 +198,11 @@
                 continue;
             }
 
-            float2 ImageTex = Input.MainTex.zw + Shift;
-            float NCC = GetNCC(SampleImage, Input, ImageTex, Template);
+            float4x4 HalfPixel = GetHalfPixel(Input, Input.MainTex.zw + Shift);
+            float4 Image[8];
+            SampleBlock(SampleImage, HalfPixel, Input, Image);
+            float NCC = GetNCC(Template, Image);
+
             Vectors = (NCC > Minimum) ? Shift : Vectors;
             Minimum = max(NCC, Minimum);
         }
@@ -227,11 +231,21 @@
         BlockData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
         BlockData.MainTex.zw = BlockData.MainTex.xy + Vectors;
         BlockData.LOD = float2(0.0, float(Level));
+        BlockData.Shifts = float4x4
+        (
+            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0,  1.0,  1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0,  1.0,  1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0, -1.0, -1.0),
+            float4(-0.5, 0.5, -0.5, 0.5) + float4( 1.0,  1.0, -1.0, -1.0)
+        );
 
         // Initialize variables
         float4 Template[8];
-        StoreTemplate(SampleTemplate, BlockData, Template);
-        float Minimum = GetNCC(SampleImage, BlockData, BlockData.MainTex.zw, Template);
+        float4 Image[8];
+        float4x4 HalfPixel = GetHalfPixel(BlockData, BlockData.MainTex.xy);
+        SampleBlock(SampleTemplate, HalfPixel, BlockData, Template);
+        SampleBlock(SampleImage, HalfPixel, BlockData, Image);
+        float Minimum = GetNCC(Template, Image) + 1e-7;
 
         // Calculate three-step search
         Vectors += SearchArea(SampleImage, BlockData, Template, Minimum);
