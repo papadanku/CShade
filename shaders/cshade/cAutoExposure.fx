@@ -119,7 +119,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         bool Dot = all(step(abs(Pos), Factor * 0.1));
         bool Mask = all(step(abs(Pos), Factor));
 
-        //
+        // Composite the exposed color with debug overlay
         float3 Color1 = ExposedColor.rgb;
         float3 Color2 = lerp(Dot * 2.0, Color.rgb, Mask * 0.5);
 
