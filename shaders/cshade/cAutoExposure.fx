@@ -53,7 +53,7 @@ uniform bool _Debug <
     ui_type = "radio";
 > = false;
 
-CREATE_TEXTURE(LumaTex, int2(256, 256), RGBA8, 9)
+CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
@@ -90,7 +90,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     {
         Tex = Expand(Tex);
         Tex.x /= ASPECT_RATIO;
-        Tex = (Tex * _Scale) + _Offset;
+        Tex = (Tex * _Scale) + float2(_Offset.x, -_Offset.y);
         Tex = Contract(Tex);
     }
 
@@ -100,7 +100,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
     // OutputColor0.a = Output the weight for temporal blending
     float Delay = 1e-3 * _Frametime;
-    return float4(Color.rgb, 1.0);
+    return float4(Color.rgb, saturate(Delay * _SmoothingSpeed));
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
@@ -111,10 +111,19 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 
     if (_Debug)
     {
-        float2 Pos = (Expand(Input.Tex0) - _Offset) * BUFFER_SIZE_0;
-        float Factor = 256.0 * (BUFFER_SIZE_0.y * (1.0 / 256.0));
-        bool Mask = all(step(abs(Pos), Factor * _Scale));
-        return lerp(ExposedColor.rgb, Color.rgb * 0.5, Mask).rgb;
+        // Unpack screen coordinates
+        float2 Pos = (Expand(Input.Tex0) - float2(_Offset.x, -_Offset.y)) * BUFFER_SIZE_0;
+        float Factor = BUFFER_SIZE_0.y * _Scale;
+
+        // Create the needed mask
+        bool Dot = all(step(abs(Pos), Factor * 0.1));
+        bool Mask = all(step(abs(Pos), Factor));
+
+        //
+        float3 Color1 = ExposedColor.rgb;
+        float3 Color2 = lerp(Dot * 2.0, Color.rgb, Mask * 0.5);
+
+        return lerp(Color1, Color2, Mask).rgb;
     }
     else
     {
