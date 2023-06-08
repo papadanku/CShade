@@ -92,7 +92,7 @@
     float2 GetRG(float3 Color)
     {
         float SumRGB = dot(Color, 1.0);
-        float2 NRGB = (SumRGB != 0.0) ? Color.xy / SumRGB : 1.0 / 3.0;
+        float2 NRGB = (SumRGB == 0.0) ? 1.0 / 3.0 : Color.xy / SumRGB;
         return NRGB;
     }
 
@@ -143,7 +143,7 @@
 
         // Calculate normalized RGB
         float SatRGB = (MaxColor - MinColor) / MaxColor;
-        SatRGB = (SatRGB != 0.0) ? SatRGB : 0.0;
+        SatRGB = (MaxColor == 0.0) ? 0.0 : SatRGB;
 
         return SatRGB;
     }
