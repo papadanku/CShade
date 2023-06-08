@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Threshold <
     ui_label = "Threshold";
     ui_type = "drag";
@@ -24,14 +28,14 @@ uniform float _Intensity <
     ui_min = 0.0;
 > = 1.0;
 
-// Vertex shaders
+/*
+    [Pixel Shaders]
+*/
 
 float Med3(float x, float y, float z)
 {
     return max(min(x, y), min(max(x, y), z));
 }
-
-// Pixel shaders
 
 float4 PS_Threshold(VS2PS_Quad Input) : SV_TARGET0
 {

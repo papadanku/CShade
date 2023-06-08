@@ -1,7 +1,7 @@
 #include "shared/cGraphics.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float4 _Color1 <
@@ -21,6 +21,9 @@ uniform bool _InvertCheckerboard <
     ui_type = "radio";
 > = false;
 
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Checkerboard(VS2PS_Quad Input) : SV_TARGET0
 {

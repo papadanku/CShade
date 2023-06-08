@@ -3,7 +3,7 @@
 #include "shared/cVideoProcessing.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float _FrameTime < source = "frametime"; > ;
@@ -70,7 +70,9 @@ CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
 CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
 CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {

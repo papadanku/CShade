@@ -3,7 +3,7 @@
 namespace cPyramidBlur
 {
     /*
-        Construct options
+        [Shader Options]
     */
 
     uniform int _Downscale <
@@ -18,6 +18,10 @@ namespace cPyramidBlur
         ui_items = " 2x2 Box\0 3x3 Tent\0 Jorge\0 Kawase\0";
     > = 0;
 
+    /*
+        [Textures & Samplers]
+    */
+
     CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 1)
     CREATE_SRGB_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
@@ -30,7 +34,9 @@ namespace cPyramidBlur
     CREATE_TEXTURE(Tex4, BUFFER_SIZE_4, RGBA8, 1)
     CREATE_SRGB_SAMPLER(SampleTex4, Tex4, LINEAR, CLAMP)
 
-    // Vertex shaders
+    /*
+        [Vertex Shaders]
+    */
 
     struct VS2PS_Scale
     {

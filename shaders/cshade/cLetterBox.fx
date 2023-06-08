@@ -1,10 +1,18 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float2 _Scale <
     ui_label = "Scale";
     ui_type = "drag";
     ui_min = 0.0;
 > = float2(1.0, 0.8);
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Letterbox(VS2PS_Quad Input) : SV_TARGET0
 {

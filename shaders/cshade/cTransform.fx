@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Angle <
     ui_label = "Rotation Angle";
     ui_type = "drag";
@@ -15,7 +19,9 @@ uniform float2 _Scale <
     ui_type = "drag";
 > = 1.0;
 
-// Vertex shaders
+/*
+    [Vertex Shaders]
+*/
 
 VS2PS_Quad VS_Matrix(APP2VS Input)
 {
@@ -58,7 +64,9 @@ VS2PS_Quad VS_Matrix(APP2VS Input)
     return Output;
 }
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Matrix(VS2PS_Quad Input) : SV_TARGET0
 {

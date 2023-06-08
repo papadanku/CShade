@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform int _Blend <
     ui_label = "Blend Mode";
     ui_type = "combo";
@@ -16,6 +20,10 @@ uniform float3 _DestFactor <
     ui_type = "drag";
 > = 1.0;
 
+/*
+    [Textures & Samplers]
+*/
+
 // Output in cCopyBuffer
 CREATE_TEXTURE(SrcTex, BUFFER_SIZE_0, RGBA8, 1)
 
@@ -23,7 +31,9 @@ CREATE_TEXTURE(SrcTex, BUFFER_SIZE_0, RGBA8, 1)
 CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, CLAMP)
 CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, CLAMP)
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Copy(VS2PS_Quad Input) : SV_TARGET0
 {

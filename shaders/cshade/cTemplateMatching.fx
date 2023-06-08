@@ -3,7 +3,7 @@
 namespace cTemplateMatching
 {
     /*
-        Construct options
+        [Shader Options]
     */
 
     uniform int _Method <
@@ -19,14 +19,19 @@ namespace cTemplateMatching
         ui_max = 3;
     > = 1;
 
+    /*
+        [Textures & Samplers]
+    */
+
     CREATE_TEXTURE(CurrentTex, BUFFER_SIZE_0, R8, 1)
     CREATE_SAMPLER(SampleCurrentTex, CurrentTex, LINEAR, CLAMP)
 
     CREATE_TEXTURE(PreviousTex, BUFFER_SIZE_0, R8, 1)
     CREATE_SAMPLER(SamplePreviousTex, PreviousTex, LINEAR, CLAMP)
 
-
-    // Pixel shaders
+    /*
+        [Pixel Shaders]
+    */
 
     float PS_Blit0(VS2PS_Quad Input) : SV_TARGET0
     {

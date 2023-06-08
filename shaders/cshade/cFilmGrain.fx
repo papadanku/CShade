@@ -2,7 +2,7 @@
 #include "shared/cImageProcessing.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float _Time < source = "timer"; >;
@@ -22,9 +22,12 @@ uniform float _Intensity <
     ui_type = "drag";
 > = 0.005;
 
-// Pixel shaders
-// "Well ill believe it when i see it."
-// Yoinked code by Luluco250 (RIP) [https://www.shadertoy.com/view/4t2fRz] [MIT]
+/*
+    [Pixel Shaders]
+    ---
+    "Well ill believe it when i see it."
+    Yoinked code by Luluco250 (RIP) [https://www.shadertoy.com/view/4t2fRz] [MIT]
+*/
 
 float4 PS_FilmGrain(VS2PS_Quad Input) : SV_TARGET0
 {

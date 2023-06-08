@@ -1,7 +1,7 @@
 
 #if !defined(CMACROS_FXH)
     /*
-        Macros and macro accessories
+        [Macros and macro accessories]
         ---
         https://graphics.stanford.edu/~seander/bithacks.html
     */

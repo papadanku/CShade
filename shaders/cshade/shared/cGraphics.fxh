@@ -3,7 +3,15 @@
 #if !defined(CGRAPHICS_FXH)
     #define CGRAPHICS_FXH
 
+    /*
+        [Constants]
+    */
+
     static const float Pi = 3.1415926535897932384626433832795;
+
+    /*
+        [Buffer]
+    */
 
     texture2D CShade_ColorTex : COLOR;
 
@@ -15,6 +23,10 @@
         MipFilter = LINEAR;
         SRGBTexture = READ_SRGB;
     };
+
+    /*
+        [Simple Vertex Shader]
+    */
 
     struct APP2VS
     {
@@ -35,6 +47,10 @@
         Output.HPos = float4(Output.Tex0 * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
         return Output;
     }
+
+    /*
+        [Math Functions]
+    */
 
     float4 GetBlit(VS2PS_Quad Input, sampler2D SampleSource)
     {

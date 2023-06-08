@@ -4,7 +4,7 @@
 namespace cDiscBlur
 {
     /*
-        Construct options
+        [Shader Options]
     */
 
     uniform float _Offset <
@@ -25,12 +25,15 @@ namespace cDiscBlur
         ui_min = 0;
     > = 16;
 
-    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 8)
+    /*
+        [Textures & Samplers]
+    */
 
+    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 8)
     CREATE_SRGB_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
 
     /*
-        Pixel shaders
+        [Pixel Shaders]
         ---
         Repurposed Wojciech Sterna's shadow sampling code as a screen-space convolution
         ---

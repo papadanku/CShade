@@ -24,7 +24,7 @@
 */
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform int _Method <
@@ -67,6 +67,10 @@ uniform float4 _BackColor <
     ui_min = 0.0;
     ui_max = 1.0;
 > = float4(0.0, 0.0, 0.0, 0.0);
+
+/*
+    [Vertex Shaders]
+*/
 
 struct VS2PS_Grad
 {
@@ -119,6 +123,10 @@ VS2PS_Grad VS_Grad(APP2VS Input)
 
     return Output;
 }
+
+/*
+    [Pixel Shaders]
+*/
 
 struct Grad
 {

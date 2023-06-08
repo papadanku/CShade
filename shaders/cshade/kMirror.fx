@@ -23,6 +23,10 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Divisor <
     ui_type = "drag";
 > = 0.05;
@@ -37,6 +41,10 @@ uniform float _Roll <
 
 uniform bool _Symmetry <
 > = true;
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Mirror(VS2PS_Quad Input) : SV_TARGET0
 {

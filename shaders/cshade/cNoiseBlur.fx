@@ -1,6 +1,10 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Radius <
     ui_label = "Radius";
     ui_type = "slider";
@@ -14,6 +18,10 @@ uniform int _Samples <
     ui_min = 4;
     ui_max = 64;
 > = 8;
+
+/*
+    [Pixel Shaders]
+*/
 
 float GradientNoise(float2 Position)
 {

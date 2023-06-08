@@ -1,7 +1,7 @@
 #include "shared/cGraphics.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float4 _Color <
@@ -9,6 +9,10 @@ uniform float4 _Color <
     ui_type = "color";
     ui_min = 0.0;
 > = 1.0;
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
 {

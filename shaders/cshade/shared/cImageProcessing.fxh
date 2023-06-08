@@ -4,6 +4,10 @@
     #define CIMAGEPROCESSING_FXH
 
     /*
+        [Convolutions - Blur]
+    */
+
+    /*
         Linear Gaussian blur
         ---
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
@@ -86,7 +90,39 @@
     }
 
     /*
-        Color processing
+        Linear filtered Sobel filter
+    */
+
+    struct VS2PS_Sobel
+    {
+        float4 HPos : SV_POSITION;
+        float4 Tex0 : TEXCOORD0;
+    };
+
+    VS2PS_Sobel GetVertexSobel(APP2VS Input, float2 PixelSize)
+    {
+        VS2PS_Quad FSQuad = VS_Quad(Input);
+
+        VS2PS_Sobel Output;
+        Output.HPos = FSQuad.HPos;
+        Output.Tex0 = FSQuad.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
+        return Output;
+    }
+
+    float2 GetPixelSobel(VS2PS_Sobel Input, sampler2D SampleSource)
+    {
+        float2 OutputColor0 = 0.0;
+        float A = tex2D(SampleSource, Input.Tex0.xw).r * 4.0; // <-0.5, +0.5>
+        float B = tex2D(SampleSource, Input.Tex0.zw).r * 4.0; // <+0.5, +0.5>
+        float C = tex2D(SampleSource, Input.Tex0.xy).r * 4.0; // <-0.5, -0.5>
+        float D = tex2D(SampleSource, Input.Tex0.zy).r * 4.0; // <+0.5, -0.5>
+        OutputColor0.x = ((B + D) - (A + C)) / 4.0;
+        OutputColor0.y = ((A + B) - (C + D)) / 4.0;
+        return OutputColor0;
+    }
+
+    /*
+        [Color Processing]
     */
 
     float2 GetRG(float3 Color)
@@ -146,35 +182,5 @@
         SatRGB = (MaxColor == 0.0) ? 0.0 : SatRGB;
 
         return SatRGB;
-    }
-
-    // Linear filtered Sobel filter
-
-    struct VS2PS_Sobel
-    {
-        float4 HPos : SV_POSITION;
-        float4 Tex0 : TEXCOORD0;
-    };
-
-    VS2PS_Sobel GetVertexSobel(APP2VS Input, float2 PixelSize)
-    {
-        VS2PS_Quad FSQuad = VS_Quad(Input);
-
-        VS2PS_Sobel Output;
-        Output.HPos = FSQuad.HPos;
-        Output.Tex0 = FSQuad.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
-        return Output;
-    }
-
-    float2 GetPixelSobel(VS2PS_Sobel Input, sampler2D SampleSource)
-    {
-        float2 OutputColor0 = 0.0;
-        float A = tex2D(SampleSource, Input.Tex0.xw).r * 4.0; // <-0.5, +0.5>
-        float B = tex2D(SampleSource, Input.Tex0.zw).r * 4.0; // <+0.5, +0.5>
-        float C = tex2D(SampleSource, Input.Tex0.xy).r * 4.0; // <-0.5, -0.5>
-        float D = tex2D(SampleSource, Input.Tex0.zy).r * 4.0; // <+0.5, -0.5>
-        OutputColor0.x = ((B + D) - (A + C)) / 4.0;
-        OutputColor0.y = ((A + B) - (C + D)) / 4.0;
-        return OutputColor0;
     }
 #endif

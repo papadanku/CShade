@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float2 _TexScale <
     ui_category = "Texture";
     ui_label = "Scale";
@@ -25,6 +29,10 @@ uniform float2 _MaskScale <
     #define ENABLE_POINT_SAMPLING 0
 #endif
 
+/*
+    [Textures & Samplers]
+*/
+
 sampler2D SampleColorTex_Overlay
 {
     Texture = CShade_ColorTex;
@@ -41,6 +49,10 @@ sampler2D SampleColorTex_Overlay
     AddressV = MIRROR;
     SRGBTexture = READ_SRGB;
 };
+
+/*
+    [Vertex Shaders]
+*/
 
 struct VS2PS
 {
@@ -64,6 +76,10 @@ VS2PS VS_Overlay(APP2VS Input)
 
     return Output;
 }
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 {

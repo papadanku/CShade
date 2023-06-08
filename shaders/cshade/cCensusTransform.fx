@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Vertex Shaders]
+*/
+
 struct VS2PS_Census
 {
     float4 HPos : SV_POSITION;
@@ -27,6 +31,10 @@ VS2PS_Census VS_Census(APP2VS Input)
     Output.Tex2 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
     return Output;
 }
+
+/*
+    [Pixel Shaders]
+*/
 
 float Med3(float A, float B, float C)
 {

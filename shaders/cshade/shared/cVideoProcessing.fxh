@@ -5,6 +5,22 @@
     #define CVIDEOPROCESSING_FXH
 
     /*
+        [Functions]
+    */
+
+    // [-1.0, 1.0] -> [Width, Height]
+    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
+    {
+        return Vectors / abs(ImageSize);
+    }
+
+    // [Width, Height] -> [-1.0, 1.0]
+    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
+    {
+        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
+    }
+
+    /*
         Lucas-Kanade optical flow with bilinear fetches
         ---
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
@@ -21,19 +37,6 @@
         float4 Mask;
         float2 LOD;
     };
-
-    // [-1.0, 1.0] -> [Width, Height]
-    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
-    {
-        return Vectors / abs(ImageSize);
-    }
-
-    // [Width, Height] -> [-1.0, 1.0]
-    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
-    {
-        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
-    }
-
     float2x3 GetGradients(sampler2D Source, float2 Tex, Texel Input)
     {
         float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);

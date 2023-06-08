@@ -1,7 +1,7 @@
 #include "shared/cGraphics.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform int _Select <
@@ -11,7 +11,9 @@ uniform int _Select <
     ui_items = " Length (RG)\0 Length (RGB)\0 Average (RG)\0 Average (RGB)\0 Sum (RG)\0 Sum (RGB)\0";
 > = 0;
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
 {

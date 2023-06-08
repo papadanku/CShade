@@ -3,7 +3,7 @@
 #include "shared/cVideoProcessing.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float _MipBias <
@@ -19,6 +19,10 @@ uniform float _BlendFactor <
     ui_min = 0.0;
     ui_max = 0.9;
 > = 0.0;
+
+/*
+    [Textures & Samplers]
+*/
 
 CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
@@ -44,7 +48,9 @@ CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
 CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
 CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {

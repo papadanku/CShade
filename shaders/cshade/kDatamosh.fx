@@ -30,7 +30,7 @@
 */
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float _Time < source = "timer"; >;
@@ -136,7 +136,9 @@ CREATE_SAMPLER(SampleAccumTex, AccumTex, FILTERING, MIRROR)
 CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
 CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, MIRROR)
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
@@ -153,8 +155,6 @@ float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {
     return GetPixelBlur(Input, SampleTex2a, false).rg;
 }
-
-// Run Lucas-Kanade
 
 float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
 {
@@ -180,9 +180,7 @@ float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
     return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b, 0), 0.0, _BlendFactor);
 }
 
-// Postfilter blur
-
-// We use MRT to immeduately copy the current blurred frame for the next frame
+// NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
 float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTex2b, Input.Tex0.xy);

@@ -3,7 +3,7 @@
 namespace cBloom
 {
     /*
-        Construct options
+        [Shader Options]
     */
 
     uniform float _Threshold <
@@ -42,7 +42,7 @@ namespace cBloom
     > = 5.0;
 
     /*
-        Construct textures and its samplers
+        [Textures & Samplers]
     */
 
     CREATE_TEXTURE(Tex0, BUFFER_SIZE_0, RGB10A2, 1)
@@ -73,7 +73,7 @@ namespace cBloom
     CREATE_SAMPLER(SampleTex8, Tex8, LINEAR, CLAMP)
 
     /*
-        Construct vertex shaders
+        [Vertex Shaders]
     */
 
     struct VS2PS_Downscale
@@ -150,7 +150,7 @@ namespace cBloom
     CREATE_VS_UPSCALE(VS_Upscale1, 1.0 / BUFFER_SIZE_1)
 
     /*
-        Pixel shaders
+        [Pixel Shaders]
         ---
         Thresholding: https://github.com/keijiro/Kino [MIT]
         Tonemapping: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/

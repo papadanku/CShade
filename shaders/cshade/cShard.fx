@@ -1,8 +1,16 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Weight <
     ui_type = "drag";
 > = 1.0;
+
+/*
+    [Vertex Shaders]
+*/
 
 struct VS2PS_Shard
 {
@@ -23,6 +31,10 @@ VS2PS_Shard VS_Shard(APP2VS Input)
     Output.Tex1 = FSQuad.Tex0.xyxy + float4(-PixelSize, PixelSize);
     return Output;
 }
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Shard(VS2PS_Shard Input) : SV_TARGET0
 {

@@ -5,7 +5,7 @@
 namespace cBlockMatching
 {
     /*
-        Construct options
+        [Shader Options]
     */
 
     uniform float _MipBias <
@@ -21,6 +21,10 @@ namespace cBlockMatching
         ui_min = 0.0;
         ui_max = 0.9;
     > = 0.5;
+
+    /*
+        [Textures & Samplers]
+    */
 
     CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
     CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
@@ -46,7 +50,9 @@ namespace cBlockMatching
     CREATE_TEXTURE(Tex6, BUFFER_SIZE_6, RG16F, 1)
     CREATE_SAMPLER(SampleTex6, Tex6, LINEAR, MIRROR)
 
-    // Pixel shaders
+    /*
+        [Pixel Shaders]
+    */
 
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
@@ -54,13 +60,10 @@ namespace cBlockMatching
         return GetRG(Color);
     }
 
-    // Copy-back
     float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
     {
         return tex2D(SampleTex1, Input.Tex0.xy);
     }
-
-    // Run motion estimation
 
     float2 PS_MFlow_Level5(VS2PS_Quad Input) : SV_TARGET0
     {
@@ -92,7 +95,6 @@ namespace cBlockMatching
         return float4(GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 0), 0.0, _BlendFactor);
     }
 
-    // Copy-back
     float4 PS_Copy_1(VS2PS_Quad Input) : SV_TARGET0
     {
         return tex2D(SampleTex2a, Input.Tex0.xy);

@@ -2,7 +2,7 @@
 #include "shared/cMacros.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float _TileAmount <
@@ -18,6 +18,10 @@ uniform float _TileRadius <
     ui_min = 0.0;
     ui_max = 0.5;
 > = 0.45;
+
+/*
+    [Pixel Shaders]
+*/
 
 float2 GetTiles(float2 Tex)
 {

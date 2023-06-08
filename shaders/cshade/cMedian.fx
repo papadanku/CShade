@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Vertex Shaders]
+*/
+
 struct VS2PS_Median
 {
     float4 HPos : SV_POSITION;
@@ -22,7 +26,11 @@ VS2PS_Median VS_Median(APP2VS Input)
     return Output;
 }
 
-// Math functions: https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/DoFMedianFilterCS.hlsl
+/*
+    [Pixel Shaders]
+    ---
+    Math functions: https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/DoFMedianFilterCS.hlsl
+*/
 
 float4 Max3(float4 A, float4 B, float4 C)
 {

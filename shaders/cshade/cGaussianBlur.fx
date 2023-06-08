@@ -1,10 +1,18 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Sigma <
     ui_type = "drag";
     ui_min = 0.0;
 > = 1.0;
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 {

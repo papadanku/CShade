@@ -1,7 +1,7 @@
 #include "shared/cGraphics.fxh"
 
 /*
-    Construct options
+    [Shader Options]
 */
 
 uniform float2 _ShiftRed <
@@ -15,6 +15,10 @@ uniform float2 _ShiftGreen <
 uniform float2 _ShiftBlue <
     ui_type = "drag";
 > = 1.0;
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Abberation(VS2PS_Quad Input) : SV_TARGET0
 {

@@ -5,6 +5,10 @@
     Automatic exposure shader using hardware blending
 */
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _SmoothingSpeed <
@@ -53,11 +57,15 @@ uniform bool _Debug <
     ui_type = "radio";
 > = false;
 
+/*
+    [Textures & Samplers]
+*/
+
 CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
 CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
-    Pixel shaders
+    [Pixel Shaders]
     ---
     TODO: Add average, spot, and center-weighted metering with adjustable radius and slope
     ---

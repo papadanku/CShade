@@ -1,5 +1,9 @@
 #include "shared/cGraphics.fxh"
 
+/*
+    [Shader Options]
+*/
+
 uniform float _BlendFactor <
     ui_label = "Blend Factor";
     ui_type = "slider";
@@ -7,11 +11,16 @@ uniform float _BlendFactor <
     ui_max = 1.0;
 > = 0.5;
 
-CREATE_TEXTURE(BlendTex, BUFFER_SIZE_0, RGBA8, 1)
+/*
+    [Textures & Samplers]
+*/
 
+CREATE_TEXTURE(BlendTex, BUFFER_SIZE_0, RGBA8, 1)
 CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP)
 
-// Pixel shaders
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
 {

@@ -23,10 +23,18 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+    [Shader Options]
+*/
+
 uniform float _Falloff <
     ui_label = "Falloff";
     ui_type = "drag";
 > = 0.5;
+
+/*
+    [Pixel Shaders]
+*/
 
 float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {
