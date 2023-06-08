@@ -63,8 +63,6 @@
         Texel TxData;
         float3 A = 0.0;
         float2 B = 0.0;
-        float D = 0.0;
-        float2 NewVectors = 0.0;
 
         // Get required data to calculate main texel data
         float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
@@ -112,15 +110,13 @@
         A.z = -A.z;
 
         // Calculate A^-1 determinant
-        D = determinant(float2x2(A.xzzy));
+        float D = determinant(float2x2(A.xzzy));
 
-        // Solve A^-1
-        A = A / D;
-
-        NewVectors = (D == 0.0) ? 0.0 : mul(-B.xy, float2x2(A.yzzx));
+        // Calculate flow
+        float2 Flow = (D == 0.0) ? 0.0 : mul(-B.xy, float2x2(A.yzzx / D));
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + NewVectors, TxData.Mask.xy);
+        return EncodeVectors(Vectors + Flow, TxData.Mask.xy);
     }
 
     struct Block
