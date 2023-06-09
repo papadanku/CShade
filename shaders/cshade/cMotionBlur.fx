@@ -46,6 +46,10 @@ uniform bool _FrameRateScaling <
     ui_type = "radio";
 > = false;
 
+/*
+    [Textures & Samplers]
+*/
+
 CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
 CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
 

@@ -61,4 +61,12 @@
     {
         return X - Y * floor(X / Y);
     }
+
+    float2 GetLOD(float2 Tex, float2 Ix, float2 Iy)
+    {
+        float Lx = dot(Ix, Ix);
+        float Ly = dot(Iy, Iy);
+        float2 LOD = float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
+        return max(0.0, LOD);
+    }
 #endif

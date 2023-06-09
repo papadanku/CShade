@@ -35,8 +35,9 @@
     {
         float4 MainTex;
         float4 Mask;
-        float2 LOD;
+        float4 LOD;
     };
+
     float2x3 GetGradients(sampler2D Source, float2 Tex, Texel Input)
     {
         float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
@@ -68,14 +69,20 @@
         float2 B = 0.0;
 
         // Get required data to calculate main texel data
-        float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
-        Vectors = DecodeVectors(Vectors, TexSize);
+        float2 WarpTex = MainTex + Vectors;
+        float2 Ix[2] = { ddx(MainTex), ddx(WarpTex) };
+        float2 Iy[2] = { ddy(MainTex), ddy(WarpTex) };
+        float2 TSize = float2(Ix[0].x,  Iy[0].y);
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
-        TxData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
-        TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
-        TxData.LOD = float2(0.0, float(Level));
+        TxData.MainTex = float4(MainTex, WarpTex);
+        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TSize.xyyy);
+        TxData.LOD.xy = GetLOD(TxData.MainTex.xy, Ix[0], Iy[0]);
+        TxData.LOD.zw = GetLOD(TxData.MainTex.zw, Ix[1], Iy[1]);
+
+        // Expand data to pixel range
+        TxData.MainTex = TxData.MainTex * (1.0 / abs(TxData.Mask.xyxy));
+        Vectors = DecodeVectors(Vectors, TxData.Mask.xy);
 
         [loop]
         for (float x = -1.5; x <= 1.5; x++)
@@ -85,7 +92,7 @@
             const float2 Shift = float2(x, y);
             float4 Tex = TxData.MainTex + Shift.xyxy;
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
-            float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.xxxy;
+            float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw;
 
             float2x3 G = GetGradients(SampleI0, Tex.xy, TxData);
             float3 I0 = GetRGB(tex2Dlod(SampleI0, Tex0).rg);
