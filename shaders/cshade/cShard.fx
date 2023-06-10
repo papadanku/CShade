@@ -5,7 +5,10 @@
 */
 
 uniform float _Weight <
-    ui_type = "drag";
+    ui_label = "Sharpen Weight";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 10.0;
 > = 1.0;
 
 /*
