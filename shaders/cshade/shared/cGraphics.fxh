@@ -68,7 +68,6 @@
         float2 Iy = ddy(Tex);
         float Lx = dot(Ix, Ix);
         float Ly = dot(Iy, Iy);
-        float2 LOD = float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
-        return max(0.0, LOD);
+        return float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
     }
 #endif
