@@ -59,8 +59,7 @@
         float2 MainTex,
         float2 Vectors,
         sampler2D SampleI0,
-        sampler2D SampleI1,
-        int Level
+        sampler2D SampleI1
     )
     {
         // Initialize variables
