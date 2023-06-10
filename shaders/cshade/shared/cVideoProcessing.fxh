@@ -68,20 +68,19 @@
         float2 B = 0.0;
 
         // Get required data to calculate main texel data
-        float2 WarpTex = MainTex + Vectors;
-        float2 Ix[2] = { ddx(MainTex), ddx(WarpTex) };
-        float2 Iy[2] = { ddy(MainTex), ddy(WarpTex) };
-        float2 TSize = float2(Ix[0].x,  Iy[0].y);
+        const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
+        float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        TxData.MainTex = float4(MainTex, WarpTex);
-        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TSize.xyyy);
-        TxData.LOD.xy = GetLOD(TxData.MainTex.xy, Ix[0], Iy[0]);
-        TxData.LOD.zw = GetLOD(TxData.MainTex.zw, Ix[1], Iy[1]);
+        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
+        TxData.MainTex.xy = MainTex;
+        TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
+        TxData.LOD.xy = GetLOD(TxData.MainTex.xy * ImageSize);
+        TxData.LOD.zw = GetLOD(TxData.MainTex.zw * ImageSize);
 
-        // Expand data to pixel range
-        TxData.MainTex = TxData.MainTex * (1.0 / abs(TxData.Mask.xyxy));
-        Vectors = DecodeVectors(Vectors, TxData.Mask.xy);
+        // Un-normalize data for processing
+        TxData.MainTex *= (1.0 / abs(PixelSize.xyxy));
+        Vectors = DecodeVectors(Vectors, PixelSize);
 
         [loop]
         for (float x = -1.5; x <= 1.5; x++)
@@ -125,36 +124,36 @@
         float2 Flow = (D == 0.0) ? 0.0 : mul(-B.xy, float2x2(A.yzzx / D));
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + Flow, TxData.Mask.xy);
+        return EncodeVectors(Vectors + Flow, PixelSize);
     }
 
     struct Block
     {
         float4 MainTex;
         float4 Mask;
-        float2 LOD;
+        float4 LOD;
         float4x4 Shifts;
     };
 
-    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Block Input, out float4 Pixel[8])
+    void SampleBlock(sampler2D Source, float4x4 HalfPixel, Block Input, float2 LOD, out float4 Pixel[8])
     {
-        Pixel[0].xy = tex2Dlod(Source, (HalfPixel[0].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[1].xy = tex2Dlod(Source, (HalfPixel[0].xwww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[2].xy = tex2Dlod(Source, (HalfPixel[0].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[3].xy = tex2Dlod(Source, (HalfPixel[0].ywww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[4].xy = tex2Dlod(Source, (HalfPixel[1].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[5].xy = tex2Dlod(Source, (HalfPixel[1].xwww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[6].xy = tex2Dlod(Source, (HalfPixel[1].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[7].xy = tex2Dlod(Source, (HalfPixel[1].ywww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[0].xy = tex2Dlod(Source, (HalfPixel[0].xzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[1].xy = tex2Dlod(Source, (HalfPixel[0].xwww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[2].xy = tex2Dlod(Source, (HalfPixel[0].yzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[3].xy = tex2Dlod(Source, (HalfPixel[0].ywww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[4].xy = tex2Dlod(Source, (HalfPixel[1].xzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[5].xy = tex2Dlod(Source, (HalfPixel[1].xwww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[6].xy = tex2Dlod(Source, (HalfPixel[1].yzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[7].xy = tex2Dlod(Source, (HalfPixel[1].ywww * Input.Mask) + LOD.xxxy).xy;
 
-        Pixel[0].zw = tex2Dlod(Source, (HalfPixel[2].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[1].zw = tex2Dlod(Source, (HalfPixel[2].xwww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[2].zw = tex2Dlod(Source, (HalfPixel[2].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[3].zw = tex2Dlod(Source, (HalfPixel[2].ywww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[4].zw = tex2Dlod(Source, (HalfPixel[3].xzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[5].zw = tex2Dlod(Source, (HalfPixel[3].xwww * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[6].zw = tex2Dlod(Source, (HalfPixel[3].yzzz * Input.Mask) + Input.LOD.xxxy).xy;
-        Pixel[7].zw = tex2Dlod(Source, (HalfPixel[3].ywww * Input.Mask) + Input.LOD.xxxy).xy;
+        Pixel[0].zw = tex2Dlod(Source, (HalfPixel[2].xzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[1].zw = tex2Dlod(Source, (HalfPixel[2].xwww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[2].zw = tex2Dlod(Source, (HalfPixel[2].yzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[3].zw = tex2Dlod(Source, (HalfPixel[2].ywww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[4].zw = tex2Dlod(Source, (HalfPixel[3].xzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[5].zw = tex2Dlod(Source, (HalfPixel[3].xwww * Input.Mask) + LOD.xxxy).xy;
+        Pixel[6].zw = tex2Dlod(Source, (HalfPixel[3].yzzz * Input.Mask) + LOD.xxxy).xy;
+        Pixel[7].zw = tex2Dlod(Source, (HalfPixel[3].ywww * Input.Mask) + LOD.xxxy).xy;
     }
 
     float GetNCC(float4 T[8], float4 I[8])
@@ -204,9 +203,9 @@
                 continue;
             }
 
-            float4x4 HalfPixel = GetHalfPixel(Input, Input.MainTex.zw + Shift);
             float4 Image[8];
-            SampleBlock(SampleImage, HalfPixel, Input, Image);
+            float4x4 HalfPixel = GetHalfPixel(Input, Input.MainTex.zw + Shift);
+            SampleBlock(SampleImage, HalfPixel, Input, Input.LOD.zw, Image);
             float NCC = GetNCC(Template, Image);
 
             Vectors = (NCC > Minimum) ? Shift : Vectors;
@@ -229,14 +228,20 @@
         Block BlockData;
 
         // Get required data to calculate main texel data
-        float2 TexSize = float2(ddx(MainTex.x), ddy(MainTex.y));
-        Vectors = DecodeVectors(Vectors, TexSize);
+        const float2 ImageSize = tex2Dsize(SampleTemplate, 0.0);
+        float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        BlockData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(TexSize.xyyy);
-        BlockData.MainTex.xy = MainTex * (1.0 / abs(TexSize));
+        BlockData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
+        BlockData.MainTex.xy = MainTex;
         BlockData.MainTex.zw = BlockData.MainTex.xy + Vectors;
-        BlockData.LOD = float2(0.0, float(Level));
+        BlockData.LOD.xy = GetLOD(BlockData.MainTex.xy * ImageSize);
+        BlockData.LOD.zw = GetLOD(BlockData.MainTex.zw * ImageSize);
+
+        // Un-normalize data for processing
+        BlockData.MainTex *= (1.0 / abs(PixelSize.xyxy));
+        Vectors = DecodeVectors(Vectors, PixelSize);
+
         BlockData.Shifts = float4x4
         (
             float4(-0.5, 0.5, -0.5, 0.5) + float4(-1.0, -1.0,  1.0,  1.0),
@@ -249,8 +254,8 @@
         float4 Template[8];
         float4 Image[8];
         float4x4 HalfPixel = GetHalfPixel(BlockData, BlockData.MainTex.xy);
-        SampleBlock(SampleTemplate, HalfPixel, BlockData, Template);
-        SampleBlock(SampleImage, HalfPixel, BlockData, Image);
+        SampleBlock(SampleTemplate, HalfPixel, BlockData, BlockData.LOD.xy, Template);
+        SampleBlock(SampleImage, HalfPixel, BlockData, BlockData.LOD.zw, Image);
         float Minimum = GetNCC(Template, Image) + 1e-7;
 
         // Calculate three-step search
