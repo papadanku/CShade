@@ -142,7 +142,7 @@ float Noise(float2 Pos)
 float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
-    const int Samples = 8;
+    const int Samples = 16;
 
 
     float FrameRate = 1e+3 / _FrameTime;
@@ -156,14 +156,15 @@ float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
 
+	[unroll]
     for (int k = 0; k < Samples; ++k)
     {
-        float2 Offset = ScaledVelocity * ((Noise(Input.HPos.xy + k) * 2.0) - 1.0);
-        OutputColor += tex2D(CShade_SampleColorTex, ScreenCoord + Offset);
-        OutputColor += tex2D(CShade_SampleColorTex, ScreenCoord - Offset);
+    	float Random = (Noise(Input.HPos.xy + k) * 2.0) - 1.0;
+        float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
+        OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
     }
 
-    return OutputColor / (Samples * 2.0);
+    return OutputColor / Samples;
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
