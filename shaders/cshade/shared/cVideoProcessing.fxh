@@ -68,6 +68,8 @@
         float2 B = 0.0;
 
         // Get required data to calculate main texel data
+        const int WindowSize = 4;
+        const float2 WindowHalf = (float(WindowSize) / 2.0) - 0.5; 
         const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
         float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
 
@@ -82,12 +84,10 @@
         TxData.MainTex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
-        [loop]
-        for (float x = -1.5; x <= 1.5; x++)
-        [loop]
-        for (float y = -1.5; y <= 1.5; y++)
+        // Start from the negative so we can process a window in 1 loop
+        [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            const float2 Shift = float2(x, y);
+            float2 Shift = -WindowHalf + float2(i % WindowSize, floor(float(i) / float(WindowSize)));
             float4 Tex = TxData.MainTex + Shift.xyxy;
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
             float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw;
@@ -192,12 +192,13 @@
     {
         float2 Vectors = 0.0;
 
-        [loop]
-        for (int x = -1; x <= 1; x++)
-        [loop]
-        for (int y = -1; y <= 1; y++)
+        const int WindowSize = 3;
+        const int2 WindowHalf = floor(WindowSize / 2);
+
+        // Start from the negative so we can process a window in 1 loop
+        [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            float2 Shift = int2(x, y);
+            int2 Shift = -WindowHalf + int2(i % WindowSize, floor(float(i) / float(WindowSize)));
             if (all(Shift == 0))
             {
                 continue;
@@ -253,6 +254,8 @@
         // Initialize variables
         float4 Template[8];
         float4 Image[8];
+
+        // Initialize with center search first
         float4x4 HalfPixel = GetHalfPixel(BlockData, BlockData.MainTex.xy);
         SampleBlock(SampleTemplate, HalfPixel, BlockData, BlockData.LOD.xy, Template);
         SampleBlock(SampleImage, HalfPixel, BlockData, BlockData.LOD.zw, Image);
