@@ -69,7 +69,7 @@
 
         // Get required data to calculate main texel data
         const int WindowSize = 4;
-        const float2 WindowHalf = (float(WindowSize) / 2.0) - 0.5; 
+        const float2 WindowHalf = trunc(WindowSize / 2) - 0.5;
         const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
         float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
 
@@ -87,7 +87,7 @@
         // Start from the negative so we can process a window in 1 loop
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            float2 Shift = -WindowHalf + float2(i % WindowSize, floor(float(i) / float(WindowSize)));
+            float2 Shift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
             float4 Tex = TxData.MainTex + Shift.xyxy;
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
             float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw;
@@ -193,12 +193,12 @@
         float2 Vectors = 0.0;
 
         const int WindowSize = 3;
-        const int2 WindowHalf = floor(WindowSize / 2);
+        const int2 WindowHalf = trunc(WindowSize / 2);
 
         // Start from the negative so we can process a window in 1 loop
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            int2 Shift = -WindowHalf + int2(i % WindowSize, floor(float(i) / float(WindowSize)));
+            int2 Shift = -WindowHalf + int2(i % WindowSize, trunc(i / WindowSize));
             if (all(Shift == 0))
             {
                 continue;
