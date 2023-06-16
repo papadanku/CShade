@@ -3,19 +3,19 @@
 
 ## About
 
-CShade is an HLSL shader collection for ReShade. CShade's purpose is to introduce conventional image and video processing effects from a different angle.
+CShade is an HLSL shader collection for ReShade. CShade introduces conventional image and video processing effects from a different angle.
 
-CShade also includes `.fxh` files that contain common algorithms used in the collection.
+CShade also includes `.fxh` files that contain algorithms used in the collection.
 
 ## Effects
 
 ### Adaptive Exposure
 
-CShade features an adaptive-exposure shader that uses hardware blending as for temporal smoothing. The shader also features spot-metering, allowing the user to expose their image depending on a certain area.
+CShade features an adaptive-exposure shader that uses hardware blending for temporal smoothing. The shader also features spot-metering, allowing users to expose their image depending on an area.
 
 ### Color Processing
 
-CShade features various shaders that deal with getting certain information about RGB images.
+CShade features shaders that deal with getting information about RGB images.
 
 - Census transformation
 - Convolutions
@@ -25,7 +25,7 @@ CShade features various shaders that deal with getting certain information about
 
 ### Video Processing
 
-CShade features real-time motion estimation and feature-matching algorithms.
+CShade features real-time motion estimation and feature-matching shaders.
 
 - Hierarchal block-matching
 - Lucas-Kanade optical flow
@@ -33,10 +33,10 @@ CShade features real-time motion estimation and feature-matching algorithms.
 
 ### Post Processing
 
-CShade features various shaders that deal with filtering images for aesthetics.
+CShade features shaders that filter images for aesthetics.
 
 - Backbuffer blending
-- Dual-Kawasae bloom
+- Dual-Kawase bloom
 - Film-grain
 - Sharpening
 - Vignetting
