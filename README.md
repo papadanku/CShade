@@ -13,9 +13,9 @@ CShade also includes `.fxh` files that contain algorithms used in the collection
 
 CShade features an adaptive-exposure shader that uses hardware blending for temporal smoothing. The shader also features spot-metering, allowing users to expose their image depending on an area.
 
-### Color Processing
+### Image Processing
 
-CShade features shaders that deal with getting information about RGB images.
+CShade features shaders that deal with getting information about an image.
 
 - Census transformation
 - Convolutions
