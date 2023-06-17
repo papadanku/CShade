@@ -201,7 +201,9 @@
         float2 P = 0.0;
         P.r = atan2(Color.g, Color.r);
         P.g = asin(length(Color.rg) / length(Color.rgb));
-        P = (isinf(P) || isnan(P)) ? White : P;
+
+        bool2 NoColor = (isinf(P) || isnan(P) || (dot(Color, 1.0) == 0.0));
+        P = (NoColor) ? White : P;
         return saturate(P * IHalfPi);
     }
 #endif
