@@ -198,12 +198,9 @@
         const float IHalfPi = 1.0 / (Pi / 2.0);
         const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
 
-        float SumRG = length(Color.rg);
-        float SumRGB = length(Color.rgb);
-
         float2 P = 0.0;
         P.r = atan2(Color.g, Color.r);
-        P.g = (SumRGB == 0.0) ? 0.0 : asin(SumRG / SumRGB);
+        P.g = asin(length(Color.rg) / length(Color.rgb));
         P = (isinf(P) || isnan(P)) ? White : P;
         return saturate(P * IHalfPi);
     }
