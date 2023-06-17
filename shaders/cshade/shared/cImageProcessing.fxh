@@ -183,4 +183,26 @@
 
         return SatRGB;
     }
+
+    /*
+        RGB to sphere.
+        ---
+        Mileva, Yana, Andrés Bruhn, and Joachim Weickert. "Illumination-robust variational optical flow with photometric invariants." In Pattern Recognition: 29th DAGM Symposium, Heidelberg, Germany, September 12-14, 2007. Proceedings 29, pp. 152-162. Springer Berlin Heidelberg, 2007.
+        ---
+        https://www.mia.uni-saarland.de/Publications/mileva-dagm07.pdf
+    */
+
+    float2 GetPolar(float3 Color)
+    {
+        const float Pi = atan(1.0) * 4.0;
+        const float IHalfPi = 1.0 / (Pi / 2.0);
+
+        float SumRG = length(Color.rg);
+        float SumRGB = length(Color.rgb);
+
+        float2 P = 0.0;
+        P.r = atan2(Color.g, Color.r);
+        P.g = (SumRGB == 0.0) ? 0.0 : asin(SumRG / SumRGB);
+        return saturate(P * IHalfPi);
+    }
 #endif

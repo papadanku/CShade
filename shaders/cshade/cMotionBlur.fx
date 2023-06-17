@@ -81,7 +81,7 @@ CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
 float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-    return GetRG(Color);
+    return GetPolar(Color);
 }
 
 float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0

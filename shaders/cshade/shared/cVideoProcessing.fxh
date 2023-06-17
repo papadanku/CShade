@@ -38,17 +38,17 @@
         float4 LOD;
     };
 
-    float2x3 GetGradients(sampler2D Source, float2 Tex, Texel Input)
+    float2x2 GetGradients(sampler2D Source, float2 Tex, Texel Input)
     {
         float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
         float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
 
-        float3 N = GetRGB(tex2Dlod(Source, (NS.xyyy * Input.Mask) + Input.LOD.xxxy).rg);
-        float3 S = GetRGB(tex2Dlod(Source, (NS.zwww * Input.Mask) + Input.LOD.xxxy).rg);
-        float3 E = GetRGB(tex2Dlod(Source, (EW.xyyy * Input.Mask) + Input.LOD.xxxy).rg);
-        float3 W = GetRGB(tex2Dlod(Source, (EW.zwww * Input.Mask) + Input.LOD.xxxy).rg);
+        float2 N = tex2Dlod(Source, (NS.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
+        float2 S = tex2Dlod(Source, (NS.zwww * Input.Mask) + Input.LOD.xxxy).rg;
+        float2 E = tex2Dlod(Source, (EW.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
+        float2 W = tex2Dlod(Source, (EW.zwww * Input.Mask) + Input.LOD.xxxy).rg;
 
-        float2x3 OutputColor;
+        float2x2 OutputColor;
         OutputColor[0] = E - W;
         OutputColor[1] = N - S;
         return OutputColor;
@@ -92,19 +92,19 @@
             float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
             float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw;
 
-            float2x3 G = GetGradients(SampleI0, Tex.xy, TxData);
-            float3 I0 = GetRGB(tex2Dlod(SampleI0, Tex0).rg);
-            float3 I1 = GetRGB(tex2Dlod(SampleI1, Tex1).rg);
-            float3 IT = I0 - I1;
+            float2x2 G = GetGradients(SampleI0, Tex.xy, TxData);
+            float2 I0 = tex2Dlod(SampleI0, Tex0).rg;
+            float2 I1 = tex2Dlod(SampleI1, Tex1).rg;
+            float2 IT = I0 - I1;
 
             // A.x = A11; A.y = A22; A.z = A12/A22
-            A.x += dot(G[0].rgb, G[0].rgb);
-            A.y += dot(G[1].rgb, G[1].rgb);
-            A.z += dot(G[0].rgb, G[1].rgb);
+            A.x += dot(G[0].rg, G[0].rg);
+            A.y += dot(G[1].rg, G[1].rg);
+            A.z += dot(G[0].rg, G[1].rg);
 
             // B.x = B1; B.y = B2
-            B.x += dot(G[0].rgb, IT.rgb);
-            B.y += dot(G[1].rgb, IT.rgb);
+            B.x += dot(G[0].rg, IT.rg);
+            B.y += dot(G[1].rg, IT.rg);
         }
 
         /*
