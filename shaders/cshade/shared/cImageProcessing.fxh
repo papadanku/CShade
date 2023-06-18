@@ -194,7 +194,7 @@
 
     float2 GetPolar(float3 Color)
     {
-        const float Pi = atan(1.0) * 4.0;
+        const float Pi = acos(-1.0);
         const float IHalfPi = 1.0 / (Pi / 2.0);
         const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
 
