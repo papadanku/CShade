@@ -15,7 +15,7 @@
 
     float GetGaussianWeight(float SampleIndex, float Sigma)
     {
-        const float Pi = 3.1415926535897932384626433832795;
+        const float Pi = acos(-1.0);
         float Output = rsqrt(2.0 * Pi * (Sigma * Sigma));
         return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
     }
@@ -79,6 +79,7 @@
 
     float2 SampleVogel(int Index, int SamplesCount)
     {
+        const float Pi = acos(-1.0);
         const float GoldenAngle = Pi * (3.0 - sqrt(5.0));
         float Radius = sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));
         float Theta = float(Index) * GoldenAngle;

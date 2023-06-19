@@ -51,7 +51,7 @@ namespace cDiscBlur
         float4 OutputColor = 0.0;
 
         // LOD calculation to fill in the gaps between samples
-        const float Pi = 3.1415926535897932384626433832795;
+        const float Pi = acos(-1.0);
         float SampleArea = Pi * (_Radius * _Radius) / float(_Samples);
         float LOD = max(0.0, 0.5 * log2(SampleArea));
 

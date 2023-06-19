@@ -33,6 +33,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
 
+    const float Pi = acos(-1.0);
     const float2 PixelSize = 1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float Noise = 2.0 * Pi * GradientNoise(Input.HPos.xy);
 
