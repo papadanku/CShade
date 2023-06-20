@@ -91,6 +91,10 @@
     }
 
     /*
+        [Convolutions - Edge Detection]
+    */
+
+    /*
         Linear filtered Sobel filter
     */
 
@@ -126,16 +130,29 @@
         [Color Processing]
     */
 
-    float2 GetRG(float3 Color)
+    float3 GetChromaticity(float3 Color, int Method)
     {
-        float SumRGB = dot(Color, 1.0);
-        float2 NRGB = (SumRGB == 0.0) ? 1.0 / 3.0 : Color.xy / SumRGB;
-        return NRGB;
-    }
+        float Sum = 0.0;
+        float White = 0.0;
 
-    float3 GetRGB(float2 Color)
-    {
-        return float3(Color.rg, saturate(1.0 - dot(Color.rg, 1.0)));
+        switch(Method)
+        {
+            case 0: // Length
+                Sum = length(Color);
+                White = 1.0 / sqrt(3.0);
+                break;
+            case 1: // Dot3 Average
+                Sum = dot(Color, 1.0 / 3.0);
+                White = 1.0;
+                break;
+            case 2: // Dot3 Sum
+                Sum = dot(Color, 1.0);
+                White = 1.0 / 3.0;
+                break;
+        }
+
+        float3 Chromaticity = (Sum == 0.0) ? White : Color / Sum;
+        return Chromaticity;
     }
 
     /*
