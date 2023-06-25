@@ -114,7 +114,6 @@ namespace cPyramidBlur
     float4 GetPixelScale(VS2PS_Scale Input, sampler2D SampleSource, int ScaleMethod)
     {
         float4 OutputColor = 0.0;
-
         float3 Weights = 0.0;
 
         switch(ScaleMethod)

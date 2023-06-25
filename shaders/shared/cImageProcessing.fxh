@@ -90,6 +90,32 @@
         return Radius * SinCosTheta;
     }
 
+    float4 Filter3x3(sampler2D SampleSource, float2 Tex, bool DownSample)
+    {
+        const float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
+        float2 PixelSize = float2(ddx(Tex.x), ddy(Tex.y));
+        PixelSize = (DownSample) ? PixelSize * 0.5 : PixelSize;
+    
+        float4 STex[3] =
+        {
+            Tex.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
+            Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
+            Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy))
+        };
+
+        float4 OutputColor = 0.0;
+        OutputColor += (tex2D(SampleSource, STex[0].xy) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[1].xy) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[2].xy) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[0].xz) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[1].xz) * Weights[2]);
+        OutputColor += (tex2D(SampleSource, STex[2].xz) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[0].xw) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[1].xw) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[2].xw) * Weights[0]);
+        return OutputColor;
+    }
+
     /*
         [Convolutions - Edge Detection]
     */
@@ -221,8 +247,8 @@
         float SumRGB = length(Color.rgb);
 
         float2 P = 0.0;
-        P.x = (DotRG == 0.0) ? White.x : atan2(Color.g, Color.r);
-        P.y = (SumRGB == 0.0) ? White.y : asin(SumRG / SumRGB);
+        P.x = (DotRG == 0.0) ? White.x : atan2(abs(Color.g), abs(Color.r));
+        P.y = (SumRGB == 0.0) ? White.y : asin(abs(SumRG / SumRGB));
  
         return saturate(P * IHalfPi);
     }
