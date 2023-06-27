@@ -18,6 +18,15 @@
         SRGBTexture = READ_SRGB;
     };
 
+    sampler2D CShade_SampleGammaTex
+    {
+        Texture = CShade_ColorTex;
+        MagFilter = LINEAR;
+        MinFilter = LINEAR;
+        MipFilter = LINEAR;
+        SRGBTexture = FALSE;
+    };
+
     /*
         [Simple Vertex Shader]
     */
@@ -45,6 +54,16 @@
     /*
         [Math Functions]
     */
+
+    int GetFactorial(int N)
+    {
+        int O = N;
+        for (int i = 1 ; i < N; i++)
+        {
+            O *= i;
+        }
+        return O;
+    }
 
     float4 GetBlit(VS2PS_Quad Input, sampler2D SampleSource)
     {

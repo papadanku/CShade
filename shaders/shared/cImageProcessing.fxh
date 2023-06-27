@@ -207,6 +207,18 @@
     }
 
     /*
+        RGB to CrCb
+        ---
+        https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html
+    */
+
+    float2 GetCrCb(float3 Color)
+    {
+        float Y = dot(Color, float3(0.299, 0.587, 0.114));
+        return ((Color.rb - Y) * float2(0.713, 0.564)) + 0.5;
+    }
+
+    /*
         RGB to saturation value.
         ---
         Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
