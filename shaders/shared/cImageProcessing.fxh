@@ -233,8 +233,8 @@
         float SumRGB = length(Color.rgb);
 
         float2 P = 0.0;
-        P.x = (DotRG == 0.0) ? White.x : atan2(Color.g, Color.r);
-        P.y = (SumRGB == 0.0) ? White.y : asin(SumRG / SumRGB);
+        P.x = (DotRG == 0.0) ? White.x : atan2(abs(Color.g), abs(Color.r));
+        P.y = (SumRGB == 0.0) ? White.y : asin(abs(SumRG / SumRGB));
  
         return saturate(P * IHalfPi);
     }
