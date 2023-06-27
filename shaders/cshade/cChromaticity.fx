@@ -9,7 +9,7 @@ uniform int _Select <
     ui_label = "Method";
     ui_tooltip = "Select Chromaticity";
     ui_type = "combo";
-    ui_items = " Length (RG)\0 Length (RGB)\0 Average (RG)\0 Average (RGB)\0 Sum (RG)\0 Sum (RGB)\0 Polar (RG)\0";
+    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Polar (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
 > = 0;
 
 /*
@@ -19,30 +19,37 @@ uniform int _Select <
 float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
     float3 Chromaticity = 0.0;
 
     switch(_Select)
     {
-        case 0: // Length (RG)
+        case 0: // Length (XY)
             Chromaticity.rg = GetChromaticity(Color, 0).rg;
             break;
-        case 1: // Length (RGB)
+        case 1: // Length (XYZ)
             Chromaticity.rgb = GetChromaticity(Color, 0).rgb;
             break;
-        case 2: // Average (RG)
+        case 2: // Average (XY)
             Chromaticity.rg = GetChromaticity(Color, 1).rg;
             break;
-        case 3: // Average (RGB)
+        case 3: // Average (XYZ)
             Chromaticity.rgb = GetChromaticity(Color, 1).rgb;
             break;
-        case 4: // Sum (RG)
+        case 4: // Sum (XY)
             Chromaticity.rg = GetChromaticity(Color, 2).rg;
             break;
-        case 5: // Sum (RGB)
+        case 5: // Sum (XYZ)
             Chromaticity.rgb = GetChromaticity(Color, 2).rgb;
             break;
-        case 6: // Polar (RG)
+        case 6: // Polar (XY)
             Chromaticity.rg = GetPolar(Color);
+            break;
+        case 7: // CoCg (XY)
+            Chromaticity.rg = GetCoCg(Gamma);
+            break;
+        case 8: // CrCb (XY)
+            Chromaticity.rg = GetCrCb(Gamma);
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;
