@@ -64,8 +64,11 @@
     {
         // Initialize variables
         Texel TxData;
-        float3 A = 0.0;
-        float2 B = 0.0;
+        float IxIx = 0.0;
+        float IyIy = 0.0;
+        float IxIy = 0.0;
+        float IxIt = 0.0;
+        float IyIt = 0.0;
 
         // Get required data to calculate main texel data
         const int WindowSize = 4;
@@ -89,22 +92,20 @@
         {
             float2 Shift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
             float4 Tex = TxData.MainTex + Shift.xyxy;
-            float4 Tex0 = (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy;
-            float4 Tex1 = (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw;
 
             float2x2 G = GetGradients(SampleI0, Tex.xy, TxData);
-            float2 I0 = tex2Dlod(SampleI0, Tex0).rg;
-            float2 I1 = tex2Dlod(SampleI1, Tex1).rg;
+            float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy).rg;
+            float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw).rg;
             float2 IT = I0 - I1;
 
             // A.x = A11; A.y = A22; A.z = A12/A22
-            A.x += dot(G[0].rg, G[0].rg);
-            A.y += dot(G[1].rg, G[1].rg);
-            A.z += dot(G[0].rg, G[1].rg);
+            IxIx += dot(G[0].rg, G[0].rg);
+            IyIy += dot(G[1].rg, G[1].rg);
+            IxIy += dot(G[0].rg, G[1].rg);
 
             // B.x = B1; B.y = B2
-            B.x += dot(G[0].rg, IT.rg);
-            B.y += dot(G[1].rg, IT.rg);
+            IxIt += dot(G[0].rg, IT.rg);
+            IyIt += dot(G[1].rg, IT.rg);
         }
 
         /*
@@ -114,14 +115,13 @@
             [-IxIy/D  Iy^2/D] [-IyIt]
         */
 
-        // Create -IxIy (A12) for A^-1 and its determinant
-        A.z = -A.z;
+        // Calculate A^-1 and B
+        float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
+        float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
+        float2 B = float2(-IxIt, -IyIt);
 
-        // Calculate A^-1 determinant
-        float D = determinant(float2x2(A.xzzy));
-
-        // Calculate flow
-        float2 Flow = (D == 0.0) ? 0.0 : mul(-B.xy, float2x2(A.yzzx / D));
+        // Calculate A^T*B
+        float2 Flow = (D == 0.0) ? 0.0 : mul(B, A);
 
         // Propagate and encode vectors
         return EncodeVectors(Vectors + Flow, PixelSize);
@@ -158,23 +158,28 @@
 
     float GetNCC(float4 T[8], float4 I[8])
     {
-        float2 N1;
-        float2 N2;
-        float2 N3;
+        float N1[2];
+        float N2[2];
+        float N3[2];
 
         [unroll]
         for (int i = 0; i < 8; i++)
         {
-            N1.r += dot(T[i].xz, I[i].xz);
-            N2.r += dot(T[i].xz, T[i].xz);
-            N3.r += dot(I[i].xz, I[i].xz);
+            N1[0] += dot(T[i].xz, I[i].xz);
+            N2[0] += dot(T[i].xz, T[i].xz);
+            N3[0] += dot(I[i].xz, I[i].xz);
 
-            N1.g += dot(T[i].yw, I[i].yw);
-            N2.g += dot(T[i].yw, T[i].yw);
-            N3.g += dot(I[i].yw, I[i].yw);
+            N1[1] += dot(T[i].yw, I[i].yw);
+            N2[1] += dot(T[i].yw, T[i].yw);
+            N3[1] += dot(I[i].yw, I[i].yw);
         }
 
-        float2 NCC = N1 * rsqrt(N2 * N3);
+        float NCC[2] =
+        {
+            N1[0] * rsqrt(N2[0] * N3[0]),
+            N1[1] * rsqrt(N2[1] * N3[1]),
+        };
+
         return min(NCC[0], NCC[1]);
     }
 

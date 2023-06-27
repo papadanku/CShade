@@ -248,7 +248,7 @@
         https://www.mia.uni-saarland.de/Publications/mileva-dagm07.pdf
     */
 
-    float2 GetPolar(float3 Color)
+    float2 GetSphericalRG(float3 Color)
     {
         const float Pi = acos(-1.0);
         const float IHalfPi = 1.0 / (Pi / 2.0);
