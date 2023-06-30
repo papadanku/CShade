@@ -1,3 +1,4 @@
+#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
@@ -29,366 +30,358 @@
     For more information, please refer to <http://unlicense.org/>
 */
 
-/*
-    [Shader Options]
-*/
-
-uniform float _Time < source = "timer"; >;
-
-uniform float _MipBias <
-    ui_category = "Optical Flow";
-    ui_label = "Mipmap Bias";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 7.0;
-> = 0.0;
-
-uniform float _BlendFactor <
-    ui_category = "Optical Flow";
-    ui_label = "Temporal Blending Factor";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 0.9;
-> = 0.25;
-
-uniform int _BlockSize <
-    ui_category = "Datamosh";
-    ui_label = "Block Size";
-    ui_type = "slider";
-    ui_min = 0;
-    ui_max = 32;
-> = 4;
-
-uniform float _Entropy <
-    ui_category = "Datamosh";
-    ui_label = "Entropy";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.1;
-
-uniform float _Contrast <
-    ui_category = "Datamosh";
-    ui_label = "Noise Contrast";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 4.0;
-> = 0.1;
-
-uniform float _Scale <
-    ui_category = "Datamosh";
-    ui_label = "Velocity Scale";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 2.0;
-> = 1.0;
-
-uniform float _Diffusion <
-    ui_category = "Datamosh";
-    ui_label = "Amount of Random Displacement";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 4.0;
-> = 2.0;
-
-#ifndef LINEAR_SAMPLING
-    #define LINEAR_SAMPLING 0
-#endif
-
-#if LINEAR_SAMPLING == 1
-    #define FILTERING LINEAR
-#else
-    #define FILTERING POINT
-#endif
-
-/*
-    [Textures and samplers]
-*/
-
-CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
-CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
-
-CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RG16F, 8)
-CREATE_SAMPLER(SampleTex2a, Tex2a, LINEAR, MIRROR)
-
-CREATE_TEXTURE(Tex2b, BUFFER_SIZE_2, RG16F, 8)
-CREATE_SAMPLER(SampleTex2b, Tex2b, LINEAR, MIRROR)
-CREATE_SAMPLER(SampleFilteredFlowTex, Tex2b, FILTERING, MIRROR)
-
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16F, 8)
-CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, MIRROR)
-
-CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
-CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR)
-
-CREATE_TEXTURE(Tex3, BUFFER_SIZE_3, RG16F, 1)
-CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, MIRROR)
-
-CREATE_TEXTURE(Tex4, BUFFER_SIZE_4, RG16F, 1)
-CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
-
-CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
-CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
-
-CREATE_TEXTURE(AccumTex, BUFFER_SIZE_0, R16F, 1)
-CREATE_SAMPLER(SampleAccumTex, AccumTex, FILTERING, MIRROR)
-
-CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
-CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, MIRROR)
-
-/*
-    [Pixel Shaders]
-*/
-
-float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
+namespace kDatamosh
 {
-    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-    return GetSphericalRG(Color);
-}
+    /*
+        [Shader Options]
+    */
 
-float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
-{
-    return GetPixelBlur(Input, SampleTex1, true).rg;
-}
+    uniform float _Time < source = "timer"; >;
 
-float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
-{
-    return GetPixelBlur(Input, SampleTex2a, false).rg;
-}
+    uniform float _MipBias <
+        ui_category = "Optical Flow";
+        ui_label = "Mipmap Bias";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 7.0;
+    > = 0.0;
 
-float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = 0.0;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b);
-}
+    uniform float _BlendFactor <
+        ui_category = "Optical Flow";
+        ui_label = "Temporal Blending Factor";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 0.9;
+    > = 0.25;
 
-float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = tex2D(SampleTex5, Input.Tex0).xy;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b);
-}
+    uniform int _BlockSize <
+        ui_category = "Datamosh";
+        ui_label = "Block Size";
+        ui_type = "slider";
+        ui_min = 0;
+        ui_max = 32;
+    > = 4;
 
-float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
-    return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b);
-}
+    uniform float _Entropy <
+        ui_category = "Datamosh";
+        ui_label = "Entropy";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 0.1;
 
-float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
-    return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTex2b), 0.0, _BlendFactor);
-}
+    uniform float _Contrast <
+        ui_category = "Datamosh";
+        ui_label = "Noise Contrast";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 4.0;
+    > = 0.1;
 
-// NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
-float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
-{
-    Copy = tex2D(SampleTex2b, Input.Tex0.xy);
-    return float4(GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
-}
+    uniform float _Scale <
+        ui_category = "Datamosh";
+        ui_label = "Velocity Scale";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 2.0;
+    > = 1.0;
 
-float4 PS_VBlur_Postfilter(VS2PS_Quad Input) : SV_TARGET0
-{
-    return float4(GetPixelBlur(Input, SampleTex2a, false).rg, 0.0, 1.0);
-}
+    uniform float _Diffusion <
+        ui_category = "Datamosh";
+        ui_label = "Amount of Random Displacement";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 4.0;
+    > = 2.0;
 
-// Datamosh
+    #ifndef LINEAR_SAMPLING
+        #define LINEAR_SAMPLING 0
+    #endif
 
-float RandUV(float2 Tex)
-{
-    float f = dot(float2(12.9898, 78.233), Tex);
-    return frac(43758.5453 * sin(f));
-}
+    #if LINEAR_SAMPLING == 1
+        #define FILTERING LINEAR
+    #else
+        #define FILTERING POINT
+    #endif
 
-float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
-{
-    float2 TexSize = float2(ddx(Tex.x), ddy(Tex.y));
-    float2 Time = float2(_Time, 0.0);
+    /*
+        [Textures and samplers]
+    */
 
-    // Random numbers
-    Random.x = RandUV(Tex.xy + Time.xy);
-    Random.y = RandUV(Tex.xy + Time.yx);
-    Random.z = RandUV(Tex.yx - Time.xx);
+    CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2b_RG16F, FILTERING, MIRROR)
 
-    // Normalized screen space -> Pixel coordinates
-    MV = DecodeVectors(MV * _Scale, TexSize);
+    CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16F, 8)
+    CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, MIRROR)
 
-    // Small random displacement (diffusion)
-    MV += (Random.xy - 0.5)  * _Diffusion;
+    CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
+    CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR)
 
-    // Pixel perfect snapping
-    return round(MV);
-}
+    CREATE_TEXTURE(AccumTex, BUFFER_SIZE_0, R16F, 1)
+    CREATE_SAMPLER(SampleAccumTex, AccumTex, FILTERING, MIRROR)
 
-float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
-{
-    float Quality = 1.0 - _Entropy;
-    float3 Random = 0.0;
+    CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
+    CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, MIRROR)
 
-    // Motion vectors
-    float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
+    /*
+        [Pixel Shaders]
+    */
 
-    // Get motion blocks
-    MV = GetMVBlocks(MV, Input.Tex0, Random);
-
-    // Accumulates the amount of motion.
-    float MVLength = length(MV);
-
-    float4 OutputColor = 0.0;
-
-    // Simple update
-    float UpdateAcc = min(MVLength, _BlockSize) * 0.005;
-    UpdateAcc += (Random.z * lerp(-0.02, 0.02, Quality));
-
-    // Reset to random level
-    float ResetAcc = saturate(Random.z * 0.5 + Quality);
-
-    // Reset if the amount of motion is larger than the block size.
-    [branch]
-    if(MVLength > _BlockSize)
+    float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
-        OutputColor = float4((float3)ResetAcc, 0.0);
-    }
-    else
-    {
-        OutputColor = float4((float3)UpdateAcc, 1.0);
+        float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+        return GetSphericalRG(Color);
     }
 
-    return OutputColor;
-}
-
-float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 TexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
-    const float2 DisplacementTexel = BUFFER_SIZE_0;
-    const float Quality = 1.0 - _Entropy;
-    float3 Random = 0.0;
-
-    // Motion vectors
-    float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
-
-    // Get motion blocks
-    MV = GetMVBlocks(MV, Input.Tex0, Random);
-
-    // Get random motion
-    float RandomMotion = RandUV(Input.Tex0 + length(MV));
-
-    // Pixel coordinates -> Normalized screen space
-    MV = EncodeVectors(MV, TexSize);
-
-    // Color from the original image
-    float4 Source = tex2D(CShade_SampleColorTex, Input.Tex0);
-
-    // Displacement vector
-    float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
-    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 - MV);
-
-    // Generate some pseudo random numbers.
-    float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
-
-    // Generate noise patterns that look like DCT bases.
-    float2 Frequency = Input.HPos.xy * (Rand.x * 80.0 / _Contrast);
-
-    // Basis wave (vertical or horizontal)
-    float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < Rand.y));
-
-    // Random amplitude (the high freq, the less amp)
-    DCT *= Rand.z * (1.0 - Rand.x) * _Contrast;
-
-    // Conditional weighting
-    // DCT-ish noise: acc > 0.5
-    float CW = (Disp > 0.5) * DCT;
-    // Original image: rand < (Q * 0.8 + 0.2) && acc == 1.0
-    CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
-
-    // If the conditions above are not met, choose work.
-    return lerp(Work, Source, CW);
-}
-
-float4 PS_CopyColorTex(VS2PS_Quad Input) : SV_TARGET0
-{
-    return tex2D(CShade_SampleColorTex, Input.Tex0);
-}
-
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
-    pass \
-    { \
-        VertexShader = VERTEX_SHADER; \
-        PixelShader = PIXEL_SHADER; \
-        RenderTarget0 = RENDER_TARGET; \
+    float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
+    {
+        return GetPixelBlur(Input, SampleTempTex1, true).rg;
     }
 
-technique CShade_KinoDatamosh
-{
-    // Normalize current frame
-    CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
-
-    // Prefilter blur
-    CREATE_PASS(VS_Quad, PS_HBlur_Prefilter, Tex2a)
-    CREATE_PASS(VS_Quad, PS_VBlur_Prefilter, Tex2b)
-
-    // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(VS_Quad, PS_PyLK_Level4, Tex5)
-    CREATE_PASS(VS_Quad, PS_PyLK_Level3, Tex4)
-    CREATE_PASS(VS_Quad, PS_PyLK_Level2, Tex3)
-    pass GetFineOpticalFlow
+    float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        ClearRenderTargets = FALSE;
-        BlendEnable = TRUE;
-        BlendOp = ADD;
-        SrcBlend = INVSRCALPHA;
-        DestBlend = SRCALPHA;
-
-        VertexShader = VS_Quad;
-        PixelShader = PS_PyLK_Level1;
-        RenderTarget0 = OFlowTex;
+        return GetPixelBlur(Input, SampleTempTex2a, false).rg;
     }
 
-    // Postfilter blur
-    pass MRT_CopyAndBlur
+    float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
     {
-        VertexShader = VS_Quad;
-        PixelShader = PS_HBlur_Postfilter;
-        RenderTarget0 = Tex2c;
-        RenderTarget1 = Tex2a;
+        float2 Vectors = 0.0;
+        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    pass
+    float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
     {
-        VertexShader = VS_Quad;
-        PixelShader = PS_VBlur_Postfilter;
-        RenderTarget0 = Tex2b;
+        float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
+        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    // Datamoshing
-    pass
+    float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
     {
-        ClearRenderTargets = FALSE;
-        BlendEnable = TRUE;
-        BlendOp = ADD;
-        SrcBlend = ONE;
-        DestBlend = SRCALPHA; // The result about to accumulate
-
-        VertexShader = VS_Quad;
-        PixelShader = PS_Accumulate;
-        RenderTarget0 = AccumTex;
+        float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
+        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    pass
+    float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
     {
-        SRGBWriteEnable = WRITE_SRGB;
-
-        VertexShader = VS_Quad;
-        PixelShader = PS_Datamosh;
+        float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
+        return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
     }
 
-    // Copy frame for feedback
-    pass
+    // NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
+    float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
+        return float4(GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
+    }
 
-        VertexShader = VS_Quad;
-        PixelShader = PS_CopyColorTex;
-        RenderTarget0 = FeedbackTex;
+    float4 PS_VBlur_Postfilter(VS2PS_Quad Input) : SV_TARGET0
+    {
+        return float4(GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
+    }
+
+    // Datamosh
+
+    float RandUV(float2 Tex)
+    {
+        float f = dot(float2(12.9898, 78.233), Tex);
+        return frac(43758.5453 * sin(f));
+    }
+
+    float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
+    {
+        float2 TexSize = float2(ddx(Tex.x), ddy(Tex.y));
+        float2 Time = float2(_Time, 0.0);
+
+        // Random numbers
+        Random.x = RandUV(Tex.xy + Time.xy);
+        Random.y = RandUV(Tex.xy + Time.yx);
+        Random.z = RandUV(Tex.yx - Time.xx);
+
+        // Normalized screen space -> Pixel coordinates
+        MV = DecodeVectors(MV * _Scale, TexSize);
+
+        // Small random displacement (diffusion)
+        MV += (Random.xy - 0.5)  * _Diffusion;
+
+        // Pixel perfect snapping
+        return round(MV);
+    }
+
+    float4 PS_Accumulate(VS2PS_Quad Input) : SV_TARGET0
+    {
+        float Quality = 1.0 - _Entropy;
+        float3 Random = 0.0;
+
+        // Motion vectors
+        float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
+
+        // Get motion blocks
+        MV = GetMVBlocks(MV, Input.Tex0, Random);
+
+        // Accumulates the amount of motion.
+        float MVLength = length(MV);
+
+        float4 OutputColor = 0.0;
+
+        // Simple update
+        float UpdateAcc = min(MVLength, _BlockSize) * 0.005;
+        UpdateAcc += (Random.z * lerp(-0.02, 0.02, Quality));
+
+        // Reset to random level
+        float ResetAcc = saturate(Random.z * 0.5 + Quality);
+
+        // Reset if the amount of motion is larger than the block size.
+        [branch]
+        if(MVLength > _BlockSize)
+        {
+            OutputColor = float4((float3)ResetAcc, 0.0);
+        }
+        else
+        {
+            OutputColor = float4((float3)UpdateAcc, 1.0);
+        }
+
+        return OutputColor;
+    }
+
+    float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
+    {
+        float2 TexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
+        const float2 DisplacementTexel = BUFFER_SIZE_0;
+        const float Quality = 1.0 - _Entropy;
+        float3 Random = 0.0;
+
+        // Motion vectors
+        float2 MV = tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy;
+
+        // Get motion blocks
+        MV = GetMVBlocks(MV, Input.Tex0, Random);
+
+        // Get random motion
+        float RandomMotion = RandUV(Input.Tex0 + length(MV));
+
+        // Pixel coordinates -> Normalized screen space
+        MV = EncodeVectors(MV, TexSize);
+
+        // Color from the original image
+        float4 Source = tex2D(CShade_SampleColorTex, Input.Tex0);
+
+        // Displacement vector
+        float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
+        float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 - MV);
+
+        // Generate some pseudo random numbers.
+        float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
+
+        // Generate noise patterns that look like DCT bases.
+        float2 Frequency = Input.HPos.xy * (Rand.x * 80.0 / _Contrast);
+
+        // Basis wave (vertical or horizontal)
+        float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < Rand.y));
+
+        // Random amplitude (the high freq, the less amp)
+        DCT *= Rand.z * (1.0 - Rand.x) * _Contrast;
+
+        // Conditional weighting
+        // DCT-ish noise: acc > 0.5
+        float CW = (Disp > 0.5) * DCT;
+        // Original image: rand < (Q * 0.8 + 0.2) && acc == 1.0
+        CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
+
+        // If the conditions above are not met, choose work.
+        return lerp(Work, Source, CW);
+    }
+
+    float4 PS_CopyColorTex(VS2PS_Quad Input) : SV_TARGET0
+    {
+        return tex2D(CShade_SampleColorTex, Input.Tex0);
+    }
+
+    #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
+        pass \
+        { \
+            VertexShader = VERTEX_SHADER; \
+            PixelShader = PIXEL_SHADER; \
+            RenderTarget0 = RENDER_TARGET; \
+        }
+
+    technique CShade_KinoDatamosh
+    {
+        // Normalize current frame
+        CREATE_PASS(VS_Quad, PS_Normalize, TempTex1_RG8)
+
+        // Prefilter blur
+        CREATE_PASS(VS_Quad, PS_HBlur_Prefilter, TempTex2a_RG16F)
+        CREATE_PASS(VS_Quad, PS_VBlur_Prefilter, TempTex2b_RG16F)
+
+        // Bilinear Lucas-Kanade Optical Flow
+        CREATE_PASS(VS_Quad, PS_PyLK_Level4, TempTex5_RG16F)
+        CREATE_PASS(VS_Quad, PS_PyLK_Level3, TempTex4_RG16F)
+        CREATE_PASS(VS_Quad, PS_PyLK_Level2, TempTex3_RG16F)
+        pass GetFineOpticalFlow
+        {
+            ClearRenderTargets = FALSE;
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = INVSRCALPHA;
+            DestBlend = SRCALPHA;
+
+            VertexShader = VS_Quad;
+            PixelShader = PS_PyLK_Level1;
+            RenderTarget0 = OFlowTex;
+        }
+
+        // Postfilter blur
+        pass MRT_CopyAndBlur
+        {
+            VertexShader = VS_Quad;
+            PixelShader = PS_HBlur_Postfilter;
+            RenderTarget0 = Tex2c;
+            RenderTarget1 = TempTex2a_RG16F;
+        }
+
+        pass
+        {
+            VertexShader = VS_Quad;
+            PixelShader = PS_VBlur_Postfilter;
+            RenderTarget0 = TempTex2b_RG16F;
+        }
+
+        // Datamoshing
+        pass
+        {
+            ClearRenderTargets = FALSE;
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = ONE;
+            DestBlend = SRCALPHA; // The result about to accumulate
+
+            VertexShader = VS_Quad;
+            PixelShader = PS_Accumulate;
+            RenderTarget0 = AccumTex;
+        }
+
+        pass
+        {
+            SRGBWriteEnable = WRITE_SRGB;
+
+            VertexShader = VS_Quad;
+            PixelShader = PS_Datamosh;
+        }
+
+        // Copy frame for feedback
+        pass
+        {
+            SRGBWriteEnable = WRITE_SRGB;
+
+            VertexShader = VS_Quad;
+            PixelShader = PS_CopyColorTex;
+            RenderTarget0 = FeedbackTex;
+        }
     }
 }
