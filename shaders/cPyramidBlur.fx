@@ -1,3 +1,4 @@
+#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 
 namespace cPyramidBlur
@@ -22,17 +23,10 @@ namespace cPyramidBlur
         [Textures & Samplers]
     */
 
-    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 1)
-    CREATE_SRGB_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
-
-    CREATE_TEXTURE(Tex2, BUFFER_SIZE_2, RGBA8, 1)
-    CREATE_SRGB_SAMPLER(SampleTex2, Tex2, LINEAR, CLAMP)
-
-    CREATE_TEXTURE(Tex3, BUFFER_SIZE_3, RGBA8, 1)
-    CREATE_SRGB_SAMPLER(SampleTex3, Tex3, LINEAR, CLAMP)
-
-    CREATE_TEXTURE(Tex4, BUFFER_SIZE_4, RGBA8, 1)
-    CREATE_SRGB_SAMPLER(SampleTex4, Tex4, LINEAR, CLAMP)
+    CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, CLAMP)
+    CREATE_SAMPLER(SampleTempTex2, TempTex2_RGBA16F, LINEAR, CLAMP)
+    CREATE_SAMPLER(SampleTempTex3, TempTex3_RGBA16F, LINEAR, CLAMP)
+    CREATE_SAMPLER(SampleTempTex4, TempTex4_RGBA16F, LINEAR, CLAMP)
 
     /*
         [Vertex Shaders]
@@ -195,9 +189,9 @@ namespace cPyramidBlur
         }
 
     CREATE_PS_DOWNSCALE(PS_Downscale1, CShade_SampleColorTex)
-    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTex1)
-    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTex2)
-    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTex3)
+    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1)
+    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2)
+    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3)
 
     #define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
         float4 METHOD_NAME(VS2PS_Scale Input) : SV_TARGET0 \
@@ -205,15 +199,14 @@ namespace cPyramidBlur
             return GetPixelScale(Input, SAMPLER, _Upscale); \
         }
 
-    CREATE_PS_UPSCALE(PS_Upscale3, SampleTex4)
-    CREATE_PS_UPSCALE(PS_Upscale2, SampleTex3)
-    CREATE_PS_UPSCALE(PS_Upscale1, SampleTex2)
-    CREATE_PS_UPSCALE(PS_Upscale0, SampleTex1)
+    CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
+    CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
+    CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
+    CREATE_PS_UPSCALE(PS_Upscale0, SampleTempTex1)
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
         pass \
         { \
-            SRGBWriteEnable = WRITE_SRGB; \
             VertexShader = VERTEX_SHADER; \
             PixelShader = PIXEL_SHADER; \
             RenderTarget0 = RENDER_TARGET; \
@@ -221,14 +214,14 @@ namespace cPyramidBlur
 
     technique CShade_PyramidBlur
     {
-        CREATE_PASS(VS_Downscale1, PS_Downscale1, Tex1)
-        CREATE_PASS(VS_Downscale2, PS_Downscale2, Tex2)
-        CREATE_PASS(VS_Downscale3, PS_Downscale3, Tex3)
-        CREATE_PASS(VS_Downscale4, PS_Downscale4, Tex4)
+        CREATE_PASS(VS_Downscale1, PS_Downscale1, TempTex1_RGBA16F)
+        CREATE_PASS(VS_Downscale2, PS_Downscale2, TempTex2_RGBA16F)
+        CREATE_PASS(VS_Downscale3, PS_Downscale3, TempTex3_RGBA16F)
+        CREATE_PASS(VS_Downscale4, PS_Downscale4, TempTex4_RGBA16F)
 
-        CREATE_PASS(VS_Upscale3, PS_Upscale3, Tex3)
-        CREATE_PASS(VS_Upscale2, PS_Upscale2, Tex2)
-        CREATE_PASS(VS_Upscale1, PS_Upscale1, Tex1)
+        CREATE_PASS(VS_Upscale3, PS_Upscale3, TempTex3_RGBA16F)
+        CREATE_PASS(VS_Upscale2, PS_Upscale2, TempTex2_RGBA16F)
+        CREATE_PASS(VS_Upscale1, PS_Upscale1, TempTex1_RGBA16F)
 
         pass
         {

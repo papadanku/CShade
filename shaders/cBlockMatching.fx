@@ -1,3 +1,4 @@
+#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 #include "shared/cVideoProcessing.fxh"
@@ -26,29 +27,18 @@ namespace cBlockMatching
         [Textures & Samplers]
     */
 
-    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RG8, 3)
-    CREATE_SAMPLER(SampleTex1, Tex1, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex6, TempTex6_RG16F, LINEAR, MIRROR)
 
-    CREATE_TEXTURE(Tex2a, BUFFER_SIZE_2, RG8, 8)
-    CREATE_SAMPLER(SampleTex2a, Tex2a, LINEAR, MIRROR)
-
-    CREATE_TEXTURE(Tex2b, BUFFER_SIZE_2, RG8, 8)
-    CREATE_SAMPLER(SampleTex2b, Tex2b, LINEAR, MIRROR)
+    CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16F, 8)
+    CREATE_SAMPLER(SampleTempTex2c, Tex2c, LINEAR, MIRROR)
 
     CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
     CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR)
-
-    CREATE_TEXTURE(Tex3, BUFFER_SIZE_3, RG16F, 1)
-    CREATE_SAMPLER(SampleTex3, Tex3, LINEAR, MIRROR)
-
-    CREATE_TEXTURE(Tex4, BUFFER_SIZE_4, RG16F, 1)
-    CREATE_SAMPLER(SampleTex4, Tex4, LINEAR, MIRROR)
-
-    CREATE_TEXTURE(Tex5, BUFFER_SIZE_5, RG16F, 1)
-    CREATE_SAMPLER(SampleTex5, Tex5, LINEAR, MIRROR)
-
-    CREATE_TEXTURE(Tex6, BUFFER_SIZE_6, RG16F, 1)
-    CREATE_SAMPLER(SampleTex6, Tex6, LINEAR, MIRROR)
 
     /*
         [Pixel Shaders]
@@ -62,42 +52,42 @@ namespace cBlockMatching
 
     float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
     {
-        return tex2D(SampleTex1, Input.Tex0.xy);
+        return tex2D(SampleTempTex1, Input.Tex0.xy);
     }
 
     float2 PS_MFlow_Level5(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = 0.0;
-        return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 4);
+        return GetPixelMFlow(Input.Tex0, Vectors, SampleTempTex2c, SampleTempTex2a, 4);
     }
 
     float2 PS_MFlow_Level4(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = tex2D(SampleTex6, Input.Tex0).xy;
-        return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 3);
+        float2 Vectors = tex2D(SampleTempTex6, Input.Tex0).xy;
+        return GetPixelMFlow(Input.Tex0, Vectors, SampleTempTex2c, SampleTempTex2a, 3);
     }
 
     float2 PS_MFlow_Level3(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = tex2D(SampleTex5, Input.Tex0).xy;
-        return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 2);
+        float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
+        return GetPixelMFlow(Input.Tex0, Vectors, SampleTempTex2c, SampleTempTex2a, 2);
     }
 
     float2 PS_MFlow_Level2(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = tex2D(SampleTex4, Input.Tex0).xy;
-        return GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 1);
+        float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
+        return GetPixelMFlow(Input.Tex0, Vectors, SampleTempTex2c, SampleTempTex2a, 1);
     }
 
     float4 PS_MFlow_Level1(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = tex2D(SampleTex3, Input.Tex0).xy;
-        return float4(GetPixelMFlow(Input.Tex0, Vectors, SampleTex2b, SampleTex2a, 0), 0.0, _BlendFactor);
+        float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
+        return float4(GetPixelMFlow(Input.Tex0, Vectors, SampleTempTex2c, SampleTempTex2a, 0), 0.0, _BlendFactor);
     }
 
     float4 PS_Copy_1(VS2PS_Quad Input) : SV_TARGET0
     {
-        return tex2D(SampleTex2a, Input.Tex0.xy);
+        return tex2D(SampleTempTex2a, Input.Tex0.xy);
     }
 
     float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
@@ -124,16 +114,16 @@ namespace cBlockMatching
     technique CShade_BlockMatching
     {
         // Normalize current frame
-        CREATE_PASS(VS_Quad, PS_Normalize, Tex1)
+        CREATE_PASS(VS_Quad, PS_Normalize, TempTex1_RG8)
 
         // Prefilter blur
-        CREATE_PASS(VS_Quad, PS_Copy_0, Tex2a)
+        CREATE_PASS(VS_Quad, PS_Copy_0, TempTex2a_RG16F)
 
         // Block matching
-        CREATE_PASS(VS_Quad, PS_MFlow_Level5, Tex6)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level4, Tex5)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level3, Tex4)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level2, Tex3)
+        CREATE_PASS(VS_Quad, PS_MFlow_Level5, TempTex6_RG16F)
+        CREATE_PASS(VS_Quad, PS_MFlow_Level4, TempTex5_RG16F)
+        CREATE_PASS(VS_Quad, PS_MFlow_Level3, TempTex4_RG16F)
+        CREATE_PASS(VS_Quad, PS_MFlow_Level2, TempTex3_RG16F)
         pass GetFineBlockMatching
         {
             ClearRenderTargets = FALSE;
@@ -147,12 +137,11 @@ namespace cBlockMatching
             RenderTarget0 = OFlowTex;
         }
 
-        // Postfilter blur
         pass Copy
         {
             VertexShader = VS_Quad;
             PixelShader = PS_Copy_1;
-            RenderTarget0 = Tex2b;
+            RenderTarget0 = Tex2c;
         }
 
         // Display

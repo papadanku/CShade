@@ -1,3 +1,4 @@
+#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 
@@ -29,8 +30,7 @@ namespace cDiscBlur
         [Textures & Samplers]
     */
 
-    CREATE_TEXTURE(Tex1, BUFFER_SIZE_1, RGBA8, 8)
-    CREATE_SRGB_SAMPLER(SampleTex1, Tex1, LINEAR, CLAMP)
+    CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, CLAMP)
 
     /*
         [Pixel Shaders]
@@ -63,7 +63,7 @@ namespace cDiscBlur
         for(int i = 0; i < _Samples; i++)
         {
             float2 Offset = SampleVogel(i, _Samples);
-            OutputColor += tex2Dlod(SampleTex1, float4(Input.Tex0 + (Offset * PixelSize), 0.0, LOD)) * Weight;
+            OutputColor += tex2Dlod(SampleTempTex1, float4(Input.Tex0 + (Offset * PixelSize), 0.0, LOD)) * Weight;
         }
 
         return OutputColor;
@@ -73,11 +73,9 @@ namespace cDiscBlur
     {
         pass GenMipLevels
         {
-            SRGBWriteEnable = WRITE_SRGB;
-
             VertexShader = VS_Quad;
             PixelShader = PS_GenMipLevels;
-            RenderTarget0 = Tex1;
+            RenderTarget0 = TempTex1_RGBA16F;
         }
 
         pass VogelBlur
