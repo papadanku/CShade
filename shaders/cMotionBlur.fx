@@ -126,11 +126,6 @@ namespace cMotionBlur
         return float4(GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
     }
 
-    float Noise(float2 Pos)
-    {
-        return frac(52.9829189 * frac(dot(Pos, float2(0.06711056, 0.00583715))));
-    }
-
     float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
     {
         float4 OutputColor = 0.0;
@@ -151,7 +146,7 @@ namespace cMotionBlur
         [unroll]
         for (int k = 0; k < Samples; ++k)
         {
-            float Random = (Noise(Input.HPos.xy + k) * 2.0) - 1.0;
+            float Random = (GetGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
             float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
             OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
         }

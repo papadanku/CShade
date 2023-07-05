@@ -23,19 +23,13 @@ uniform int _Samples <
     [Pixel Shaders]
 */
 
-float GradientNoise(float2 Position)
-{
-    const float3 Numbers = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(Numbers.z * frac(dot(Position.xy, Numbers.xy)));
-}
-
 float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
 
     const float Pi = acos(-1.0);
     const float2 PixelSize = 1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    float Noise = 2.0 * Pi * GradientNoise(Input.HPos.xy);
+    float Noise = 2.0 * Pi * GetGradientNoise(Input.HPos.xy);
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);

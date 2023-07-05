@@ -161,9 +161,15 @@
         ---
         http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
     */
+
+    float GetGradientNoise(float2 Position)
+    {
+        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
+    }
+
     float3 GetDither(float2 Position)
     {
-        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715)))) / 255.0;
+        return GetGradientNoise(Position) / 255.0;
     }
 
     /*
