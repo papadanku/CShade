@@ -90,6 +90,32 @@
         return Radius * SinCosTheta;
     }
 
+    float4 Filter3x3(sampler2D SampleSource, float2 Tex, bool DownSample)
+    {
+        const float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
+        float2 PixelSize = float2(ddx(Tex.x), ddy(Tex.y));
+        PixelSize = (DownSample) ? PixelSize * 0.5 : PixelSize;
+
+        float4 STex[3] =
+        {
+            Tex.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
+            Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
+            Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy))
+        };
+
+        float4 OutputColor = 0.0;
+        OutputColor += (tex2D(SampleSource, STex[0].xy) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[1].xy) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[2].xy) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[0].xz) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[1].xz) * Weights[2]);
+        OutputColor += (tex2D(SampleSource, STex[2].xz) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[0].xw) * Weights[0]);
+        OutputColor += (tex2D(SampleSource, STex[1].xw) * Weights[1]);
+        OutputColor += (tex2D(SampleSource, STex[2].xw) * Weights[0]);
+        return OutputColor;
+    }
+
     /*
         [Convolutions - Edge Detection]
     */
@@ -127,13 +153,30 @@
     }
 
     /*
+        [Noise Generation]
+    */
+
+    /*
+        Alex Vlachos: Advanced VR Rendering
+        ---
+        http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+    */
+    float3 GetDither(float2 Tex)
+    {
+        float3 Dither = float3(dot(131.0, 312.0), Tex);
+        Dither = frac(Dither / float3(103.0, 71.0, 97.0));
+        return (Dither / 255.0) * 0.375;
+    }
+
+    /*
         [Color Processing]
     */
 
-    float3 GetChromaticity(float3 Color, int Method)
+    float3 GetChromaticity(float3 Color, float2 Tex, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
+        Color += GetDither(Tex);
 
         switch(Method)
         {
@@ -222,12 +265,12 @@
         https://www.mia.uni-saarland.de/Publications/mileva-dagm07.pdf
     */
 
-    float2 GetSphericalRG(float3 Color)
+    float2 GetSphericalRG(float3 Color, float2 Tex)
     {
-        const float Pi = acos(-1.0);
-        const float IHalfPi = 1.0 / (Pi / 2.0);
+        const float IHalfPi = 1.0 / acos(0.0);
         const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
 
+        Color += GetDither(Tex);
         float DotRG = dot(Color.rg, 1.0);
         float SumRG = length(Color.rg);
         float SumRGB = length(Color.rgb);
@@ -235,7 +278,20 @@
         float2 P = 0.0;
         P.x = (DotRG == 0.0) ? White.x : atan2(abs(Color.g), abs(Color.r));
         P.y = (SumRGB == 0.0) ? White.y : asin(abs(SumRG / SumRGB));
- 
+
         return saturate(P * IHalfPi);
+    }
+
+    float2 GetSphericalXY(float3 Color, float2 Tex)
+    {
+        const float IHalfPi = 1.0 / acos(0.0);
+        const float2 White = float2(atan2(sqrt(2.0), 1.0), atan2(1.0, 1.0));
+
+        Color += GetDither(Tex);
+        float2 N = float2(length(Color.rg), Color.g);
+        float2 D = Color.br;
+
+        float2 XY = ((N == 0.0) && (D == 0.0)) ? White : atan2(abs(N), abs(D));
+        return saturate(XY * IHalfPi);
     }
 #endif
