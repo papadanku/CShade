@@ -47,7 +47,7 @@ namespace cBlockMatching
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return GetSphericalRG(Color, Input.Tex0);
+        return GetSphericalRG(Color, Input.HPos.xy);
     }
 
     float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
@@ -111,46 +111,5 @@ namespace cBlockMatching
             RenderTarget0 = RENDER_TARGET; \
         }
 
-    technique CShade_BlockMatching
-    {
-        // Normalize current frame
-        CREATE_PASS(VS_Quad, PS_Normalize, TempTex1_RG8)
 
-        // Prefilter blur
-        CREATE_PASS(VS_Quad, PS_Copy_0, TempTex2a_RG16F)
-
-        // Block matching
-        CREATE_PASS(VS_Quad, PS_MFlow_Level5, TempTex6_RG16F)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level4, TempTex5_RG16F)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level3, TempTex4_RG16F)
-        CREATE_PASS(VS_Quad, PS_MFlow_Level2, TempTex3_RG16F)
-        pass GetFineBlockMatching
-        {
-            ClearRenderTargets = FALSE;
-            BlendEnable = TRUE;
-            BlendOp = ADD;
-            SrcBlend = INVSRCALPHA;
-            DestBlend = SRCALPHA;
-
-            VertexShader = VS_Quad;
-            PixelShader = PS_MFlow_Level1;
-            RenderTarget0 = OFlowTex;
-        }
-
-        pass Copy
-        {
-            VertexShader = VS_Quad;
-            PixelShader = PS_Copy_1;
-            RenderTarget0 = Tex2c;
-        }
-
-        // Display
-        pass
-        {
-            SRGBWriteEnable = WRITE_SRGB;
-
-            VertexShader = VS_Quad;
-            PixelShader = PS_Display;
-        }
-    }
 }

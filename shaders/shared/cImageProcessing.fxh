@@ -157,15 +157,13 @@
     */
 
     /*
-        Alex Vlachos: Advanced VR Rendering
+        Interleaved Gradient Noise Dithering
         ---
-        http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+        http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
     */
-    float3 GetDither(float2 Tex)
+    float3 GetDither(float2 Position)
     {
-        float3 Dither = float3(dot(131.0, 312.0), Tex);
-        Dither = frac(Dither / float3(103.0, 71.0, 97.0));
-        return (Dither / 255.0) * 0.375;
+        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715)))) / 255.0;
     }
 
     /*
