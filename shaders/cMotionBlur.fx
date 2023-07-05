@@ -128,7 +128,7 @@ namespace cMotionBlur
 
     float Noise(float2 Pos)
     {
-        return frac(52.9829189 * frac(dot(Pos, float2(0.06711056, 0.00583715)))) / 255.0;
+        return frac(52.9829189 * frac(dot(Pos, float2(0.06711056, 0.00583715))));
     }
 
     float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
