@@ -25,25 +25,25 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = GetChromaticity(Color, Input.HPos.xy, 0).rg;
+            Chromaticity.rg = GetChromaticity(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, Input.HPos.xy, 0).rgb;
+            Chromaticity.rgb = GetChromaticity(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = GetChromaticity(Color, Input.HPos.xy, 1).rg;
+            Chromaticity.rg = GetChromaticity(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, Input.HPos.xy, 1).rgb;
+            Chromaticity.rgb = GetChromaticity(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = GetChromaticity(Color, Input.HPos.xy, 2).rg;
+            Chromaticity.rg = GetChromaticity(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, Input.HPos.xy, 2).rgb;
+            Chromaticity.rgb = GetChromaticity(Color, 2).rgb;
             break;
         case 6: // Polar (XY)
-            Chromaticity.rg = GetSphericalRG(Color, Input.HPos.xy);
+            Chromaticity.rg = GetSphericalRG(Color);
             break;
         case 7: // CoCg (XY)
             Chromaticity.rg = GetCoCg(Gamma);

@@ -176,11 +176,10 @@
         [Color Processing]
     */
 
-    float3 GetChromaticity(float3 Color, float2 Tex, int Method)
+    float3 GetChromaticity(float3 Color, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
-        Color += GetDither(Tex);
 
         switch(Method)
         {
@@ -269,12 +268,11 @@
         https://www.mia.uni-saarland.de/Publications/mileva-dagm07.pdf
     */
 
-    float2 GetSphericalRG(float3 Color, float2 Tex)
+    float2 GetSphericalRG(float3 Color)
     {
         const float IHalfPi = 1.0 / acos(0.0);
         const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
 
-        Color += GetDither(Tex);
         float DotRG = dot(Color.rg, 1.0);
         float SumRG = length(Color.rg);
         float SumRGB = length(Color.rgb);
@@ -286,12 +284,11 @@
         return saturate(P * IHalfPi);
     }
 
-    float2 GetSphericalXY(float3 Color, float2 Tex)
+    float2 GetSphericalXY(float3 Color)
     {
         const float IHalfPi = 1.0 / acos(0.0);
         const float2 White = float2(atan2(sqrt(2.0), 1.0), atan2(1.0, 1.0));
 
-        Color += GetDither(Tex);
         float2 N = float2(length(Color.rg), Color.g);
         float2 D = Color.br;
 
