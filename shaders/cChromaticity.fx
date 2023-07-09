@@ -9,7 +9,7 @@ uniform int _Select <
     ui_label = "Method";
     ui_tooltip = "Select Chromaticity";
     ui_type = "combo";
-    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Polar (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
+    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Sphere (XY)\0 Symmetrical Sphere (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
 > = 0;
 
 /*
@@ -42,13 +42,16 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
         case 5: // Sum (XYZ)
             Chromaticity.rgb = GetChromaticity(Color, 2).rgb;
             break;
-        case 6: // Polar (XY)
+        case 6: // Sphere (XY)
+            Chromaticity.rg = GetSphericalXY(Color);
+            break;
+        case 7: // Symmetrical sphere (XY)
             Chromaticity.rg = GetSphericalRG(Color);
             break;
-        case 7: // CoCg (XY)
+        case 8: // CoCg (XY)
             Chromaticity.rg = GetCoCg(Gamma);
             break;
-        case 8: // CrCb (XY)
+        case 9: // CrCb (XY)
             Chromaticity.rg = GetCrCb(Gamma);
             break;
         default: // No Chromaticity
