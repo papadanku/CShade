@@ -176,7 +176,7 @@
         [Color Processing]
     */
 
-    float3 GetChromaticity(float3 Color, int Method)
+    float3 GetSumChromaticity(float3 Color, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
@@ -199,6 +199,17 @@
 
         float3 Chromaticity = (Sum == 0.0) ? White : Color / Sum;
         return Chromaticity;
+    }
+
+    /*
+        Ratio-based chromaticity
+    */
+
+    float2 GetRatioRG(float3 Color)
+    {
+        float2 Ratio = (Color.z == 0.0) ? 1.0 : Color.xy / Color.zz;
+        // x / (x + 1.0) normalizes to [0, 1] range
+        return Ratio / (Ratio + 1.0);
     }
 
     /*

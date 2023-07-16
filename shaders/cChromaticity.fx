@@ -9,7 +9,7 @@ uniform int _Select <
     ui_label = "Method";
     ui_tooltip = "Select Chromaticity";
     ui_type = "combo";
-    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Sphere (XY)\0 Symmetrical Sphere (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
+    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Ratio (XY)\0 Sphere (XY)\0 Symmetrical Sphere (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
 > = 0;
 
 /*
@@ -25,33 +25,36 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = GetChromaticity(Color, 0).rg;
+            Chromaticity.rg = GetSumChromaticity(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, 0).rgb;
+            Chromaticity.rgb = GetSumChromaticity(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = GetChromaticity(Color, 1).rg;
+            Chromaticity.rg = GetSumChromaticity(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, 1).rgb;
+            Chromaticity.rgb = GetSumChromaticity(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = GetChromaticity(Color, 2).rg;
+            Chromaticity.rg = GetSumChromaticity(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = GetChromaticity(Color, 2).rgb;
+            Chromaticity.rgb = GetSumChromaticity(Color, 2).rgb;
             break;
-        case 6: // Sphere (XY)
+        case 6: // Ratio (XY)
+            Chromaticity.rg = GetRatioRG(Color);
+            break;
+        case 7: // Sphere (XY)
             Chromaticity.rg = GetSphericalXY(Color);
             break;
-        case 7: // Symmetrical sphere (XY)
+        case 8: // Symmetrical sphere (XY)
             Chromaticity.rg = GetSphericalRG(Color);
             break;
-        case 8: // CoCg (XY)
+        case 9: // CoCg (XY)
             Chromaticity.rg = GetCoCg(Gamma);
             break;
-        case 9: // CrCb (XY)
+        case 10: // CrCb (XY)
             Chromaticity.rg = GetCrCb(Gamma);
             break;
         default: // No Chromaticity
