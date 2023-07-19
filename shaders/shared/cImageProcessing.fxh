@@ -271,39 +271,15 @@
         return SatRGB;
     }
 
-    /*
-        RGB to sphere.
-        ---
-        Mileva, Yana, Andrés Bruhn, and Joachim Weickert. "Illumination-robust variational optical flow with photometric invariants." In Pattern Recognition: 29th DAGM Symposium, Heidelberg, Germany, September 12-14, 2007. Proceedings 29, pp. 152-162. Springer Berlin Heidelberg, 2007.
-        ---
-        https://www.mia.uni-saarland.de/Publications/mileva-dagm07.pdf
-    */
-
     float2 GetSphericalRG(float3 Color)
     {
         const float IHalfPi = 1.0 / acos(0.0);
-        const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
+        const float2 White = acos(rsqrt(float2(2.0, 3.0)));
 
-        float DotXY = dot(Color.xy, 1.0);
-        float SumXY = length(Color.xy);
-        float SumXYZ = length(Color.xyz);
-
-        float2 P = 0.0;
-        P.x = (DotXY == 0.0) ? White.x : atan2(abs(Color.y), abs(Color.x));
-        P.y = (SumXYZ == 0.0) ? White.y : asin(abs(SumXY / SumXYZ));
-
+        float2 DotC = 0.0;
+        DotC.x = dot(Color.xy, Color.xy);
+        DotC.y = dot(Color.xyz, Color.xyz);
+        float2 P = (DotC == 0.0) ? White : acos(abs(Color.xz * rsqrt(DotC)));
         return saturate(P * IHalfPi);
-    }
-
-    float2 GetSphericalXY(float3 Color)
-    {
-        const float IHalfPi = 1.0 / acos(0.0);
-        const float2 White = float2(atan2(sqrt(2.0), 1.0), atan2(1.0, 1.0));
-
-        float2 N = float2(length(Color.xy), Color.y);
-        float2 D = Color.zx;
-
-        float2 XY = (N + D == 0.0) ? White : atan2(abs(N), abs(D));
-        return saturate(XY * IHalfPi);
     }
 #endif
