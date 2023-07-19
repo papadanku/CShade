@@ -284,13 +284,13 @@
         const float IHalfPi = 1.0 / acos(0.0);
         const float2 White = float2(atan2(1.0, 1.0), asin(sqrt(2.0) / sqrt(3.0)));
 
-        float DotRG = dot(Color.rg, 1.0);
-        float SumRG = length(Color.rg);
-        float SumRGB = length(Color.rgb);
+        float DotXY = dot(Color.xy, 1.0);
+        float SumXY = length(Color.xy);
+        float SumXYZ = length(Color.xyz);
 
         float2 P = 0.0;
-        P.x = (DotRG == 0.0) ? White.x : atan2(abs(Color.g), abs(Color.r));
-        P.y = (SumRGB == 0.0) ? White.y : asin(abs(SumRG / SumRGB));
+        P.x = (DotXY == 0.0) ? White.x : atan2(abs(Color.y), abs(Color.x));
+        P.y = (SumXYZ == 0.0) ? White.y : asin(abs(SumXY / SumXYZ));
 
         return saturate(P * IHalfPi);
     }
@@ -300,10 +300,10 @@
         const float IHalfPi = 1.0 / acos(0.0);
         const float2 White = float2(atan2(sqrt(2.0), 1.0), atan2(1.0, 1.0));
 
-        float2 N = float2(length(Color.rg), Color.g);
-        float2 D = Color.br;
+        float2 N = float2(length(Color.xy), Color.y);
+        float2 D = Color.zx;
 
-        float2 XY = ((N == 0.0) && (D == 0.0)) ? White : atan2(abs(N), abs(D));
+        float2 XY = (N + D == 0.0) ? White : atan2(abs(N), abs(D));
         return saturate(XY * IHalfPi);
     }
 #endif
