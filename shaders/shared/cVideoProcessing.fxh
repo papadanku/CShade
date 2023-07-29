@@ -199,7 +199,7 @@
                 float2 Shift = (Pi2 / (4.0 * i)) * j;
                 sincos(Shift, Shift.x, Shift.y);
 
-                float2 Tex = Input.MainTex.zw + (Shift * j);
+                float2 Tex = Input.MainTex.zw + (Shift * i);
                 SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
                 float SAD = GetSAD(Template, Image);
 
