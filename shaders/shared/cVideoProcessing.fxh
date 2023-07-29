@@ -176,7 +176,7 @@
         float2 SAD = 0.0;
         for(int i = 0; i < 4; i++)
         {
-            SAD[0] += abs(Template[i][0] - Image[i][0]);
+            SAD += abs(Template[i] - Image[i]);
         }
         return max(SAD[0], SAD[1]);
     }
@@ -192,14 +192,14 @@
         SampleBlock(SampleImage, Input, Input.MainTex.zw, Input.LOD.zw, Image);
         float Minimum = GetSAD(Template, Image);
 
-        [loop] for(int i = 1; i < 4; ++i)
+    	[loop] for(int i = 1; i < 4; ++i)
         {
-            [loop] for(int j = 0; j < 4 * i; ++j)
+        	[loop] for(int j = 0; j < 4 * i; ++j)
             {
-                float2 Shift = (Pi2 / (4.0 * i)) * j;
+                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 sincos(Shift, Shift.x, Shift.y);
 
-                float2 Tex = Input.MainTex.zw + (Shift * i);
+                float2 Tex = Input.MainTex.zw + (Shift * float(j));
                 SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
                 float SAD = GetSAD(Template, Image);
 
