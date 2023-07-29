@@ -192,9 +192,9 @@
         SampleBlock(SampleImage, Input, Input.MainTex.zw, Input.LOD.zw, Image);
         float Minimum = GetSAD(Template, Image);
 
-    	[loop] for(int i = 1; i < 4; ++i)
+    	[unroll] for(int i = 1; i < 4; ++i)
         {
-        	[loop] for(int j = 0; j < 4 * i; ++j)
+        	[unroll] for(int j = 0; j < 4 * i; ++j)
             {
                 float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 sincos(Shift, Shift.x, Shift.y);
