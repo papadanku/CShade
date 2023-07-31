@@ -19,8 +19,6 @@ uniform int _Samples <
     ui_min = 0;
 > = 16;
 
-CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, CLAMP)
-
 float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
 {
     // Initialize variables we need to accumulate samples and calculate offsets
@@ -47,13 +45,6 @@ float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_Bilateral
 {
-    pass GenMipLevels
-    {
-        VertexShader = VS_Quad;
-        PixelShader = PS_GenMipLevels;
-        RenderTarget0 = TempTex1_RGBA16F;
-    }
-
     pass Bilateral
     {
         SRGBWriteEnable = WRITE_SRGB;
