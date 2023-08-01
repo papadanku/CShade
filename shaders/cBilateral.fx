@@ -1,26 +1,11 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cImageProcessing.fxh"
 
-uniform float _Offset <
-    ui_label = "Sample Offset";
-    ui_type = "drag";
-    ui_min = 0.0;
-> = 0.0;
-
-uniform float _Radius <
-    ui_label = "Radius";
-    ui_type = "drag";
-    ui_min = 0.0;
-> = 16.0;
-
-uniform int _Samples <
-    ui_label = "Sample Count";
-    ui_type = "drag";
-    ui_min = 0;
-> = 16;
-
 float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
 {
+    // Get constant
+    const float Pi2 = acos(-1.0) * 2.0;
+
     // Initialize variables we need to accumulate samples and calculate offsets
     float4 OutputColor = 0.0;
 
@@ -30,13 +15,19 @@ float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
     // Get bilateral filter
     float3 TotalWeight = 0.0;
     float3 Center = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-    for(int i = 0; i < _Samples; i++)
+    [unroll] for(int i = 1; i < 4; ++i)
     {
-        float2 Offset = SampleVogel(i, _Samples) * _Radius;
-        float3 Pixel = tex2D(CShade_SampleColorTex, Input.Tex0 + (Offset * PixelSize)).rgb;
-        float3 Weight = abs(1.0 - abs(Pixel - Center));
-        OutputColor += (Pixel * Weight);
-        TotalWeight += Weight;
+        [unroll] for(int j = 0; j < 4 * i; ++j)
+        {
+            float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
+            sincos(Shift, Shift.x, Shift.y);
+            Shift *= float(i);
+
+            float3 Pixel = tex2D(CShade_SampleColorTex, Input.Tex0 + (Shift * PixelSize)).rgb;
+            float3 Weight = abs(1.0 - abs(Pixel - Center));
+            OutputColor += (Pixel * Weight);
+            TotalWeight += Weight;
+        }
     }
     OutputColor.rgb /= TotalWeight;
 
