@@ -71,10 +71,9 @@
         float IyIt = 0.0;
 
         // Get required data to calculate main texel data
-        const int WindowSize = 4;
-        const float2 WindowHalf = trunc(WindowSize / 2) - 0.5;
+        const float Pi2 = acos(-1.0) * 2.0;
         const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
-        float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
+        float2 PixelSize = float2(ddx(MainTex.x), ddy(MainTex.y));
 
         // Calculate main texel data (TexelSize, TexelLOD)
         TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
@@ -87,25 +86,28 @@
         TxData.MainTex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
-        // Start from the negative so we can process a window in 1 loop
-        [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
+        [loop] for(int i = 1; i < 4; ++i)
         {
-            float2 Shift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
-            float4 Tex = TxData.MainTex + Shift.xyxy;
+            [loop] for(int j = 0; j < 4 * i; ++j)
+            {
+                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
+                sincos(Shift, Shift.x, Shift.y);
+                float4 Tex = TxData.MainTex + (Shift.xyxy * float(i));
 
-            float2x2 G = GetGradients(SampleI0, Tex.xy, TxData);
-            float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy).rg;
-            float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw).rg;
-            float2 IT = I0 - I1;
+                float2x2 G = GetGradients(SampleI0, Tex.xy, TxData);
+                float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy).rg;
+                float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw).rg;
+                float2 IT = I0 - I1;
 
-            // A.x = A11; A.y = A22; A.z = A12/A22
-            IxIx += dot(G[0].rg, G[0].rg);
-            IyIy += dot(G[1].rg, G[1].rg);
-            IxIy += dot(G[0].rg, G[1].rg);
+                // A.x = A11; A.y = A22; A.z = A12/A22
+                IxIx += dot(G[0].rg, G[0].rg);
+                IyIy += dot(G[1].rg, G[1].rg);
+                IxIy += dot(G[0].rg, G[1].rg);
 
-            // B.x = B1; B.y = B2
-            IxIt += dot(G[0].rg, IT.rg);
-            IyIt += dot(G[1].rg, IT.rg);
+                // B.x = B1; B.y = B2
+                IxIt += dot(G[0].rg, IT.rg);
+                IyIt += dot(G[1].rg, IT.rg);
+            }
         }
 
         /*
@@ -192,9 +194,9 @@
         SampleBlock(SampleImage, Input, Input.MainTex.zw, Input.LOD.zw, Image);
         float Minimum = GetSAD(Template, Image);
 
-        [unroll] for(int i = 1; i < 4; ++i)
+        [loop] for(int i = 1; i < 4; ++i)
         {
-            [unroll] for(int j = 0; j < 4 * i; ++j)
+            [loop] for(int j = 0; j < 4 * i; ++j)
             {
                 float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 sincos(Shift, Shift.x, Shift.y);
