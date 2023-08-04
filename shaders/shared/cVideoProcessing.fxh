@@ -73,9 +73,10 @@
         {
             [loop] for(int j = 0; j < 4 * i; ++j)
             {
-                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
-                sincos(Shift, Shift.x, Shift.y);
-                float4 Tex = T.Tex + (Shift.xyxy * float(i));
+                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+                float2 AngleShift = 0.0;
+                sincos(Shift, AngleShift.x, AngleShift.y);
+                float4 Tex = T.Tex + (AngleShift.xyxy * float(i));
 
                 // Get spatial gradient
                 float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
@@ -191,10 +192,11 @@
         {
             [loop] for(int j = 0; j < 4 * i; ++j)
             {
-                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
-                sincos(Shift, Shift.x, Shift.y);
+                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+                float2 AngleShift = 0.0;
+                sincos(Shift, AngleShift.x, AngleShift.y);
+                float2 Tex = Input.Tex.zw + (AngleShift * float(i));
 
-                float2 Tex = Input.Tex.zw + (Shift * float(i));
                 SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
                 float SAD = GetSAD(Template, Image);
 
