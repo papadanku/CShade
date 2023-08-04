@@ -33,26 +33,10 @@
 
     struct Texel
     {
-        float4 MainTex;
+        float4 Tex;
         float4 Mask;
         float4 LOD;
     };
-
-    float2x2 GetGradients(sampler2D Source, float2 Tex, Texel Input)
-    {
-        float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
-        float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
-
-        float2 N = tex2Dlod(Source, (NS.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 S = tex2Dlod(Source, (NS.zwww * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 E = tex2Dlod(Source, (EW.xyyy * Input.Mask) + Input.LOD.xxxy).rg;
-        float2 W = tex2Dlod(Source, (EW.zwww * Input.Mask) + Input.LOD.xxxy).rg;
-
-        float2x2 OutputColor;
-        OutputColor[0] = E - W;
-        OutputColor[1] = N - S;
-        return OutputColor;
-    }
 
     float2 GetPixelPyLK
     (
@@ -63,7 +47,7 @@
     )
     {
         // Initialize variables
-        Texel TxData;
+        Texel T;
         float IxIx = 0.0;
         float IyIy = 0.0;
         float IxIy = 0.0;
@@ -76,14 +60,13 @@
         float2 PixelSize = float2(ddx(MainTex.x), ddy(MainTex.y));
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        TxData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
-        TxData.MainTex.xy = MainTex;
-        TxData.MainTex.zw = TxData.MainTex.xy + Vectors;
-        TxData.LOD.xy = GetLOD(TxData.MainTex.xy * ImageSize);
-        TxData.LOD.zw = GetLOD(TxData.MainTex.zw * ImageSize);
+        T.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
+        T.Tex = float4(MainTex, MainTex + Vectors);
+        T.LOD.xy = GetLOD(T.Tex.xy * ImageSize);
+        T.LOD.zw = GetLOD(T.Tex.zw * ImageSize);
 
         // Un-normalize data for processing
-        TxData.MainTex *= (1.0 / abs(PixelSize.xyxy));
+        T.Tex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
         [loop] for(int i = 1; i < 4; ++i)
@@ -92,21 +75,31 @@
             {
                 float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 sincos(Shift, Shift.x, Shift.y);
-                float4 Tex = TxData.MainTex + (Shift.xyxy * float(i));
+                float4 Tex = T.Tex + (Shift.xyxy * float(i));
 
-                float2x2 G = GetGradients(SampleI0, Tex.xy, TxData);
-                float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * TxData.Mask) + TxData.LOD.xxxy).rg;
-                float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * TxData.Mask) + TxData.LOD.zzzw).rg;
+                // Get spatial gradient
+                float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+                float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+                float2 N = tex2Dlod(SampleI0, (NS.xyyy * T.Mask) + T.LOD.xxxy).rg;
+                float2 S = tex2Dlod(SampleI0, (NS.zwww * T.Mask) + T.LOD.xxxy).rg;
+                float2 E = tex2Dlod(SampleI0, (EW.xyyy * T.Mask) + T.LOD.xxxy).rg;
+                float2 W = tex2Dlod(SampleI0, (EW.zwww * T.Mask) + T.LOD.xxxy).rg;
+                float2 Ix = E - W;
+                float2 Iy = N - S;
+
+                // Get temporal gradient
+                float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * T.Mask) + T.LOD.xxxy).rg;
+                float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * T.Mask) + T.LOD.zzzw).rg;
                 float2 IT = I0 - I1;
 
-                // A.x = A11; A.y = A22; A.z = A12/A22
-                IxIx += dot(G[0].rg, G[0].rg);
-                IyIy += dot(G[1].rg, G[1].rg);
-                IxIy += dot(G[0].rg, G[1].rg);
+                // IxIx = A11; IyIy = A22; IxIy = A12/A22
+                IxIx += dot(Ix, Ix);
+                IyIy += dot(Iy, Iy);
+                IxIy += dot(Ix, Iy);
 
-                // B.x = B1; B.y = B2
-                IxIt += dot(G[0].rg, IT.rg);
-                IyIt += dot(G[1].rg, IT.rg);
+                // IxIt = B1; IyIt = B2
+                IxIt += dot(Ix, IT);
+                IyIt += dot(Iy, IT);
             }
         }
 
@@ -159,7 +152,7 @@
 
     struct Block
     {
-        float4 MainTex;
+        float4 Tex;
         float4 Mask;
         float4 LOD;
     };
@@ -191,7 +184,7 @@
         // Initialize values
         float2 Vectors = 0.0;
         float2 Image[4];
-        SampleBlock(SampleImage, Input, Input.MainTex.zw, Input.LOD.zw, Image);
+        SampleBlock(SampleImage, Input, Input.Tex.zw, Input.LOD.zw, Image);
         float Minimum = GetSAD(Template, Image);
 
         [loop] for(int i = 1; i < 4; ++i)
@@ -201,7 +194,7 @@
                 float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 sincos(Shift, Shift.x, Shift.y);
 
-                float2 Tex = Input.MainTex.zw + (Shift * float(i));
+                float2 Tex = Input.Tex.zw + (Shift * float(i));
                 SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
                 float SAD = GetSAD(Template, Image);
 
@@ -223,30 +216,29 @@
     )
     {
         // Initialize data
-        Block BlockData;
+        Block B;
 
         // Get required data to calculate main texel data
         const float2 ImageSize = tex2Dsize(SampleTemplate, 0.0);
         float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        BlockData.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
-        BlockData.MainTex.xy = MainTex;
-        BlockData.MainTex.zw = BlockData.MainTex.xy + Vectors;
-        BlockData.LOD.xy = GetLOD(BlockData.MainTex.xy * ImageSize);
-        BlockData.LOD.zw = GetLOD(BlockData.MainTex.zw * ImageSize);
+        B.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
+        B.Tex = float4(MainTex, MainTex + Vectors);
+        B.LOD.xy = GetLOD(B.Tex.xy * ImageSize);
+        B.LOD.zw = GetLOD(B.Tex.zw * ImageSize);
 
         // Un-normalize data for processing
-        BlockData.MainTex *= (1.0 / abs(PixelSize.xyxy));
+        B.Tex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
         // Pre-calculate template
         float2 Template[4];
-        SampleBlock(SampleTemplate, BlockData, BlockData.MainTex.xy, BlockData.LOD.xy, Template);
+        SampleBlock(SampleTemplate, B, B.Tex.xy, B.LOD.xy, Template);
 
         // Calculate three-step search
         // Propagate and encode vectors
-        Vectors += SearchArea(SampleImage, BlockData, Template);
-        return EncodeVectors(Vectors, BlockData.Mask.xy);
+        Vectors += SearchArea(SampleImage, B, Template);
+        return EncodeVectors(Vectors, B.Mask.xy);
     }
 #endif
