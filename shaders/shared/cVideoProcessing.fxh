@@ -195,12 +195,12 @@
                 float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 float2 AngleShift = 0.0;
                 sincos(Shift, AngleShift.x, AngleShift.y);
-                float2 Tex = Input.Tex.zw + (AngleShift * float(i));
+                AngleShift *= float(i);
 
+                float2 Tex = Input.Tex.zw + AngleShift;
                 SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
                 float SAD = GetSAD(Template, Image);
-
-                Vectors = (SAD < Minimum) ? Shift : Vectors;
+                Vectors = (SAD < Minimum) ? AngleShift : Vectors;
                 Minimum = min(SAD, Minimum);
             }
         }
