@@ -12,12 +12,6 @@ uniform float _Radius <
     ui_max = 64.0;
 > = 32.0;
 
-uniform int _Samples <
-    ui_label = "Sample Count";
-    ui_type = "slider";
-    ui_min = 4;
-    ui_max = 64;
-> = 8;
 
 /*
     [Pixel Shaders]
@@ -27,9 +21,9 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
 
-    const float Pi = acos(-1.0);
+    const float Pi2 = acos(-1.0) * 2.0;
     const float2 PixelSize = 1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT);
-    float Noise = 2.0 * Pi * GetGradientNoise(Input.HPos.xy);
+    float Noise = Pi2 * GetGradientNoise(Input.HPos.xy);
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
@@ -37,13 +31,23 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
                                       -Rotation.y, Rotation.x);
 
-    for(int i = 0; i < _Samples; i++)
+    float4 Weight = 0.0;
+    [unroll] for(int i = 1; i < 4; ++i)
     {
-        float2 SampleOffset = mul(SampleVogel(i, _Samples) * _Radius, RotationMatrix);
-        OutputColor += tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0 + (SampleOffset * PixelSize), 0.0, 0.0));
+        [unroll] for(int j = 0; j < 4 * i; ++j)
+        {
+            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+            float2 AngleShift = 0.0;
+            sincos(Shift, AngleShift.x, AngleShift.y);
+            AngleShift *= float(i);
+
+            float2 SampleOffset = mul(AngleShift * _Radius, RotationMatrix);
+            OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * PixelSize));
+            Weight++;
+        }
     }
 
-    return OutputColor / _Samples;
+    return OutputColor / Weight;
 }
 
 technique CShade_NoiseBlur
