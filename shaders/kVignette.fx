@@ -38,11 +38,11 @@ uniform float _Falloff <
 
 float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {
-    const float AspectRatio = BUFFER_WIDTH / BUFFER_HEIGHT;
+    const float AspectRatio = float(BUFFER_WIDTH) / float(BUFFER_HEIGHT);
     Input.Tex0 = (Input.Tex0 * 2.0 - 1.0) * AspectRatio;
     float Radius = length(Input.Tex0) * _Falloff;
-    float Radius_2_1 = mad(Radius, Radius, 1.0);
-    return rcp(Radius_2_1 * Radius_2_1);
+    float Radius_2_1 = (Radius * Radius) + 1.0;
+    return 1.0 / (Radius_2_1 * Radius_2_1);
 }
 
 technique CShade_KinoVignette
