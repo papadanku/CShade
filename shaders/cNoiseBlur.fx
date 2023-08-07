@@ -22,7 +22,8 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     float4 OutputColor = 0.0;
 
     const float Pi2 = acos(-1.0) * 2.0;
-    const float2 PixelSize = 1.0 / int2(BUFFER_WIDTH, BUFFER_HEIGHT);
+    const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
+    const float2 PixelSize = 1.0 / ScreenSize;
     float Noise = Pi2 * GetGradientNoise(Input.HPos.xy);
 
     float2 Rotation = 0.0;
@@ -30,6 +31,9 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 
     float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
                                       -Rotation.y, Rotation.x);
+
+    float Height = saturate(1.0 - saturate(pow(abs(Input.Tex0.y), 1.0)));
+    float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     float4 Weight = 0.0;
     [unroll] for(int i = 1; i < 4; ++i)
@@ -41,8 +45,10 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
             sincos(Shift, AngleShift.x, AngleShift.y);
             AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift * _Radius, RotationMatrix);
-            OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * PixelSize));
+            float2 SampleOffset = mul(AngleShift, RotationMatrix);
+            SampleOffset *= _Radius;
+            SampleOffset.x *= AspectRatio;
+            OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
             Weight++;
         }
     }
