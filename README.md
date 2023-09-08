@@ -45,9 +45,9 @@ CShade features shaders that filter images for aesthetics.
 
 Practice | Elements
 -------- | --------
-**ALLCAPS** | System semantics • State parameters
-**ALL_CAPS** | Preprocessor (macros & arguments)
-**_SnakeCase** | Variables (uniform)
-**SnakeCase** | Variables (local & global) • Method arguments
-**Snake_Case** | Data subcatagory
+**ALLCAPS** | system semantics • state parameters
+**ALL_CAPS** | preprocessor (macros & arguments)
+**_SnakeCase** | variables (uniform)
+**SnakeCase** | variables (local & global) • method arguments
+**Snake_Case** | data subcatagory
 **PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
