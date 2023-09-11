@@ -52,7 +52,7 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 
     // Display data
     float3 Texture = tex2D(CShade_SampleColorTex, TexTiles).rgb;
-    float CircleMask = smoothstep(_TileRadius - EdgeAA, _TileRadius + EdgeAA, TileDist);
+    float CircleMask = smoothstep(_TileRadius - EdgeAA, _TileRadius, TileDist);
     CircleMask = saturate(1.0 - CircleMask);
 
     return float4(Texture * CircleMask, 1.0);
