@@ -48,13 +48,14 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     // Tile data
     float2 TexTiles = GetTiles(Tex);
     float TileDist = distance(TexTiles, 0.5);
-    float AntiAlias = fwidth(TileDist);
+    float EdgeAA = fwidth(TileDist);
 
     // Display data
     float3 Texture = tex2D(CShade_SampleColorTex, TexTiles).rgb;
-    float Circles = smoothstep(_TileRadius, _TileRadius - AntiAlias, TileDist);
+    float CircleMask = smoothstep(_TileRadius - EdgeAA, _TileRadius + EdgeAA, TileDist);
+    CircleMask = saturate(1.0 - CircleMask);
 
-    return float4(Texture * Circles, 1.0);
+    return float4(Texture * CircleMask, 1.0);
 }
 
 technique CShade_Circles
