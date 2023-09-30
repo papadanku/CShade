@@ -186,21 +186,15 @@ namespace kDatamosh
 
     // Datamosh
 
-    float RandUV(float2 Tex)
-    {
-        float f = dot(float2(12.9898, 78.233), Tex);
-        return frac(43758.5453 * sin(f));
-    }
-
     float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
     {
         float2 TexSize = float2(ddx(Tex.x), ddy(Tex.y));
         float2 Time = float2(_Time, 0.0);
 
         // Random numbers
-        Random.x = RandUV(Tex.xy + Time.xy);
-        Random.y = RandUV(Tex.xy + Time.yx);
-        Random.z = RandUV(Tex.yx - Time.xx);
+        Random.x = GetHash(Tex.xy + Time.xy);
+        Random.y = GetHash(Tex.xy + Time.yx);
+        Random.z = GetHash(Tex.yx - Time.xx);
 
         // Normalized screen space -> Pixel coordinates
         MV = DecodeVectors(MV * _Scale, TexSize);
@@ -263,7 +257,7 @@ namespace kDatamosh
         MV = GetMVBlocks(MV, Input.Tex0, Random);
 
         // Get random motion
-        float RandomMotion = RandUV(Input.Tex0 + length(MV));
+        float RandomMotion = GetHash(Input.Tex0 + length(MV));
 
         // Pixel coordinates -> Normalized screen space
         MV = EncodeVectors(MV, TexSize);
