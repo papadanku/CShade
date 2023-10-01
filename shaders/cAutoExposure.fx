@@ -18,7 +18,7 @@ uniform float _SmoothingSpeed <
     ui_tooltip = "Exposure time smoothing";
     ui_min = 0.0;
     ui_max = 10.0;
-> = 2.0;
+> = 1.0;
 
 uniform float _ManualBias <
     ui_category = "Exposure";
@@ -26,7 +26,7 @@ uniform float _ManualBias <
     ui_type = "drag";
     ui_tooltip = "Optional manual bias ";
     ui_min = 0.0;
-> = 2.0;
+> = 1.0;
 
 uniform float _Scale <
     ui_category = "Spot Metering";
