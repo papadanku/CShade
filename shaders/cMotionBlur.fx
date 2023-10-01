@@ -146,7 +146,7 @@ namespace cMotionBlur
         [unroll]
         for (int k = 0; k < Samples; ++k)
         {
-            float Random = (GetGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
+            float Random = (GetIGNoise(Input.HPos.xy + k) * 2.0) - 1.0;
             float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
             OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
         }

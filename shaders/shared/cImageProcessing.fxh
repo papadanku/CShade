@@ -162,14 +162,14 @@
         http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
     */
 
-    float GetGradientNoise(float2 Position)
+    float GetIGNoise(float2 Position)
     {
         return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
     }
 
     float3 GetDither(float2 Position)
     {
-        return GetGradientNoise(Position) / 255.0;
+        return GetIGNoise(Position) / 255.0;
     }
 
     /*
@@ -189,6 +189,7 @@
     }
 
     /*
+        GetGradientNoise(): https://iquilezles.org/articles/gradientnoise/
         GetQuintic(): https://iquilezles.org/articles/texture/
 
         The MIT License (MIT)
@@ -228,6 +229,32 @@
         float D = GetHash(I + float2(1.0, 1.0));
         float2 UV = GetQuintic(F);
         return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
+    }
+
+    float GetGradient(float2 I, float2 F, float2 O)
+    {
+        // Get constants
+        const float TwoPi = acos(-1.0) * 2.0;
+
+        // Calculate random hash rotation
+        float Hash = GetHash(I + O) * TwoPi;
+        float2 HashSinCos = float2(sin(Hash), cos(Hash));
+
+        // Calculate final dot-product
+        return dot(HashSinCos, F - O);
+    }
+
+    float GetGradientNoise(float2 Tex)
+    {
+        float2 I = floor(Tex);
+        float2 F = frac(Tex);
+        float A = GetGradient(I, F, float2(0.0, 0.0));
+        float B = GetGradient(I, F, float2(1.0, 0.0));
+        float C = GetGradient(I, F, float2(0.0, 1.0));
+        float D = GetGradient(I, F, float2(1.0, 1.0));
+        float2 UV = GetQuintic(F);
+        float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
+        return saturate((Noise * 0.5) + 0.5);
     }
 
     /*

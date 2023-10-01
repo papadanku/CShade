@@ -9,8 +9,8 @@ uniform float _Radius <
     ui_label = "Radius";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 64.0;
-> = 32.0;
+    ui_max = 1.0;
+> = 0.5;
 
 
 /*
@@ -24,7 +24,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     const float Pi2 = acos(-1.0) * 2.0;
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
-    float Noise = Pi2 * GetValueNoise(Input.Tex0.xy * 256.0);
+    float Noise = Pi2 * GetGradientNoise(Input.Tex0.xy * 256.0);
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
