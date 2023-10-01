@@ -98,7 +98,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
     // OutputColor0.a = Output the weight for temporal blending
     float Delay = 1e-3 * _Frametime;
-    return float4(log(Luma.rgb), saturate(Delay * _SmoothingSpeed));
+    return float4(log(max(Luma.rgb, 1e-2)), saturate(Delay * _SmoothingSpeed));
 }
 
 float3 GetAutoExposure(float3 Color, float2 Tex)
