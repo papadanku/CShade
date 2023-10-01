@@ -67,18 +67,8 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 /*
     [Pixel Shaders]
     ---
-    TODO: Add average, spot, and center-weighted metering with adjustable radius and slope
-    ---
-    AutoExposure(): https://knarkowicz.wordpress.com/2016/01/09/automatic-exposure/
+    AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
 */
-
-float3 GetAutoExposure(float3 Color, float Average)
-{
-    // NOTE: KeyValue is an exposure compensation curve
-    float KeyValue = 1.03 - (2.0 / (log10(Average + 1.0) + 2.0));
-    float ExposureValue = log2(KeyValue / Average) + _ManualBias;
-    return Color * exp2(ExposureValue);
-}
 
 float2 Expand(float2 X)
 {
@@ -108,14 +98,22 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
     // OutputColor0.a = Output the weight for temporal blending
     float Delay = 1e-3 * _Frametime;
-    return float4(Color.rgb, saturate(Delay * _SmoothingSpeed));
+    return float4(log(Color.rgb), saturate(Delay * _SmoothingSpeed));
+}
+
+float3 GetAutoExposure(float3 Color, float2 Tex)
+{
+    float LumaAverage = exp(tex2Dlod(SampleLumaTex, float4(Tex, 0.0, 99.0)).r);
+    float Ev100 = log2(LumaAverage * 100.0 / 12.5);
+    Ev100 -= _ManualBias; // optional manual bias
+    float Exposure = 1.0 / (1.2 * exp2(Ev100));
+    return Color * Exposure;
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
-    float AverageLuma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float3 ExposedColor = GetAutoExposure(Color.rgb, AverageLuma);
+    float3 ExposedColor = GetAutoExposure(Color.rgb, Input.Tex0);
 
     if (_Debug)
     {
