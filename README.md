@@ -51,3 +51,25 @@ Practice | Elements
 **SnakeCase** | variables (local & global) • method arguments
 **Snake_Case** | data subcatagory
 **PREFIX_Data** | `struct` • `PixelShader` • `VertexShader`
+
+## Acknowledgments
+
+- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
+
+    Major knowledge-base and inspiration.
+
+- [The Project Reality Team](https://www.realitymod.com/)
+
+    memes
+
+- [The ReShade Community](https://reshade.me/)
+
+    Where the coding journey started.
+
+- [Vietnamese Student Association](https://www.instagram.com/asu.vsa)
+
+    The community I needed.
+
+- Family, friends, and acquaintances
+
+    You know who you are.
