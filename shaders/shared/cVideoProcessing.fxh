@@ -57,7 +57,7 @@
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
         const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
-        float2 PixelSize = float2(ddx(MainTex.x), ddy(MainTex.y));
+        float2 PixelSize = fwidth(MainTex);
 
         // Calculate main texel data (TexelSize, TexelLOD)
         T.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
@@ -222,7 +222,7 @@
 
         // Get required data to calculate main texel data
         const float2 ImageSize = tex2Dsize(SampleTemplate, 0.0);
-        float2 PixelSize = float2(ddx(MainTex.x),  ddy(MainTex.y));
+        float2 PixelSize = fwidth(MainTex);
 
         // Calculate main texel data (TexelSize, TexelLOD)
         B.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);

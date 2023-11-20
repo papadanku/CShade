@@ -102,7 +102,7 @@ namespace cOpticalFlow
 
     float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 InvTexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
+        float2 InvTexSize = fwidth(Input.Tex0);
 
         float2 Vectors = tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
         Vectors = DecodeVectors(Vectors, InvTexSize);

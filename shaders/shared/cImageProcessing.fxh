@@ -38,7 +38,7 @@
         const float4 VShift = float4(0.0, -1.0, 0.0, 1.0);
 
         float4 OutputColor = 0.0;
-        float4 PSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y)).xyxy;
+        float4 PSize = fwidth(Input.Tex0).xyxy;
 
         const float Offsets[KernelSize] =
         {
@@ -93,7 +93,7 @@
     float4 Filter3x3(sampler2D SampleSource, float2 Tex, bool DownSample)
     {
         const float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
-        float2 PixelSize = float2(ddx(Tex.x), ddy(Tex.y));
+        float2 PixelSize = fwidth(Tex);
         PixelSize = (DownSample) ? PixelSize * 0.5 : PixelSize;
 
         float4 STex[3] =

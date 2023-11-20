@@ -194,7 +194,7 @@ namespace kDatamosh
 
     float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
     {
-        float2 TexSize = float2(ddx(Tex.x), ddy(Tex.y));
+        float2 TexSize = fwidth(Tex);
         float2 Time = float2(_Time, 0.0);
 
         // Random numbers
@@ -251,7 +251,7 @@ namespace kDatamosh
 
     float4 PS_Datamosh(VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 TexSize = float2(ddx(Input.Tex0.x), ddy(Input.Tex0.y));
+        float2 TexSize = fwidth(Input.Tex0);
         const float2 DisplacementTexel = BUFFER_SIZE_0;
         const float Quality = 1.0 - _Entropy;
         float3 Random = 0.0;
