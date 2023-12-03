@@ -69,62 +69,6 @@ uniform float4 _BackColor <
 > = float4(0.0, 0.0, 0.0, 0.0);
 
 /*
-    [Vertex Shaders]
-*/
-
-struct VS2PS_Grad
-{
-    float4 HPos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0;
-    float4 Tex1 : TEXCOORD1;
-    float4 Tex2 : TEXCOORD2;
-    float4 Tex3 : TEXCOORD3;
-};
-
-VS2PS_Grad VS_Grad(APP2VS Input)
-{
-	const float2 PixelSize = float2(BUFFER_RCP_WIDTH, BUFFER_RCP_HEIGHT);
-
-    VS2PS_Quad FSQuad = VS_Quad(Input);
-
-    VS2PS_Grad Output;
-
-    Output.HPos = FSQuad.HPos;
-    Output.Tex0 = FSQuad.Tex0.xyxy;
-
-    switch(_Method)
-    {
-        case 0: // fwidth()
-            Output.Tex1 = FSQuad.Tex0.xyxy;
-            break;
-        case 1: // Bilinear 3x3 Sobel
-            Output.Tex1 = FSQuad.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
-            break;
-        case 2: // Bilinear 5x5 Prewitt
-            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
-            Output.Tex2 = FSQuad.Tex0.xyyy + (float4( 0.0, 1.5, 0.0, -1.5) * PixelSize.xyyy);
-            Output.Tex3 = FSQuad.Tex0.xyyy + (float4( 1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
-            break;
-        case 3: // Bilinear 5x5 Sobel
-            Output.Tex1 = FSQuad.Tex0.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * PixelSize.xxyy);
-            Output.Tex2 = FSQuad.Tex0.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * PixelSize.xxyy);
-            break;
-        case 4: // 3x3 Prewitt
-            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            Output.Tex2 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            Output.Tex3 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            break;
-        case 5: // 3x3 Scharr
-            Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            Output.Tex2 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            Output.Tex3 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-            break;
-    }
-
-    return Output;
-}
-
-/*
     [Pixel Shaders]
 */
 
@@ -134,10 +78,12 @@ struct Grad
     float4 Iy;
 };
 
-Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
+Grad GetGrad(VS2PS_Quad Input, sampler2D SampleSource)
 {
     Grad Output;
 
+    float2 PixelSize = fwidth(Input.Tex0);
+    float4 Tex1, Tex2, Tex3;
     float4 A0, B0, C0;
     float4 A1, B1, C1;
     float4 A2, B2, C2;
@@ -145,15 +91,16 @@ Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
     switch(_Method)
     {
         case 0: // ddx(), ddy()
-            A0 = tex2D(SampleSource, Input.Tex1.xy).rgb;
+            A0 = tex2D(SampleSource, Input.Tex0.xy).rgb;
             Output.Ix = ddx(A0);
             Output.Iy = ddy(A0);
             break;
         case 1: // Bilinear 3x3 Sobel
-            A0 = tex2D(SampleSource, Input.Tex1.xw).rgb * 4.0; // <-0.5, +0.5>
-            C0 = tex2D(SampleSource, Input.Tex1.zw).rgb * 4.0; // <+0.5, +0.5>
-            A2 = tex2D(SampleSource, Input.Tex1.xy).rgb * 4.0; // <-0.5, -0.5>
-            C2 = tex2D(SampleSource, Input.Tex1.zy).rgb * 4.0; // <+0.5, -0.5>
+            Tex1 = Input.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
+            A0 = tex2D(SampleSource, Tex1.xw).rgb * 4.0; // <-0.5, +0.5>
+            C0 = tex2D(SampleSource, Tex1.zw).rgb * 4.0; // <+0.5, +0.5>
+            A2 = tex2D(SampleSource, Tex1.xy).rgb * 4.0; // <-0.5, -0.5>
+            C2 = tex2D(SampleSource, Tex1.zy).rgb * 4.0; // <+0.5, -0.5>
             Output.Ix = ((C0 + C2) - (A0 + A2));
             Output.Iy = ((A0 + C0) - (A2 + C2));
             break;
@@ -162,14 +109,17 @@ Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
             // A0 B0 C0
             // A1    C1
             // A2 B2 C2
-            A0 = tex2D(SampleSource, Input.Tex1.xy) * 4.0; // <-1.5, +1.5>
-            A1 = tex2D(SampleSource, Input.Tex1.xz) * 2.0; // <-1.5,  0.0>
-            A2 = tex2D(SampleSource, Input.Tex1.xw) * 4.0; // <-1.5, -1.5>
-            B0 = tex2D(SampleSource, Input.Tex2.xy) * 2.0; // < 0.0, +1.5>
-            B2 = tex2D(SampleSource, Input.Tex2.xw) * 2.0; // < 0.0, -1.5>
-            C0 = tex2D(SampleSource, Input.Tex3.xy) * 4.0; // <+1.5, +1.5>
-            C1 = tex2D(SampleSource, Input.Tex3.xz) * 2.0; // <+1.5,  0.0>
-            C2 = tex2D(SampleSource, Input.Tex3.xw) * 4.0; // <+1.5, -1.5>
+            Tex1 = Input.Tex0.xyyy + (float4(-1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+            A0 = tex2D(SampleSource, Tex1.xy) * 4.0; // <-1.5, +1.5>
+            A1 = tex2D(SampleSource, Tex1.xz) * 2.0; // <-1.5,  0.0>
+            A2 = tex2D(SampleSource, Tex1.xw) * 4.0; // <-1.5, -1.5>
+            Tex2 = Input.Tex0.xyyy + (float4(0.0, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+            B0 = tex2D(SampleSource, Tex2.xy) * 2.0; // < 0.0, +1.5>
+            B2 = tex2D(SampleSource, Tex2.xw) * 2.0; // < 0.0, -1.5>
+            Tex3 = Input.Tex0.xyyy + (float4(1.5, 1.5, 0.0, -1.5) * PixelSize.xyyy);
+            C0 = tex2D(SampleSource, Tex3.xy) * 4.0; // <+1.5, +1.5>
+            C1 = tex2D(SampleSource, Tex3.xz) * 2.0; // <+1.5,  0.0>
+            C2 = tex2D(SampleSource, Tex3.xw) * 4.0; // <+1.5, -1.5>
             Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
             Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
             break;
@@ -179,38 +129,46 @@ Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
             // A0     A1
             // A2     B0
             //   C0 C1
-            A0 = tex2D(SampleSource, Input.Tex1.xw) * 4.0; // <-1.5, +0.5>
-            A1 = tex2D(SampleSource, Input.Tex1.yw) * 4.0; // <+1.5, +0.5>
-            A2 = tex2D(SampleSource, Input.Tex1.xz) * 4.0; // <-1.5, -0.5>
-            B0 = tex2D(SampleSource, Input.Tex1.yz) * 4.0; // <+1.5, -0.5>
-            B1 = tex2D(SampleSource, Input.Tex2.xw) * 4.0; // <-0.5, +1.5>
-            B2 = tex2D(SampleSource, Input.Tex2.yw) * 4.0; // <+0.5, +1.5>
-            C0 = tex2D(SampleSource, Input.Tex2.xz) * 4.0; // <-0.5, -1.5>
-            C1 = tex2D(SampleSource, Input.Tex2.yz) * 4.0; // <+0.5, -1.5>
+            Tex1 = Input.Tex0.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * PixelSize.xxyy);
+            A0 = tex2D(SampleSource, Tex1.xw) * 4.0; // <-1.5, +0.5>
+            A1 = tex2D(SampleSource, Tex1.yw) * 4.0; // <+1.5, +0.5>
+            A2 = tex2D(SampleSource, Tex1.xz) * 4.0; // <-1.5, -0.5>
+            B0 = tex2D(SampleSource, Tex1.yz) * 4.0; // <+1.5, -0.5>
+            Tex2 = Input.Tex0.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * PixelSize.xxyy);
+            B1 = tex2D(SampleSource, Tex2.xw) * 4.0; // <-0.5, +1.5>
+            B2 = tex2D(SampleSource, Tex2.yw) * 4.0; // <+0.5, +1.5>
+            C0 = tex2D(SampleSource, Tex2.xz) * 4.0; // <-0.5, -1.5>
+            C1 = tex2D(SampleSource, Tex2.yz) * 4.0; // <+0.5, -1.5>
             Output.Ix = (B2 + A1 + B0 + C1) - (B1 + A0 + A2 + C0);
             Output.Iy = (A0 + B1 + B2 + A1) - (A2 + C0 + C1 + B0);
             break;
         case 4: // 3x3 Prewitt
-            A0 = tex2D(SampleSource, Input.Tex1.xy) * 1.0; // <-1.0, 1.0>
-            A1 = tex2D(SampleSource, Input.Tex1.xz) * 1.0; // <-1.0, 0.0>
-            A2 = tex2D(SampleSource, Input.Tex1.xw) * 1.0; // <-1.0, -1.0>
-            B0 = tex2D(SampleSource, Input.Tex2.xy) * 1.0; // <0.0, 1.0>
-            B2 = tex2D(SampleSource, Input.Tex2.xw) * 1.0; // <0.0, -1.0>
-            C0 = tex2D(SampleSource, Input.Tex3.xy) * 1.0; // <1.0, 1.0>
-            C1 = tex2D(SampleSource, Input.Tex3.xz) * 1.0; // <1.0, 0.0>
-            C2 = tex2D(SampleSource, Input.Tex3.xw) * 1.0; // <1.0, -1.0> 
+            Tex1 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            A0 = tex2D(SampleSource, Tex1.xy) * 1.0; // <-1.0, 1.0>
+            A1 = tex2D(SampleSource, Tex1.xz) * 1.0; // <-1.0, 0.0>
+            A2 = tex2D(SampleSource, Tex1.xw) * 1.0; // <-1.0, -1.0>
+            Tex2 = Input.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            B0 = tex2D(SampleSource, Tex2.xy) * 1.0; // <0.0, 1.0>
+            B2 = tex2D(SampleSource, Tex2.xw) * 1.0; // <0.0, -1.0>
+            Tex3 = Input.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            C0 = tex2D(SampleSource, Tex3.xy) * 1.0; // <1.0, 1.0>
+            C1 = tex2D(SampleSource, Tex3.xz) * 1.0; // <1.0, 0.0>
+            C2 = tex2D(SampleSource, Tex3.xw) * 1.0; // <1.0, -1.0> 
             Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
             Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
             break;
         case 5: // 3x3 Scharr
-            A0 = tex2D(SampleSource, Input.Tex1.xy) * 3.0;  // <-1.0, 1.0>
-            A1 = tex2D(SampleSource, Input.Tex1.xz) * 10.0; // <-1.0, 0.0>
-            A2 = tex2D(SampleSource, Input.Tex1.xw) * 3.0;  // <-1.0, -1.0>
-            B0 = tex2D(SampleSource, Input.Tex2.xy) * 10.0; // <0.0, 1.0>
-            B2 = tex2D(SampleSource, Input.Tex2.xw) * 10.0; // <0.0, -1.0>
-            C0 = tex2D(SampleSource, Input.Tex3.xy) * 3.0;  // <1.0, 1.0>
-            C1 = tex2D(SampleSource, Input.Tex3.xz) * 10.0; // <1.0, 0.0>
-            C2 = tex2D(SampleSource, Input.Tex3.xw) * 3.0;  // <1.0, -1.0> 
+            Tex1 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            A0 = tex2D(SampleSource, Tex1.xy) * 3.0;  // <-1.0, 1.0>
+            A1 = tex2D(SampleSource, Tex1.xz) * 10.0; // <-1.0, 0.0>
+            A2 = tex2D(SampleSource, Tex1.xw) * 3.0;  // <-1.0, -1.0>
+            Tex2 = Input.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            B0 = tex2D(SampleSource, Tex2.xy) * 10.0; // <0.0, 1.0>
+            B2 = tex2D(SampleSource, Tex2.xw) * 10.0; // <0.0, -1.0>
+            Tex3 = Input.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+            C0 = tex2D(SampleSource, Tex3.xy) * 3.0;  // <1.0, 1.0>
+            C1 = tex2D(SampleSource, Tex3.xz) * 10.0; // <1.0, 0.0>
+            C2 = tex2D(SampleSource, Tex3.xw) * 3.0;  // <1.0, -1.0> 
             Output.Ix = (C0 + C1 + C2) - (A0 + A1 + A2);
             Output.Iy = (A0 + B0 + C0) - (A2 + B2 + C2);
             break;
@@ -219,7 +177,7 @@ Grad GetGrad(VS2PS_Grad Input, sampler2D SampleSource)
     return Output;
 }
 
-float3 PS_Grad(VS2PS_Grad Input) : SV_TARGET0
+float3 PS_Grad(VS2PS_Quad Input) : SV_TARGET0
 {
     const float GradWeights[6] = 
     {
@@ -253,7 +211,7 @@ technique CShade_KinoContour
     {
         SRGBWriteEnable = WRITE_SRGB;
         
-        VertexShader = VS_Grad;
+        VertexShader = VS_Quad;
         PixelShader = PS_Grad;
     }
 }

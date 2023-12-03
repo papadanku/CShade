@@ -10,7 +10,7 @@ float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
     float4 OutputColor = 0.0;
 
     // Offset and weighting attributes
-    float2 PixelSize = 1.0 / float2(BUFFER_WIDTH, BUFFER_HEIGHT);
+    float2 PixelSize = fwidth(Input.Tex0);
 
     // Get bilateral filter
     float3 TotalWeight = 0.0;

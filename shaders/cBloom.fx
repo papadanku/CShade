@@ -55,83 +55,6 @@ CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, CLAMP)
 
 /*
-    [Vertex Shaders]
-*/
-
-struct VS2PS_Downscale
-{
-    float4 HPos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0; // Quadrant
-    float4 Tex1 : TEXCOORD1; // Left column
-    float4 Tex2 : TEXCOORD2; // Center column
-    float4 Tex3 : TEXCOORD3; // Right column
-};
-
-VS2PS_Downscale GetVertexDownscale(APP2VS Input, float2 PixelSize)
-{
-    // Get fullscreen texcoord and vertex position
-    VS2PS_Quad FSQuad = VS_Quad(Input);
-
-    VS2PS_Downscale Output;
-    Output.HPos = FSQuad.HPos;
-    Output.Tex0 = FSQuad.Tex0.xyxy + (float4(-1.0, -1.0, 1.0, 1.0) * PixelSize.xyxy);
-    Output.Tex1 = FSQuad.Tex0.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    Output.Tex2 = FSQuad.Tex0.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    Output.Tex3 = FSQuad.Tex0.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    return Output;
-}
-
-#define CREATE_VS_DOWNSCALE(METHOD_NAME, INV_BUFFER_SIZE) \
-    VS2PS_Downscale METHOD_NAME(APP2VS Input) \
-    { \
-        return GetVertexDownscale(Input, INV_BUFFER_SIZE); \
-    } \
-
-CREATE_VS_DOWNSCALE(VS_Downscale1, 1.0 / BUFFER_SIZE_0)
-CREATE_VS_DOWNSCALE(VS_Downscale2, 1.0 / BUFFER_SIZE_1)
-CREATE_VS_DOWNSCALE(VS_Downscale3, 1.0 / BUFFER_SIZE_2)
-CREATE_VS_DOWNSCALE(VS_Downscale4, 1.0 / BUFFER_SIZE_3)
-CREATE_VS_DOWNSCALE(VS_Downscale5, 1.0 / BUFFER_SIZE_4)
-CREATE_VS_DOWNSCALE(VS_Downscale6, 1.0 / BUFFER_SIZE_5)
-CREATE_VS_DOWNSCALE(VS_Downscale7, 1.0 / BUFFER_SIZE_6)
-CREATE_VS_DOWNSCALE(VS_Downscale8, 1.0 / BUFFER_SIZE_7)
-
-struct VS2PS_Upscale
-{
-    float4 HPos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0; // Left column
-    float4 Tex1 : TEXCOORD1; // Center column
-    float4 Tex2 : TEXCOORD2; // Right column
-};
-
-VS2PS_Upscale GetVertexUpscale(APP2VS Input, float2 PixelSize)
-{
-    // Get fullscreen texcoord and vertex position
-    VS2PS_Quad FSQuad = VS_Quad(Input);
-
-    VS2PS_Upscale Output;
-    Output.HPos = FSQuad.HPos;
-    Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    Output.Tex1 = FSQuad.Tex0.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    Output.Tex2 = FSQuad.Tex0.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    return Output;
-}
-
-#define CREATE_VS_UPSCALE(METHOD_NAME, INV_BUFFER_SIZE) \
-    VS2PS_Upscale METHOD_NAME(APP2VS Input) \
-    { \
-        return GetVertexUpscale(Input, INV_BUFFER_SIZE); \
-    } \
-
-CREATE_VS_UPSCALE(VS_Upscale7, 1.0 / BUFFER_SIZE_7)
-CREATE_VS_UPSCALE(VS_Upscale6, 1.0 / BUFFER_SIZE_6)
-CREATE_VS_UPSCALE(VS_Upscale5, 1.0 / BUFFER_SIZE_5)
-CREATE_VS_UPSCALE(VS_Upscale4, 1.0 / BUFFER_SIZE_4)
-CREATE_VS_UPSCALE(VS_Upscale3, 1.0 / BUFFER_SIZE_3)
-CREATE_VS_UPSCALE(VS_Upscale2, 1.0 / BUFFER_SIZE_2)
-CREATE_VS_UPSCALE(VS_Upscale1, 1.0 / BUFFER_SIZE_1)
-
-/*
     [Pixel Shaders]
     ---
     Thresholding: https://github.com/keijiro/Kino [MIT]
@@ -195,7 +118,7 @@ float3 GetKarisAverage(Sample Group[4])
 }
 
 // 13-tap downsampling with Karis luma filtering
-float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool PartialKaris)
+float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialKaris)
 {
     float4 OutputColor0 = 0.0;
 
@@ -204,25 +127,30 @@ float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool Par
     // A1 -- B1 -- C1
     // -- D2 -- D3 --
     // A2 -- B2 -- C2
+    float2 PixelSize = fwidth(Input.Tex0.xy);
+    float4 Tex0 = Input.Tex0.xyxy + (float4(-1.0, -1.0, 1.0, 1.0) * PixelSize.xyxy);
+    float4 Tex1 = Input.Tex0.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
+    float4 Tex2 = Input.Tex0.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
+    float4 Tex3 = Input.Tex0.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
 
     if (PartialKaris)
     {
-        Sample D0 = GetKarisSample(SampleSource, Input.Tex0.xw);
-        Sample D1 = GetKarisSample(SampleSource, Input.Tex0.zw);
-        Sample D2 = GetKarisSample(SampleSource, Input.Tex0.xy);
-        Sample D3 = GetKarisSample(SampleSource, Input.Tex0.zy);
+        Sample D0 = GetKarisSample(SampleSource, Tex0.xw);
+        Sample D1 = GetKarisSample(SampleSource, Tex0.zw);
+        Sample D2 = GetKarisSample(SampleSource, Tex0.xy);
+        Sample D3 = GetKarisSample(SampleSource, Tex0.zy);
 
-        Sample A0 = GetKarisSample(SampleSource, Input.Tex1.xy);
-        Sample A1 = GetKarisSample(SampleSource, Input.Tex1.xz);
-        Sample A2 = GetKarisSample(SampleSource, Input.Tex1.xw);
+        Sample A0 = GetKarisSample(SampleSource, Tex1.xy);
+        Sample A1 = GetKarisSample(SampleSource, Tex1.xz);
+        Sample A2 = GetKarisSample(SampleSource, Tex1.xw);
 
-        Sample B0 = GetKarisSample(SampleSource, Input.Tex2.xy);
-        Sample B1 = GetKarisSample(SampleSource, Input.Tex2.xz);
-        Sample B2 = GetKarisSample(SampleSource, Input.Tex2.xw);
+        Sample B0 = GetKarisSample(SampleSource, Tex2.xy);
+        Sample B1 = GetKarisSample(SampleSource, Tex2.xz);
+        Sample B2 = GetKarisSample(SampleSource, Tex2.xw);
 
-        Sample C0 = GetKarisSample(SampleSource, Input.Tex3.xy);
-        Sample C1 = GetKarisSample(SampleSource, Input.Tex3.xz);
-        Sample C2 = GetKarisSample(SampleSource, Input.Tex3.xw);
+        Sample C0 = GetKarisSample(SampleSource, Tex3.xy);
+        Sample C1 = GetKarisSample(SampleSource, Tex3.xz);
+        Sample C2 = GetKarisSample(SampleSource, Tex3.xw);
 
         Sample GroupA[4] = { D0, D1, D2, D3 };
         Sample GroupB[4] = { A0, B0, A1, B1 };
@@ -238,22 +166,22 @@ float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool Par
     }
     else
     {
-        float4 D0 = tex2D(SampleSource, Input.Tex0.xw);
-        float4 D1 = tex2D(SampleSource, Input.Tex0.zw);
-        float4 D2 = tex2D(SampleSource, Input.Tex0.xy);
-        float4 D3 = tex2D(SampleSource, Input.Tex0.zy);
+        float4 D0 = tex2D(SampleSource, Tex0.xw);
+        float4 D1 = tex2D(SampleSource, Tex0.zw);
+        float4 D2 = tex2D(SampleSource, Tex0.xy);
+        float4 D3 = tex2D(SampleSource, Tex0.zy);
 
-        float4 A0 = tex2D(SampleSource, Input.Tex1.xy);
-        float4 A1 = tex2D(SampleSource, Input.Tex1.xz);
-        float4 A2 = tex2D(SampleSource, Input.Tex1.xw);
+        float4 A0 = tex2D(SampleSource, Tex1.xy);
+        float4 A1 = tex2D(SampleSource, Tex1.xz);
+        float4 A2 = tex2D(SampleSource, Tex1.xw);
 
-        float4 B0 = tex2D(SampleSource, Input.Tex2.xy);
-        float4 B1 = tex2D(SampleSource, Input.Tex2.xz);
-        float4 B2 = tex2D(SampleSource, Input.Tex2.xw);
+        float4 B0 = tex2D(SampleSource, Tex2.xy);
+        float4 B1 = tex2D(SampleSource, Tex2.xz);
+        float4 B2 = tex2D(SampleSource, Tex2.xw);
 
-        float4 C0 = tex2D(SampleSource, Input.Tex3.xy);
-        float4 C1 = tex2D(SampleSource, Input.Tex3.xz);
-        float4 C2 = tex2D(SampleSource, Input.Tex3.xw);
+        float4 C0 = tex2D(SampleSource, Tex3.xy);
+        float4 C1 = tex2D(SampleSource, Tex3.xz);
+        float4 C2 = tex2D(SampleSource, Tex3.xw);
 
         float4 GroupA = D0 + D1 + D2 + D3;
         float4 GroupB = A0 + B0 + A1 + B1;
@@ -272,7 +200,7 @@ float4 GetPixelDownscale(VS2PS_Downscale Input, sampler2D SampleSource, bool Par
 }
 
 #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
-    float4 METHOD_NAME(VS2PS_Downscale Input) : SV_TARGET0 \
+    float4 METHOD_NAME(VS2PS_Quad Input) : SV_TARGET0 \
     { \
         return GetPixelDownscale(Input, SAMPLER, FLICKER_FILTER); \
     }
@@ -286,23 +214,28 @@ CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
 CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
 CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
-float4 GetPixelUpscale(VS2PS_Upscale Input, sampler2D SampleSource)
+float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
 {
+
     // A0 B0 C0
     // A1 B1 C1
     // A2 B2 C2
+    float2 PixelSize = fwidth(Input.Tex0);
+    float4 Tex0 = Input.Tex0.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
+    float4 Tex1 = Input.Tex0.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
+    float4 Tex2 = Input.Tex0.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
 
-    float4 A0 = tex2D(SampleSource, Input.Tex0.xy);
-    float4 A1 = tex2D(SampleSource, Input.Tex0.xz);
-    float4 A2 = tex2D(SampleSource, Input.Tex0.xw);
+    float4 A0 = tex2D(SampleSource, Tex0.xy);
+    float4 A1 = tex2D(SampleSource, Tex0.xz);
+    float4 A2 = tex2D(SampleSource, Tex0.xw);
 
-    float4 B0 = tex2D(SampleSource, Input.Tex1.xy);
-    float4 B1 = tex2D(SampleSource, Input.Tex1.xz);
-    float4 B2 = tex2D(SampleSource, Input.Tex1.xw);
+    float4 B0 = tex2D(SampleSource, Tex1.xy);
+    float4 B1 = tex2D(SampleSource, Tex1.xz);
+    float4 B2 = tex2D(SampleSource, Tex1.xw);
 
-    float4 C0 = tex2D(SampleSource, Input.Tex2.xy);
-    float4 C1 = tex2D(SampleSource, Input.Tex2.xz);
-    float4 C2 = tex2D(SampleSource, Input.Tex2.xw);
+    float4 C0 = tex2D(SampleSource, Tex2.xy);
+    float4 C1 = tex2D(SampleSource, Tex2.xz);
+    float4 C2 = tex2D(SampleSource, Tex2.xw);
 
     float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
     float4 OutputColor = 0.0;
@@ -313,7 +246,7 @@ float4 GetPixelUpscale(VS2PS_Upscale Input, sampler2D SampleSource)
 }
 
 #define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
-    float4 METHOD_NAME(VS2PS_Upscale Input) : SV_TARGET0 \
+    float4 METHOD_NAME(VS2PS_Quad Input) : SV_TARGET0 \
     { \
         return GetPixelUpscale(Input, SAMPLER); \
     }
@@ -363,22 +296,22 @@ technique CShade_Bloom
 {
     CREATE_PASS(VS_Quad, PS_Prefilter, TempTex0_RGB10A2, FALSE)
 
-    CREATE_PASS(VS_Downscale1, PS_Downscale1, TempTex1_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale2, PS_Downscale2, TempTex2_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale3, PS_Downscale3, TempTex3_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale4, PS_Downscale4, TempTex4_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale5, PS_Downscale5, TempTex5_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale6, PS_Downscale6, TempTex6_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale7, PS_Downscale7, TempTex7_RGBA16F, FALSE)
-    CREATE_PASS(VS_Downscale8, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
+    CREATE_PASS(VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
-    CREATE_PASS(VS_Upscale7, PS_Upscale7, TempTex7_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale6, PS_Upscale6, TempTex6_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale5, PS_Upscale5, TempTex5_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale4, PS_Upscale4, TempTex4_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale3, PS_Upscale3, TempTex3_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale2, PS_Upscale2, TempTex2_RGBA16F, TRUE)
-    CREATE_PASS(VS_Upscale1, PS_Upscale1, TempTex1_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
+    CREATE_PASS(VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
 
     pass
     {

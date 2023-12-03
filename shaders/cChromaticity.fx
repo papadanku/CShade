@@ -18,7 +18,7 @@ uniform int _Select <
 
 float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb ;
+    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
     float3 Chromaticity = 0.0;
 
