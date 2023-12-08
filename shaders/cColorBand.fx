@@ -1,4 +1,5 @@
 #include "shared/cGraphics.fxh"
+#include "shared/cImageProcessing.fxh"
 
 /*
     [Shader Options]
@@ -11,16 +12,28 @@ uniform int3 _Range <
     ui_max = 32.0;
 > = 8;
 
+uniform bool _Dither <
+    ui_label = "Dither";
+    ui_type = "radio";
+> = true;
+
 /*
     [Pixel Shaders]
 */
 
 float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleGammaTex, Input.Tex0);
-    Color.rgb = floor(Color.rgb * _Range) / (_Range);
+    float Dither = GetHash1(Input.HPos.xy, 0.0);
+    float4 ColorMap = tex2D(CShade_SampleGammaTex, Input.Tex0);
 
-    return Color;
+    if (_Dither)
+    {
+        ColorMap += (Dither / _Range);
+    }
+
+    ColorMap.rgb = floor(ColorMap.rgb * _Range) / (_Range);
+
+    return ColorMap;
 }
 
 technique CShade_ColorBand
