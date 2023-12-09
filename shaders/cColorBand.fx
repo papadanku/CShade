@@ -23,12 +23,12 @@ uniform bool _Dither <
 
 float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
 {
-    float Dither = GetHash1(Input.HPos.xy, 0.0);
-    float4 ColorMap = tex2D(CShade_SampleGammaTex, Input.Tex0);
+    float3 Dither = GetHash1(Input.HPos.xy, 0.0);
+    float4 ColorMap = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     if (_Dither)
     {
-        ColorMap += (Dither / _Range);
+        ColorMap.rgb += (Dither / _Range);
     }
 
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / (_Range);
@@ -40,6 +40,8 @@ technique CShade_ColorBand
 {
     pass
     {
+        SRGBWriteEnable = WRITE_SRGB;
+
         VertexShader = VS_Quad;
         PixelShader = PS_Color;
     }
