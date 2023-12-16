@@ -68,6 +68,7 @@ namespace cOpticalFlow
 
     CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, MIRROR)
     CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, MIRROR)
+    CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, CLAMP)
 
     struct VS2PS_Streaming
     {
@@ -97,7 +98,6 @@ namespace cOpticalFlow
         VelocityCoord.x = Origin.x * PixelSize.x;
         VelocityCoord.y = 1.0 - (Origin.y * PixelSize.y);
         Output.Velocity = tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy / PixelSize;
-        Output.Velocity *= smoothstep(1.0, 2.0, length(Output.Velocity));
 
         // Scale velocity
         float2 Direction = Output.Velocity * VELOCITY_SCALE;
@@ -218,6 +218,11 @@ namespace cOpticalFlow
         return float4(Display, 1.0);
     }
 
+    float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
+    {
+        return tex2D(SampleTempTex0, Input.Tex0);
+    }
+
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
         pass \
         { \
@@ -275,13 +280,18 @@ namespace cOpticalFlow
                 VertexCount = NUM_LINES * 2;
                 VertexShader = VS_Streaming;
                 PixelShader = PS_Streaming;
-                ClearRenderTargets = FALSE;
+                ClearRenderTargets = TRUE;
                 BlendEnable = TRUE;
                 BlendOp = ADD;
                 SrcBlend = SRCALPHA;
                 DestBlend = INVSRCALPHA;
-                SrcBlendAlpha = ONE;
-                DestBlendAlpha = ONE;
+                RenderTarget0 = TempTex0_RGB10A2;
+            }
+
+            pass
+            {
+                VertexShader = VS_Quad;
+                PixelShader = PS_Composite;
             }
         #else
             pass
