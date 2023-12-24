@@ -102,22 +102,21 @@ namespace cOpticalFlow
         VelocityCoord.x = Origin.x * PixelSize.x;
         VelocityCoord.y = 1.0 - (Origin.y * PixelSize.y);
         Output.Velocity = tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy / PixelSize;
-        Output.Velocity.x *= -1.0;
+        Output.Velocity.y *= -1.0;
 
         // Scale velocity
         float2 Direction = Output.Velocity * VELOCITY_SCALE;
-
-        float Length = length(Direction + 1e-5);
-        Direction = Direction / sqrt(Length * 0.1);
+        float Length = length(float3(Direction, 1.0));
+        Direction = Direction * rsqrt(Length * 1e-1);
 
         // Color for fragmentshader
-        Output.Velocity = Direction * 0.2;
+        Output.Velocity = Direction;
 
         // Compute current vertex position (based on VertexID)
         float2 VertexPosition = 0.0;
 
         // Lines: Velocity direction
-        VertexPosition = Origin + Direction * VertexID;
+        VertexPosition = Origin + (Direction * VertexID);
 
         // Finish vertex position
         float2 VertexPositionNormal = (VertexPosition + 0.5) * PixelSize; // [0, 1]
@@ -129,12 +128,9 @@ namespace cOpticalFlow
     float4 PS_Streaming(VS2PS_Streaming Input) : SV_TARGET0
     {
         float2 Velocity = Input.Velocity;
-        float Magnitude = saturate(length(Velocity)) + 1e-4;
-
         float3 Display = 0.0;
-        Display.rg = ((Velocity / Magnitude) * 0.5) + 0.5;
+        Display.rg = (Velocity * 0.5) + 0.5;
         Display.b = 1.0 - dot(Display.rg, 0.5);
-
         return float4(Display, 1.0);
     }
 
@@ -214,6 +210,7 @@ namespace cOpticalFlow
     {
         float2 Vectors = tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
         Vectors = DecodeVectors(Vectors, fwidth(Input.Tex0));
+        Vectors.y *= -1.0;
         float Magnitude = length(float3(Vectors, 1.0));
 
         float3 Display = 0.0;
