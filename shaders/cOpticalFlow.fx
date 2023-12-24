@@ -52,9 +52,8 @@ namespace cOpticalFlow
     #endif
 
     #ifndef VERTEX_SPACING
-        #define VERTEX_SPACING 10
+        #define VERTEX_SPACING 16
     #endif
-
 
     #ifndef RENDER_OVER_BUFFER
         #define RENDER_OVER_BUFFER 1
