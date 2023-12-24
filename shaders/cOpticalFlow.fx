@@ -102,6 +102,7 @@ namespace cOpticalFlow
         VelocityCoord.x = Origin.x * PixelSize.x;
         VelocityCoord.y = 1.0 - (Origin.y * PixelSize.y);
         Output.Velocity = tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy / PixelSize;
+        Output.Velocity.x *= -1.0;
 
         // Scale velocity
         float2 Direction = Output.Velocity * VELOCITY_SCALE;
@@ -286,7 +287,7 @@ namespace cOpticalFlow
                 DestBlend = INVSRCALPHA;
             }
 
-
+         
         #else
             pass
             {
