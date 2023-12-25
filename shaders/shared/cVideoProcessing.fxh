@@ -31,13 +31,6 @@
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
-    struct Texel
-    {
-        float4 Tex;
-        float4 Mask;
-        float4 LOD;
-    };
-
     float2 GetPixelPyLK
     (
         float2 MainTex,
@@ -47,7 +40,7 @@
     )
     {
         // Initialize variables
-        Texel T;
+        float4 WarpTex;
         float IxIx = 0.0;
         float IyIy = 0.0;
         float IxIy = 0.0;
@@ -56,41 +49,38 @@
 
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
-        const float2 ImageSize = tex2Dsize(SampleI0, 0.0);
         float2 PixelSize = fwidth(MainTex);
 
         // Calculate main texel data (TexelSize, TexelLOD)
-        T.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
-        T.Tex = float4(MainTex, MainTex + Vectors);
-        T.LOD.xy = GetLOD(T.Tex.xy * ImageSize);
-        T.LOD.zw = GetLOD(T.Tex.zw * ImageSize);
+        WarpTex = float4(MainTex, MainTex + Vectors);
 
         // Un-normalize data for processing
-        T.Tex *= (1.0 / abs(PixelSize.xyxy));
+        WarpTex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
-        [loop] for(int i = 1; i < 4; ++i)
+        [unroll] for(int i = 1; i < 4; ++i)
         {
-            [loop] for(int j = 0; j < 4 * i; ++j)
+            [unroll] for(int j = 0; j < 4 * i; ++j)
             {
                 float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 float2 AngleShift = 0.0;
                 sincos(Shift, AngleShift.x, AngleShift.y);
-                float4 Tex = T.Tex + (AngleShift.xyxy * float(i));
+                float4 Tex = WarpTex + (AngleShift.xyxy * float(i));
 
                 // Get spatial gradient
-                float4 NS = Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0);
-                float4 EW = Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
-                float2 N = tex2Dlod(SampleI0, (NS.xyyy * T.Mask) + T.LOD.xxxy).rg;
-                float2 S = tex2Dlod(SampleI0, (NS.zwww * T.Mask) + T.LOD.xxxy).rg;
-                float2 E = tex2Dlod(SampleI0, (EW.xyyy * T.Mask) + T.LOD.xxxy).rg;
-                float2 W = tex2Dlod(SampleI0, (EW.zwww * T.Mask) + T.LOD.xxxy).rg;
+                float4 NS = (Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0)) * PixelSize.xyxy;
+                float4 EW = (Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0)) * PixelSize.xyxy;
+                float2 N = tex2D(SampleI0, NS.xy).rg;
+                float2 S = tex2D(SampleI0, NS.zw).rg;
+                float2 E = tex2D(SampleI0, EW.xy).rg;
+                float2 W = tex2D(SampleI0, EW.zw).rg;
                 float2 Ix = E - W;
                 float2 Iy = N - S;
 
                 // Get temporal gradient
-                float2 I0 = tex2Dlod(SampleI0, (Tex.xyyy * T.Mask) + T.LOD.xxxy).rg;
-                float2 I1 = tex2Dlod(SampleI1, (Tex.zwww * T.Mask) + T.LOD.zzzw).rg;
+                float4 TexIT = Tex.xyzw * PixelSize.xyxy;
+                float2 I0 = tex2D(SampleI0, TexIT.xy).rg;
+                float2 I1 = tex2D(SampleI1, TexIT.zw).rg;
                 float2 IT = I0 - I1;
 
                 // IxIx = A11; IyIy = A22; IxIy = A12/A22
