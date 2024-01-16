@@ -49,18 +49,22 @@
 
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
-        float2 PixelSize = fwidth(MainTex);
 
         // Calculate main texel data (TexelSize, TexelLOD)
         WarpTex = float4(MainTex, MainTex + Vectors);
+
+        // Get gradient information
+        float4 TexIx = ddx(WarpTex);
+        float4 TexIy = ddy(WarpTex);
+        float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
 
         // Un-normalize data for processing
         WarpTex *= (1.0 / abs(PixelSize.xyxy));
         Vectors = DecodeVectors(Vectors, PixelSize);
 
-        [unroll] for(int i = 1; i < 4; ++i)
+        [loop] for(int i = 1; i < 4; ++i)
         {
-            [unroll] for(int j = 0; j < 4 * i; ++j)
+            [loop] for(int j = 0; j < 4 * i; ++j)
             {
                 float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 float2 AngleShift = 0.0;
@@ -70,17 +74,17 @@
                 // Get spatial gradient
                 float4 NS = (Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0)) * PixelSize.xyxy;
                 float4 EW = (Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0)) * PixelSize.xyxy;
-                float2 N = tex2D(SampleI0, NS.xy).rg;
-                float2 S = tex2D(SampleI0, NS.zw).rg;
-                float2 E = tex2D(SampleI0, EW.xy).rg;
-                float2 W = tex2D(SampleI0, EW.zw).rg;
+                float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
+                float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
+                float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
+                float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
                 float2 Ix = E - W;
                 float2 Iy = N - S;
 
                 // Get temporal gradient
                 float4 TexIT = Tex.xyzw * PixelSize.xyxy;
-                float2 I0 = tex2D(SampleI0, TexIT.xy).rg;
-                float2 I1 = tex2D(SampleI1, TexIT.zw).rg;
+                float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+                float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
                 float2 IT = I0 - I1;
 
                 // IxIx = A11; IyIy = A22; IxIy = A12/A22
@@ -144,17 +148,18 @@
     struct Block
     {
         float4 Tex;
-        float4 Mask;
-        float4 LOD;
+        float4 TexIx;
+        float4 TexIy;
+        float2 PixelSize;
     };
 
-    void SampleBlock(sampler2D Source, Block Input, float2 Tex, float2 LOD, out float2 Pixel[4])
+    void SampleBlock(in sampler2D Source, in float2 Tex, in float2 Ix, in float2 Iy, in float2 PixelSize, out float2 Pixel[4])
     {
-        float4 HalfPixel = Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5);
-        Pixel[0] = tex2Dlod(Source, (HalfPixel.xzzz * Input.Mask) + LOD.xxxy).xy;
-        Pixel[1] = tex2Dlod(Source, (HalfPixel.xwww * Input.Mask) + LOD.xxxy).xy;
-        Pixel[2] = tex2Dlod(Source, (HalfPixel.yzzz * Input.Mask) + LOD.xxxy).xy;
-        Pixel[3] = tex2Dlod(Source, (HalfPixel.ywww * Input.Mask) + LOD.xxxy).xy;
+        float4 HalfPixel = (Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5)) * PixelSize.xxyy;
+        Pixel[0] = tex2Dgrad(Source, HalfPixel.xz, Ix, Iy).xy;
+        Pixel[1] = tex2Dgrad(Source, HalfPixel.xw, Ix, Iy).xy;
+        Pixel[2] = tex2Dgrad(Source, HalfPixel.yz, Ix, Iy).xy;
+        Pixel[3] = tex2Dgrad(Source, HalfPixel.yw, Ix, Iy).xy;
     }
 
     float GetSAD(float2 Template[4], float2 Image[4])
@@ -167,7 +172,7 @@
         return max(SAD[0], SAD[1]);
     }
 
-    float2 SearchArea(sampler2D SampleImage, Block Input, float2 Template[4])
+    float2 SearchArea(sampler2D SampleImage, Block B, float2 Template[4])
     {
         // Get constants
         const float Pi2 = acos(-1.0) * 2.0;
@@ -175,7 +180,7 @@
         // Initialize values
         float2 Vectors = 0.0;
         float2 Image[4];
-        SampleBlock(SampleImage, Input, Input.Tex.zw, Input.LOD.zw, Image);
+        SampleBlock(SampleImage, B.Tex.zw, B.TexIx.zw, B.TexIy.zw, B.PixelSize, Image);
         float Minimum = GetSAD(Template, Image);
 
         [loop] for(int i = 1; i < 4; ++i)
@@ -187,8 +192,7 @@
                 sincos(Shift, AngleShift.x, AngleShift.y);
                 AngleShift *= float(i);
 
-                float2 Tex = Input.Tex.zw + AngleShift;
-                SampleBlock(SampleImage, Input, Tex, Input.LOD.zw, Image);
+                SampleBlock(SampleImage, B.Tex.zw + AngleShift, B.TexIx.zw, B.TexIy.zw, B.PixelSize, Image);
                 float SAD = GetSAD(Template, Image);
                 Vectors = (SAD < Minimum) ? AngleShift : Vectors;
                 Minimum = min(SAD, Minimum);
@@ -210,27 +214,23 @@
         // Initialize data
         Block B;
 
-        // Get required data to calculate main texel data
-        const float2 ImageSize = tex2Dsize(SampleTemplate, 0.0);
-        float2 PixelSize = fwidth(MainTex);
-
         // Calculate main texel data (TexelSize, TexelLOD)
-        B.Mask = float4(1.0, 1.0, 0.0, 0.0) * abs(PixelSize.xyyy);
         B.Tex = float4(MainTex, MainTex + Vectors);
-        B.LOD.xy = GetLOD(B.Tex.xy * ImageSize);
-        B.LOD.zw = GetLOD(B.Tex.zw * ImageSize);
+        B.TexIx = ddx(B.Tex);
+        B.TexIy = ddy(B.Tex);
+        B.PixelSize = abs(B.TexIx.xy) + abs(B.TexIy.xy);
 
         // Un-normalize data for processing
-        B.Tex *= (1.0 / abs(PixelSize.xyxy));
-        Vectors = DecodeVectors(Vectors, PixelSize);
+        B.Tex *= (1.0 / B.PixelSize.xyxy);
+        Vectors = DecodeVectors(Vectors, B.PixelSize);
 
         // Pre-calculate template
         float2 Template[4];
-        SampleBlock(SampleTemplate, B, B.Tex.xy, B.LOD.xy, Template);
+        SampleBlock(SampleTemplate, B.Tex.xy, B.TexIx.xy, B.TexIy.xy, B.PixelSize, Template);
 
         // Calculate three-step search
         // Propagate and encode vectors
         Vectors += SearchArea(SampleImage, B, Template);
-        return EncodeVectors(Vectors, B.Mask.xy);
+        return EncodeVectors(Vectors, B.PixelSize);
     }
 #endif
