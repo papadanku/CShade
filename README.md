@@ -59,7 +59,7 @@ CShade features shaders that filter images for aesthetics.
 - **Snake_Case**
     - Data subcategory
 - **PREFIX_Data**
-    - `Struct`
+    - `struct` datatype
 
         `APP2VS_`
 
@@ -69,11 +69,11 @@ CShade features shaders that filter images for aesthetics.
 
         `PS2MRT_`
 
-    - `VertexShader` method
+    - `VertexShader` methods
 
         `VS_`
 
-    - `PixelShader` method
+    - `PixelShader` methods
 
         `PS_`
 
