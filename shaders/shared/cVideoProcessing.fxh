@@ -8,14 +8,46 @@
         [Functions]
     */
 
+    float GetHalfMax()
+    {
+        // Get the Half format distribution of bits
+        // Sign Exponent Significand  
+        // 0    00000    000000000
+        const int SignBit = 0;
+        const int ExponentBits = 5;
+        const int SignificandBits = 10;
+
+        const int Bias = -15;
+
+        const int Exponent = 1 << ExponentBits;
+        const int Significand = 1 << SignificandBits;
+
+        const float MaxExponent = (Exponent - (1 << 1)) + Bias;
+        const float MaxSignificand = 1.0 + float((Significand - 1.0) / Significand);
+
+        return pow(-1, SignBit) * exp2(MaxExponent) * MaxSignificand;
+    }
+    
+	// [-Half, Half] -> [-1.0, 1.0]
+    float2 UnpackMotionVectors(float2 Half2)
+    {
+    	return clamp(Half2 / GetHalfMax(), -1.0, 1.0);
+    }
+
+	// [-1.0, 1.0] -> [-Half, Half]
+    float2 PackMotionVectors(float2 Half2)
+    {
+    	return Half2 * GetHalfMax();
+    }
+
     // [-1.0, 1.0] -> [Width, Height]
-    float2 DecodeVectors(float2 Vectors, float2 ImageSize)
+    float2 UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
     {
         return Vectors / abs(ImageSize);
     }
 
     // [Width, Height] -> [-1.0, 1.0]
-    float2 EncodeVectors(float2 Vectors, float2 ImageSize)
+    float2 NormalizeMotionVectors(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
@@ -50,6 +82,9 @@
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
 
+		// Unpack and upscale vectors
+		Vectors = UnpackMotionVectors(Vectors);
+
         // Calculate main texel data (TexelSize, TexelLOD)
         WarpTex = float4(MainTex, MainTex + Vectors);
 
@@ -57,10 +92,10 @@
         float4 TexIx = ddx(WarpTex);
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
-
-        // Un-normalize data for processing
-        WarpTex *= (1.0 / abs(PixelSize.xyxy));
-        Vectors = DecodeVectors(Vectors, PixelSize);
+        
+        // Upscale
+        WarpTex.xy = UnnormalizeMotionVectors(WarpTex.xy, PixelSize);
+        WarpTex.zw = UnnormalizeMotionVectors(WarpTex.zw, PixelSize);
 
         [loop] for(int i = 1; i < 4; ++i)
         {
@@ -114,7 +149,8 @@
         float2 Flow = (D == 0.0) ? 0.0 : mul(B, A);
 
         // Propagate and encode vectors
-        return EncodeVectors(Vectors + Flow, PixelSize);
+        Vectors = UnnormalizeMotionVectors(Vectors, PixelSize) + Flow;
+        return PackMotionVectors(NormalizeMotionVectors(Vectors, PixelSize));
     }
 
     /*
@@ -222,7 +258,7 @@
 
         // Un-normalize data for processing
         B.Tex *= (1.0 / B.PixelSize.xyxy);
-        Vectors = DecodeVectors(Vectors, B.PixelSize);
+        Vectors = UnpackMotionVectors(Vectors);
 
         // Pre-calculate template
         float2 Template[4];
@@ -231,6 +267,6 @@
         // Calculate three-step search
         // Propagate and encode vectors
         Vectors += SearchArea(SampleImage, B, Template);
-        return EncodeVectors(Vectors, B.PixelSize);
+        return PackMotionVectors(Vectors);
     }
 #endif
