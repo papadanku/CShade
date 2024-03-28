@@ -22,7 +22,7 @@
         const int Significand = exp2(SignificandBits);
 
         const float MaxExponent = (Exponent - exp2(1)) + Bias;
-        const float MaxSignificand = 1.0 + float((Significand - 1.0) / Significand);
+        const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
 
         return pow(-1, SignBit) * exp2(MaxExponent) * MaxSignificand;
     }
