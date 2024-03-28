@@ -11,7 +11,7 @@
     float GetHalfMax()
     {
         // Get the Half format distribution of bits
-        // Sign Exponent Significand  
+        // Sign Exponent Significand
         // 0    00000    000000000
         const int SignBit = 0;
         const int ExponentBits = 5;
@@ -26,17 +26,17 @@
 
         return pow(-1, SignBit) * exp2(MaxExponent) * MaxSignificand;
     }
-    
-	// [-Half, Half] -> [-1.0, 1.0]
+
+    // [-Half, Half] -> [-1.0, 1.0]
     float2 UnpackMotionVectors(float2 Half2)
     {
-    	return clamp(Half2 / GetHalfMax(), -1.0, 1.0);
+        return clamp(Half2 / GetHalfMax(), -1.0, 1.0);
     }
 
-	// [-1.0, 1.0] -> [-Half, Half]
+    // [-1.0, 1.0] -> [-Half, Half]
     float2 PackMotionVectors(float2 Half2)
     {
-    	return Half2 * GetHalfMax();
+        return Half2 * GetHalfMax();
     }
 
     // [-1.0, 1.0] -> [Width, Height]
@@ -81,8 +81,8 @@
         // Get required data to calculate main texel data
         const float Pi2 = acos(-1.0) * 2.0;
 
-		// Unpack and upscale vectors
-		Vectors = UnpackMotionVectors(Vectors);
+        // Unpack motion vectors
+        Vectors = UnpackMotionVectors(Vectors);
 
         // Calculate main texel data (TexelSize, TexelLOD)
         WarpTex = float4(MainTex, MainTex + Vectors);
@@ -91,10 +91,6 @@
         float4 TexIx = ddx(WarpTex);
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
-        
-        // Upscale
-        WarpTex.xy = UnnormalizeMotionVectors(WarpTex.xy, PixelSize);
-        WarpTex.zw = UnnormalizeMotionVectors(WarpTex.zw, PixelSize);
 
         [loop] for(int i = 1; i < 4; ++i)
         {
@@ -103,23 +99,25 @@
                 float Shift = (Pi2 / (4.0 * float(i))) * float(j);
                 float2 AngleShift = 0.0;
                 sincos(Shift, AngleShift.x, AngleShift.y);
-                float4 Tex = WarpTex + (AngleShift.xyxy * float(i));
+                AngleShift *= float(i);
+
+                // Get temporal gradient
+                float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
+                float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+                float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
+                float2 IT = I0 - I1;
 
                 // Get spatial gradient
-                float4 NS = (Tex.xyxy + float4(0.0, -1.0, 0.0, 1.0)) * PixelSize.xyxy;
-                float4 EW = (Tex.xyxy + float4(-1.0, 0.0, 1.0, 0.0)) * PixelSize.xyxy;
+                float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+                float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+                float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
+                float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
                 float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
                 float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
                 float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
                 float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
                 float2 Ix = E - W;
                 float2 Iy = N - S;
-
-                // Get temporal gradient
-                float4 TexIT = Tex.xyzw * PixelSize.xyxy;
-                float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
-                float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
-                float2 IT = I0 - I1;
 
                 // IxIx = A11; IyIy = A22; IxIy = A12/A22
                 IxIx += dot(Ix, Ix);
@@ -147,9 +145,11 @@
         // Calculate A^T*B
         float2 Flow = (D == 0.0) ? 0.0 : mul(B, A);
 
-        // Propagate and encode vectors
-        Vectors = UnnormalizeMotionVectors(Vectors, PixelSize) + Flow;
-        return PackMotionVectors(NormalizeMotionVectors(Vectors, PixelSize));
+        // Propagate motion vectors to Half format
+        Vectors += NormalizeMotionVectors(Flow, PixelSize);
+
+        // Pack motion vectors to Half format
+        return PackMotionVectors(Vectors);
     }
 
     /*
