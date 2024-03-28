@@ -18,11 +18,10 @@
         const int SignificandBits = 10;
 
         const int Bias = -15;
+        const int Exponent = exp2(ExponentBits);
+        const int Significand = exp2(SignificandBits);
 
-        const int Exponent = 1 << ExponentBits;
-        const int Significand = 1 << SignificandBits;
-
-        const float MaxExponent = (Exponent - (1 << 1)) + Bias;
+        const float MaxExponent = (Exponent - exp2(1)) + Bias;
         const float MaxSignificand = 1.0 + float((Significand - 1.0) / Significand);
 
         return pow(-1, SignBit) * exp2(MaxExponent) * MaxSignificand;
