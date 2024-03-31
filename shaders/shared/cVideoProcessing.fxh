@@ -21,10 +21,10 @@
         const int Exponent = exp2(ExponentBits);
         const int Significand = exp2(SignificandBits);
 
-        const float MaxExponent = (Exponent - exp2(1)) + Bias;
+        const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
         const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
 
-        return pow(-1, SignBit) * exp2(MaxExponent) * MaxSignificand;
+        return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
     }
 
     // [-Half, Half] -> [-1.0, 1.0]
@@ -145,8 +145,11 @@
         // Calculate A^T*B
         float2 Flow = (D == 0.0) ? 0.0 : mul(B, A);
 
-        // Propagate motion vectors to Half format
+        // Propagate normalized motion vectors
         Vectors += NormalizeMotionVectors(Flow, PixelSize);
+
+        // Clamp motion vectors to restrict range to valid lengths
+        Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Pack motion vectors to Half format
         return PackMotionVectors(Vectors);
