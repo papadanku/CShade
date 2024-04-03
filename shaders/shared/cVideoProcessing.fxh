@@ -193,7 +193,7 @@
 
     void SampleBlock(in sampler2D Source, in float2 Tex, in float2 Ix, in float2 Iy, in float2 PixelSize, out float2 Pixel[4])
     {
-        float4 HalfPixel = (Tex.xxyy + float4(-0.5, 0.5, -0.5, 0.5)) * PixelSize.xxyy;
+        float4 HalfPixel = Tex.xxyy + (float4(-0.5, 0.5, -0.5, 0.5) * PixelSize.xxyy);
         Pixel[0] = tex2Dgrad(Source, HalfPixel.xz, Ix, Iy).xy;
         Pixel[1] = tex2Dgrad(Source, HalfPixel.xw, Ix, Iy).xy;
         Pixel[2] = tex2Dgrad(Source, HalfPixel.yz, Ix, Iy).xy;
@@ -230,7 +230,7 @@
                 sincos(Shift, AngleShift.x, AngleShift.y);
                 AngleShift *= float(i);
 
-                SampleBlock(SampleImage, B.Tex.zw + AngleShift, B.TexIx.zw, B.TexIy.zw, B.PixelSize, Image);
+                SampleBlock(SampleImage, B.Tex.zw + (AngleShift * B.PixelSize), B.TexIx.zw, B.TexIy.zw, B.PixelSize, Image);
                 float SAD = GetSAD(Template, Image);
                 Vectors = (SAD < Minimum) ? AngleShift : Vectors;
                 Minimum = min(SAD, Minimum);
@@ -252,15 +252,14 @@
         // Initialize data
         Block B;
 
+        // Un-normalize data for processing
+        Vectors = UnpackMotionVectors(Vectors);
+
         // Calculate main texel data (TexelSize, TexelLOD)
         B.Tex = float4(MainTex, MainTex + Vectors);
         B.TexIx = ddx(B.Tex);
         B.TexIy = ddy(B.Tex);
         B.PixelSize = abs(B.TexIx.xy) + abs(B.TexIy.xy);
-
-        // Un-normalize data for processing
-        B.Tex *= (1.0 / B.PixelSize.xyxy);
-        Vectors = UnpackMotionVectors(Vectors);
 
         // Pre-calculate template
         float2 Template[4];
@@ -268,7 +267,7 @@
 
         // Calculate three-step search
         // Propagate and encode vectors
-        Vectors += SearchArea(SampleImage, B, Template);
+        Vectors += NormalizeMotionVectors(SearchArea(SampleImage, B, Template), B.PixelSize);
         return PackMotionVectors(Vectors);
     }
 #endif
