@@ -52,7 +52,7 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = GetRatioRG(Color);
             break;
         case 9: // Sphere (XY)
-            Chromaticity.rg = GetSphericalRG(Color);
+            Chromaticity.rg = RGBtoHS(Color);
             break;
         case 10: // CoCg (XY)
             Chromaticity.rg = GetCoCg(Gamma);
