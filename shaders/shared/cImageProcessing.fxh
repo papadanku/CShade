@@ -298,6 +298,10 @@
                 Sum = dot(Color, 1.0);
                 White = 1.0 / 3.0;
                 break;
+            case 3: // Max
+                Sum = max(max(Color.r, Color.g), Color.b);
+                White = 1.0;
+                break;
         }
 
         float3 Chromaticity = (Sum == 0.0) ? White : Color / Sum;
