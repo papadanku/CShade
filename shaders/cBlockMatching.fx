@@ -47,7 +47,7 @@ namespace cBlockMatching
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return RGBtoHS(Color);
+        return GetHSLfromRGB(Color).xy;
     }
 
     float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
@@ -95,12 +95,11 @@ namespace cBlockMatching
         float2 InvTexSize = fwidth(Input.Tex0);
 
         float2 Vectors = tex2Dlod(SampleOFlowTex, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-        Vectors = UnnormalizeMotionVectors(UnpackMotionVectors(Vectors), InvTexSize);
+        Vectors = UnpackMotionVectors(Vectors) * 100;
 
-        float3 NVectors = normalize(float3(Vectors, 1.0));
-        NVectors = saturate((NVectors * 0.5) + 0.5);
+        Vectors = saturate((Vectors * 0.5) + 0.5);
 
-        return float4(NVectors, 1.0);
+        return float4(Vectors, 1.0, 1.0);
     }
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

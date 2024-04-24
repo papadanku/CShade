@@ -9,7 +9,7 @@ uniform int _Select <
     ui_label = "Method";
     ui_tooltip = "Select Chromaticity";
     ui_type = "combo";
-    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Max (XY)\0 Max (XYZ)\0 Ratio (XY)\0 Sphere (XY)\0 CoCg (XY)\0 CrCb (XY)\0";
+    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Max (XY)\0 Max (XYZ)\0 Ratio (XY)\0 Spherical (XY)\0 Hue-Saturation (HSL)\0 Hue-Saturation (HSV)\0 CoCg (XY)\0 CrCb (XY)\0";
 > = 0;
 
 /*
@@ -51,13 +51,19 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
         case 8: // Ratio (XY)
             Chromaticity.rg = GetRatioRG(Color);
             break;
-        case 9: // Sphere (XY)
-            Chromaticity.rg = RGBtoHS(Color);
+        case 9: // Spherical (XY)
+            Chromaticity.rg = GetSphericalRG(Color);
             break;
-        case 10: // CoCg (XY)
+        case 10: // Hue-Saturation (HSL)
+            Chromaticity.rg = GetHSLfromRGB(Color).rg;
+            break;
+        case 11: // Hue-Saturation (HSV)
+            Chromaticity.rg = GetHSVfromRGB(Color).rg;
+            break;
+        case 12: // CoCg (XY)
             Chromaticity.rg = GetCoCg(Gamma);
             break;
-        case 11: // CrCb (XY)
+        case 13: // CrCb (XY)
             Chromaticity.rg = GetCrCb(Gamma);
             break;
         default: // No Chromaticity

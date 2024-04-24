@@ -156,39 +156,39 @@
         [Noise Generation]
     */
 
-	/*
-		https://www.shadertoy.com/view/4djSRW
+    /*
+        https://www.shadertoy.com/view/4djSRW
 
-		Copyright (c) 2014 David Hoskins
+        Copyright (c) 2014 David Hoskins
 
-		Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-		The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-		THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+        THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-	*/
+    */
 
-	float GetHash1(float2 P, float Bias)
-	{
-		float3 P3 = frac(P.xyx * 0.1031);
-		P3 += dot(P3, P3.yzx + 33.33);
-		return frac(((P3.x + P3.y) * P3.z) + Bias);
-	}
+    float GetHash1(float2 P, float Bias)
+    {
+        float3 P3 = frac(P.xyx * 0.1031);
+        P3 += dot(P3, P3.yzx + 33.33);
+        return frac(((P3.x + P3.y) * P3.z) + Bias);
+    }
 
-	float2 GetHash2(float2 P, float2 Bias)
-	{
-		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
-		P3 += dot(P3, P3.yzx + 33.33);
-		return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
-	}
+    float2 GetHash2(float2 P, float2 Bias)
+    {
+        float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
+        P3 += dot(P3, P3.yzx + 33.33);
+        return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
+    }
 
-	float3 GetHash3(float2 P, float3 Bias)
-	{
-		float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
-		P3 += dot(P3, P3.yxz + 33.33);
-		return frac(((P3.xxy + P3.yzz) * P3.zyx) + Bias);
-	}
+    float3 GetHash3(float2 P, float3 Bias)
+    {
+        float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
+        P3 += dot(P3, P3.yxz + 33.33);
+        return frac(((P3.xxy + P3.yzz) * P3.zyx) + Bias);
+    }
 
     /*
         Interleaved Gradient Noise Dithering
@@ -408,7 +408,7 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
-    float2 RGBtoHS(float3 Color)
+    float3 GetHSVfromRGB(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
@@ -421,11 +421,36 @@
         OutputHue = (MaxRGB == Color.r) ? Hue.r : OutputHue;
         OutputHue = (MaxRGB == Color.g) ? Hue.g : OutputHue;
         OutputHue = (MaxRGB == Color.b) ? Hue.b : OutputHue;
-        OutputHue = (DeltaRGB == 0.0) ? 0.0 : OutputHue;
 
-        float2 Output = 0.0;
-        Output.x = OutputHue;
+        float3 Output = 0.0;
+        Output.x = (DeltaRGB == 0.0) ? 0.0 : OutputHue;
         Output.y = (DeltaRGB == 0.0) ? 0.0 : DeltaRGB / MaxRGB;
+        Output.z = MaxRGB;
+        return Output;
+    }
+
+    float3 GetHSLfromRGB(float3 Color)
+    {
+        float MinRGB = min(min(Color.r, Color.g), Color.b);
+        float MaxRGB = max(max(Color.r, Color.g), Color.b);
+        float AddRGB = MaxRGB + MinRGB;
+        float DeltaRGB = MaxRGB - MinRGB;
+
+        float Lightness = AddRGB / 2.0;
+        float Saturation = (Lightness < 0.5) ?  DeltaRGB / AddRGB : DeltaRGB / (2.0 - AddRGB);
+
+        // Calculate hue
+        float3 Hue = (Color.gbr - Color.brg) / DeltaRGB;
+        Hue = (Hue * (60.0 / 360.0)) + (float3(0.0, 120.0, 240.0) / 360.0);
+        float OutputHue = 0.0;
+        OutputHue = (MaxRGB == Color.r) ? Hue.r : OutputHue;
+        OutputHue = (MaxRGB == Color.g) ? Hue.g : OutputHue;
+        OutputHue = (MaxRGB == Color.b) ? Hue.b : OutputHue;
+
+        float3 Output = 0.0;
+        Output.x = (DeltaRGB == 0.0) ? 0.0 : OutputHue;
+        Output.y = (DeltaRGB == 0.0) ? 0.0 : Saturation;
+        Output.z = Lightness;
         return Output;
     }
 #endif
