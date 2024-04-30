@@ -135,7 +135,7 @@ namespace kDatamosh
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return GetHSLfromRGB(Color).xy;
+        return GetSumChromaticity(Color, 3).xy;
     }
 
     float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0

@@ -353,7 +353,7 @@
     float2 GetCrCb(float3 Color)
     {
         float Y = dot(Color, float3(0.299, 0.587, 0.114));
-        return ((Color.rb - Y) * float2(0.713, 0.564)) + 0.5;
+        return ((Color.br - Y) * float2(0.564, 0.713)) + 0.5;
     }
 
     /*
