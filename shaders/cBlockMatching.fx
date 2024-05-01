@@ -47,7 +47,7 @@ namespace cBlockMatching
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return GetSumChromaticity(Color, 3).xy;
+        return GetSphericalRG(Color).xy;
     }
 
     float4 PS_Copy_0(VS2PS_Quad Input) : SV_TARGET0
