@@ -453,7 +453,6 @@
     float2 GetSphericalRG(float3 Color)
     {
         const float HalfPi = 1.0 / acos(0.0);
-        const float2 White = acos(rsqrt(float2(2.0, 3.0)));
 
         // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
         float L1 = length(Color.rg);
