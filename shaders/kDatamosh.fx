@@ -230,10 +230,10 @@ namespace kDatamosh
 
         // Simple update
         float UpdateAcc = min(MVLength, _BlockSize) * 0.005;
-        UpdateAcc += (Random.z * lerp(-0.02, 0.02, Quality));
+        UpdateAcc += lerp(-Random.z, Random.z, Quality * 0.02);
 
         // Reset to random level
-        float ResetAcc = saturate(Random.z * 0.5 + Quality);
+        float ResetAcc = saturate((Random.z * 0.5) + Quality);
 
         // Reset if the amount of motion is larger than the block size.
         [branch]
@@ -243,7 +243,7 @@ namespace kDatamosh
         }
         else
         {
-            OutputColor = float4((float3)UpdateAcc, 1.0);
+            OutputColor = float4(saturate((float3)UpdateAcc), 1.0);
         }
 
         return OutputColor;

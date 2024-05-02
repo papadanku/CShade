@@ -55,7 +55,7 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = GetSphericalRG(Color);
             break;
         case 10: // Hue-Saturation (HSI)
-            Chromaticity.rg = GetHSIfromRGB(Color).gg;
+            Chromaticity.rg = GetHSIfromRGB(Color).rg;
             break;
         case 11: // Hue-Saturation (HSL)
             Chromaticity.rg = GetHSLfromRGB(Color).rg;
