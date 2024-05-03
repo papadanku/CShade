@@ -448,6 +448,7 @@
         Title: "Robust optical flow from photometric invariants"
         Year: 2004
         DOI: 10.1109/ICIP.2004.1421433
+        Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
     float2 GetSphericalRG(float3 Color)
