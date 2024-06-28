@@ -1,11 +1,13 @@
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
+#include "shared/cTonemap.fxh"
 
 /*
     [Shader Options]
 */
 
 uniform float _Threshold <
+    ui_category = "Bloom";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -13,6 +15,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
+    ui_category = "Bloom";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -20,6 +23,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float _Saturation <
+    ui_category = "Bloom";
     ui_label = "Saturation";
     ui_type = "slider";
     ui_min = 0.0;
@@ -27,6 +31,7 @@ uniform float _Saturation <
 > = 1.0;
 
 uniform float3 _ColorShift <
+    ui_category = "Bloom";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -34,6 +39,7 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
+    ui_category = "Bloom";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_min = 0.0;
@@ -275,7 +281,7 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
     float4 Color = 1.0;
-    Color.rgb = ToneMapACESFilmic(BaseColor + (BloomColor * _Intensity));
+    Color.rgb = ApplyTonemap(BaseColor + (BloomColor * _Intensity));
     return Color;
 }
 
