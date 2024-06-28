@@ -110,7 +110,7 @@ float3 GetKarisAverage(Sample Group[4])
 
     for (int i = 0; i < 4; i++)
     {
-        OutputColor += (Group[i].Color * Group[i].Weight);
+        OutputColor += Group[i].Color;
         WeightSum += Group[i].Weight;
     }
 
