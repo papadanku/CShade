@@ -1,12 +1,7 @@
 #include "cGraphics.fxh"
-#include "cImageProcessing.fxh"
 
-#if !defined(CVIDEOPROCESSING_FXH)
-    #define CVIDEOPROCESSING_FXH
-
-    /*
-        [Functions]
-    */
+#if !defined(INCLUDE_MOTIONESTIMATION)
+    #define INCLUDE_MOTIONESTIMATION
 
     float GetHalfMax()
     {

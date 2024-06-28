@@ -60,7 +60,8 @@ float4 PS_Mirror(VS2PS_Quad Input) : SV_TARGET0
     Phi += _Roll - _Offset;
 
     // Convert back to the texture coordinate.
-    float2 PhiSinCos; sincos(Phi, PhiSinCos.x, PhiSinCos.y);
+    float2 PhiSinCos;
+    sincos(Phi, PhiSinCos.x, PhiSinCos.y);
     Input.Tex0 = ((PhiSinCos.yx * Radius) * 0.5) + 0.5;
 
     // Reflection at the border of the screen.

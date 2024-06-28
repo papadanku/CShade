@@ -1,12 +1,12 @@
 
-#if !defined(CMACROS_FXH)
+#if !defined(INCLUDE_MACROS)
     /*
         [Macros and macro accessories]
         ---
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 
-    #define CMACROS_FXH
+    #define INCLUDE_MACROS
 
     #define GET_EVEN(X) (X + (X & 1))
     #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))

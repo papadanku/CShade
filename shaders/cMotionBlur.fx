@@ -1,7 +1,9 @@
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
-#include "shared/cVideoProcessing.fxh"
+#include "shared/cColorSpaces.fxh"
+#include "shared/cConvolution.fxh"
+#include "shared/cMotionEstimation.fxh"
+#include "shared/cProcedural.fxh"
 
 namespace cMotionBlur
 {

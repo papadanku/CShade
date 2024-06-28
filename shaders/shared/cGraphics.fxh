@@ -1,7 +1,7 @@
 #include "cMacros.fxh"
 
-#if !defined(CGRAPHICS_FXH)
-    #define CGRAPHICS_FXH
+#if !defined(INCLUDE_GRAPHICS)
+    #define INCLUDE_GRAPHICS
 
     /*
         [Buffer]

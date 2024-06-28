@@ -1,5 +1,5 @@
 #include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
+#include "shared/cConvolution.fxh"
 
 float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
 {

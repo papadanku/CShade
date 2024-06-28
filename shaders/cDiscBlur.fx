@@ -1,6 +1,6 @@
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
+#include "shared/cConvolution.fxh"
 
 namespace cDiscBlur
 {

@@ -1,7 +1,8 @@
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
-#include "shared/cVideoProcessing.fxh"
+#include "shared/cColorSpaces.fxh"
+#include "shared/cConvolution.fxh"
+#include "shared/cMotionEstimation.fxh"
 
 /*
     This is free and unencumbered software released into the public domain.

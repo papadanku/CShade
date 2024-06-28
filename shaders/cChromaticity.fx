@@ -1,5 +1,5 @@
 #include "shared/cGraphics.fxh"
-#include "shared/cImageProcessing.fxh"
+#include "shared/cColorSpaces.fxh"
 
 /*
     [Shader Options]
