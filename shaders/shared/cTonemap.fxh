@@ -85,7 +85,7 @@
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "Reinhard\0DirectX Graphics Tonemap\0ACES Filmic Approximation\0";
+        ui_items = "None\0Reinhard\0DirectX Graphics Tonemap\0ACES Filmic Approximation\0";
     > = 1;
 
     float3 ApplyTonemap(float3 HDR)
@@ -93,10 +93,12 @@
         switch (_CShadeTonemapOperator)
         {
             case 0:
-                return ApplyReinhardTonemap(HDR, 1.0);
+                return HDR;
             case 1:
-                return ApplyNewToneMap(HDR);
+                return ApplyReinhardTonemap(HDR, 1.0);
             case 2:
+                return ApplyNewToneMap(HDR);
+            case 3:
                 return ApplyToneMapACES(HDR);
             default:
             	return HDR;

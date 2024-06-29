@@ -30,7 +30,7 @@
 uniform int _Method <
     ui_label = "Edge Detection Method";
     ui_type = "combo";
-    ui_items = " ddx(), ddy()\0 Bilinear 3x3 Sobel\0 Bilinear 5x5 Prewitt\0 Bilinear 5x5 Sobel\0 3x3 Prewitt\0 3x3 Scharr\0";
+    ui_items = "ddx(), ddy()\0Bilinear 3x3 Sobel\0Bilinear 5x5 Prewitt\0Bilinear 5x5 Sobel\03x3 Prewitt\03x3 Scharr\0";
 > = 0;
 
 uniform float _Threshold <
