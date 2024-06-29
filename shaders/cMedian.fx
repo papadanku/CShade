@@ -1,32 +1,6 @@
 #include "shared/cGraphics.fxh"
 
 /*
-    [Vertex Shaders]
-*/
-
-struct VS2PS_Median
-{
-    float4 HPos : SV_POSITION;
-    float4 Tex0 : TEXCOORD0;
-    float4 Tex1 : TEXCOORD1;
-    float4 Tex2 : TEXCOORD2;
-};
-
-VS2PS_Median VS_Median(APP2VS Input)
-{
-    float2 PixelSize = 1.0 / (float2(BUFFER_WIDTH, BUFFER_HEIGHT));
-
-    VS2PS_Quad FSQuad = VS_Quad(Input);
-
-    VS2PS_Median Output;
-    Output.HPos = FSQuad.HPos;
-    Output.Tex0 = FSQuad.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    Output.Tex1 = FSQuad.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    Output.Tex2 = FSQuad.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
-    return Output;
-}
-
-/*
     [Pixel Shaders]
     ---
     Math functions: https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/DoFMedianFilterCS.hlsl
@@ -59,20 +33,25 @@ float4 Med9(float4 X0, float4 X1, float4 X2,
 
 float4 PS_Median(VS2PS_Median Input) : SV_TARGET0
 {
+    float2 PixelSize = fwidth(Input.Tex0.xy);
+    float4 Tex0 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    float4 Tex1 = Input.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    float4 Tex2 = Input.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+
     // Sample locations:
     // [0].xy [1].xy [2].xy
     // [0].xz [1].xz [2].xz
     // [0].xw [1].xw [2].xw
     float4 Sample[9];
-    Sample[0] = tex2D(CShade_SampleColorTex, Input.Tex0.xy);
-    Sample[1] = tex2D(CShade_SampleColorTex, Input.Tex1.xy);
-    Sample[2] = tex2D(CShade_SampleColorTex, Input.Tex2.xy);
-    Sample[3] = tex2D(CShade_SampleColorTex, Input.Tex0.xz);
-    Sample[4] = tex2D(CShade_SampleColorTex, Input.Tex1.xz);
-    Sample[5] = tex2D(CShade_SampleColorTex, Input.Tex2.xz);
-    Sample[6] = tex2D(CShade_SampleColorTex, Input.Tex0.xw);
-    Sample[7] = tex2D(CShade_SampleColorTex, Input.Tex1.xw);
-    Sample[8] = tex2D(CShade_SampleColorTex, Input.Tex2.xw);
+    Sample[0] = tex2D(CShade_SampleColorTex, Tex0.xy);
+    Sample[1] = tex2D(CShade_SampleColorTex, Tex1.xy);
+    Sample[2] = tex2D(CShade_SampleColorTex, Tex2.xy);
+    Sample[3] = tex2D(CShade_SampleColorTex, Tex0.xz);
+    Sample[4] = tex2D(CShade_SampleColorTex, Tex1.xz);
+    Sample[5] = tex2D(CShade_SampleColorTex, Tex2.xz);
+    Sample[6] = tex2D(CShade_SampleColorTex, Tex0.xw);
+    Sample[7] = tex2D(CShade_SampleColorTex, Tex1.xw);
+    Sample[8] = tex2D(CShade_SampleColorTex, Tex2.xw);
     return Med9(Sample[0], Sample[1], Sample[2],
                 Sample[3], Sample[4], Sample[5],
                 Sample[6], Sample[7], Sample[8]);
@@ -84,7 +63,7 @@ technique CShade_Median
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Median;
+        VertexShader = VS_Quad;
         PixelShader = PS_Median;
     }
 }

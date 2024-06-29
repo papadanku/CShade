@@ -1,5 +1,6 @@
 #include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
+#include "shared/cCamera.fxh"
 #include "shared/cTonemap.fxh"
 
 /*
@@ -11,23 +12,6 @@
 */
 
 uniform float _Frametime < source = "frametime"; >;
-
-uniform float _SmoothingSpeed <
-    ui_category = "Exposure";
-    ui_label = "Smoothing";
-    ui_type = "drag";
-    ui_tooltip = "Exposure time smoothing";
-    ui_min = 0.0;
-    ui_max = 10.0;
-> = 1.0;
-
-uniform float _ManualBias <
-    ui_category = "Exposure";
-    ui_label = "Exposure";
-    ui_type = "drag";
-    ui_tooltip = "Optional manual bias ";
-    ui_min = 0.0;
-> = 1.0;
 
 uniform float _Scale <
     ui_category = "Spot Metering";
@@ -67,19 +51,7 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 /*
     [Pixel Shaders]
-    ---
-    AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
 */
-
-float2 Expand(float2 X)
-{
-    return (X * 2.0) - 1.0;
-}
-
-float2 Contract(float2 X)
-{
-    return (X * 0.5) + 0.5;
-}
 
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
@@ -87,34 +59,21 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 
     if (_Meter == 1)
     {
-        Tex = Expand(Tex);
+        Tex = (Tex * 2.0) - 1.0;
         Tex.x /= ASPECT_RATIO;
         Tex = (Tex * _Scale) + float2(_Offset.x, -_Offset.y);
-        Tex = Contract(Tex);
+        Tex = (Tex * 0.5) + 0.5;
     }
 
     float4 Color = tex2D(CShade_SampleColorTex, Tex);
-    float3 Luma = max(Color.r, max(Color.g, Color.b));
-
-    // OutputColor0.rgb = Output the highest brightness out of red/green/blue component
-    // OutputColor0.a = Output the weight for temporal blending
-    float Delay = 1e-3 * _Frametime;
-    return float4(log(max(Luma.rgb, 1e-2)), saturate(Delay * _SmoothingSpeed));
-}
-
-float3 GetAutoExposure(float3 Color, float2 Tex)
-{
-    float LumaAverage = exp(tex2Dlod(SampleLumaTex, float4(Tex, 0.0, 99.0)).r);
-    float Ev100 = log2(LumaAverage * 100.0 / 12.5);
-    Ev100 -= _ManualBias; // optional manual bias
-    float Exposure = 1.0 / (1.2 * exp2(Ev100));
-    return Color * Exposure;
+    return CreateExposureTex(Color.rgb, _Frametime);
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float3 ExposedColor = GetAutoExposure(Color.rgb, Input.Tex0);
+    float Luma = tex2Dlod(SampleLumaTex, float4(Tex, 0.0, 99.0)).r;
+    float3 ExposedColor = ApplyAutoExposure(Color.rgb, Luma, _ManualBias);
 
     if (_Debug)
     {

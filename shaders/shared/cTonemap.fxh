@@ -80,17 +80,17 @@
         return 0.5 * (D * SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C * SDR);
     }
 
-    uniform int _OutputTonemapOperator <
-        ui_category = "OUTPUT";
+    uniform int _CShadeTonemapOperator <
+        ui_category = "Output: Tonemapping";
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "Reinhard\0DirectX Graphics Sample\0ACES Filmic Approximation\0";
-    > = 0;
+        ui_items = "Reinhard\0DirectX Graphics Tonemap\0ACES Filmic Approximation\0";
+    > = 1;
 
     float3 ApplyTonemap(float3 HDR)
     {
-        switch (_OutputTonemapOperator)
+        switch (_CShadeTonemapOperator)
         {
             case 0:
                 return ApplyReinhardTonemap(HDR, 1.0);

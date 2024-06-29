@@ -1,13 +1,17 @@
+
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
+#include "shared/cCamera.fxh"
 #include "shared/cTonemap.fxh"
 
 /*
     [Shader Options]
 */
 
+uniform float _Frametime < source = "frametime"; >;
+
 uniform float _Threshold <
-    ui_category = "Bloom";
+    ui_category = "Input Settings";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -15,7 +19,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Bloom";
+    ui_category = "Input Settings";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -23,7 +27,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float _Saturation <
-    ui_category = "Bloom";
+    ui_category = "Input Settings";
     ui_label = "Saturation";
     ui_type = "slider";
     ui_min = 0.0;
@@ -31,7 +35,7 @@ uniform float _Saturation <
 > = 1.0;
 
 uniform float3 _ColorShift <
-    ui_category = "Bloom";
+    ui_category = "Input Settings";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -39,16 +43,22 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
-    ui_category = "Bloom";
+    ui_category = "Input Settings";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 10.0;
-> = 5.0;
+> = 1.0;
+
 
 /*
     [Textures & Samplers]
 */
+
+#if USE_AUTOEXPOSURE
+    CREATE_TEXTURE(ExposureTex, int2(1, 1), R16F, 0)
+    CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, CLAMP)
+#endif
 
 CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, CLAMP)
@@ -59,6 +69,7 @@ CREATE_SAMPLER(SampleTempTex5, TempTex5_RGBA16F, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, CLAMP)
 CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, CLAMP)
+
 
 /*
     [Pixel Shaders]
@@ -82,7 +93,14 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
+
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+
+    #if USE_AUTOEXPOSURE
+        // Apply auto-exposure here
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Color = ApplyAutoExposure(Color.rgb, Luma);
+    #endif
 
     // Under-threshold
     float Brightness = Med3(Color.r, Color.g, Color.b);
@@ -220,9 +238,14 @@ CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
 CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
 CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
+float4 PS_GetExposure(VS2PS_Quad Input) : SV_TARGET0
+{
+    float4 Color = tex2D(SampleTempTex8, Input.Tex0);
+    return CreateExposureTex(Color.rgb, _Frametime);
+}
+
 float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
 {
-
     // A0 B0 C0
     // A1 B1 C1
     // A2 B2 C2
@@ -265,16 +288,6 @@ CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
 CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
 CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
-float3 ToneMapACESFilmic(float3 x)
-{
-    float a = 2.51;
-    float b = 0.03;
-    float c = 2.43;
-    float d = 0.59;
-    float e = 0.14;
-    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
-}
-
 float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
@@ -310,6 +323,22 @@ technique CShade_Bloom
     CREATE_PASS(VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
     CREATE_PASS(VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
     CREATE_PASS(VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+
+    #if USE_AUTOEXPOSURE
+        pass CreateExposureTex
+        {
+            ClearRenderTargets = FALSE;
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = SRCALPHA;
+            DestBlend = INVSRCALPHA;
+
+            VertexShader = VS_Quad;
+            PixelShader = PS_GetExposure;
+
+            RenderTarget0 = ExposureTex;
+        }
+    #endif
 
     CREATE_PASS(VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
     CREATE_PASS(VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
