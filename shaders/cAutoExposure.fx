@@ -72,13 +72,14 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float Luma = tex2Dlod(SampleLumaTex, float4(Tex, 0.0, 99.0)).r;
-    float3 ExposedColor = ApplyAutoExposure(Color.rgb, Luma, _ManualBias);
+    float Luma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
+    float3 ExposedColor = ApplyAutoExposure(Color.rgb, Luma);
 
     if (_Debug)
     {
         // Unpack screen coordinates
-        float2 Pos = (Expand(Input.Tex0) - float2(_Offset.x, -_Offset.y)) * BUFFER_SIZE_0;
+        float2 Pos = (Input.Tex0 * 2.0) - 1.0;
+        Pos = (Pos - float2(_Offset.x, -_Offset.y)) * BUFFER_SIZE_0;
         float Factor = BUFFER_SIZE_0.y * _Scale;
 
         // Create the needed mask

@@ -31,7 +31,7 @@ float4 Med9(float4 X0, float4 X1, float4 X2,
     return Med3(A, B, C);
 }
 
-float4 PS_Median(VS2PS_Median Input) : SV_TARGET0
+float4 PS_Median(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float4 Tex0 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);

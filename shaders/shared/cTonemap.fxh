@@ -86,7 +86,7 @@
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
         ui_items = "None\0Reinhard\0DirectX Graphics Tonemap\0ACES Filmic Approximation\0";
-    > = 1;
+    > = 2;
 
     float3 ApplyTonemap(float3 HDR)
     {
