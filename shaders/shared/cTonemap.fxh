@@ -43,17 +43,65 @@
     }
 
     /*
+        Reinhard-Squared
+
+        This has some nice properties that improve on basic Reinhard.  Firstly, it has a "toe"--that nice,
+        parabolic upswing that enhances contrast and color saturation in darks.  Secondly, it has a long
+        shoulder giving greater detail in highlights and taking longer to desaturate.  It's invertible, scales
+        to HDR displays, and is easy to control.
+
+        The default constant of 0.25 was chosen for two reasons.  It maps closely to the effect of Reinhard
+        with a constant of 1.0.  And with a constant of 0.25, there is an inflection point at 0.25 where the
+        curve touches the line y=x and then begins the shoulder.
+
+        Note:  If you are currently using ACES and you pre-scale by 0.6, then k=0.30 looks nice as an alternative
+        without any other adjustments.
+    */
+
+    float3 ApplyReinhardSquaredTonemap(float3 HDR, float K)
+    {
+        float3 reinhard = HDR / (HDR + K);
+        return reinhard * reinhard;
+    }
+
+    float3 ApplyInverseReinhardSquaredTonemap(float3 SDR, float K)
+    {
+        return K * (SDR + sqrt(SDR)) / (1.0 - SDR);
+    }
+
+    /*
         This is the new tone operator. It resembles ACES in many ways, but it is simpler to evaluate with ALU. One advantage it has over Reinhard-Squared is that the shoulder goes to white more quickly and gives more overall brightness and contrast to the image.
     */
 
-    float3 ApplyNewToneMap(float3 HDR)
+    float3 ApplyStandardTonemap(float3 HDR)
     {
         return ApplyReinhardTonemap(HDR * sqrt(HDR), sqrt(4.0 / 27.0));
     }
 
-    float3 ApplyInverseNewToneMap(float3 SDR)
+    float3 ApplyInverseStandardTonemap(float3 SDR)
     {
         return pow(ApplyInverseReinhardTonemap(SDR, sqrt(4.0 / 27.0)), 2.0 / 3.0);
+    }
+
+    /*
+        Standard (Old)
+
+        This is the old tone operator first used in HemiEngine and then MiniEngine. It's simplistic, efficient,
+        invertible, and gives nice results, but it has no toe, and the shoulder goes to white fairly quickly.
+
+        Note that I removed the distinction between tone mapping RGB and tone mapping Luma. Philosophically, I
+        agree with the idea of trying to remap brightness to displayable values while preserving hue. But you
+        run into problems where one or more color channels end up brighter than 1.0 and get clipped.
+    */
+
+    float3 ApplyExponentialTonemap(float3 HDR)
+    {
+        return 1.0 - exp2(-HDR);
+    }
+
+    float3 ApplyInverseExponentialTonemap(float3 SDR)
+    {
+        return -log2(max(1e-6, 1.0 - SDR));
     }
 
     /*
@@ -85,7 +133,7 @@
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "None\0Reinhard\0DirectX Graphics Tonemap\0ACES Filmic Approximation\0";
+        ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Approximation\0";
     > = 2;
 
     float3 ApplyTonemap(float3 HDR)
@@ -97,8 +145,12 @@
             case 1:
                 return ApplyReinhardTonemap(HDR, 1.0);
             case 2:
-                return ApplyNewToneMap(HDR);
+                return ApplyReinhardSquaredTonemap(HDR, 0.25);
             case 3:
+                return ApplyStandardTonemap(HDR);
+            case 4:
+                return ApplyExponentialTonemap(HDR);
+            case 5:
                 return ApplyToneMapACES(HDR);
             default:
             	return HDR;
