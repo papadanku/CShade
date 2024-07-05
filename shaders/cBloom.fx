@@ -11,7 +11,7 @@
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _Threshold <
-    ui_category = "Input Settings";
+    ui_category = "Bloom: Input";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -19,7 +19,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Input Settings";
+    ui_category = "Bloom: Input";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -27,7 +27,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float _Saturation <
-    ui_category = "Input Settings";
+    ui_category = "Bloom: Input";
     ui_label = "Saturation";
     ui_type = "slider";
     ui_min = 0.0;
@@ -35,7 +35,7 @@ uniform float _Saturation <
 > = 1.0;
 
 uniform float3 _ColorShift <
-    ui_category = "Input Settings";
+    ui_category = "Bloom: Input";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -43,13 +43,68 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
-    ui_category = "Input Settings";
+    ui_category = "Bloom: Input";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 10.0;
 > = 1.0;
 
+uniform float _Level7Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 7";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level6Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 6";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level5Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 5";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level4Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 4";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level3Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 3";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level2Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 2";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _Level1Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 1";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
 
 /*
     [Textures & Samplers]
@@ -274,19 +329,19 @@ float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
     return OutputColor;
 }
 
-#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
+#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER, LEVEL_WEIGHT) \
     float4 METHOD_NAME(VS2PS_Quad Input) : SV_TARGET0 \
     { \
-        return GetPixelUpscale(Input, SAMPLER); \
+        return float4(GetPixelUpscale(Input, SAMPLER).rgb, LEVEL_WEIGHT); \
     }
 
-CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
-CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
-CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
-CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
-CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
-CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
-CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
+CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8, _Level7Weight)
+CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7, _Level6Weight)
+CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6, _Level5Weight)
+CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5, _Level4Weight)
+CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4, _Level3Weight)
+CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3, _Level2Weight)
+CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2, _Level1Weight)
 
 float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
 {
