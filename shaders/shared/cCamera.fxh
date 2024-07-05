@@ -18,10 +18,10 @@
         ui_category = "Output: AutoExposure";
         ui_label = "Smoothing";
         ui_type = "slider";
-        ui_tooltip = "Exposure time smoothing";
+        ui_tooltip = "Exposure smoothing speed";
         ui_min = 0.001;
         ui_max = 1.0;
-    > = 1.0;
+    > = 0.5;
 
     float4 CreateExposureTex(float3 Color, float FrameTime)
     {
