@@ -8,11 +8,11 @@
         ui_category = "Output: AutoExposure";
         ui_label = "Exposure bias";
         ui_tooltip = "Optional manual bias ";
-        ui_type = "drag";
+        ui_type = "slider";
         ui_step = 0.001;
         ui_min = 0.0;
-        ui_max = 10.0;
-    > = 0.0;
+        ui_max = 8.0;
+    > = 1.0;
 
     uniform float _CShadeExposureSmoothingSpeed <
         ui_category = "Output: AutoExposure";

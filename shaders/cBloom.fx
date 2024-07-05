@@ -31,7 +31,7 @@ uniform float _Saturation <
     ui_label = "Saturation";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 10.0;
+    ui_max = 8.0;
 > = 1.0;
 
 uniform float3 _ColorShift <
