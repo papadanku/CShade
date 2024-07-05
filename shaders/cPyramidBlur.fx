@@ -10,13 +10,13 @@ namespace cPyramidBlur
     uniform int _Downscale <
         ui_label = "Downscale Kernel";
         ui_type = "combo";
-        ui_items = " 2x2 Box\0 3x3 Tent\0 Jorge\0 Kawase\0";
+        ui_items = "2x2 Box\03x3 Tent\0Jorge\0Kawase\0";
     > = 0;
 
     uniform int _Upscale <
         ui_label = "Upscale Kernel";
         ui_type = "combo";
-        ui_items = " 2x2 Box\0 3x3 Tent\0 Jorge\0 Kawase\0";
+        ui_items = "2x2 Box\03x3 Tent\0Jorge\0Kawase\0";
     > = 0;
 
     /*

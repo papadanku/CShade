@@ -8,7 +8,7 @@
 uniform int _Select <
     ui_label = "Chromaticity Method";
     ui_type = "combo";
-    ui_items = " Length (XY)\0 Length (XYZ)\0 Average (XY)\0 Average (XYZ)\0 Sum (XY)\0 Sum (XYZ)\0 Max (XY)\0 Max (XYZ)\0 Ratio (XY)\0 Spherical (XY)\0 Hue-Saturation (HSI)\0 Hue-Saturation (HSL)\0 Hue-Saturation (HSV)\0 CoCg (XY)\0 CrCb (XY)\0";
+    ui_items = "Length (XY)\0Length (XYZ)\0Average (XY)\0Average (XYZ)\0Sum (XY)\0Sum (XYZ)\0Max (XY)\0Max (XYZ)\0Ratio (XY)\0Spherical (XY)\0Hue-Saturation (HSI)\0Hue-Saturation (HSL)\0Hue-Saturation (HSV)\0CoCg (XY)\0CrCb (XY)\0";
 > = 0;
 
 /*

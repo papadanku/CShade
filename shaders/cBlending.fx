@@ -7,7 +7,7 @@
 uniform int _Blend <
     ui_label = "Blend Mode";
     ui_type = "combo";
-    ui_items = " Add\0 Subtract\0 Multiply\0 Min\0 Max\0 Screen\0";
+    ui_items = "Add\0Subtract\0Multiply\0Min\0Max\0Screen\0";
 > = 0;
 
 uniform float3 _SrcFactor <

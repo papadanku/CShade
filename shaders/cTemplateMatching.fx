@@ -9,7 +9,7 @@ namespace cTemplateMatching
     uniform int _Method <
         ui_label = "Template Matching Method";
         ui_type = "combo";
-        ui_items = " SSD\0 NCC\0";
+        ui_items = "SSD\0NCC\0";
     > = 0;
 
     uniform int _Size <

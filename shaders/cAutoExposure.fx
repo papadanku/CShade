@@ -33,7 +33,7 @@ uniform int _Meter <
     ui_category = "Main Shader: Spot Metering";
     ui_label = "Method";
     ui_type = "combo";
-    ui_items = " Average\0 Centered\0";
+    ui_items = "Average\0Centered\0";
 > = 0;
 
 uniform bool _Debug <
