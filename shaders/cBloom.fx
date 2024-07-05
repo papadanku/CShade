@@ -363,7 +363,7 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
         ClearRenderTargets = FALSE; \
         BlendEnable = IS_ADDITIVE; \
         BlendOp = ADD; \
-        SrcBlend = ONE; \
+        SrcBlend = SRCALPHA; \
         DestBlend = ONE; \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
