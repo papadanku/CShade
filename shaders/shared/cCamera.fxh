@@ -17,7 +17,7 @@
     uniform float _CShadeExposureSmoothingSpeed <
         ui_category = "Output: AutoExposure";
         ui_label = "Smoothing";
-        ui_type = "drag";
+        ui_type = "slider";
         ui_tooltip = "Exposure time smoothing";
         ui_min = 0.001;
         ui_max = 1.0;
