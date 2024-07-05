@@ -6,7 +6,7 @@
 
     uniform float _CShadeExposureBias <
         ui_category = "Output: AutoExposure";
-        ui_label = "Exposure bias";
+        ui_label = "Exposure Bias";
         ui_type = "slider";
         ui_step = 0.001;
         ui_min = 0.0;
