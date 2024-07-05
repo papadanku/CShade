@@ -47,8 +47,8 @@ uniform float _Intensity <
     ui_label = "Intensity";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 10.0;
-> = 1.0;
+    ui_max = 1.0;
+> = 0.1;
 
 uniform float _Level7Weight <
     ui_category = "Bloom: Level Weights";
@@ -107,7 +107,7 @@ uniform float _Level1Weight <
 > = 1.0;
 
 #ifndef USE_AUTOEXPOSURE
-    #define USE_AUTOEXPOSURE 0
+    #define USE_AUTOEXPOSURE 1
 #endif
 
 /*
