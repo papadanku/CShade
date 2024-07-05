@@ -219,10 +219,10 @@ float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialK
     // -- D2 -- D3 --
     // A2 -- B2 -- C2
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float4 Tex0 = Input.Tex0.xyxy + (float4(-1.0, -1.0, 1.0, 1.0) * PixelSize.xyxy);
-    float4 Tex1 = Input.Tex0.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    float4 Tex2 = Input.Tex0.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
-    float4 Tex3 = Input.Tex0.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * PixelSize.xyyy);
+    float4 Tex0 = Input.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
+    float4 Tex1 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    float4 Tex2 = Input.Tex0.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
+    float4 Tex3 = Input.Tex0.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
 
     if (PartialKaris)
     {
