@@ -1,9 +1,16 @@
 
 #include "shared/cGraphics.fxh"
 #include "shared/cBuffers.fxh"
+#include "shared/cColorSpaces.fxh"
 
 namespace cEnsor
 {
+    uniform int _Select <
+        ui_label = "Feature Search Method";
+        ui_type = "combo";
+        ui_items = "HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
+    > = 2;
+
     uniform int _Blockiness <
         ui_label = "Blockiness";
         ui_type = "slider";
@@ -12,7 +19,7 @@ namespace cEnsor
     > = 3;
 
     uniform float _Threshold <
-        ui_label = "Luma Threshold";
+        ui_label = "Value Threshold";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -34,8 +41,45 @@ namespace cEnsor
     {
         float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
         float4 Pixel = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
-        float MaxC = max(max(Pixel.r, Pixel.g), Pixel.b);
-        bool Mask = saturate(MaxC > _Threshold);
+
+        // Initialize feature
+        float Feature = 0.0;
+
+        switch(_Select)
+        {
+            case 0:
+                Feature = GetHSVfromRGB(Pixel.rgb).r;
+                break;
+            case 1:
+                Feature = GetHSVfromRGB(Pixel.rgb).g;
+                break;
+            case 2:
+                Feature = GetHSVfromRGB(Pixel.rgb).b;
+                break;
+            case 3:
+                Feature = GetHSLfromRGB(Pixel.rgb).r;
+                break;
+            case 4:
+                Feature = GetHSLfromRGB(Pixel.rgb).g;
+                break;
+            case 5:
+                Feature = GetHSLfromRGB(Pixel.rgb).b;
+                break;
+            case 6:
+                Feature = GetHSIfromRGB(Pixel.rgb).r;
+                break;
+            case 7:
+                Feature = GetHSIfromRGB(Pixel.rgb).g;
+                break;
+            case 8:
+                Feature = GetHSIfromRGB(Pixel.rgb).b;
+                break;
+            default:
+                Feature = 0.0;
+                break;
+        }
+
+        bool Mask = saturate(Feature > _Threshold);
 
         if(_DisplayMask)
         {
