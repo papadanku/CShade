@@ -7,7 +7,6 @@
     uniform float _CShadeExposureBias <
         ui_category = "Output: AutoExposure";
         ui_label = "Exposure bias";
-        ui_tooltip = "Optional manual bias ";
         ui_type = "slider";
         ui_step = 0.001;
         ui_min = 0.0;
@@ -16,9 +15,8 @@
 
     uniform float _CShadeExposureSmoothingSpeed <
         ui_category = "Output: AutoExposure";
-        ui_label = "Smoothing";
+        ui_label = "Smoothing Speed";
         ui_type = "slider";
-        ui_tooltip = "Exposure smoothing speed";
         ui_min = 0.1;
         ui_max = 1.0;
     > = 0.5;

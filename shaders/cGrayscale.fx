@@ -5,9 +5,8 @@
 */
 
 uniform int _Select <
-    ui_label = "Method";
+    ui_label = "Luminance Method";
     ui_type = "combo";
-    ui_tooltip = "Select Luminance";
     ui_items = " Average\0 Min\0 Median\0 Max\0 Length\0 None\0";
 > = 0;
 

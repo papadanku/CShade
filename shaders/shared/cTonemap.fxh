@@ -133,8 +133,8 @@
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Approximation\0";
-    > = 0;
+        ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0";
+    > = 5;
 
     float3 ApplyTonemap(float3 HDR)
     {
