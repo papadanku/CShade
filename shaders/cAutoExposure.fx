@@ -1,6 +1,10 @@
 #include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
+
+#define INCLUDE_CCAMERA_OPTIONS_EXPOSURE
 #include "shared/cCamera.fxh"
+
+#define INCLUDE_CTONEMAP_OPTIONS_TONEMAP
 #include "shared/cTonemap.fxh"
 
 /*
