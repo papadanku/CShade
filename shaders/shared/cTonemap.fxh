@@ -136,27 +136,27 @@
             ui_type = "combo";
             ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0";
         > = 5;
-    #endif
 
-    float3 ApplyTonemap(float3 HDR)
-    {
-        switch (_CShadeTonemapOperator)
+        float3 ApplyTonemap(float3 HDR)
         {
-            case 0:
-                return HDR;
-            case 1:
-                return ApplyReinhardTonemap(HDR, 1.0);
-            case 2:
-                return ApplyReinhardSquaredTonemap(HDR, 0.25);
-            case 3:
-                return ApplyStandardTonemap(HDR);
-            case 4:
-                return ApplyExponentialTonemap(HDR);
-            case 5:
-                return ApplyToneMapACES(HDR);
-            default:
-            	return HDR;
+            switch (_CShadeTonemapOperator)
+            {
+                case 0:
+                    return HDR;
+                case 1:
+                    return ApplyReinhardTonemap(HDR, 1.0);
+                case 2:
+                    return ApplyReinhardSquaredTonemap(HDR, 0.25);
+                case 3:
+                    return ApplyStandardTonemap(HDR);
+                case 4:
+                    return ApplyExponentialTonemap(HDR);
+                case 5:
+                    return ApplyToneMapACES(HDR);
+                default:
+                    return HDR;
+            }
         }
-    }
+    #endif
 
 #endif
