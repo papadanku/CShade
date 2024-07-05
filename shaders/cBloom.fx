@@ -50,6 +50,14 @@ uniform float _Intensity <
     ui_max = 1.0;
 > = 0.1;
 
+uniform float _Level8Weight <
+    ui_category = "Bloom: Level Weights";
+    ui_label = "Level 8";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
 uniform float _Level7Weight <
     ui_category = "Bloom: Level Weights";
     ui_label = "Level 7";
@@ -339,7 +347,11 @@ float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
         return float4(GetPixelUpscale(Input, SAMPLER).rgb, LEVEL_WEIGHT); \
     }
 
-CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8, _Level7Weight)
+float4 PS_Upscale7(VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(GetPixelUpscale(Input, SampleTempTex8).rgb * _Level8Weight, _Level7Weight);
+}
+
 CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7, _Level6Weight)
 CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6, _Level5Weight)
 CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5, _Level4Weight)
@@ -363,8 +375,8 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
         ClearRenderTargets = FALSE; \
         BlendEnable = IS_ADDITIVE; \
         BlendOp = ADD; \
-        SrcBlend = SRCALPHA; \
-        DestBlend = ONE; \
+        SrcBlend = ONE; \
+        DestBlend = SRCALPHA; \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
         RenderTarget0 = RENDER_TARGET; \
