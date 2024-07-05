@@ -106,6 +106,10 @@ uniform float _Level1Weight <
     ui_max = 1.0;
 > = 1.0;
 
+#ifndef USE_AUTOEXPOSURE
+    #define USE_AUTOEXPOSURE 0
+#endif
+
 /*
     [Textures & Samplers]
 */
