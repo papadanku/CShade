@@ -125,7 +125,7 @@
         const float C = 2.43;
         const float D = 0.59;
         const float E = 0.14;
-        return 0.5 * (D * SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C * SDR);
+        return 0.5 * (D*SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C*SDR);
     }
 
     #if defined(INCLUDE_CTONEMAP_OUTPUT)
