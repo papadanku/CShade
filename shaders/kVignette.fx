@@ -7,7 +7,7 @@
 */
 
 uniform float _Falloff <
-    ui_label = "Falloff";
+    ui_label = "Falloff Scale";
     ui_type = "drag";
 > = 0.5;
 
