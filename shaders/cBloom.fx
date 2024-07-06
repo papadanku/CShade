@@ -207,12 +207,12 @@ Sample GetKarisSample(sampler2D SamplerSource, float2 Tex)
 float4 GetKarisAverage(Sample Group[4])
 {
     float4 OutputColor = 0.0;
-    float ColorWeightSum = 0.0;
+    float WeightSum = 0.0;
 
     for (int i = 0; i < 4; i++)
     {
         OutputColor += Group[i].Color;
-        ColorWeightSum += Group[i].Weight;
+        WeightSum += Group[i].Weight;
     }
 
     OutputColor.rgb /= WeightSum;
