@@ -1,3 +1,4 @@
+
 #include "cMacros.fxh"
 
 #if !defined(INCLUDE_GRAPHICS)
@@ -83,4 +84,5 @@
         float Ly = dot(Iy, Iy);
         return float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
     }
+
 #endif

@@ -1,3 +1,4 @@
+
 #include "cGraphics.fxh"
 
 #if !defined(INCLUDE_MOTIONESTIMATION)
@@ -265,4 +266,5 @@
         Vectors += NormalizeMotionVectors(SearchArea(SampleImage, B, Template), B.PixelSize);
         return PackMotionVectors(Vectors);
     }
+
 #endif

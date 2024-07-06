@@ -82,4 +82,5 @@
             AddressV = ADDRESS; \
             SRGBTexture = READ_SRGB; \
         };
+
 #endif

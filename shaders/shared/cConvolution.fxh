@@ -146,4 +146,5 @@
         OutputColor0.y = ((A + B) - (C + D)) / 4.0;
         return OutputColor0;
     }
+
 #endif
