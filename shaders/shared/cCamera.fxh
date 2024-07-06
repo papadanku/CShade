@@ -71,9 +71,9 @@
         CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
 
-    float GetVignette(float2 Tex, float AspectRatio, float Falloff)
+    float GetVignette(float2 Tex, float AspectRatio, float Falloff, float2 FalloffOffset)
     {
-        Tex = (Tex * 2.0 - 1.0) * AspectRatio;
+        Tex = ((Tex * 2.0 - 1.0) + FalloffOffset) * AspectRatio;
         float Radius = length(Tex) * Falloff;
         float Radius_2_1 = (Radius * Radius) + 1.0;
         return 1.0 / (Radius_2_1 * Radius_2_1);

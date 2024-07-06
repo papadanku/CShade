@@ -38,9 +38,18 @@ uniform float _Radius <
 > = 0.5;
 
 uniform float _Falloff <
-    ui_label = "Radius Falloff";
+    ui_category = "Radius Falloff";
+    ui_label = "Falloff Scale";
     ui_type = "drag";
 > = 0.5;
+
+uniform float2 _FalloffOffset <
+    ui_label = "Falloff Offset";
+    ui_type = "slider";
+    ui_step = 0.001;
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = float2(0.0, 0.0);
 
 uniform bool _EnableFalloff <
     ui_label = "Enable Radius Falloff";
@@ -76,7 +85,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     // Compute optional radius falloff
-    float FalloffFactor = _EnableFalloff ? GetVignette(Input.Tex0, AspectRatio, _Falloff) : 1.0;
+    float FalloffFactor = _EnableFalloff ? GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset) : 1.0;
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
     float4 Weight = 0.0;

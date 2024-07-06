@@ -11,6 +11,14 @@ uniform float _Falloff <
     ui_type = "drag";
 > = 0.5;
 
+uniform float2 _FalloffOffset <
+    ui_label = "Falloff Offset";
+    ui_type = "slider";
+    ui_step = 0.001;
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = float2(0.0, 0.0);
+
 /*
     [Pixel Shaders]
 */
@@ -18,7 +26,7 @@ uniform float _Falloff <
 float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {
     const float AspectRatio = float(BUFFER_WIDTH) / float(BUFFER_HEIGHT);
-    return GetVignette(Input.Tex0, AspectRatio, _Falloff);
+    return GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset);
 }
 
 technique CShade_KinoVignette
