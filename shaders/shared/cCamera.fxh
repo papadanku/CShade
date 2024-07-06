@@ -11,7 +11,7 @@
             ui_type = "slider";
             ui_min = 0.1;
             ui_max = 1.0;
-        > = 0.5;
+        > = 0.1;
 
         float4 CreateExposureTex(float3 Color, float FrameTime)
         {
