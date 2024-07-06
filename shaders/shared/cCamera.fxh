@@ -4,16 +4,7 @@
 
     // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
 
-    #if defined(INCLUDE_CCAMERA_OPTIONS_EXPOSURE)
-        uniform float _CShadeExposureBias <
-            ui_category = "Output: AutoExposure";
-            ui_label = "Exposure Bias";
-            ui_type = "slider";
-            ui_step = 0.001;
-            ui_min = 0.0;
-            ui_max = 8.0;
-        > = 1.0;
-
+    #if defined(INCLUDE_CCAMERA_INPUT)
         uniform float _CShadeExposureSmoothingSpeed <
             ui_category = "Output: AutoExposure";
             ui_label = "Smoothing Speed";
@@ -31,6 +22,17 @@
             float Delay = 1e-3 * FrameTime;
             return float4(log(max(Luma, 1e-2)), saturate(Delay * _CShadeExposureSmoothingSpeed));
         }
+    #endif
+
+    #if defined(INCLUDE_CCAMERA_OUTPUT)
+        uniform float _CShadeExposureBias <
+            ui_category = "Output: AutoExposure";
+            ui_label = "Exposure Bias";
+            ui_type = "slider";
+            ui_step = 0.001;
+            ui_min = 0.0;
+            ui_max = 8.0;
+        > = 1.0;
 
         float3 ApplyAutoExposure(float3 Color, float Luma)
         {

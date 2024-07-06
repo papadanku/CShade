@@ -2,10 +2,11 @@
 #include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 
-#define INCLUDE_CCAMERA_OPTIONS_EXPOSURE
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
 #include "shared/cCamera.fxh"
 
-#define INCLUDE_CTONEMAP_OPTIONS_TONEMAP
+#define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
 /*
@@ -369,7 +370,7 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
     float4 Color = 1.0;
-    Color.rgb = ApplyTonemap(BaseColor + (BloomColor * _Intensity));
+    Color.rgb = ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
     return Color;
 }
 

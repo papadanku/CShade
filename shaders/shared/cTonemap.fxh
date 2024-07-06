@@ -128,7 +128,7 @@
         return 0.5 * (D * SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C * SDR);
     }
 
-    #if defined(INCLUDE_CTONEMAP_OPTIONS_TONEMAP)
+    #if defined(INCLUDE_CTONEMAP_OUTPUT)
         uniform int _CShadeTonemapOperator <
             ui_category = "Output: Tonemapping";
             ui_label = "Tonemap Operator";
@@ -137,7 +137,7 @@
             ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0";
         > = 5;
 
-        float3 ApplyTonemap(float3 HDR)
+        float3 ApplyOutputTonemap(float3 HDR)
         {
             switch (_CShadeTonemapOperator)
             {

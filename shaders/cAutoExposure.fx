@@ -1,10 +1,11 @@
 #include "shared/cMacros.fxh"
 #include "shared/cGraphics.fxh"
 
-#define INCLUDE_CCAMERA_OPTIONS_EXPOSURE
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
 #include "shared/cCamera.fxh"
 
-#define INCLUDE_CTONEMAP_OPTIONS_TONEMAP
+#define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
 /*
@@ -94,11 +95,11 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         float3 Color1 = ExposedColor.rgb;
         float3 Color2 = lerp(Dot * 2.0, Color.rgb, Mask * 0.5);
 
-        return lerp(ApplyTonemap(Color1), Color2, Mask).rgb;
+        return lerp(ApplyOutputTonemap(Color1), Color2, Mask).rgb;
     }
     else
     {
-        return ApplyTonemap(ExposedColor);
+        return ApplyOutputTonemap(ExposedColor);
     }
 }
 
