@@ -1,6 +1,5 @@
 
 #include "shared/cGraphics.fxh"
-#include "shared/cBuffers.fxh"
 #include "shared/cColorSpaces.fxh"
 
 namespace cEnsor
@@ -30,6 +29,7 @@ namespace cEnsor
         ui_type = "radio";
     > = false;
 
+    CREATE_TEXTURE(TempTex0_RGB10A2, BUFFER_SIZE_0, RGB10A2, 8)
     CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, POINT, CLAMP)
 
     float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0

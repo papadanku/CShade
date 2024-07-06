@@ -35,7 +35,16 @@
         > = DEFAULT;
 
     #define CREATE_TEXTURE(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
-        texture2D TEXTURE_NAME \
+        texture2D TEXTURE_NAME < pooled = false; > \
+        { \
+            Width = SIZE.x; \
+            Height = SIZE.y; \
+            Format = FORMAT; \
+            MipLevels = LEVELS; \
+        };
+
+    #define CREATE_TEXTURE_POOLED(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
+        texture2D TEXTURE_NAME < pooled = true; > \
         { \
             Width = SIZE.x; \
             Height = SIZE.y; \

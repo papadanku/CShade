@@ -1,4 +1,3 @@
-#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cColorSpaces.fxh"
 #include "shared/cConvolution.fxh"
@@ -108,6 +107,13 @@ namespace kDatamosh
     /*
         [Textures and samplers]
     */
+
+    CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG8, 3)
+    CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 8)
+    CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 8)
+    CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_3, RG16F, 1)
+    CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
+    CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
 
     CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, MIRROR)
     CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, MIRROR)

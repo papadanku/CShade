@@ -1,4 +1,3 @@
-#include "shared/cBuffers.fxh"
 #include "shared/cGraphics.fxh"
 #include "shared/cConvolution.fxh"
 
@@ -30,6 +29,7 @@ namespace cDiscBlur
         [Textures & Samplers]
     */
 
+    CREATE_TEXTURE_POOLED(TempTex1_RGBA16F, BUFFER_SIZE_1, RGBA16F, 1)
     CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, CLAMP)
 
     /*
