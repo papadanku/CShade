@@ -261,11 +261,11 @@ float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialK
         Sample GroupD[4] = { A1, B1, A2, B2 };
         Sample GroupE[4] = { B1, C1, B2, C2 };
 
-        OutputColor0 += (GetKarisAverage(GroupA) * float4((float3)0.500, 0.500 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupB) * float4((float3)0.125, 0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupC) * float4((float3)0.125, 0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupD) * float4((float3)0.125, 0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupE) * float4((float3)0.125, 0.125 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupA) * float2(0.500, 0.500 / 4.0).xxxy);
+        OutputColor0 += (GetKarisAverage(GroupB) * float2(0.125, 0.125 / 4.0).xxxy);
+        OutputColor0 += (GetKarisAverage(GroupC) * float2(0.125, 0.125 / 4.0).xxxy);
+        OutputColor0 += (GetKarisAverage(GroupD) * float2(0.125, 0.125 / 4.0).xxxy);
+        OutputColor0 += (GetKarisAverage(GroupE) * float2(0.125, 0.125 / 4.0).xxxy);
     }
     else
     {
