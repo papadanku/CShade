@@ -71,7 +71,8 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     }
 
     float4 Color = tex2D(CShade_SampleColorTex, Tex);
-    return CreateExposureTex(Color.rgb, _Frametime);
+    float LogLuminance = GetLogLuminance(Color.rgb);
+    return CreateExposureTex(LogLuminance, _Frametime);
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0

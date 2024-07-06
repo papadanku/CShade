@@ -4,6 +4,12 @@
 
     // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
 
+    float GetLogLuminance(float3 Color)
+    {
+        float Luminance = max(max(Color.r, Color.g), Color.b);
+        return log(max(Luminance, 1e-2));
+    }
+
     #if defined(INCLUDE_CCAMERA_INPUT)
         uniform float _CShadeExposureSmoothingSpeed <
             ui_category = "Output: AutoExposure";
@@ -13,14 +19,12 @@
             ui_max = 1.0;
         > = 0.1;
 
-        float4 CreateExposureTex(float3 Color, float FrameTime)
+        float4 CreateExposureTex(float Luminance, float FrameTime)
         {
-            float3 Luma = max(Color.r, max(Color.g, Color.b));
-
             // .rgb = Output the highest brightness out of red/green/blue component
             // .a = Output the weight for temporal blending
             float Delay = 1e-3 * FrameTime;
-            return float4(log(max(Luma, 1e-2)), saturate(Delay * _CShadeExposureSmoothingSpeed));
+            return float4((float3)Luminance, saturate(Delay * _CShadeExposureSmoothingSpeed));
         }
     #endif
 

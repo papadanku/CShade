@@ -30,14 +30,6 @@ uniform float _Smooth <
     ui_max = 1.0;
 > = 0.5;
 
-uniform float _Saturation <
-    ui_category = "Bloom: Input";
-    ui_label = "Saturation";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 8.0;
-> = 1.0;
-
 uniform float3 _ColorShift <
     ui_category = "Bloom: Input";
     ui_label = "Color Shift (RGB)";
@@ -161,7 +153,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, CLAMP)
 
 struct Sample
 {
-    float3 Color;
+    float4 Color;
     float Weight;
 };
 
@@ -175,13 +167,17 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     const float Knee = mad(_Threshold, _Smooth, 1e-5);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
 
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 ColorTex = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = ColorTex;
 
     #if USE_AUTOEXPOSURE
         // Apply auto-exposure here
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
         Color = ApplyAutoExposure(Color.rgb, Luma);
     #endif
+
+    // Store log luminance in alpha channel
+    float LogLuminance = GetLogLuminance(ColorTex.rgb);
 
     // Under-threshold
     float Brightness = Med3(Color.r, Color.g, Color.b);
@@ -190,8 +186,8 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 
     // Combine and apply the brightness response curve
     Color = Color * max(Response_Curve, Brightness - _Threshold) / max(Brightness, 1e-10);
-    Brightness = Med3(Color.r, Color.g, Color.b);
-    return float4(lerp(Brightness, Color.rgb, _Saturation) * _ColorShift, 1.0);
+
+    return float4(Color.rgb * _ColorShift, LogLuminance);
 }
 
 float GetKarisWeight(float3 c)
@@ -203,14 +199,14 @@ float GetKarisWeight(float3 c)
 Sample GetKarisSample(sampler2D SamplerSource, float2 Tex)
 {
     Sample Output;
-    Output.Color = tex2D(SamplerSource, Tex).rgb;
-    Output.Weight = GetKarisWeight(Output.Color);
+    Output.Color = tex2D(SamplerSource, Tex);
+    Output.Weight = GetKarisWeight(Output.Color.rgb);
     return Output;
 }
 
-float3 GetKarisAverage(Sample Group[4])
+float4 GetKarisAverage(Sample Group[4])
 {
-    float3 OutputColor = 0.0;
+    float4 OutputColor = 0.0;
     float WeightSum = 0.0;
 
     for (int i = 0; i < 4; i++)
@@ -219,7 +215,9 @@ float3 GetKarisAverage(Sample Group[4])
         WeightSum += Group[i].Weight;
     }
 
-    return OutputColor / WeightSum;
+    OutputColor.rgb /= WeightSum;
+
+    return OutputColor;
 }
 
 // 13-tap downsampling with Karis luma filtering
@@ -263,11 +261,11 @@ float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialK
         Sample GroupD[4] = { A1, B1, A2, B2 };
         Sample GroupE[4] = { B1, C1, B2, C2 };
 
-        OutputColor0 += (GetKarisAverage(GroupA) * 0.500);
-        OutputColor0 += (GetKarisAverage(GroupB) * 0.125);
-        OutputColor0 += (GetKarisAverage(GroupC) * 0.125);
-        OutputColor0 += (GetKarisAverage(GroupD) * 0.125);
-        OutputColor0 += (GetKarisAverage(GroupE) * 0.125);
+        OutputColor0 += (GetKarisAverage(GroupA) * (0.500 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupB) * (0.125 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupC) * (0.125 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupD) * (0.125 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupE) * (0.125 / 4.0));
     }
     else
     {
@@ -321,8 +319,8 @@ CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
 float4 PS_GetExposure(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(SampleTempTex8, Input.Tex0);
-    return CreateExposureTex(Color.rgb, _Frametime);
+    float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
+    return CreateExposureTex(LogLuminance, _Frametime);
 }
 
 float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
