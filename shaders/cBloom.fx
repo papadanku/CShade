@@ -389,8 +389,10 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_Bloom
 {
+    // Prefilter stuff, emulate autoexposure
     CREATE_PASS(VS_Quad, PS_Prefilter, TempTex0_RGB10A2, FALSE)
 
+    // Iteratively downsample the image (RGB) and its log luminance (A) into a "pyramid"
     CREATE_PASS(VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
     CREATE_PASS(VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
     CREATE_PASS(VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
@@ -400,6 +402,7 @@ technique CShade_Bloom
     CREATE_PASS(VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
     CREATE_PASS(VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
+    // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
     #if USE_AUTOEXPOSURE
         pass CreateExposureTex
         {
@@ -416,6 +419,21 @@ technique CShade_Bloom
         }
     #endif
 
+    /*
+        Weighted iterative upsampling.
+
+        Formula: Upsample(Level[N+1]) + Level[N]*weight(Level[N])
+                 ^^^^^^^^^              ^^^^^^^^^^
+                 Left-Side              Right-Side
+
+        Why this works:
+            1. The Left-Side and Right-Side are the same resolutions
+            2. Example A (Level 8 Weight = 1.0, Level 7-1 Weight = 0.0):
+               - Level 8 upsamples and accumulates 7 times until it is in the Level 1 texture
+            3. Example B (Level 8-2 Weight = 0.0, Level 1 Weight = 1.0):
+               - Level 8-2 do not upsample and accumulate
+               - Level 1 is the only visable level
+    */
     CREATE_PASS(VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
     CREATE_PASS(VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
     CREATE_PASS(VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
