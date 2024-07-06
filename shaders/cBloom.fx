@@ -207,15 +207,18 @@ Sample GetKarisSample(sampler2D SamplerSource, float2 Tex)
 float4 GetKarisAverage(Sample Group[4])
 {
     float4 OutputColor = 0.0;
-    float WeightSum = 0.0;
+    float ColorWeightSum = 0.0;
+    float AlphaWeightSum = 0.0;
 
     for (int i = 0; i < 4; i++)
     {
         OutputColor += Group[i].Color;
-        WeightSum += Group[i].Weight;
+        ColorWeightSum += Group[i].Weight;
+        AlphaWeightSum += 1.0;
     }
 
     OutputColor.rgb /= WeightSum;
+    OutputColor.a /= AlphaWeightSum;
 
     return OutputColor;
 }
@@ -261,11 +264,11 @@ float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialK
         Sample GroupD[4] = { A1, B1, A2, B2 };
         Sample GroupE[4] = { B1, C1, B2, C2 };
 
-        OutputColor0 += (GetKarisAverage(GroupA) * (0.500 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupB) * (0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupC) * (0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupD) * (0.125 / 4.0));
-        OutputColor0 += (GetKarisAverage(GroupE) * (0.125 / 4.0));
+        OutputColor0 += (GetKarisAverage(GroupA) * 0.500);
+        OutputColor0 += (GetKarisAverage(GroupB) * 0.125);
+        OutputColor0 += (GetKarisAverage(GroupC) * 0.125);
+        OutputColor0 += (GetKarisAverage(GroupD) * 0.125);
+        OutputColor0 += (GetKarisAverage(GroupE) * 0.125);
     }
     else
     {
