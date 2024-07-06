@@ -19,7 +19,7 @@
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _Scale <
-    ui_category = "Main Shader: Spot Metering";
+    ui_category = "Main Shader: Metering";
     ui_label = "Area Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -27,7 +27,7 @@ uniform float _Scale <
 > = 0.5;
 
 uniform float2 _Offset <
-    ui_category = "Main Shader: Spot Metering";
+    ui_category = "Main Shader: Metering";
     ui_label = "Area Offset";
     ui_type = "slider";
     ui_min = -1.0;
@@ -35,15 +35,15 @@ uniform float2 _Offset <
 > = 0.0;
 
 uniform int _Meter <
-    ui_category = "Main Shader: Spot Metering";
+    ui_category = "Main Shader: Metering";
     ui_label = "Method";
     ui_type = "combo";
-    ui_items = "Average\0Centered\0";
+    ui_items = "Average\0Spot\0";
 > = 0;
 
 uniform bool _Debug <
-    ui_category = "Main Shader: Spot Metering";
-    ui_label = "Display Center Metering";
+    ui_category = "Main Shader: Metering";
+    ui_label = "Display Spot Metering";
     ui_type = "radio";
 > = false;
 
