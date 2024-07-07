@@ -69,6 +69,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     if (_Meter == 1)
     {
         Tex = (Tex * 2.0) - 1.0;
+        // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
         #if BUFFER_WIDTH > BUFFER_HEIGHT
             Tex.x /= ASPECT_RATIO;
         #else
@@ -100,6 +101,8 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         float2 Pos = (Input.Tex0 * 2.0) - 1.0;
         Pos -= float2(_Offset.x, -_Offset.y);
         Pos /= _Scale;
+
+        // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
             Pos.x *= ASPECT_RATIO;
         #else
