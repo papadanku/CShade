@@ -19,22 +19,6 @@
 
 uniform float _Frametime < source = "frametime"; >;
 
-uniform float _Scale <
-    ui_category = "Main Shader: Metering";
-    ui_label = "Area Scale";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.5;
-
-uniform float2 _Offset <
-    ui_category = "Main Shader: Metering";
-    ui_label = "Area Offset";
-    ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
-> = 0.0;
-
 uniform int _Meter <
     ui_category = "Main Shader: Metering";
     ui_label = "Method";
@@ -42,8 +26,30 @@ uniform int _Meter <
     ui_items = "Average\0Spot\0";
 > = 0;
 
-uniform bool _Debug <
+uniform float _Scale <
     ui_category = "Main Shader: Metering";
+    ui_label = "Spot Scale";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.5;
+
+uniform float2 _Offset <
+    ui_category = "Main Shader: Metering";
+    ui_label = "Spot Offset";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = 0.0;
+
+uniform bool _DisplayAverageLuma <
+    ui_category = "Main Shader: Debug";
+    ui_label = "Display Average Luminance";
+    ui_type = "radio";
+> = false;
+
+uniform bool _DisplaySpotMeterMask <
+    ui_category = "Main Shader: Debug";
     ui_label = "Display Spot Metering";
     ui_type = "radio";
 > = false;
@@ -64,7 +70,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     float2 Tex = Input.Tex0;
 
     /*
-        For spot-metering, we fill the target square texture with the region only 
+        For spot-metering, we fill the target square texture with the region only
     */
     if (_Meter == 1)
     {
@@ -91,42 +97,56 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
     float4 NonExposedColor = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 ExposedColor = ApplyAutoExposure(NonExposedColor.rgb, Luma);
 
-    if (_Debug)
+    float2 UNormPos = (Input.Tex0 * 2.0) - 1.0;
+    float3 Output = ApplyOutputTonemap(ExposedColor.rgb);
+
+    if (_DisplaySpotMeterMask)
     {
         /*
             Create a UV that represents a square texture.
             - Width conversion: [0, 1] -> [-N, N]
             - Height conversion: [0, 1] -> [-N, N]
         */
-        float2 Pos = (Input.Tex0 * 2.0) - 1.0;
-        Pos -= float2(_Offset.x, -_Offset.y);
-        Pos /= _Scale;
+
+        float2 SpotMeterPos = UNormPos;
+        SpotMeterPos -= float2(_Offset.x, -_Offset.y);
+        SpotMeterPos /= _Scale;
 
         // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
-            Pos.x *= ASPECT_RATIO;
+            SpotMeterPos.x *= ASPECT_RATIO;
         #else
-            Pos.y *= ASPECT_RATIO;
+            SpotMeterPos.y *= ASPECT_RATIO;
         #endif
 
         // Create the needed mask, output 1 if the texcood is within square range
         float Factor = 1.0 * _Scale;
-        bool SquareMask = all(abs(Pos) <= Factor);
-        bool DotMask = all(abs(Pos) <= (Factor * 0.1));
+        bool SquareMask = all(abs(SpotMeterPos) <= Factor);
+        bool DotMask = all(abs(SpotMeterPos) <= (Factor * 0.1));
 
-        // Composite the exposed color with debug overlay
-        ExposedColor = ApplyOutputTonemap(ExposedColor.rgb);
         // Apply square mask to output
-        float3 Output = lerp(ExposedColor, NonExposedColor.rgb, SquareMask);
+        Output = lerp(Output, NonExposedColor.rgb, SquareMask);
         // Apply dot mask to output
         Output = lerp(Output, 1.0, DotMask);
+    }
 
-        return Output;
-    }
-    else
+    if (_DisplayAverageLuma)
     {
-        return ApplyOutputTonemap(ExposedColor);
+        float2 DebugAverageLumaTex = UNormPos + float2(0.0, -0.5);
+
+        // Shrink the UV so [-1, 1] fills a square
+        #if BUFFER_WIDTH > BUFFER_HEIGHT
+            DebugAverageLumaTex.x *= ASPECT_RATIO;
+        #else
+            DebugAverageLumaTex.y *= ASPECT_RATIO;
+        #endif
+
+        // This mask returns 1 if the texcoord's position is >= 0.1
+        float Mask = 1.0 - saturate(dot(abs(DebugAverageLumaTex) >= 0.05, 1.0));
+        Output = lerp(Output, exp(Luma), Mask);
     }
+
+    return Output;
 }
 
 technique CShade_AutoExposure
