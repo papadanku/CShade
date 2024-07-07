@@ -63,11 +63,19 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Tex = Input.Tex0;
 
+    /*
+        For spot-metering, we fill the target square texture with the region only 
+    */
     if (_Meter == 1)
     {
         Tex = (Tex * 2.0) - 1.0;
-        Tex.x /= ASPECT_RATIO;
-        Tex = (Tex * _Scale) + float2(_Offset.x, -_Offset.y);
+        #if BUFFER_WIDTH > BUFFER_HEIGHT
+            Tex.x /= ASPECT_RATIO;
+        #else
+            Tex.y /= ASPECT_RATIO;
+        #endif
+        Tex *= _Scale;
+        Tex += float2(_Offset.x, -_Offset.y);
         Tex = (Tex * 0.5) + 0.5;
     }
 
@@ -78,26 +86,39 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float Luma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
-    float3 ExposedColor = ApplyAutoExposure(Color.rgb, Luma);
+    float4 NonExposedColor = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float3 ExposedColor = ApplyAutoExposure(NonExposedColor.rgb, Luma);
 
     if (_Debug)
     {
-        // Unpack screen coordinates
+        /*
+            Create a UV that represents a square texture.
+            - Width conversion: [0, 1] -> [-N, N]
+            - Height conversion: [0, 1] -> [-N, N]
+        */
         float2 Pos = (Input.Tex0 * 2.0) - 1.0;
-        Pos = (Pos - float2(_Offset.x, -_Offset.y)) * BUFFER_SIZE_0;
-        float Factor = BUFFER_SIZE_0.y * _Scale;
+        Pos -= float2(_Offset.x, -_Offset.y);
+        Pos /= _Scale;
+        #if BUFFER_WIDTH > BUFFER_HEIGHT
+            Pos.x *= ASPECT_RATIO;
+        #else
+            Pos.y *= ASPECT_RATIO;
+        #endif
 
-        // Create the needed mask
-        bool Dot = all(step(abs(Pos), Factor * 0.1));
-        bool Mask = all(step(abs(Pos), Factor));
+        // Create the needed mask, output 1 if the texcood is within square range
+        float Factor = 1.0 * _Scale;
+        bool SquareMask = all(abs(Pos) <= Factor);
+        bool DotMask = all(abs(Pos) <= (Factor * 0.1));
 
         // Composite the exposed color with debug overlay
-        float3 Color1 = ExposedColor.rgb;
-        float3 Color2 = lerp(Dot * 2.0, Color.rgb, Mask * 0.5);
+        ExposedColor = ApplyOutputTonemap(ExposedColor.rgb);
+        // Apply square mask to output
+        float3 Output = lerp(ExposedColor, NonExposedColor.rgb, SquareMask);
+        // Apply dot mask to output
+        Output = lerp(Output, 1.0, DotMask);
 
-        return lerp(ApplyOutputTonemap(Color1), Color2, Mask).rgb;
+        return Output;
     }
     else
     {
