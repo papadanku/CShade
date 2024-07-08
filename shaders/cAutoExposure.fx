@@ -134,18 +134,25 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 
     if (_DisplayAverageLuma)
     {
-        float2 DebugAverageLumaTex = UNormPos + float2(0.0, -0.5);
+        float2 LumaTex = UNormPos + float2(0.0, -0.5);
 
         // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
-            DebugAverageLumaTex.x *= ASPECT_RATIO;
+            LumaTex.x *= ASPECT_RATIO;
         #else
-            DebugAverageLumaTex.y *= ASPECT_RATIO;
+            LumaTex.y *= ASPECT_RATIO;
         #endif
 
-        // This mask returns 1 if the texcoord's position is >= 0.1
-        float Mask = GetAntiAliasShape(length(DebugAverageLumaTex), 0.05);
-        Output = lerp(exp(Luma), Output, Mask);
+        // Get luma masks
+        float LumaTexLength = length(LumaTex);
+        float LumaTexMask = GetAntiAliasShape(LumaTexLength, 0.05);
+        float ShadowMask = smoothstep(0.1, 0.0, LumaTexLength);
+
+        // Composite the drop-shadow into the output
+        Output = lerp(Output, 0.0, ShadowMask);
+
+        // Composite the masked luma into the output
+        Output = lerp(exp(Luma), Output, LumaTexMask);
     }
 
     return Output;
