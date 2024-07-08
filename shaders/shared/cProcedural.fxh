@@ -121,4 +121,10 @@
         return saturate((Noise * 0.5) + 0.5);
     }
 
+    float GetAntiAliasShape(float Distance, float Radius)
+    {
+        float AA = fwidth(Distance);
+        return smoothstep(Radius - AA, Radius, Distance);
+    }
+
 #endif

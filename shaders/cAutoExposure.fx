@@ -9,6 +9,8 @@
 #define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
+#include "shared/cProcedural.fxh"
+
 /*
     Automatic exposure shader using hardware blending
 */
@@ -121,13 +123,13 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 
         // Create the needed mask, output 1 if the texcood is within square range
         float Factor = 1.0 * _Scale;
-        bool SquareMask = all(abs(SpotMeterPos) <= Factor);
-        bool DotMask = all(abs(SpotMeterPos) <= (Factor * 0.1));
+        float SquareMask = all(abs(SpotMeterPos) <= Factor);
+        float DotMask = GetAntiAliasShape(length(SpotMeterPos), Factor * 0.1);
 
         // Apply square mask to output
         Output = lerp(Output, NonExposedColor.rgb, SquareMask);
         // Apply dot mask to output
-        Output = lerp(Output, 1.0, DotMask);
+        Output = lerp(1.0, Output, DotMask);
     }
 
     if (_DisplayAverageLuma)
@@ -142,7 +144,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         #endif
 
         // This mask returns 1 if the texcoord's position is >= 0.1
-        float Mask = 1.0 - saturate(dot(abs(DebugAverageLumaTex) >= 0.05, 1.0));
+        float Mask = 1.0 - GetAntiAliasShape(length(DebugAverageLumaTex), 0.05);
         Output = lerp(Output, exp(Luma), Mask);
     }
 
