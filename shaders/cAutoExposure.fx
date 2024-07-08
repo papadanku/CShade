@@ -144,8 +144,8 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         #endif
 
         // This mask returns 1 if the texcoord's position is >= 0.1
-        float Mask = 1.0 - GetAntiAliasShape(length(DebugAverageLumaTex), 0.05);
-        Output = lerp(Output, exp(Luma), Mask);
+        float Mask = GetAntiAliasShape(length(DebugAverageLumaTex), 0.05);
+        Output = lerp(exp(Luma), Output, Mask);
     }
 
     return Output;
