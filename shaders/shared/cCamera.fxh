@@ -34,7 +34,7 @@
             ui_label = "Exposure Compensation";
             ui_type = "slider";
             ui_step = 0.001;
-            ui_min = 0.0;
+            ui_min = -3.0;
             ui_max = 3.0;
         > = 0.0;
 
