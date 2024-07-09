@@ -95,8 +95,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 
     if (_Meter == 1)
     {
-        float2 CenterMeterTex = UNormTex;
-        float CenterWeights = smoothstep(sqrt(2.0), 0.0, length(CenterMeterTex));
+        float CenterWeights = smoothstep(sqrt(2.0), 0.0, length(UNormTex));
         LogLuminance *= CenterWeights;
     }
 
