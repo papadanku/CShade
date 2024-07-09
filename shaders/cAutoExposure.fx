@@ -143,16 +143,21 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
             LumaTex.y *= ASPECT_RATIO;
         #endif
 
-        // Get luma masks
+        // Create luma masks
         float LumaTexLength = length(LumaTex);
         float LumaTexMask = GetAntiAliasShape(LumaTexLength, 0.05);
         float ShadowMask = smoothstep(0.1, 0.0, LumaTexLength);
 
-        // Composite the drop-shadow into the output
-        Output = lerp(Output, 0.0, ShadowMask);
+        // Create LumaIcon through alpha compositing
+        float4 LumaIcon = 0.0;
+        float4 Shadow = float4(0.0, 0.0, 0.0, 1.0);
+        float4 ExpLuma = float4((float3)exp(Luma), 1.0);
 
-        // Composite the masked luma into the output
-        Output = lerp(exp(Luma), Output, LumaTexMask);
+        LumaIcon = lerp(LumaIcon, Shadow, ShadowMask);
+        LumaIcon = lerp(ExpLuma, LumaIcon, LumaTexMask);
+
+        // Composite LumaIcon into Output
+        Output = lerp(Output, LumaIcon.rgb, LumaIcon.a);
     }
 
     return Output;
