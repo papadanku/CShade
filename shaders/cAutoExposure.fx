@@ -25,7 +25,7 @@ uniform int _Meter <
     ui_category = "Main Shader: Metering";
     ui_label = "Method";
     ui_type = "combo";
-    ui_items = "Average\0Spot\0";
+    ui_items = "Average\0Centered\0Spot\0";
 > = 0;
 
 uniform float _Scale <
@@ -69,27 +69,37 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Tex = Input.Tex0;
+    float2 Tex = 0.0;
+    float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     /*
         For spot-metering, we fill the target square texture with the region only
     */
-    if (_Meter == 1)
+    if (_Meter == 2)
     {
-        Tex = (Tex * 2.0) - 1.0;
+        float2 SpotMeterTex = UNormTex;
         // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
         #if BUFFER_WIDTH > BUFFER_HEIGHT
-            Tex.x /= ASPECT_RATIO;
+            SpotMeterTex.x /= ASPECT_RATIO;
         #else
-            Tex.y /= ASPECT_RATIO;
+            SpotMeterTex.y /= ASPECT_RATIO;
         #endif
-        Tex *= _Scale;
-        Tex += float2(_Offset.x, -_Offset.y);
-        Tex = (Tex * 0.5) + 0.5;
+        SpotMeterTex *= _Scale;
+        SpotMeterTex += float2(_Offset.x, -_Offset.y);
+        SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
+        Tex = SpotMeterTex;
     }
 
     float4 Color = tex2D(CShade_SampleColorTex, Tex);
     float LogLuminance = GetLogLuminance(Color.rgb);
+
+    if (_Meter == 1)
+    {
+        float2 CenterMeterTex = UNormTex;
+        float CenterWeights = smoothstep(sqrt(2.0), 0.0, length(CenterMeterTex));
+        LogLuminance *= CenterWeights;
+    }
+
     return CreateExposureTex(LogLuminance, _Frametime);
 }
 
@@ -102,7 +112,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
     float2 UNormPos = (Input.Tex0 * 2.0) - 1.0;
     float3 Output = ApplyOutputTonemap(ExposedColor.rgb);
 
-    if (_DisplaySpotMeterMask)
+    if (_Meter == 2 && _DisplaySpotMeterMask)
     {
         /*
             Create a UV that represents a square texture.
