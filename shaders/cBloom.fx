@@ -374,20 +374,8 @@ CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2, _Level1Weight)
 
 float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
 {
-    // Normalize weights
-    float AllWeights = 0.0;
-    AllWeights += _Level1Weight;
-    AllWeights += _Level2Weight;
-    AllWeights += _Level3Weight;
-    AllWeights += _Level4Weight;
-    AllWeights += _Level5Weight;
-    AllWeights += _Level6Weight;
-    AllWeights += _Level7Weight;
-    AllWeights += _Level8Weight;
-    AllWeights = max(1.0, AllWeights);
-
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-    float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb / AllWeights;
+    float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
     float4 Color = 1.0;
     Color.rgb = ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
