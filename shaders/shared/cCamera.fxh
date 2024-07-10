@@ -34,15 +34,25 @@
             ui_label = "Exposure Compensation";
             ui_type = "slider";
             ui_step = 0.001;
-            ui_min = -3.0;
-            ui_max = 3.0;
+            ui_min = -4.0;
+            ui_max = 4.0;
         > = 0.0;
+
+        uniform float _CShadeExposureRange <
+            ui_category = "Output: AutoExposure";
+            ui_label = "Exposure Compensation Range";
+            ui_type = "slider";
+            ui_step = 0.001;
+            ui_min = 0.0;
+            ui_max = 4.0;
+        > = 1.0;
 
         float3 ApplyAutoExposure(float3 Color, float Luma)
         {
             float LumaAverage = exp(Luma);
             float Ev100 = log2(LumaAverage * 100.0 / 12.5);
             Ev100 -= _CShadeExposureBias; // optional manual bias
+            Ev100 = clamp(Ev100, -_CShadeExposureRange, _CShadeExposureRange);
             float Exposure = 1.0 / (1.2 * exp2(Ev100));
             return Color * Exposure;
         }
