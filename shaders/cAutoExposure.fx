@@ -25,7 +25,7 @@ uniform int _Meter <
     ui_category = "Main Shader: Metering";
     ui_label = "Method";
     ui_type = "combo";
-    ui_items = "Average\0Centered\0Spot\0";
+    ui_items = "Average\0Spot\0";
 > = 0;
 
 uniform float _Scale <
@@ -75,7 +75,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     /*
         For spot-metering, we fill the target square texture with the region only
     */
-    if (_Meter == 2)
+    if (_Meter == 1)
     {
         float2 SpotMeterTex = UNormTex;
         // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
@@ -93,12 +93,6 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     float4 Color = tex2D(CShade_SampleColorTex, Tex);
     float LogLuminance = GetLogLuminance(Color.rgb);
 
-    if (_Meter == 1)
-    {
-        float CenterWeights = smoothstep(sqrt(2.0), 0.0, length(UNormTex));
-        LogLuminance *= CenterWeights;
-    }
-
     return CreateExposureTex(LogLuminance, _Frametime);
 }
 
@@ -111,7 +105,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
     float2 UNormPos = (Input.Tex0 * 2.0) - 1.0;
     float3 Output = ApplyOutputTonemap(ExposedColor.rgb);
 
-    if (_Meter == 2 && _DisplaySpotMeterMask)
+    if (_Meter == 1 && _DisplaySpotMeterMask)
     {
         /*
             Create a UV that represents a square texture.
