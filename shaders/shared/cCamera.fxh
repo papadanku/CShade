@@ -36,7 +36,7 @@
             ui_step = 0.001;
             ui_min = -4.0;
             ui_max = 4.0;
-        > = 0.0;
+        > = 1.0;
 
         uniform float _CShadeExposureRange <
             ui_category = "Output: AutoExposure";
