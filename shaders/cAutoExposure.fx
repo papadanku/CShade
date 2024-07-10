@@ -69,7 +69,7 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
 
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Tex = 0.0;
+    float2 Tex = Input.Tex0;
     float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     /*
