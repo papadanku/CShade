@@ -174,7 +174,8 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     #if USE_AUTOEXPOSURE
         // Apply auto-exposure here
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-        Color = ApplyAutoExposure(Color.rgb, Luma);
+        Exposure ExposureData = GetExposureData(Luma);
+        Color = ApplyAutoExposure(Color.rgb, ExposureData);
     #endif
 
     // Store log luminance in alpha channel

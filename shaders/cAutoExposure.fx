@@ -98,9 +98,13 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 {
+    // Get textures
     float Luma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
     float4 NonExposedColor = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float3 ExposedColor = ApplyAutoExposure(NonExposedColor.rgb, Luma);
+
+    // Get exposure data
+    Exposure ExposureData = GetExposureData(Luma);
+    float3 ExposedColor = ApplyAutoExposure(NonExposedColor.rgb, ExposureData);
 
     float2 UNormPos = (Input.Tex0 * 2.0) - 1.0;
     float3 Output = ApplyOutputTonemap(ExposedColor.rgb);
@@ -137,7 +141,8 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 
     if (_DisplayAverageLuma)
     {
-        float2 LumaTex = UNormPos + float2(0.0, -0.5);
+        // The offset goes from [-0.5, 0.5], hence the -0.5 subtraction.
+        float2 LumaTex = UNormPos + float2(0.0, 0.5);
 
         // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
@@ -154,7 +159,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         // Create LumaIcon through alpha compositing
         float4 LumaIcon = 0.0;
         float4 Shadow = float4(0.0, 0.0, 0.0, 1.0);
-        float4 ExpLuma = float4((float3)exp(Luma), 1.0);
+        float4 ExpLuma = float4((float3)ExposureData.ExpLuma, 1.0);
 
         LumaIcon = lerp(LumaIcon, Shadow, ShadowMask);
         LumaIcon = lerp(ExpLuma, LumaIcon, LumaTexMask);

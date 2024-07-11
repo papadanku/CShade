@@ -43,18 +43,31 @@
             ui_label = "Exposure Compensation Range";
             ui_type = "slider";
             ui_step = 0.001;
-            ui_min = 0.0;
+            ui_min = 1.0;
             ui_max = 4.0;
         > = 1.0;
 
-        float3 ApplyAutoExposure(float3 Color, float Luma)
+        struct Exposure
         {
-            float LumaAverage = exp(Luma);
-            float Ev100 = log2(LumaAverage * 100.0 / 12.5);
-            Ev100 -= _CShadeExposureBias; // optional manual bias
-            Ev100 = clamp(Ev100, -_CShadeExposureRange, _CShadeExposureRange);
-            float Exposure = 1.0 / (1.2 * exp2(Ev100));
-            return Color * Exposure;
+            float ExpLuma;
+            float Ev100;
+            float Value;
+        };
+
+        Exposure GetExposureData(float LumaTex)
+        {
+            Exposure Output;
+            Output.ExpLuma = exp(LumaTex);
+            Output.Ev100 = log2(Output.ExpLuma * 100.0 / 12.5);
+            Output.Ev100 -= _CShadeExposureBias; // optional manual bias
+            Output.Ev100 = clamp(Output.Ev100, -_CShadeExposureRange, _CShadeExposureRange);
+            Output.Value = 1.0 / (1.2 * exp2(Output.Ev100));
+            return Output;
+        }
+
+        float3 ApplyAutoExposure(float3 Color, Exposure Input)
+        {
+            return Color * Input.Value;
         }
     #endif
 
