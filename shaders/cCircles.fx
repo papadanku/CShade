@@ -18,6 +18,8 @@ sampler2D CShade_SampleColorTexMirror
     [Shader Options]
 */
 
+#define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
+
 uniform int _Select <
     ui_label = "Search Feature";
     ui_type = "combo";
@@ -28,8 +30,8 @@ uniform int _CircleAmount <
     ui_label = "Number of Circles";
     ui_type = "slider";
     ui_min = 1;
-    ui_max = 100;
-> = 50;
+    ui_max = MAX_CIRCLES;
+> = MAX_CIRCLES / 2;
 
 uniform float3 _FrontColor <
     ui_label = "Foreground Color";
