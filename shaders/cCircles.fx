@@ -80,7 +80,7 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
     // Get texture information
-    float4 Color = tex2Dlod(SampleTempTex0, float4(Input.Tex0.xy, 0.0, LOD));
+    float4 Color = tex2Dlod(SampleTempTex0, float4(Tex, 0.0, LOD));
     float Feature = 0.0;
 
     switch(_Select)
