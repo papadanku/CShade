@@ -85,4 +85,14 @@
         return float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
     }
 
+    int2 GetScreenSizeFromTex(float2 Tex)
+    {
+        return max(round(1.0 / fwidth(Tex)), 1.0);
+    }
+
+    float2 GetPixelSizeFromTex(float2 Tex)
+    {
+        return 1.0 / GetScreenSizeFromTex(Tex);
+    }
+
 #endif

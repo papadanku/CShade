@@ -69,10 +69,6 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     // Shrink the UV so [-1, 1] fills a square
     float2 Tiles = (Input.Tex0.xy * _CircleAmount);
 
-    // Calculate pre-shift mips here
-    float2 TexIx = ddx(Tiles);
-    float2 TexIy = ddy(Tiles);
-
     // Shift the tiles so they are ~0.5 units apart from each-other
     Tiles.x = (GetMod(trunc(Tiles.y), 2.0) == 1.0) ? Tiles.x + 0.25: Tiles.x - 0.25;
 
@@ -80,7 +76,11 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float2 Tex = floor(Tiles) / _CircleAmount;
 
     // Get pixelated color information
-    float4 Color = tex2Dgrad(SampleTempTex0, Tex, TexIx, TexIy);
+    float2 TexSize = GetScreenSizeFromTex(Input.Tex0);
+    float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
+
+    // Get texture information
+    float4 Color = tex2Dlod(SampleTempTex0, float4(Input.Tex0.xy, 0.0, LOD));
     float Feature = 0.0;
 
     switch(_Select)
@@ -141,7 +141,7 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     OutputColor = lerp(_BackColor, OutputColor, Tiles.y > _Crop.z * 2.0);
     OutputColor = lerp(_BackColor, OutputColor, Tiles.y < (_CircleAmount - _Crop.w * 2.0));
 
-    return float4(OutputColor, 1.0);
+    return float4(OutputColor.rgb, 1.0);
 }
 
 technique CShade_Circles
