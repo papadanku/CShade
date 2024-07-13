@@ -45,6 +45,12 @@ uniform float3 _BackColor <
     ui_max = 1.0;
 > = float3(0.0, 0.0, 0.0);
 
+uniform int4 _Crop <
+    ui_label = "Crop (Left, Right, Top, Bottom)";
+    ui_type = "slider";
+    ui_min = 0;
+    ui_max = 10;
+> = 0;
 
 /*
     [Pixel Shaders]
@@ -116,6 +122,12 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     // Mix colors together
     float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
     OutputColor = lerp(OutputColor, _BackColor, Feature);
+
+    // Crop the image
+    OutputColor = lerp(_BackColor, OutputColor, Tiles.x > _Crop.x);
+    OutputColor = lerp(_BackColor, OutputColor, Tiles.x < (_CircleAmount - _Crop.y));
+    OutputColor = lerp(_BackColor, OutputColor, Tiles.y > _Crop.z * 2.0);
+    OutputColor = lerp(_BackColor, OutputColor, Tiles.y < (_CircleAmount - _Crop.w * 2.0));
 
     return float4(OutputColor, 1.0);
 }
