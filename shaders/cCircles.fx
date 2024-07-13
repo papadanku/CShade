@@ -3,6 +3,17 @@
 #include "shared/cMacros.fxh"
 #include "shared/cColorSpaces.fxh"
 
+sampler2D CShade_SampleColorTexMirror
+{
+    Texture = CShade_ColorTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = MIRROR;
+    AddressV = MIRROR;
+    SRGBTexture = READ_SRGB;
+};
+
 /*
     [Shader Options]
 */
@@ -42,11 +53,11 @@ uniform float3 _BackColor <
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 {
     // Shrink the UV so [-1, 1] fills a square
-    float2 Tiles = Input.Tex0.xy * _CircleAmount;
+    float2 Tiles = (Input.Tex0.xy * _CircleAmount);
 
     // Shift the odd tiles
     Tiles.x = (GetMod(trunc(Tiles.y), 2.0) == 1.0) ? Tiles.x + 0.5: Tiles.x;
-
+    
     // Create pixelated texcoords
     float2 Tex = floor(Tiles) / _CircleAmount;
 
