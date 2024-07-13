@@ -26,14 +26,24 @@ uniform int _Select <
     ui_items = "HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
 > = 2;
 
+uniform float2 _Offset <
+    ui_category = "Circles";
+    ui_label = "Offset";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = 0.0;
+
 uniform int _CircleAmount <
-    ui_label = "Number of Circles";
+    ui_category = "Circles";
+    ui_label = "Number";
     ui_type = "slider";
     ui_min = 1;
     ui_max = MAX_CIRCLES;
 > = MAX_CIRCLES / 2;
 
 uniform float3 _FrontColor <
+    ui_category = "Output";
     ui_label = "Foreground Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -41,6 +51,7 @@ uniform float3 _FrontColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float3 _BackColor <
+    ui_category = "Output";
     ui_label = "Background Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -48,6 +59,7 @@ uniform float3 _BackColor <
 > = float3(0.0, 0.0, 0.0);
 
 uniform int4 _Crop <
+    ui_category = "Output";
     ui_label = "Crop (Left, Right, Top, Bottom)";
     ui_type = "slider";
     ui_min = 0;
@@ -68,6 +80,9 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 {
+    // Optional offset
+    Input.Tex0.xy += _Offset;
+
     // Shrink the UV so [-1, 1] fills a square
     float2 Tiles = (Input.Tex0.xy * _CircleAmount);
 
