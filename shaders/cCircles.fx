@@ -56,6 +56,14 @@ uniform int4 _Crop <
     [Pixel Shaders]
 */
 
+CREATE_TEXTURE_POOLED(TempTex0_RGB10A2, BUFFER_SIZE_0, RGB10A2, 8)
+CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, MIRROR)
+
+float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(tex2D(CShade_SampleGammaTex, Input.Tex0).rgb, 1.0);
+}
+
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 {
     // Shrink the UV so [-1, 1] fills a square
@@ -68,7 +76,7 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float2 Tex = floor(Tiles) / _CircleAmount;
 
     // Get pixelated color information
-    float4 Color = tex2D(CShade_SampleColorTex, Tex);
+    float4 Color = tex2Dgrad(SampleTempTex0, Tex, ddx(Tiles), ddy(Tiles));
     float Feature = 0.0;
 
     switch(_Select)
@@ -134,6 +142,13 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_Circles
 {
+    pass
+    {
+        VertexShader = VS_Quad;
+        PixelShader = PS_Blit;
+        RenderTarget = TempTex0_RGB10A2;
+    }
+
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
