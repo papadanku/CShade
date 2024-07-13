@@ -121,7 +121,7 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 
     // Mix colors together
     float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
-    OutputColor = lerp(OutputColor, _BackColor, Feature);
+    OutputColor = lerp(OutputColor, _BackColor, saturate(Feature));
 
     // Crop the image
     OutputColor = lerp(_BackColor, OutputColor, Tiles.x > _Crop.x);
