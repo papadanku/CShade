@@ -98,8 +98,8 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
 
     // Mix colors together
-    float3 OutputColor = lerp(Circles, _BackColor, Feature);
-    OutputColor = lerp(_BackColor, _FrontColor, Circles);
+    float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
+    OutputColor = lerp(OutputColor, _BackColor, Feature);
 
     return float4(OutputColor, 1.0);
 }
