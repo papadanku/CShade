@@ -31,29 +31,29 @@ uniform float2 _RedChannel_Offset <
     ui_category = "Offset";
     ui_label = "Red Channel";
     ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
+    ui_min = -100.0;
+    ui_max = 100.0;
 > = 0.0;
 
 uniform float2 _GreenChannel_Offset <
     ui_category = "Offset";
     ui_label = "Green Channel";
     ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
+    ui_min = -100.0;
+    ui_max = 100.0;
 > = 0.0;
 
 uniform float2 _BlueChannel_Offset <
     ui_category = "Offset";
     ui_label = "Blue Channel";
     ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
+    ui_min = -100.0;
+    ui_max = 100.0;
 > = 0.0;
 
 uniform float3 _FrontColor <
     ui_category = "Output";
-    ui_label = "Foreground Color";
+    ui_label = "Foreground Weights";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -61,7 +61,7 @@ uniform float3 _FrontColor <
 
 uniform float3 _BackColor <
     ui_category = "Output";
-    ui_label = "Background Color";
+    ui_label = "Background Weights";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -89,7 +89,7 @@ Tile GetTiles(float2 Tex, float2 Translation)
 {
     Tile Output;
 
-    float2 Tiles = Tex + Translation;
+    float2 Tiles = Tex + (Translation * fwidth(Tex));
 
     // Get tiles
     Output.Value = Tiles * _CircleAmount;
