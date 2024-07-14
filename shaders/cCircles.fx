@@ -19,6 +19,22 @@ sampler2D CShade_SampleColorTexMirror
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
+uniform float3 _FrontColor <
+    ui_category = "Output";
+    ui_label = "Foreground Weights";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(0.0, 0.0, 0.0);
+
+uniform float3 _BackColor <
+    ui_category = "Output";
+    ui_label = "Background Weights";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(1.0, 1.0, 1.0);
+
 uniform int _CircleAmount <
     ui_category = "Circles";
     ui_label = "Number";
@@ -74,22 +90,6 @@ uniform int4 _BlueChannel_Crop <
     ui_min = 0;
     ui_max = 10;
 > = 0;
-
-uniform float3 _FrontColor <
-    ui_category = "Output";
-    ui_label = "Foreground Weights";
-    ui_type = "color";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = float3(0.0, 0.0, 0.0);
-
-uniform float3 _BackColor <
-    ui_category = "Output";
-    ui_label = "Background Weights";
-    ui_type = "color";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = float3(1.0, 1.0, 1.0);
 
 /*
     [Textures and Samplers]
