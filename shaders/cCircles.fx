@@ -99,7 +99,7 @@ CREATE_TEXTURE_POOLED(TempTex0_RGB10A2, BUFFER_SIZE_0, RGB10A2, 8)
 CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, MIRROR)
 
 /*
-    [Pixel Shaders]
+    [Functions]
 */
 
 struct Tile
@@ -130,11 +130,6 @@ Tile GetTiles(float2 Tex, float2 Translation)
     return Output;
 }
 
-float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
-{
-    return tex2D(CShade_SampleGammaTex, Input.Tex0);
-}
-
 float2 GetBlockTex(float2 TileIndex)
 {
     return TileIndex / _CircleAmount;
@@ -161,6 +156,15 @@ void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles
     Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
     Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
     Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y < (_CircleAmount - CropArgs.w * 2.0));
+}
+
+/*
+    [Pixel Shaders]
+*/
+
+float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
+{
+    return tex2D(CShade_SampleGammaTex, Input.Tex0);
 }
 
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
