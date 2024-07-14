@@ -95,8 +95,8 @@ uniform int4 _BlueChannel_Crop <
     [Textures and Samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR)
+CREATE_TEXTURE_POOLED(TempTex0_RGB10A2, BUFFER_SIZE_0, RGB10A2, 8)
+CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, MIRROR)
 
 /*
     [Functions]
@@ -164,7 +164,7 @@ void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles
 
 float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
 {
-    return tex2D(CShade_SampleGammaTex, Input.Tex0);
+    return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
