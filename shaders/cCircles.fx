@@ -57,7 +57,7 @@ uniform float3 _FrontColor <
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
-> = float3(1.0, 1.0, 1.0);
+> = float3(0.0, 0.0, 0.0);
 
 uniform float3 _BackColor <
     ui_category = "Output";
@@ -65,7 +65,7 @@ uniform float3 _BackColor <
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
-> = float3(0.0, 0.0, 0.0);
+> = float3(1.0, 1.0, 1.0);
 
 /*
     [Textures and Samplers]
