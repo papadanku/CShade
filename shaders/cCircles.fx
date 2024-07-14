@@ -31,24 +31,24 @@ uniform float2 _RedChannel_Offset <
     ui_category = "Offset";
     ui_label = "Red Channel";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -10.0;
+    ui_max = 10.0;
 > = 0.0;
 
 uniform float2 _GreenChannel_Offset <
     ui_category = "Offset";
     ui_label = "Green Channel";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -10.0;
+    ui_max = 10.0;
 > = 0.0;
 
 uniform float2 _BlueChannel_Offset <
     ui_category = "Offset";
     ui_label = "Blue Channel";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -10.0;
+    ui_max = 10.0;
 > = 0.0;
 
 uniform float3 _FrontColor <
