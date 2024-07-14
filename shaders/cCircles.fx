@@ -95,8 +95,8 @@ uniform int4 _BlueChannel_Crop <
     [Textures and Samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex0_RGB10A2, BUFFER_SIZE_0, RGB10A2, 8)
-CREATE_SAMPLER(SampleTempTex0, TempTex0_RGB10A2, LINEAR, MIRROR)
+CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
+CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR)
 
 /*
     [Functions]
@@ -212,7 +212,7 @@ technique CShade_Circles
     {
         VertexShader = VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = TempTex0_RGB10A2;
+        RenderTarget = TempTex0_RGBA8;
     }
 
     pass
