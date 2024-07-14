@@ -51,6 +51,30 @@ uniform float2 _BlueChannel_Offset <
     ui_max = 10.0;
 > = 0.0;
 
+uniform int4 _RedChannel_Crop <
+    ui_category = "Crop (Left, Right, Top, Bottom)";
+    ui_label = "Red Channel";
+    ui_type = "slider";
+    ui_min = 0;
+    ui_max = 10;
+> = 0;
+
+uniform int4 _GreenChannel_Crop <
+    ui_category = "Crop (Left, Right, Top, Bottom)";
+    ui_label = "Green Channel";
+    ui_type = "slider";
+    ui_min = 0;
+    ui_max = 10;
+> = 0;
+
+uniform int4 _BlueChannel_Crop <
+    ui_category = "Crop (Left, Right, Top, Bottom)";
+    ui_label = "Blue Channel";
+    ui_type = "slider";
+    ui_min = 0;
+    ui_max = 10;
+> = 0;
+
 uniform float3 _FrontColor <
     ui_category = "Output";
     ui_label = "Foreground Weights";
@@ -130,24 +154,33 @@ float GetTileCircleLength(Tile Input)
     return length(CircleTiles);
 }
 
+void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
+{
+    // Crop the image
+    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.x >= CropArgs.x);
+    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
+    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
+    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y < (_CircleAmount - CropArgs.w * 2.0));
+}
+
 float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
 {
     // Precalculate our needed LOD for all channels
     float2 TexSize = GetScreenSizeFromTex(Input.Tex0);
     float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
-    // Create per-channel tiles
+    // Create per-color tiles
     Tile RedChannel_Tiles = GetTiles(Input.Tex0.xy, _RedChannel_Offset);
     Tile GreenChannel_Tiles = GetTiles(Input.Tex0.xy, _GreenChannel_Offset);
     Tile BlueChannel_Tiles = GetTiles(Input.Tex0.xy, _BlueChannel_Offset);
 
-    // Generate per-channel blocks
+    // Generate per-color blocks
     float4 Blocks = 0.0;
     Blocks.r = tex2Dlod(SampleTempTex0, float4(GetBlockTex(RedChannel_Tiles.Index), 0.0, LOD)).r;
     Blocks.g = tex2Dlod(SampleTempTex0, float4(GetBlockTex(GreenChannel_Tiles.Index), 0.0, LOD)).g;
     Blocks.b = tex2Dlod(SampleTempTex0, float4(GetBlockTex(BlueChannel_Tiles.Index), 0.0, LOD)).b;
 
-    // Generate per-channel, circle-shaped lengths of each channel blocks' texture coordinates
+    // Generate per-color, circle-shaped lengths of each channel blocks' texture coordinates
     float3 CircleDist = 0.0;
     CircleDist.r = GetTileCircleLength(RedChannel_Tiles);
     CircleDist.g = GetTileCircleLength(GreenChannel_Tiles);
@@ -161,7 +194,12 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
     OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
 
-    return float4(OutputColor.rgb, 1.0);
+    // Per-color cropping
+    CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannel_Crop);
+    CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannel_Crop);
+    CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannel_Crop);
+
+    return float4(OutputColor, 1.0);
 }
 
 technique CShade_Circles
