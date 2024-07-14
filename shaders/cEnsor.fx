@@ -124,7 +124,7 @@ namespace cEnsor
         {
             VertexShader = VS_Quad;
             PixelShader = PS_Blit;
-            RenderTarget = TempTex0_RGBA8;
+            RenderTarget = TempTex0_RGB10A2;
         }
 
         pass
