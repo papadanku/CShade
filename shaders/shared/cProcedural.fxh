@@ -124,7 +124,7 @@
     float GetAntiAliasShape(float Distance, float Radius)
     {
         float AA = fwidth(Distance);
-        return smoothstep(Radius - AA, Radius, Distance);
+        return smoothstep(Radius, Radius + AA, Distance);
     }
 
 #endif
