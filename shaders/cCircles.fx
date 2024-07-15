@@ -18,20 +18,20 @@ sampler2D CShade_SampleColorTexMirror
     [Shader Options]
 */
 
-#ifndef ENABLE_MONOMODE
-    #define ENABLE_MONOMODE 0
+#ifndef ENABLE_MONO
+    #define ENABLE_MONO 0
 #endif
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
-#if !ENABLE_MONOMODE
+#if !ENABLE_MONO
     uniform bool _InvertProcessing <
         ui_label = "Invert Processing";
         ui_type = "radio";
     > = false;
 #endif
 
-#if ENABLE_MONOMODE
+#if ENABLE_MONO
     uniform int _Select <
         ui_label = "Search Feature";
         ui_type = "combo";
@@ -62,7 +62,7 @@ uniform float _InputBias <
     ui_max = 1.0;
 > = 0.0;
 
-#if ENABLE_MONOMODE
+#if ENABLE_MONO
     uniform float2 _Offset <
         ui_category = "Circles";
         ui_label = "Offset";
@@ -139,7 +139,7 @@ uniform float3 _BackColor <
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-#if ENABLE_MONOMODE
+#if ENABLE_MONO
     uniform int4 _Crop <
         ui_category = "Output";
         ui_label = "Crop (Left, Right, Top, Bottom)";
@@ -207,7 +207,7 @@ float GetTileCircleLength(Tile Input)
     return length(CircleTiles);
 }
 
-#if !ENABLE_MONOMODE
+#if !ENABLE_MONO
     void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
     {
         // Crop the image
@@ -228,7 +228,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-#if ENABLE_MONOMODE
+#if ENABLE_MONO
     float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
@@ -282,8 +282,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         float CircleDist = GetTileCircleLength(MainTiles);
 
         // Create the circle
-        float FeatureFactor = lerp(0.0, 0.9, saturate(Feature));
-        float Circles = smoothstep((0.9 - fwidth(CircleDist)) - FeatureFactor, 0.9, CircleDist);
+        float Circles = smoothstep(0.89 - fwidth(CircleDist), 0.9, CircleDist + Feature);
 
         // Mix colors together
         float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
@@ -323,22 +322,19 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         CircleDist.b = GetTileCircleLength(BlueChannel_Tiles);
 
         // Initialize variables
-        float3 FeatureFactor = 0.0;
         float3 Circles = 0.0;
         float3 OutputColor = 0.0;
 
         // Generate the per-color circle
         if (_InvertProcessing)
         {
-            FeatureFactor = lerp(0.9, 0.0, saturate(Blocks.rgb));
-            Circles = smoothstep(0.9, (0.9 - fwidth(CircleDist)) - FeatureFactor, CircleDist);
+            Circles = smoothstep(0.9, 0.9 - fwidth(CircleDist), CircleDist + saturate(Blocks.rgb));
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
             OutputColor = lerp(_FrontColor, OutputColor, saturate(Blocks.rgb));
         }
         else
         {
-            FeatureFactor = lerp(0.0, 0.9, saturate(Blocks.rgb));
-            Circles = smoothstep((0.9 - fwidth(CircleDist)) - FeatureFactor, 0.9, CircleDist);
+            Circles = smoothstep(0.9 - fwidth(CircleDist), 0.9, CircleDist + saturate(Blocks.rgb));
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
             OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
         }
