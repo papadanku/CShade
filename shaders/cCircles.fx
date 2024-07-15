@@ -157,7 +157,7 @@ float GetTileCircleLength(Tile Input)
 void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
 {
     // Crop the image
-    float SrcColor = (_InvertProcessing) ? _FrontColor[BackComponent] : _Back[BackComponent];
+    float SrcColor = (_InvertProcessing) ? _FrontColor[BackComponent] : _BackColor[BackComponent];
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x >= CropArgs.x);
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
