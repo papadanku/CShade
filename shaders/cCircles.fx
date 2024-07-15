@@ -202,20 +202,19 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     float3 OutputColor = 0.0;
 
     // Generate the per-color circle
-    FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
-
-    // Process OutputColor
     if (_InvertProcessing)
     {
+        FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
         Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
         OutputColor = lerp(_FrontColor, _BackColor, Circles);
         OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
     }
     else
     {
+        FeatureFactor = lerp(1.0, 0.5, Blocks.rgb);
         Circles = smoothstep(0.5, 0.8 * (1.0 - FeatureFactor), CircleDist * FeatureFactor);
         OutputColor = lerp(_FrontColor, _BackColor, Circles);
-        OutputColor = lerp(OutputColor, _FrontColor, saturate(Blocks.rgb));
+        OutputColor = lerp(_FrontColor, OutputColor, saturate(Blocks.rgb));
     }
 
     // Per-color cropping
