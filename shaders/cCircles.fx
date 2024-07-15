@@ -328,13 +328,13 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         // Generate the per-color circle
         if (_InvertProcessing)
         {
-            Circles = smoothstep(0.9, 0.9 - fwidth(CircleDist), CircleDist + saturate(Blocks.rgb));
+            Circles = smoothstep(0.9, 0.9 - fwidth(CircleDist), CircleDist + Blocks.rgb);
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
             OutputColor = lerp(_FrontColor, OutputColor, saturate(Blocks.rgb));
         }
         else
         {
-            Circles = smoothstep(0.9 - fwidth(CircleDist), 0.9, CircleDist + saturate(Blocks.rgb));
+            Circles = smoothstep(0.9 - fwidth(CircleDist), 0.9, CircleDist + Blocks.rgb);
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
             OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
         }
