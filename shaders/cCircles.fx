@@ -330,7 +330,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         {
             Circles = smoothstep(0.9, 0.89 - fwidth(CircleDist), CircleDist + Blocks.rgb);
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
-            OutputColor = lerp(_FrontColor, OutputColor, saturate(Blocks.rgb));
+            OutputColor = lerp(OutputColor, _FrontColor, saturate(Blocks.rgb));
         }
         else
         {
