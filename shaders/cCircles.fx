@@ -157,7 +157,7 @@ float GetTileCircleLength(Tile Input)
 void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
 {
     // Crop the image
-    float SrcColor = (_InvertProcessing) ? _BackColor[BackComponent] : _FrontColor[BackComponent];
+    float SrcColor = (_InvertProcessing) ? _FrontColor[BackComponent] : _Back[BackComponent];
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x >= CropArgs.x);
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
     Channel = lerp(SrcColor, Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
@@ -204,17 +204,17 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     // Generate the per-color circle
     if (_InvertProcessing)
     {
-        FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
-        Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
-        OutputColor = lerp(_FrontColor, _BackColor, Circles);
-        OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
-    }
-    else
-    {
         FeatureFactor = lerp(1.0, 0.5, Blocks.rgb);
         Circles = smoothstep(0.5, 0.8 * (1.0 - FeatureFactor), CircleDist * FeatureFactor);
         OutputColor = lerp(_FrontColor, _BackColor, Circles);
         OutputColor = lerp(_FrontColor, OutputColor, saturate(Blocks.rgb));
+    }
+    else
+    {
+        FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
+        Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
+        OutputColor = lerp(_FrontColor, _BackColor, Circles);
+        OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
     }
 
     // Per-color cropping
