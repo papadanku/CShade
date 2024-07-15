@@ -19,6 +19,11 @@ sampler2D CShade_SampleColorTexMirror
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
+uniform bool _InvertProcessing <
+    ui_label = "Invert Processing";
+    ui_type = "radio";
+> = false;
+
 uniform float3 _FrontColor <
     ui_category = "Output";
     ui_label = "Foreground Weights";
@@ -152,10 +157,11 @@ float GetTileCircleLength(Tile Input)
 void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
 {
     // Crop the image
-    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.x >= CropArgs.x);
-    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
-    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
-    Channel = lerp(_BackColor[BackComponent], Channel, ChannelTiles.Index.y < (_CircleAmount - CropArgs.w * 2.0));
+    float SrcColor = (_InvertProcessing) ? _FrontColor[BackComponent] : _BackColor[BackComponent];
+    Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x >= CropArgs.x);
+    Channel = lerp(SrcColor, Channel, ChannelTiles.Index.x < (_CircleAmount - CropArgs.y));
+    Channel = lerp(SrcColor, Channel, ChannelTiles.Index.y >= CropArgs.z * 2.0);
+    Channel = lerp(SrcColor, Channel, ChannelTiles.Index.y < (_CircleAmount - CropArgs.w * 2.0));
 }
 
 /*
@@ -190,13 +196,27 @@ float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     CircleDist.g = GetTileCircleLength(GreenChannel_Tiles);
     CircleDist.b = GetTileCircleLength(BlueChannel_Tiles);
 
+    // Initialize variables
+    float3 FeatureFactor = 0.0;
+    float3 Circles = 0.0;
+    float3 OutputColor = 0.0;
+
     // Generate the per-color circle
-    float3 FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
-    float3 Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
+    FeatureFactor = lerp(0.5, 1.0, Blocks.rgb);
 
     // Process OutputColor
-    float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
-    OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
+    if (_InvertProcessing)
+    {
+        Circles = smoothstep(0.5, 0.8 * (1.0 - FeatureFactor), CircleDist * FeatureFactor);
+        OutputColor = lerp(_FrontColor, _BackColor, Circles);
+        OutputColor = lerp(OutputColor, _FrontColor, saturate(Blocks.rgb));
+    }
+    else
+    {
+        Circles = smoothstep(0.8 * (1.0 - FeatureFactor), 0.5, CircleDist * FeatureFactor);
+        OutputColor = lerp(_FrontColor, _BackColor, Circles);
+        OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.rgb));
+    }
 
     // Per-color cropping
     CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannel_Crop);
