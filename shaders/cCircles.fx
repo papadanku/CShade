@@ -18,20 +18,20 @@ sampler2D CShade_SampleColorTexMirror
     [Shader Options]
 */
 
-#ifndef ENABLE_MONO
-    #define ENABLE_MONO 0
+#ifndef ENABLE_MONOMODE
+    #define ENABLE_MONOMODE 0
 #endif
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
-#if !ENABLE_MONO
+#if !ENABLE_MONOMODE
     uniform bool _InvertProcessing <
         ui_label = "Invert Processing";
         ui_type = "radio";
     > = false;
 #endif
 
-#if ENABLE_MONO
+#if ENABLE_MONOMODE
     uniform int _Select <
         ui_label = "Search Feature";
         ui_type = "combo";
@@ -62,7 +62,7 @@ uniform float _InputBias <
     ui_max = 1.0;
 > = 0.0;
 
-#if ENABLE_MONO
+#if ENABLE_MONOMODE
     uniform float2 _Offset <
         ui_category = "Circles";
         ui_label = "Offset";
@@ -139,7 +139,7 @@ uniform float3 _BackColor <
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-#if ENABLE_MONO
+#if ENABLE_MONOMODE
     uniform int4 _Crop <
         ui_category = "Output";
         ui_label = "Crop (Left, Right, Top, Bottom)";
@@ -207,7 +207,7 @@ float GetTileCircleLength(Tile Input)
     return length(CircleTiles);
 }
 
-#if !ENABLE_MONO
+#if !ENABLE_MONOMODE
     void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
     {
         // Crop the image
@@ -228,7 +228,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-#if ENABLE_MONO
+#if ENABLE_MONOMODE
     float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
@@ -239,37 +239,39 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         Tile MainTiles = GetTiles(Input.Tex0.xy, _Offset);
 
         // Get texture information
-        float4 Color = tex2Dlod(SampleTempTex0, float4(GetBlockTex(MainTiles.Index), 0.0, LOD));
+        float4 Blocks = tex2Dlod(SampleTempTex0, float4(GetBlockTex(MainTiles.Index), 0.0, LOD));
+        Blocks = (Blocks * _InputMultiplier) + _InputBias;
+
         float Feature = 0.0;
 
         switch(_Select)
         {
             case 0:
-                Feature = GetHSVfromRGB(Color.rgb).r;
+                Feature = GetHSVfromRGB(Blocks.rgb).r;
                 break;
             case 1:
-                Feature = GetHSVfromRGB(Color.rgb).g;
+                Feature = GetHSVfromRGB(Blocks.rgb).g;
                 break;
             case 2:
-                Feature = GetHSVfromRGB(Color.rgb).b;
+                Feature = GetHSVfromRGB(Blocks.rgb).b;
                 break;
             case 3:
-                Feature = GetHSLfromRGB(Color.rgb).r;
+                Feature = GetHSLfromRGB(Blocks.rgb).r;
                 break;
             case 4:
-                Feature = GetHSLfromRGB(Color.rgb).g;
+                Feature = GetHSLfromRGB(Blocks.rgb).g;
                 break;
             case 5:
-                Feature = GetHSLfromRGB(Color.rgb).b;
+                Feature = GetHSLfromRGB(Blocks.rgb).b;
                 break;
             case 6:
-                Feature = GetHSIfromRGB(Color.rgb).r;
+                Feature = GetHSIfromRGB(Blocks.rgb).r;
                 break;
             case 7:
-                Feature = GetHSIfromRGB(Color.rgb).g;
+                Feature = GetHSIfromRGB(Blocks.rgb).g;
                 break;
             case 8:
-                Feature = GetHSIfromRGB(Color.rgb).b;
+                Feature = GetHSIfromRGB(Blocks.rgb).b;
                 break;
             default:
                 Feature = 0.0;
