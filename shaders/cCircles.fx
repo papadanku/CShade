@@ -211,7 +211,7 @@ float GetTileCircleLength(Tile Input)
     void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
     {
         // Crop the image
-        float SrcColor = (_InvertProcessing) ? _FrontColor[BackComponent] : _BackColor[BackComponent];
+        float SrcColor = _BackColor[BackComponent];
         Channel = lerp(SrcColor, Channel, ChannelTiles.Value.x > CropArgs.x);
         Channel = lerp(SrcColor, Channel, ChannelTiles.Value.x < (_CircleAmount - CropArgs.y));
         Channel = lerp(SrcColor, Channel, ChannelTiles.Value.y > CropArgs.z * 2.0);
@@ -309,11 +309,11 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         Tile BlueChannel_Tiles = GetTiles(Input.Tex0.xy, _BlueChannel_Offset);
 
         // Generate per-color blocks
-        float4 Blocks = 0.0;
+        float3 Blocks = 0.0;
         Blocks.r = tex2Dlod(SampleTempTex0, float4(GetBlockTex(RedChannel_Tiles.Index), 0.0, LOD)).r;
         Blocks.g = tex2Dlod(SampleTempTex0, float4(GetBlockTex(GreenChannel_Tiles.Index), 0.0, LOD)).g;
         Blocks.b = tex2Dlod(SampleTempTex0, float4(GetBlockTex(BlueChannel_Tiles.Index), 0.0, LOD)).b;
-        Blocks = (Blocks * _InputMultiplier) + _InputBias;
+        Blocks = saturate((Blocks * _InputMultiplier) + _InputBias);
 
         // Generate per-color, circle-shaped lengths of each channel blocks' texture coordinates
         float3 CircleDist = 0.0;
@@ -328,9 +328,9 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         // Generate the per-color circle
         if (_InvertProcessing)
         {
-            Circles = smoothstep(0.9, 0.89 - fwidth(CircleDist), CircleDist + Blocks.rgb);
+            Circles = smoothstep(0.89 - fwidth(CircleDist), 0.9, CircleDist.rgb + (1.0 - Blocks.rgb));
             OutputColor = lerp(_FrontColor, _BackColor, Circles);
-            OutputColor = lerp(OutputColor, _FrontColor, saturate(Blocks.rgb));
+            OutputColor = lerp(_BackColor, OutputColor, saturate(Blocks.rgb));
         }
         else
         {
