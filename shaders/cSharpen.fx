@@ -29,8 +29,8 @@
     THE SOFTWARE.
 */
 
-uniform float _Sharpness <
-    ui_label = "sharpness";
+uniform float _Contrast <
+    ui_label = "Contrast";
     ui_type = "slider";
     ui_step = 0.001;
     ui_min = 0.0;
@@ -70,7 +70,7 @@ float3 PS_ContrastAdaptiveSharpen(VS2PS_Quad Input) : SV_TARGET0
     // w w
     //  1 
     // w w 
-    float3 Peak = -(1.0 / lerp(8.0, 5.0, _Sharpness));
+    float3 Peak = -(1.0 / lerp(8.0, 5.0, _Contrast));
     float3 Weight = AmplifyRGB * Peak;
     float3 ReciprocalWeight = 1.0 / (1.0 + (4.0 * Weight));
 
