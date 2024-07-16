@@ -84,7 +84,7 @@ float3 PS_ContrastAdaptiveSharpen(VS2PS_Quad Input) : SV_TARGET0
     return FitlerShape;
 }
 
-technique CShade_Sharpen
+technique CShade_ImageSharpen
 {
     pass
     {
