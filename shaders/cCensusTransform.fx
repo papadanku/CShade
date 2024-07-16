@@ -1,5 +1,6 @@
 
 #include "shared/cGraphics.fxh"
+#include "shared/cMath.fxh"
 
 /*
     [Vertex Shaders]
@@ -36,11 +37,6 @@ VS2PS_Census VS_Census(APP2VS Input)
 /*
     [Pixel Shaders]
 */
-
-float Med3(float A, float B, float C)
-{
-    return clamp(A, min(B, C), max(B, C));
-}
 
 float4 PS_Census(VS2PS_Census Input) : SV_TARGET0
 {

@@ -1,5 +1,6 @@
 
 #include "shared/cGraphics.fxh"
+#include "shared/cMath.fxh"
 
 #define INCLUDE_CCAMERA_INPUT
 #define INCLUDE_CCAMERA_OUTPUT
@@ -157,11 +158,6 @@ struct Sample
     float4 Color;
     float Weight;
 };
-
-float Med3(float x, float y, float z)
-{
-    return max(min(x, y), min(max(x, y), z));
-}
 
 float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {

@@ -85,32 +85,6 @@
         return Radius * SinCosTheta;
     }
 
-    float4 Filter3x3(sampler2D SampleSource, float2 Tex, bool DownSample)
-    {
-        const float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
-        float2 PixelSize = fwidth(Tex);
-        PixelSize = (DownSample) ? PixelSize * 0.5 : PixelSize;
-
-        float4 STex[3] =
-        {
-            Tex.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
-            Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy)),
-            Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * abs(PixelSize.xyyy))
-        };
-
-        float4 OutputColor = 0.0;
-        OutputColor += (tex2D(SampleSource, STex[0].xy) * Weights[0]);
-        OutputColor += (tex2D(SampleSource, STex[1].xy) * Weights[1]);
-        OutputColor += (tex2D(SampleSource, STex[2].xy) * Weights[0]);
-        OutputColor += (tex2D(SampleSource, STex[0].xz) * Weights[1]);
-        OutputColor += (tex2D(SampleSource, STex[1].xz) * Weights[2]);
-        OutputColor += (tex2D(SampleSource, STex[2].xz) * Weights[1]);
-        OutputColor += (tex2D(SampleSource, STex[0].xw) * Weights[0]);
-        OutputColor += (tex2D(SampleSource, STex[1].xw) * Weights[1]);
-        OutputColor += (tex2D(SampleSource, STex[2].xw) * Weights[0]);
-        return OutputColor;
-    }
-
     /*
         [Convolutions - Edge Detection]
     */

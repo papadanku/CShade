@@ -1,5 +1,6 @@
 
 #include "shared/cGraphics.fxh"
+#include "shared/cMath.fxh"
 
 /*
     [Shader Options]
@@ -32,11 +33,6 @@ uniform float _Intensity <
 /*
     [Pixel Shaders]
 */
-
-float Med3(float x, float y, float z)
-{
-    return max(min(x, y), min(max(x, y), z));
-}
 
 float4 PS_Threshold(VS2PS_Quad Input) : SV_TARGET0
 {
