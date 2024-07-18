@@ -1,6 +1,7 @@
 
 #include "../cGraphics.fxh"
 #include "../cMath.fxh"
+#include "../cProcedural.fxh"
 
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
@@ -31,23 +32,9 @@
 #if !defined(INCLUDE_FIDELITYFX_LENS)
     #define INCLUDE_FIDELITYFX_LENS
 
-    // Noise function used as basis for film grain effect
-    uint3 pcg3d16(uint3 V)
-    {
-        V = V * 12829u + 47989u;
-        V.x += V.y * V.z;
-        V.y += V.z * V.x;
-        V.z += V.x * V.y;
-        V.x += V.y * V.z;
-        V.y += V.z * V.x;
-        V.z += V.x * V.y;
-        V >>= 16u;
-        return V;
-    }
-
     // Simplex noise, transforms given position onto triangle grid
     // This logic should be kept at 32-bit floating point precision. 16 bits causes artifacting.
-    float2 Simplex(const in float2 P)
+    float2 FFX_Lens_Simplex(const in float2 P)
     {
         // Skew and unskew factors are a bit hairy for 2D, so define them as constants
         const float F2 = (sqrt(3.0) - 1.0) / 2.0;  // 0.36602540378
@@ -63,24 +50,19 @@
         return float2(Pf0);
     }
 
-    float2 toFloat16(uint2 InputValue)
+    float2 ToFloat16(uint2 InputValue)
     {
         return float2(InputValue * (1.0 / 65536.0) - 0.5);
     }
 
-    float3 toFloat16(uint3 InputValue)
-    {
-        return float3(InputValue * (1.0 / 65536.0) - 0.5);
-    }
-
     // Function call to calculate the red and green wavelength/channel sample offset values.
-    float2 FfxLensGetRGMag
+    float2 FFX_Lens_GetRGMag
     (
         float ChromAbIntensity // Intensity constant value for the chromatic aberration effect.
     )
     {
         const float A = 1.5220;
-        const float B = 0.00459 * ChromAbIntensity;  // um^2
+        const float B = 0.00459 * ChromAbIntensity; // um^2
 
         const float3 WaveLengthUM = float3(0.612, 0.549, 0.464);
         const float3 IdxRefraction = A + B / WaveLengthUM;
@@ -91,38 +73,40 @@
     }
 
     /// Function call to apply chromatic aberration effect when sampling the Color input texture.
-    float3 FfxLensSampleWithChromaticAberration
+    float3 FFX_Lens_SampleWithChromaticAberration
     (
-        int2 Coord, // The input window coordinate [0, widthPixels), [0, heightPixels).
-        int2 CenterCoord, // The center window coordinate of the screen.
-        float RedMagnitude, //  Magnitude value for the offset calculation of the red wavelength (texture channel).
+        VS2PS_Quad VS, // The input.HPos window coordinate [0, widthPixels), [0, heightPixels).
+        float2 CenterCoord, // The center window coordinate of the screen.
+        float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
     )
     {
-        float2 RedShift = (Coord - CenterCoord) * RedMagnitude + CenterCoord + 0.5;
-        RedShift *= ffxReciprocal(2.0 * CenterCoord);
-        float2 GreenShift = (Coord - CenterCoord) * GreenMagnitude + CenterCoord + 0.5;
-        GreenShift *= ffxReciprocal(2.0 * CenterCoord);
+        float2 RedShift = (VS.HPos.xy - CenterCoord) * RedMagnitude + CenterCoord + 0.5;
+        RedShift *= (1.0 / (2.0 * CenterCoord));
+        float2 GreenShift = (VS.HPos.xy - CenterCoord) * GreenMagnitude + CenterCoord + 0.5;
+        GreenShift *= (1.0 / (2.0 * CenterCoord));
+        float2 BlueShift = VS.Tex0;
 
-        float Red = FfxLensSampleR(RedShift);
-        float Green = FfxLensSampleG(GreenShift);
-        float Blue = FfxLensSampleB(Coord * ffxReciprocal(2.0 * CenterCoord));
+        float3 RGB = 0.0;
+        RGB.r = tex2D(CShade_SampleColorTex, RedShift).r;
+        RGB.g = tex2D(CShade_SampleColorTex, GreenShift).g;
+        RGB.b = tex2D(CShade_SampleColorTex, BlueShift).b;
 
-        return float3(Red, Green, Blue);
+        return RGB;
     }
 
     /// Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
-    void FfxLensApplyFilmGrain
+    void FFX_Lens_ApplyFilmGrain
     (
-        int2 Coord, // The input window coordinate [0, widthPixels), [0, heightPixels).
+        in VS2PS_Quad VS, // The input window coordinate [0, widthPixels), [0, heightPixels).
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
         float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
         float GrainAmountValue, // Intensity constant value of the grain effect.
         uint GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 RandomNumberFine = toFloat16(pcg3d16(uint3(Coord / (GrainScaleValue / 8), GrainSeedValue)).xy).xy;
-        float2 SimplexP = Simplex(Coord / GrainScaleValue + RandomNumberFine);
+        float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, GrainSeedValue));
+        float2 SimplexP = GetGradientNoise2(((VS.HPos.xy / GrainScaleValue) / 8.0) + RandomNumberFine, 0.0, true) * 0.5;
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(SimplexP) * GrainShape);
@@ -131,10 +115,10 @@
     }
 
     /// Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
-    void FfxLensApplyVignette
+    void FFX_Lens_ApplyVignette
     (
-        int2 Coord, // The input window coordinate [0, widthPixels), [0, heightPixels).
-        int2 CenterCoord, // The center window coordinate of the screen.
+        float2 Coord, // The input window coordinate [0, widthPixels), [0, heightPixels).
+        float2 CenterCoord, // The center window coordinate of the screen.
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
         float VignetteAmount // Intensity constant value of the vignette effect.
     )
@@ -142,32 +126,32 @@
         float2 VignetteMask = float2(0.0, 0.0);
         float2 CoordFromCenter = abs(Coord - CenterCoord) / float2(CenterCoord);
 
-        const float piOver4 = CMath_GetPi() * 0.25;
-        VignetteMask = cos(CoordFromCenter * VignetteAmount * piOver4);
+        const float PiOver4 = CMath_GetPi() * 0.25;
+        VignetteMask = cos(CoordFromCenter * VignetteAmount * PiOver4);
         VignetteMask = VignetteMask * VignetteMask;
         VignetteMask = VignetteMask * VignetteMask;
 
         Color *= clamp(VignetteMask.x * VignetteMask.y, 0.0, 1.0);
     }
 
-    #endif
-
     /// Lens pass entry point.
-    ///
-    /// @param Gtid Thread index within thread group (SV_GroupThreadID).
-    /// @param Gidx Group index of thread (SV_GroupID).
-    /// @ingroup FfxGPULens
-    void FfxLens(FfxUInt32 Gtid, uint2 Gidx)
+    void FFX_Lens
+    (
+        inout float3 Color,
+        in VS2PS_Quad VS,
+        in float GrainScale,
+        in float GrainAmount,
+        in float ChromAb,
+        in float Vignette,
+        in float GrainSeed
+        )
     {
-        // Do remapping of local xy in workgroup for a more PS-like swizzle pattern.
-        // Assumes 64,1,1 threadgroup size and an 8x8 api dispatch
-        int2 Coord = int2(ffxRemapForWaveReduction(Gtid) + uint2(Gidx.x << 3u, Gidx.y << 3u));
-
         // Run Lens
-        float2 RGMag = FfxLensGetRGMag(ChromAb());
-        float3 Color = FfxLensSampleWithChromaticAberration(Coord, int2(Center()), RGMag.r, RGMag.g);
-        FfxLensApplyVignette(Coord, int2(Center()), Color, Vignette());
-        FfxLensApplyFilmGrain(Coord, Color, GrainScale(), GrainAmount(), GrainSeed());
+        float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
+        float2 Center = CGraphics_GetScreenSizeFromTex(VS.Tex0.xy) / 2.0;
+        Color = FFX_Lens_SampleWithChromaticAberration(VS, Center, RGMag.r, RGMag.g);
+        FFX_Lens_ApplyVignette(VS.Tex0.xy, 0.5, Color, Vignette);
+        FFX_Lens_ApplyFilmGrain(VS, Color, GrainScale, GrainAmount, GrainSeed);
     }
 
 #endif

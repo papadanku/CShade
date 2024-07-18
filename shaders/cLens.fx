@@ -1,11 +1,11 @@
 
 #include "shared/cGraphics.fxh"
-#include "shared/fidelityfx/cCas.fxh"
+#include "shared/fidelityfx/cLens.fxh"
 
 /*
-    Bilinear modification of AMD's CAS algorithm.
+    Modification of AMD's lens algorithm using gradient noise.
 
-    Source: https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/cas/ffx_cas.h
+    Source: https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/lens/ffx_lens.h
 
     This file is part of the FidelityFX SDK.
 
@@ -16,7 +16,7 @@
     in the Software without restriction, including without limitation the rights
     to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
     copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+    furnished to do so, subject to the following conditions :
 
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
@@ -30,28 +30,52 @@
     THE SOFTWARE.
 */
 
-uniform float _Contrast <
-    ui_label = "Contrast";
+uniform float _GrainScale <
+    ui_category = "Grain";
+    ui_label = "Scale";
     ui_type = "slider";
-    ui_step = 0.001;
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.0;
+    ui_min = 0.01;
+    ui_max = 20.0;
+> = 0.01;
 
-float4 PS_CasFilterNoScaling(VS2PS_Quad Input): SV_TARGET0
+uniform float _GrainAmount <
+    ui_category = "Grain";
+    ui_label = "Amount";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 20.0;
+> = 0.7;
+
+uniform float _ChromAb <
+    ui_category = "Chromatic Aberration";
+    ui_label = "Intensity";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 20.0;
+> = 1.65;
+
+uniform float _Vignette <
+    ui_category = "Vignette";
+    ui_label = "Intensity";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 2.0;
+> = 0.6;
+
+float4 PS_Lens(VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
-    FFX_CAS_FilterNoScaling(OutputColor.rgb, Input, _Contrast);
+    FFX_Lens(OutputColor.rgb, Input, _GrainScale, _GrainAmount, _ChromAb, _Vignette, 0.0);
     return OutputColor;
 }
 
-technique CShade_ImageSharpen
+technique CShade_Lens
 {
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
-        PixelShader = PS_CasFilterNoScaling;
+        PixelShader = PS_Lens;
     }
 }

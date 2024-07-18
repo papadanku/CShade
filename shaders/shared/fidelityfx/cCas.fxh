@@ -27,10 +27,10 @@
     THE SOFTWARE.
 */
 
-#if !defined(INCLUDE_FIDELITYFX_CAS)
-    #define INCLUDE_FIDELITYFX_CAS
+#if !defined(INCLIDE_FFX_CAS)
+    #define INCLIDE_FFX_CAS
 
-    void FFX_CasFilterNoScaling
+    void FFX_CAS_FilterNoScaling
     (
         inout float3 FilterShape,
         in VS2PS_Quad Input,

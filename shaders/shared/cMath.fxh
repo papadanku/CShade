@@ -16,7 +16,7 @@
         return min(min(A, B), C);
     }
 
-    float CMath_Med3(float x, float y, float z)
+    float4 CMath_Med3(float4 x, float4 y, float4 z)
     {
         return max(min(x, y), min(max(x, y), z));
     }
