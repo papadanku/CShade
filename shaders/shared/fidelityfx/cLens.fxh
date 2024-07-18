@@ -107,7 +107,7 @@
     {
         float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, 0.0));
         float2 Coords = (VS.Tex0.xy * 2.0 - 1.0) * CGraphics_GetScreenSizeFromTex(VS.Tex0.xy);
-        float2 GradientN = GetGradientNoise2((Coords.xy / GrainScaleValue) / 16.0, GrainSeedValue, false);
+        float2 GradientN = GetGradientNoise2((Coords.xy / GrainScaleValue) / 16.0, GrainSeedValue, true) * 0.5;
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(GradientN) * GrainShape);
