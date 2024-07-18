@@ -75,7 +75,7 @@
     /// Function call to apply chromatic aberration effect when sampling the Color input texture.
     float3 FFX_Lens_SampleWithChromaticAberration
     (
-        VS2PS_Quad VS, // The input.HPos window coordinate [0, widthPixels), [0, heightPixels).
+        VS2PS_Quad VS, // The input window coordinate [0, widthPixels), [0, heightPixels).
         float2 CenterCoord, // The center window coordinate of the screen.
         float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
