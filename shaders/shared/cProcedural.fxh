@@ -108,7 +108,7 @@
     float2 CProcedural_GetGradient2(float2 I, float2 F, float2 O, float Bias)
     {
         // Get constants
-        const float TwoPi = acos(-1.0) * 2.0;
+        const float TwoPi = CMath_GetPi() * 2.0;
 
         // Calculate random hash rotation
         float2 Hash = CProcedural_GetHash2(I + O, Bias) * TwoPi;
