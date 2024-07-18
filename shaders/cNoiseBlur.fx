@@ -39,6 +39,7 @@ uniform float _Radius <
 > = 0.5;
 
 uniform float _FalloffAmount <
+    ui_category = "Falloff Scale";
     ui_label = "Falloff Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -93,7 +94,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 
     if (_EnableFalloff)
     {
-        FFX_Lens_ApplyVignette(UNormTex, 0.0, FalloffFactor, _FalloffAmount);
+        FFX_Lens_ApplyVignette(clamp(UNormTex + _FalloffOffset, -1.0, 1.0), 0.0, FalloffFactor, _FalloffAmount);
     }
 
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
