@@ -43,7 +43,7 @@ uniform float _GrainScale <
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.01;
-    ui_max = 20.0;
+    ui_max = 1.0;
 > = 0.01;
 
 uniform float _GrainAmount <
@@ -51,15 +51,13 @@ uniform float _GrainAmount <
     ui_label = "Amount";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 20.0;
-> = 0.7;
+    ui_max = 1.0;
+> = 0.35;
 
 uniform float _GrainSeed <
     ui_category = "Grain";
     ui_label = "Seed Offset";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
+    ui_type = "drag";
 > = 0.0;
 
 uniform float _Speed <

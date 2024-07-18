@@ -34,7 +34,7 @@
 
     // Simplex noise, transforms given position onto triangle grid
     // This logic should be kept at 32-bit floating point precision. 16 bits causes artifacting.
-    float2 FFX_Lens_Simplex(const in float2 P)
+    float2 FFX_Lens_Simplex(float2 P)
     {
         // Skew and unskew factors are a bit hairy for 2D, so define them as constants
         const float F2 = (sqrt(3.0) - 1.0) / 2.0;  // 0.36602540378
@@ -107,7 +107,7 @@
     {
         float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, 0.0));
         float2 Coords = (VS.Tex0.xy * 2.0 - 1.0) * CGraphics_GetScreenSizeFromTex(VS.Tex0.xy);
-        float2 GradientN = GetGradientNoise2((Coords.xy / GrainScaleValue) / 16.0, GrainSeedValue, true) * 0.5;
+        float2 GradientN = GetGradientNoise2((Coords.xy / GrainScaleValue) / 16.0, GrainSeedValue, false);
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(GradientN) * GrainShape);
