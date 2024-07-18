@@ -119,7 +119,7 @@
         return float2(dot(HashSinCos.xz, Gradient), dot(HashSinCos.yw, Gradient));
     }
 
-    float CProcedural_GetGradientNoise1(float2 Tex, float Bias)
+    float CProcedural_GetGradientNoise1(float2 Tex, float Bias, bool Normalize)
     {
         float2 I = floor(Tex);
         float2 F = frac(Tex);
@@ -129,10 +129,11 @@
         float D = CProcedural_GetGradient1(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CProcedural_GetQuintic(F);
         float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        return saturate((Noise * 0.5) + 0.5);
+        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        return Noise;
     }
 
-    float2 GetGradientNoise2(float2 Input, float Bias, bool NormalizeOutput)
+    float2 GetGradientNoise2(float2 Input, float Bias, bool Normalize)
     {
         float2 I = floor(Input);
         float2 F = frac(Input);
@@ -142,7 +143,7 @@
         float2 D = CProcedural_GetGradient2(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CProcedural_GetQuintic(F);
         float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (NormalizeOutput) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
         return Noise;
     }
 

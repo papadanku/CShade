@@ -76,7 +76,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
 
-    float Noise = Pi2 * CProcedural_GetGradientNoise1(Input.Tex0.xy * 256.0, 0.0);
+    float Noise = Pi2 * CProcedural_GetGradientNoise1(Input.Tex0.xy * 256.0, 0.0, false);
     float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     float2 Rotation = 0.0;
