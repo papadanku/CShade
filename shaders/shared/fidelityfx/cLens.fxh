@@ -105,9 +105,9 @@
         float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, 0.0));
-        float2 Coords = (VS.Tex0.xy * 2.0 - 1.0) * CGraphics_GetScreenSizeFromTex(VS.Tex0.xy);
-        float2 GradientN = GetGradientNoise2((Coords.xy / GrainScaleValue) / 16.0, GrainSeedValue, false);
+        float2 Pos = (VS.Tex0.xy * 2.0 - 1.0) * CGraphics_GetScreenSizeFromTex(VS.Tex0.xy);
+        float2 RandomNumberFine = CProcedural_GetHash2(Pos, 0.0);
+        float2 GradientN = GetGradientNoise2((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(GradientN) * GrainShape);
