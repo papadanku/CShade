@@ -125,7 +125,7 @@
     )
     {
         float2 VignetteMask = float2(0.0, 0.0);
-        float2 CoordFromCenter = abs(Coord - CenterCoord) / float2(CenterCoord);
+        float2 CoordFromCenter = abs(Coord - CenterCoord);
 
         const float PiOver4 = CMath_GetPi() * 0.25;
         VignetteMask = cos(CoordFromCenter * VignetteAmount * PiOver4);
@@ -147,11 +147,13 @@
         in float GrainSeed
         )
     {
-        // Run Lens
         float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
         float2 Center = CGraphics_GetScreenSizeFromTex(VS.Tex0.xy) / 2.0;
+        float2 UNormTex = (VS.Tex0 * 2.0) - 1.0;
+
+        // Run Lens
         Color = FFX_Lens_SampleWithChromaticAberration(VS, Center, RGMag.r, RGMag.g);
-        FFX_Lens_ApplyVignette(VS.Tex0.xy, 0.5, Color, Vignette);
+        FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
         FFX_Lens_ApplyFilmGrain(VS, Color, GrainScale, GrainAmount, GrainSeed);
     }
 
