@@ -106,10 +106,10 @@
     )
     {
         float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, 0.0));
-        float2 SimplexP = GetGradientNoise2((VS.HPos.xy / GrainScaleValue) / 8.0, GrainSeedValue, true) * 0.5;
+        float2 GradientN = GetGradientNoise2((VS.HPos.xy / GrainScaleValue) / 8.0, GrainSeedValue, true) * 0.5;
         const float GrainShape = 3.0;
 
-        float Grain = 1.0 - 2.0 * exp2(-length(SimplexP) * GrainShape);
+        float Grain = 1.0 - 2.0 * exp2(-length(GradientN) * GrainShape);
 
         Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
     }
