@@ -102,11 +102,11 @@
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
         float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
         float GrainAmountValue, // Intensity constant value of the grain effect.
-        uint GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
+        float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, GrainSeedValue));
-        float2 SimplexP = GetGradientNoise2(((VS.HPos.xy / GrainScaleValue) / 8.0) + RandomNumberFine, 0.0, true) * 0.5;
+        float2 RandomNumberFine = ToFloat16(CProcedural_GetHash2(VS.Tex0.xy, 0.0));
+        float2 SimplexP = GetGradientNoise2((VS.HPos.xy / GrainScaleValue) / 8.0, GrainSeedValue, true) * 0.5;
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(SimplexP) * GrainShape);
