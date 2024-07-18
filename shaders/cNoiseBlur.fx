@@ -39,7 +39,6 @@ uniform float _Radius <
 > = 0.5;
 
 uniform float _FalloffAmount <
-    ui_category = "Falloff Scale";
     ui_label = "Falloff Scale";
     ui_type = "slider";
     ui_min = 0.0;
