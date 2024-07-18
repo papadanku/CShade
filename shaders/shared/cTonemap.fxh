@@ -28,16 +28,16 @@
 
     /*
         The Reinhard tone operator. Typically, the value of K is 1.0, but you can adjust exposure by 1/K.
-        I.e. ApplyReinhardTonemap(x, 0.5) == ApplyReinhardTonemap(x * 2.0, 1.0)
+        I.e. CTonemap_ApplyReinhard(x, 0.5) == CTonemap_ApplyReinhard(x * 2.0, 1.0)
     */
 
-    float3 ApplyReinhardTonemap(float3 HDR, float K)
+    float3 CTonemap_ApplyReinhard(float3 HDR, float K)
     {
         return HDR / (HDR + K);
     }
 
     // The inverse of Reinhard
-    float3 ApplyInverseReinhardTonemap(float3 SDR, float K)
+    float3 CTonemap_ApplyInverseReinhard(float3 SDR, float K)
     {
         return K * SDR / (K - SDR);
     }
@@ -58,13 +58,13 @@
         without any other adjustments.
     */
 
-    float3 ApplyReinhardSquaredTonemap(float3 HDR, float K)
+    float3 CTonemap_ApplyReinhardSquared(float3 HDR, float K)
     {
         float3 reinhard = HDR / (HDR + K);
         return reinhard * reinhard;
     }
 
-    float3 ApplyInverseReinhardSquaredTonemap(float3 SDR, float K)
+    float3 CTonemap_ApplyInverseReinhardSquared(float3 SDR, float K)
     {
         return K * (SDR + sqrt(SDR)) / (1.0 - SDR);
     }
@@ -73,14 +73,14 @@
         This is the new tone operator. It resembles ACES in many ways, but it is simpler to evaluate with ALU. One advantage it has over Reinhard-Squared is that the shoulder goes to white more quickly and gives more overall brightness and contrast to the image.
     */
 
-    float3 ApplyStandardTonemap(float3 HDR)
+    float3 CTonemap_ApplyStandard(float3 HDR)
     {
-        return ApplyReinhardTonemap(HDR * sqrt(HDR), sqrt(4.0 / 27.0));
+        return CTonemap_ApplyReinhard(HDR * sqrt(HDR), sqrt(4.0 / 27.0));
     }
 
-    float3 ApplyInverseStandardTonemap(float3 SDR)
+    float3 CTonemap_ApplyInverseStandard(float3 SDR)
     {
-        return pow(ApplyInverseReinhardTonemap(SDR, sqrt(4.0 / 27.0)), 2.0 / 3.0);
+        return pow(CTonemap_ApplyInverseReinhard(SDR, sqrt(4.0 / 27.0)), 2.0 / 3.0);
     }
 
     /*
@@ -94,12 +94,12 @@
         run into problems where one or more color channels end up brighter than 1.0 and get clipped.
     */
 
-    float3 ApplyExponentialTonemap(float3 HDR)
+    float3 CTonemap_ApplyExponential(float3 HDR)
     {
         return 1.0 - exp2(-HDR);
     }
 
-    float3 ApplyInverseExponentialTonemap(float3 SDR)
+    float3 CTonemap_ApplyInverseExponential(float3 SDR)
     {
         return -log2(max(1e-6, 1.0 - SDR));
     }
@@ -108,7 +108,7 @@
         ACES: The next generation of filmic tone operators.
     */
 
-    float3 ApplyToneMapACES(float3 HDR)
+    float3 CTonemap_ApplyACES(float3 HDR)
     {
         const float A = 2.51;
         const float B = 0.03;
@@ -118,7 +118,7 @@
         return saturate((HDR * (A * HDR + B)) / (HDR * (C * HDR + D) + E));
     }
 
-    float3 ApplyInverseToneMapACES(float3 SDR)
+    float3 CTonemap_ApplyInverseACES(float3 SDR)
     {
         const float A = 2.51;
         const float B = 0.03;
@@ -137,22 +137,22 @@
             ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0";
         > = 5;
 
-        float3 ApplyOutputTonemap(float3 HDR)
+        float3 CTonemap_ApplyOutputTonemap(float3 HDR)
         {
             switch (_CShadeTonemapOperator)
             {
                 case 0:
                     return HDR;
                 case 1:
-                    return ApplyReinhardTonemap(HDR, 1.0);
+                    return CTonemap_ApplyReinhard(HDR, 1.0);
                 case 2:
-                    return ApplyReinhardSquaredTonemap(HDR, 0.25);
+                    return CTonemap_ApplyReinhardSquared(HDR, 0.25);
                 case 3:
-                    return ApplyStandardTonemap(HDR);
+                    return CTonemap_ApplyStandard(HDR);
                 case 4:
-                    return ApplyExponentialTonemap(HDR);
+                    return CTonemap_ApplyExponential(HDR);
                 case 5:
-                    return ApplyToneMapACES(HDR);
+                    return CTonemap_ApplyACES(HDR);
                 default:
                     return HDR;
             }

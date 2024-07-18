@@ -55,31 +55,31 @@ namespace cEnsor
         switch(_Select)
         {
             case 0:
-                Feature = GetHSVfromRGB(Pixel.rgb).r;
+                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).r;
                 break;
             case 1:
-                Feature = GetHSVfromRGB(Pixel.rgb).g;
+                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).g;
                 break;
             case 2:
-                Feature = GetHSVfromRGB(Pixel.rgb).b;
+                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).b;
                 break;
             case 3:
-                Feature = GetHSLfromRGB(Pixel.rgb).r;
+                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).r;
                 break;
             case 4:
-                Feature = GetHSLfromRGB(Pixel.rgb).g;
+                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).g;
                 break;
             case 5:
-                Feature = GetHSLfromRGB(Pixel.rgb).b;
+                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).b;
                 break;
             case 6:
-                Feature = GetHSIfromRGB(Pixel.rgb).r;
+                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).r;
                 break;
             case 7:
-                Feature = GetHSIfromRGB(Pixel.rgb).g;
+                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).g;
                 break;
             case 8:
-                Feature = GetHSIfromRGB(Pixel.rgb).b;
+                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).b;
                 break;
             default:
                 Feature = 0.0;

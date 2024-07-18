@@ -26,7 +26,7 @@ uniform float2 _FalloffOffset <
 float4 PS_Vignette(VS2PS_Quad Input) : SV_TARGET0
 {
     const float AspectRatio = float(BUFFER_WIDTH) / float(BUFFER_HEIGHT);
-    return GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset);
+    return CCamera_GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset);
 }
 
 technique CShade_KinoVignette

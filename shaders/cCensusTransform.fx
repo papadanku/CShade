@@ -62,7 +62,7 @@ float4 PS_Census(VS2PS_Census Input) : SV_TARGET0
         Transform += ldexp(Comparison, i);
     }
 
-    float OTransform = Med3(Transform.r, Transform.g, Transform.b);
+    float OTransform = CMath_Med3(Transform.r, Transform.g, Transform.b);
 
     // Convert the 8-bit integer to float, and average the results from each channel
     return OTransform * (1.0 / (exp2(8) - 1));

@@ -93,7 +93,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     float4 Color = tex2D(CShade_SampleColorTex, Tex);
     float LogLuminance = GetLogLuminance(Color.rgb);
 
-    return CreateExposureTex(LogLuminance, _Frametime);
+    return CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
 float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
@@ -103,11 +103,11 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
     float4 NonExposedColor = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     // Get exposure data
-    Exposure ExposureData = GetExposureData(Luma);
-    float3 ExposedColor = ApplyAutoExposure(NonExposedColor.rgb, ExposureData);
+    Exposure ExposureData = CCamera_GetExposureData(Luma);
+    float3 ExposedColor = CCamera_ApplyAutoExposure(NonExposedColor.rgb, ExposureData);
 
     float2 UNormPos = (Input.Tex0 * 2.0) - 1.0;
-    float3 Output = ApplyOutputTonemap(ExposedColor.rgb);
+    float3 Output = CTonemap_ApplyOutputTonemap(ExposedColor.rgb);
 
     if (_Meter == 1 && _DisplaySpotMeterMask)
     {
@@ -131,7 +131,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
         // Create the needed mask, output 1 if the texcood is within square range
         float Factor = 1.0 * _Scale;
         float SquareMask = all(abs(SpotMeterPos) <= Factor);
-        float DotMask = GetAntiAliasShape(length(SpotMeterPos), Factor * 0.1);
+        float DotMask = CProcedural_GetAntiAliasShape(length(SpotMeterPos), Factor * 0.1);
 
         // Apply square mask to output
         Output = lerp(Output, NonExposedColor.rgb, SquareMask);
@@ -153,7 +153,7 @@ float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
 
         // Create luma masks
         float LumaTexLength = length(LumaTex);
-        float LumaTexMask = GetAntiAliasShape(LumaTexLength, 0.05);
+        float LumaTexMask = CProcedural_GetAntiAliasShape(LumaTexLength, 0.05);
         float ShadowMask = smoothstep(0.1, 0.0, LumaTexLength);
 
         // Create LumaIcon through alpha compositing

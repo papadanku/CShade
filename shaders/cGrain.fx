@@ -35,7 +35,7 @@ float4 PS_FilmGrain(VS2PS_Quad Input) : SV_TARGET0
     float Time = rcp(1e+3 / _Time) * _Speed;
     float Seed = dot(Input.HPos.xy, float2(12.9898, 78.233));
     float Noise = frac(sin(Seed) * 43758.5453 + Time);
-    return GetGaussianWeight(Noise, _Variance) * _Intensity;
+    return CConvolution_GetGaussianWeight(Noise, _Variance) * _Intensity;
 }
 
 technique CShade_FilmGrain

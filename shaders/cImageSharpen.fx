@@ -1,5 +1,6 @@
 
 #include "shared/cGraphics.fxh"
+#include "shared/fidelityfx/cCas.fxh"
 
 /*
     Bilinear modification of AMD's CAS algorithm.
@@ -37,51 +38,11 @@ uniform float _Contrast <
     ui_max = 1.0;
 > = 0.0;
 
-float3 PS_ContrastAdaptiveSharpen(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_CasFilterNoScaling(VS2PS_Quad Input): SV_TARGET0
 {
-    /*
-        Load a collection of samples in a 3x3 neighorhood, where e is the current pixel.
-        a b
-         e
-        c d
-    */
-    float2 Delta = fwidth(Input.Tex0.xy);
-    float4 Tex = Input.Tex0.xyxy + (Delta.xyxy * float4(-0.5, -0.5, 0.5, 0.5));
-    float3 SampleA = tex2D(CShade_SampleColorTex, Tex.xw).rgb;
-    float3 SampleB = tex2D(CShade_SampleColorTex, Tex.zw).rgb;
-    float3 SampleC = tex2D(CShade_SampleColorTex, Tex.xy).rgb;
-    float3 SampleD = tex2D(CShade_SampleColorTex, Tex.zy).rgb;
-    float3 SampleE = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-
-    // Get polar min/max
-    float3 MinRGB = min(SampleE, min(min(SampleA, SampleB), min(SampleC, SampleD)));
-    float3 MaxRGB = max(SampleE, max(max(SampleA, SampleB), max(SampleC, SampleD)));
-
-    // Get needed reciprocal
-    float3 ReciprocalMaxRGB = 1.0 / MaxRGB;
-
-    // Amplify
-    float3 AmplifyRGB = saturate(min(MinRGB, 2.0 - MaxRGB) * ReciprocalMaxRGB);
-
-    // Shaping amount of sharpening.
-    AmplifyRGB *= rsqrt(AmplifyRGB);
-
-    // Filter shape.
-    // w w
-    //  1 
-    // w w 
-    float3 Peak = -(1.0 / lerp(8.0, 5.0, _Contrast));
-    float3 Weight = AmplifyRGB * Peak;
-    float3 ReciprocalWeight = 1.0 / (1.0 + (4.0 * Weight));
-
-    float3 FitlerShape = SampleE;
-    FitlerShape += SampleA * Weight;
-    FitlerShape += SampleB * Weight;
-    FitlerShape += SampleC * Weight;
-    FitlerShape += SampleD * Weight;
-    FitlerShape = saturate(FitlerShape * ReciprocalWeight);
-
-    return FitlerShape;
+	float4 OutputColor = 1.0;
+    FFX_CasFilterNoScaling(OutputColor.rgb, Input, _Contrast);
+    return OutputColor;
 }
 
 technique CShade_ImageSharpen
@@ -91,6 +52,6 @@ technique CShade_ImageSharpen
         SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Quad;
-        PixelShader = PS_ContrastAdaptiveSharpen;
+        PixelShader = PS_CasFilterNoScaling;
     }
 }

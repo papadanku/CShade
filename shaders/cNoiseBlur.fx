@@ -73,7 +73,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     const float Pi2 = acos(-1.0) * 2.0;
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
-    float Noise = Pi2 * GetGradientNoise(Input.Tex0.xy * 256.0, 0.0);
+    float Noise = Pi2 * CProcedural_GetGradientNoise(Input.Tex0.xy * 256.0, 0.0);
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
@@ -85,7 +85,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     // Compute optional radius falloff
-    float FalloffFactor = _EnableFalloff ? GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset) : 1.0;
+    float FalloffFactor = _EnableFalloff ? CCamera_GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset) : 1.0;
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
     float4 Weight = 0.0;

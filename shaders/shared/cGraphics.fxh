@@ -56,43 +56,14 @@
         [Math Functions]
     */
 
-    int GetFactorial(int N)
-    {
-        int O = N;
-        for (int i = 1 ; i < N; i++)
-        {
-            O *= i;
-        }
-        return O;
-    }
-
-    float4 GetBlit(VS2PS_Quad Input, sampler2D SampleSource)
-    {
-        return tex2D(SampleSource, Input.Tex0);
-    }
-
-    float GetMod(float X, float Y)
-    {
-        return X - Y * floor(X / Y);
-    }
-
-    float2 GetLOD(float2 Tex)
-    {
-        float2 Ix = ddx(Tex);
-        float2 Iy = ddy(Tex);
-        float Lx = dot(Ix, Ix);
-        float Ly = dot(Iy, Iy);
-        return float2(0.0, 0.5) * max(0.0, log2(max(Lx, Ly)));
-    }
-
-    int2 GetScreenSizeFromTex(float2 Tex)
+    int2 CGraphics_GetScreenSizeFromTex(float2 Tex)
     {
         return max(round(1.0 / fwidth(Tex)), 1.0);
     }
 
-    float2 GetPixelSizeFromTex(float2 Tex)
+    float2 CGraphics_GetPixelSizeFromTex(float2 Tex)
     {
-        return 1.0 / GetScreenSizeFromTex(Tex);
+        return 1.0 / CGraphics_GetScreenSizeFromTex(Tex);
     }
 
 #endif

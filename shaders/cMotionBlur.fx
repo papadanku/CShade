@@ -82,17 +82,17 @@ namespace cMotionBlur
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return GetSphericalRG(Color).xy;
+        return CColorSpaces_GetSphericalRG(Color).xy;
     }
 
     float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return GetPixelBlur(Input, SampleTempTex1, true).rg;
+        return CConvolution_GetPixelBlur(Input, SampleTempTex1, true).rg;
     }
 
     float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return GetPixelBlur(Input, SampleTempTex2a, false).rg;
+        return CConvolution_GetPixelBlur(Input, SampleTempTex2a, false).rg;
     }
 
     // Run Lucas-Kanade
@@ -100,25 +100,25 @@ namespace cMotionBlur
     float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = 0.0;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
-        return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
+        return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
     }
 
     // Postfilter blur
@@ -127,12 +127,12 @@ namespace cMotionBlur
     float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
     {
         Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
-        return float4(GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
+        return float4(CConvolution_GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
     }
 
     float4 PS_VBlur_Postfilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return float4(GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
+        return float4(CConvolution_GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
     }
 
     float4 PS_MotionBlur(VS2PS_Quad Input) : SV_TARGET0
@@ -147,7 +147,7 @@ namespace cMotionBlur
         float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
         float2 ScreenCoord = Input.Tex0.xy;
 
-        float2 Velocity = UnpackMotionVectors(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+        float2 Velocity = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
         float2 ScaledVelocity = Velocity * _Scale;
         ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
@@ -155,7 +155,7 @@ namespace cMotionBlur
         [unroll]
         for (int k = 0; k < Samples; ++k)
         {
-            float Random = (GetIGNoise(Input.HPos.xy + k) * 2.0) - 1.0;
+            float Random = (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
             float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
             OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
         }

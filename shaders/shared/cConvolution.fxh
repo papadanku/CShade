@@ -1,4 +1,6 @@
 
+#include "cMath.fxh"
+
 #if !defined(INCLUDE_CONVOLUTION)
     #define INCLUDE_CONVOLUTION
 
@@ -8,24 +10,23 @@
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
-    float GetGaussianWeight(float SampleIndex, float Sigma)
+    float CConvolution_GetGaussianWeight(float SampleIndex, float Sigma)
     {
-        const float Pi = acos(-1.0);
-        float Output = rsqrt(2.0 * Pi * (Sigma * Sigma));
+        float Output = rsqrt(2.0 * CMath_GetPi() * (Sigma * Sigma));
         return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
     }
 
-    float GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
+    float CConvolution_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
     {
         float Offset1 = SampleIndex;
         float Offset2 = SampleIndex + 1.0;
-        float Weight1 = GetGaussianWeight(Offset1, Sigma);
-        float Weight2 = GetGaussianWeight(Offset2, Sigma);
+        float Weight1 = CConvolution_GetGaussianWeight(Offset1, Sigma);
+        float Weight2 = CConvolution_GetGaussianWeight(Offset2, Sigma);
         LinearWeight = Weight1 + Weight2;
         return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
 
-    float4 GetPixelBlur(VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
+    float4 CConvolution_GetPixelBlur(VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
     {
         // Initialize variables
         const int KernelSize = 10;
@@ -72,10 +73,9 @@
         Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
     */
 
-    float2 SampleVogel(int Index, int SamplesCount)
+    float2 CConvolution_SampleVogel(int Index, int SamplesCount)
     {
-        const float Pi = acos(-1.0);
-        const float GoldenAngle = Pi * (3.0 - sqrt(5.0));
+        const float GoldenAngle = CMath_GetPi() * (3.0 - sqrt(5.0));
         float Radius = sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));
         float Theta = float(Index) * GoldenAngle;
 
@@ -88,37 +88,5 @@
     /*
         [Convolutions - Edge Detection]
     */
-
-    /*
-        Linear filtered Sobel filter
-    */
-
-    struct VS2PS_Sobel
-    {
-        float4 HPos : SV_POSITION;
-        float4 Tex0 : TEXCOORD0;
-    };
-
-    VS2PS_Sobel GetVertexSobel(APP2VS Input, float2 PixelSize)
-    {
-        VS2PS_Quad FSQuad = VS_Quad(Input);
-
-        VS2PS_Sobel Output;
-        Output.HPos = FSQuad.HPos;
-        Output.Tex0 = FSQuad.Tex0.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * PixelSize.xyxy);
-        return Output;
-    }
-
-    float2 GetPixelSobel(VS2PS_Sobel Input, sampler2D SampleSource)
-    {
-        float2 OutputColor0 = 0.0;
-        float A = tex2D(SampleSource, Input.Tex0.xw).r * 4.0; // <-0.5, +0.5>
-        float B = tex2D(SampleSource, Input.Tex0.zw).r * 4.0; // <+0.5, +0.5>
-        float C = tex2D(SampleSource, Input.Tex0.xy).r * 4.0; // <-0.5, -0.5>
-        float D = tex2D(SampleSource, Input.Tex0.zy).r * 4.0; // <+0.5, -0.5>
-        OutputColor0.x = ((B + D) - (A + C)) / 4.0;
-        OutputColor0.y = ((A + B) - (C + D)) / 4.0;
-        return OutputColor0;
-    }
 
 #endif

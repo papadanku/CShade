@@ -143,53 +143,53 @@ namespace kDatamosh
     float2 PS_Normalize(VS2PS_Quad Input) : SV_TARGET0
     {
         float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
-        return GetSphericalRG(Color).xy;
+        return CColorSpaces_GetSphericalRG(Color).xy;
     }
 
     float2 PS_HBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return GetPixelBlur(Input, SampleTempTex1, true).rg;
+        return CConvolution_GetPixelBlur(Input, SampleTempTex1, true).rg;
     }
 
     float2 PS_VBlur_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return GetPixelBlur(Input, SampleTempTex2a, false).rg;
+        return CConvolution_GetPixelBlur(Input, SampleTempTex2a, false).rg;
     }
 
     float2 PS_PyLK_Level4(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = 0.0;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float2 PS_PyLK_Level3(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float2 PS_PyLK_Level2(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
-        return GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
+        return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float4 PS_PyLK_Level1(VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
-        return float4(GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
+        return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
     }
 
     // NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
     float4 PS_HBlur_Postfilter(VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
     {
         Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
-        return float4(GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
+        return float4(CConvolution_GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
     }
 
     float4 PS_VBlur_Postfilter(VS2PS_Quad Input) : SV_TARGET0
     {
-        return float4(GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
+        return float4(CConvolution_GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
     }
 
     // Datamosh
@@ -211,7 +211,7 @@ namespace kDatamosh
         Random.z = RandUV(Tex.yx - Time.xx);
 
         // Normalized screen space -> Pixel coordinates
-        MV = UnnormalizeMotionVectors(MV * _Scale, TexSize);
+        MV = CMotionEstimation_UnnormalizeMotionVectors(MV * _Scale, TexSize);
 
         // Small random displacement (diffusion)
         MV += (Random.xy - 0.5)  * _Diffusion;
@@ -226,7 +226,7 @@ namespace kDatamosh
         float3 Random = 0.0;
 
         // Motion vectors
-        float2 MV = UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+        float2 MV = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
         // Get motion blocks
         MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -265,7 +265,7 @@ namespace kDatamosh
         float3 Random = 0.0;
 
         // Motion vectors
-        float2 MV = UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+        float2 MV = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
         // Get motion blocks
         MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -274,7 +274,7 @@ namespace kDatamosh
         float RandomMotion = RandUV(Input.Tex0 + length(MV));
 
         // Pixel coordinates -> Normalized screen space
-        MV = NormalizeMotionVectors(MV, TexSize);
+        MV = CMotionEstimation_NormalizeMotionVectors(MV, TexSize);
 
         // Color from the original image
         float4 Source = tex2D(CShade_SampleColorTex, Input.Tex0);

@@ -25,49 +25,49 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = GetSumChromaticity(Color, 0).rg;
+            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = GetSumChromaticity(Color, 0).rgb;
+            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = GetSumChromaticity(Color, 1).rg;
+            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = GetSumChromaticity(Color, 1).rgb;
+            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = GetSumChromaticity(Color, 2).rg;
+            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = GetSumChromaticity(Color, 2).rgb;
+            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 2).rgb;
             break;
         case 6: // Max (XY)
-            Chromaticity.rg = GetSumChromaticity(Color, 3).rg;
+            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Chromaticity.rgb = GetSumChromaticity(Color, 3).rgb;
+            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Chromaticity.rg = GetRatioRG(Color);
+            Chromaticity.rg = CColorSpaces_GetRatioRG(Color);
             break;
         case 9: // Spherical (XY)
-            Chromaticity.rg = GetSphericalRG(Color);
+            Chromaticity.rg = CColorSpaces_GetSphericalRG(Color);
             break;
         case 10: // Hue-Saturation (HSI)
-            Chromaticity.rg = GetHSIfromRGB(Color).rg;
+            Chromaticity.rg = CColorSpaces_GetHSIfromRGB(Color).rg;
             break;
         case 11: // Hue-Saturation (HSL)
-            Chromaticity.rg = GetHSLfromRGB(Color).rg;
+            Chromaticity.rg = CColorSpaces_GetHSLfromRGB(Color).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Chromaticity.rg = GetHSVfromRGB(Color).rg;
+            Chromaticity.rg = CColorSpaces_GetHSVfromRGB(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = GetCoCg(Gamma);
+            Chromaticity.rg = CColorSpaces_GetCoCg(Gamma);
             break;
         case 14: // CrCb (XY)
-            Chromaticity.rg = GetCrCb(Gamma);
+            Chromaticity.rg = CColorSpaces_GetCrCb(Gamma);
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;

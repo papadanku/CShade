@@ -33,10 +33,10 @@ float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
             ColorMap.rgb = ColorMap.rgb;
             break;
         case 1:
-            ColorMap.rgb += (GetHash1(Input.HPos.xy, 0.0) / _Range);
+            ColorMap.rgb += (CProcedural_GetHash1(Input.HPos.xy, 0.0) / _Range);
             break;
         case 2:
-            ColorMap.rgb += (GetIGNoise(Input.HPos.xy) / _Range);
+            ColorMap.rgb += (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy) / _Range);
             break;
         default:
             ColorMap.rgb = ColorMap.rgb;

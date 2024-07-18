@@ -2,6 +2,7 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cMacros.fxh"
 #include "shared/cColorSpaces.fxh"
+#include "shared/cMath.fxh"
 
 sampler2D CShade_SampleColorTexMirror
 {
@@ -177,7 +178,7 @@ Tile GetTiles(float2 Tex, float2 Translation)
     Output.Value = Tiles * _CircleAmount;
 
     // Shift the tiles so they are ~0.5 units apart from each-other
-    Output.Value.x = (GetMod(trunc(Output.Value.y), 2.0) == 1.0) ? Output.Value.x + 0.25: Output.Value.x - 0.25;
+    Output.Value.x = (CMath_GetModulus(trunc(Output.Value.y), 2.0) == 1.0) ? Output.Value.x + 0.25: Output.Value.x - 0.25;
 
     // Get tile index
     Output.Index = floor(Output.Value);
@@ -232,7 +233,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
-        float2 TexSize = GetScreenSizeFromTex(Input.Tex0);
+        float2 TexSize = CGraphics_GetScreenSizeFromTex(Input.Tex0);
         float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
         // Create tiles
@@ -247,31 +248,31 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
         switch(_Select)
         {
             case 0:
-                Feature = GetHSVfromRGB(Blocks.rgb).r;
+                Feature = CColorSpaces_GetHSVfromRGB(Blocks.rgb).r;
                 break;
             case 1:
-                Feature = GetHSVfromRGB(Blocks.rgb).g;
+                Feature = CColorSpaces_GetHSVfromRGB(Blocks.rgb).g;
                 break;
             case 2:
-                Feature = GetHSVfromRGB(Blocks.rgb).b;
+                Feature = CColorSpaces_GetHSVfromRGB(Blocks.rgb).b;
                 break;
             case 3:
-                Feature = GetHSLfromRGB(Blocks.rgb).r;
+                Feature = CColorSpaces_GetHSLfromRGB(Blocks.rgb).r;
                 break;
             case 4:
-                Feature = GetHSLfromRGB(Blocks.rgb).g;
+                Feature = CColorSpaces_GetHSLfromRGB(Blocks.rgb).g;
                 break;
             case 5:
-                Feature = GetHSLfromRGB(Blocks.rgb).b;
+                Feature = CColorSpaces_GetHSLfromRGB(Blocks.rgb).b;
                 break;
             case 6:
-                Feature = GetHSIfromRGB(Blocks.rgb).r;
+                Feature = CColorSpaces_GetHSIfromRGB(Blocks.rgb).r;
                 break;
             case 7:
-                Feature = GetHSIfromRGB(Blocks.rgb).g;
+                Feature = CColorSpaces_GetHSIfromRGB(Blocks.rgb).g;
                 break;
             case 8:
-                Feature = GetHSIfromRGB(Blocks.rgb).b;
+                Feature = CColorSpaces_GetHSIfromRGB(Blocks.rgb).b;
                 break;
             default:
                 Feature = 0.0;
@@ -300,7 +301,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     float4 PS_Circles(VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
-        float2 TexSize = GetScreenSizeFromTex(Input.Tex0);
+        float2 TexSize = CGraphics_GetScreenSizeFromTex(Input.Tex0);
         float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
         // Create per-color tiles

@@ -6,17 +6,17 @@
 #if !defined(INCLUDE_MATH)
     #define INCLUDE_MATH
 
-    float4 Max3(float4 A, float4 B, float4 C)
+    float4 CMath_Max3(float4 A, float4 B, float4 C)
     {
         return max(max(A, B), C);
     }
 
-    float4 Min3(float4 A, float4 B, float4 C)
+    float4 CMath_Min3(float4 A, float4 B, float4 C)
     {
         return min(min(A, B), C);
     }
 
-    float Med3(float x, float y, float z)
+    float CMath_Med3(float x, float y, float z)
     {
         return max(min(x, y), min(max(x, y), z));
     }
@@ -25,10 +25,30 @@
                 float4 X3, float4 X4, float4 X5,
                 float4 X6, float4 X7, float4 X8)
     {
-        float4 A = Max3(Min3(X0, X1, X2), Min3(X3, X4, X5), Min3(X6, X7, X8));
-        float4 B = Min3(Max3(X0, X1, X2), Max3(X3, X4, X5), Max3(X6, X7, X8));
-        float4 C = Med3(Med3(X0, X1, X2), Med3(X3, X4, X5), Med3(X6, X7, X8));
-        return Med3(A, B, C);
+        float4 A = CMath_Max3(CMath_Min3(X0, X1, X2), CMath_Min3(X3, X4, X5), CMath_Min3(X6, X7, X8));
+        float4 B = CMath_Min3(CMath_Max3(X0, X1, X2), CMath_Max3(X3, X4, X5), CMath_Max3(X6, X7, X8));
+        float4 C = CMath_Med3(CMath_Med3(X0, X1, X2), CMath_Med3(X3, X4, X5), CMath_Med3(X6, X7, X8));
+        return CMath_Med3(A, B, C);
+    }
+
+    float CMath_GetModulus(float X, float Y)
+    {
+        return X - Y * floor(X / Y);
+    }
+
+    float CMath_GetPi()
+    {
+        return acos(-1.0);
+    }
+
+    int CMath_GetFactorial(int N)
+    {
+        int O = N;
+        for (int i = 1 ; i < N; i++)
+        {
+            O *= i;
+        }
+        return O;
     }
 
 #endif

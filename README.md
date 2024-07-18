@@ -43,6 +43,8 @@ CShade features shaders that filter images for aesthetics.
 
 ## Coding Convention
 
+- Prefix shared method with it's file name.
+    - `cShared.fxh` -> `CShared_FunctionName()`
 - **ALLCAPS**
     - State parameters
     - System semantics

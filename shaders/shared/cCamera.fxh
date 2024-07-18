@@ -19,7 +19,7 @@
             ui_max = 1.0;
         > = 0.25;
 
-        float4 CreateExposureTex(float Luminance, float FrameTime)
+        float4 CCamera_CreateExposureTex(float Luminance, float FrameTime)
         {
             // .rgb = Output the highest brightness out of red/green/blue component
             // .a = Output the weight for temporal blending
@@ -54,7 +54,7 @@
             float Value;
         };
 
-        Exposure GetExposureData(float LumaTex)
+        Exposure CCamera_GetExposureData(float LumaTex)
         {
             Exposure Output;
             Output.ExpLuma = exp(LumaTex);
@@ -65,7 +65,7 @@
             return Output;
         }
 
-        float3 ApplyAutoExposure(float3 Color, Exposure Input)
+        float3 CCamera_ApplyAutoExposure(float3 Color, Exposure Input)
         {
             return Color * Input.Value;
         }
@@ -94,7 +94,7 @@
         CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
 
-    float GetVignette(float2 Tex, float AspectRatio, float Falloff, float2 FalloffOffset)
+    float CCamera_GetVignette(float2 Tex, float AspectRatio, float Falloff, float2 FalloffOffset)
     {
         Tex = ((Tex * 2.0 - 1.0) + FalloffOffset) * AspectRatio;
         float Radius = length(Tex) * Falloff;

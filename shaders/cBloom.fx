@@ -170,15 +170,15 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     #if USE_AUTOEXPOSURE
         // Apply auto-exposure here
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-        Exposure ExposureData = GetExposureData(Luma);
-        Color = ApplyAutoExposure(Color.rgb, ExposureData);
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
     #endif
 
     // Store log luminance in alpha channel
     float LogLuminance = GetLogLuminance(ColorTex.rgb);
 
     // Under-threshold
-    float Brightness = Med3(Color.r, Color.g, Color.b);
+    float Brightness = CMath_Med3(Color.r, Color.g, Color.b);
     float Response_Curve = clamp(Brightness - Curve.x, 0.0, Curve.y);
     Response_Curve = Curve.z * Response_Curve * Response_Curve;
 
@@ -318,7 +318,7 @@ CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 float4 PS_GetExposure(VS2PS_Quad Input) : SV_TARGET0
 {
     float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
-    return CreateExposureTex(LogLuminance, _Frametime);
+    return CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
 float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
@@ -375,7 +375,7 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
     float4 Color = 1.0;
-    Color.rgb = ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
+    Color.rgb = CTonemap_ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
     return Color;
 }
 
@@ -409,7 +409,7 @@ technique CShade_Bloom
 
     // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
     #if USE_AUTOEXPOSURE
-        pass CreateExposureTex
+        pass CCamera_CreateExposureTex
         {
             ClearRenderTargets = FALSE;
             BlendEnable = TRUE;
