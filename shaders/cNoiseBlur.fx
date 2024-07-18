@@ -1,7 +1,8 @@
 
 #include "shared/cGraphics.fxh"
 #include "shared/cProcedural.fxh"
-#include "shared/cCamera.fxh"
+#include "shared/cMath.fxh"
+#include "shared/fidelityfx/cLens.fxh"
 
 /*
     MIT License
@@ -37,11 +38,13 @@ uniform float _Radius <
     ui_max = 1.0;
 > = 0.5;
 
-uniform float _Falloff <
-    ui_category = "Radius Falloff";
+uniform float _FalloffAmount <
+    ui_category = "Falloff Scale";
     ui_label = "Falloff Scale";
-    ui_type = "drag";
-> = 0.5;
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 2.0;
+> = 0.6;
 
 uniform float2 _FalloffOffset <
     ui_label = "Falloff Offset";
@@ -70,10 +73,12 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
 
-    const float Pi2 = acos(-1.0) * 2.0;
+    float Pi2 = CMath_GetPi() * 2.0;
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
+
     float Noise = Pi2 * CProcedural_GetGradientNoise1(Input.Tex0.xy * 256.0, 0.0);
+    float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
@@ -85,7 +90,13 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     // Compute optional radius falloff
-    float FalloffFactor = _EnableFalloff ? CCamera_GetVignette(Input.Tex0, AspectRatio, _Falloff, _FalloffOffset) : 1.0;
+    float3 FalloffFactor = 1.0;
+
+    if (_EnableFalloff)
+    {
+        FFX_Lens_ApplyVignette(UNormTex, 0.0, FalloffFactor, _FalloffAmount);
+    }
+
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
     float4 Weight = 0.0;
@@ -98,7 +109,7 @@ float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
             sincos(Shift, AngleShift.x, AngleShift.y);
             AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
+            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor.xy;
             SampleOffset *= _Radius;
             SampleOffset.x *= AspectRatio;
             OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
