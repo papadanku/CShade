@@ -149,8 +149,8 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
         ColorH = lerp(Top, ColorH, VHXY.z);
         ColorH = lerp(Bottom, ColorH, VHXY.w);
 
-        Color = lerp( Color, ColorV, LongEdgeMaskV);
-        Color = lerp( Color, ColorH, LongEdgeMaskH);
+        Color = lerp(Color, ColorV, LongEdgeMaskV);
+        Color = lerp(Color, ColorH, LongEdgeMaskH);
     }
 
     // Preserve high frequencies
