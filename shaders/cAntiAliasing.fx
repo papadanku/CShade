@@ -32,16 +32,22 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     /*
         Short edges
     */
-    float4 Center = tex2D(CShade_SampleGammaTex, Input.Tex0);
-    float4 Left01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, 0.0)));
-    float4 Right01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, 0.0)));
-    float4 Top01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.5)));
-    float4 Bottom01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.5)));
+    float4 ShortEdgeTex0 = Input.Tex0.xyxy + (float4(-1.5, 0.0, 1.5, 0.0) * Delta.xyxy);
+    float4 ShortEdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.5, 0.0, 1.5) * Delta.xyxy);
+    float4 ShortEdgeTex2 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
+    float4 ShortEdgeTex3 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
-    float4 Left = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.0, 0.0)));
-    float4 Right = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.0, 0.0)));
-    float4 Top = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.0)));
-    float4 Bottom = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.0)));
+    float4 Center = tex2D(CShade_SampleGammaTex, Input.Tex0);
+
+    float4 Left01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex0.xy);
+    float4 Right01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex0.zw);
+    float4 Top01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex1.xy);
+    float4 Bottom01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex1.zw);
+
+    float4 Left = tex2D(CShade_SampleGammaTex, ShortEdgeTex2.xy);
+    float4 Right = tex2D(CShade_SampleGammaTex, ShortEdgeTex2.zw);
+    float4 Top = tex2D(CShade_SampleGammaTex, ShortEdgeTex3.xy);
+    float4 Bottom = tex2D(CShade_SampleGammaTex, ShortEdgeTex3.zw);
 
     float4 WH = 2.0 * (Left01 + Right01);
     float4 WV = 2.0 * (Top01 + Bottom01);
@@ -51,8 +57,8 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float4 EdgeV = abs(Top + Bottom - 2.0 * Center) / 2.0;
 
     // Get low-pass
-    float4 BlurH = (WH + 2.0f * Center) / 6.0;
-    float4 BlurV = (WV + 2.0f * Center) / 6.0;
+    float4 BlurH = (WH + 2.0 * Center) / 6.0;
+    float4 BlurV = (WV + 2.0 * Center) / 6.0;
 
     // Get respective intensities
     float EdgeLumaH = GetIntensity(EdgeH.rgb);
@@ -72,23 +78,32 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
         Long edges
     */
 
-    float4 H0 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, 0.0)));
-    float4 H1 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(3.5, 0.0)));
-    float4 H2 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(5.5, 0.0)));
-    float4 H3 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(7.5, 0.0)));
-    float4 H4 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, 0.0)));
-    float4 H5 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-3.5, 0.0)));
-    float4 H6 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-5.5, 0.0)));
-    float4 H7 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-7.5, 0.0)));
+    float4 LTex0 = Input.Tex0.xyxy + (float4(1.5, 0.0, 0.0, 1.5) * Delta.xyxy);
+    float4 LTex1 = Input.Tex0.xyxy + (float4(3.5, 0.0, 0.0, 3.5) * Delta.xyxy);
+    float4 LTex2 = Input.Tex0.xyxy + (float4(5.5, 0.0, 0.0, 5.5) * Delta.xyxy);
+    float4 LTex3 = Input.Tex0.xyxy + (float4(7.5, 0.0, 0.0, 7.5) * Delta.xyxy);
+    float4 LTex4 = Input.Tex0.xyxy + (float4(-1.5, 0.0, 0.0, -1.5) * Delta.xyxy);
+    float4 LTex5 = Input.Tex0.xyxy + (float4(-3.5, 0.0, 0.0, -3.5) * Delta.xyxy);
+    float4 LTex6 = Input.Tex0.xyxy + (float4(-5.5, 0.0, 0.0, -5.5) * Delta.xyxy);
+    float4 LTex7 = Input.Tex0.xyxy + (float4(-7.5, 0.0, 0.0, -7.5) * Delta.xyxy);
 
-    float4 V0 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.5)));
-    float4 V1 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 3.5)));
-    float4 V2 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 5.5)));
-    float4 V3 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 7.5)));
-    float4 V4 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.5)));
-    float4 V5 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -3.5)));
-    float4 V6 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -5.5)));
-    float4 V7 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -7.5)));
+    float4 H0 = tex2D(CShade_SampleGammaTex, LTex0.xy);
+    float4 H1 = tex2D(CShade_SampleGammaTex, LTex1.xy);
+    float4 H2 = tex2D(CShade_SampleGammaTex, LTex2.xy);
+    float4 H3 = tex2D(CShade_SampleGammaTex, LTex3.xy);
+    float4 H4 = tex2D(CShade_SampleGammaTex, LTex4.xy);
+    float4 H5 = tex2D(CShade_SampleGammaTex, LTex5.xy);
+    float4 H6 = tex2D(CShade_SampleGammaTex, LTex6.xy);
+    float4 H7 = tex2D(CShade_SampleGammaTex, LTex7.xy);
+
+    float4 V0 = tex2D(CShade_SampleGammaTex, LTex0.zw);
+    float4 V1 = tex2D(CShade_SampleGammaTex, LTex1.zw);
+    float4 V2 = tex2D(CShade_SampleGammaTex, LTex2.zw);
+    float4 V3 = tex2D(CShade_SampleGammaTex, LTex3.zw);
+    float4 V4 = tex2D(CShade_SampleGammaTex, LTex4.zw);
+    float4 V5 = tex2D(CShade_SampleGammaTex, LTex5.zw);
+    float4 V6 = tex2D(CShade_SampleGammaTex, LTex6.zw);
+    float4 V7 = tex2D(CShade_SampleGammaTex, LTex7.zw);
 
     // In CShade, we take .rgb out of branch
     float4 LongBlurH = (H0 + H1 + H2 + H3 + H4 + H5 + H6 + H7) / 8.0;
@@ -131,10 +146,11 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     }
 
     // Preserve high frequencies
-    float4 R0 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, -1.5)));
-    float4 R1 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, -1.5)));
-    float4 R2 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, 1.5)));
-    float4 R3 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, 1.5)));
+    float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
+    float4 R0 = tex2D(CShade_SampleGammaTex, RTex.xw);
+    float4 R1 = tex2D(CShade_SampleGammaTex, RTex.zw);
+    float4 R2 = tex2D(CShade_SampleGammaTex, RTex.xy);
+    float4 R3 = tex2D(CShade_SampleGammaTex, RTex.zy);
 
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
