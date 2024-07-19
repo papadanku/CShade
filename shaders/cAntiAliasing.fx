@@ -38,10 +38,10 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float4 Top01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.5)));
     float4 Bottom01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.5)));
 
-	float4 Left = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.0, 0.0)));
-	float4 Right = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.0, 0.0)));
-	float4 Top = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.0)));
-	float4 Bottom = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.0)));
+    float4 Left = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.0, 0.0)));
+    float4 Right = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.0, 0.0)));
+    float4 Top = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.0)));
+    float4 Bottom = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.0)));
 
     float4 WH = 2.0 * (Left01 + Right01);
     float4 WV = 2.0 * (Top01 + Bottom01);
@@ -102,7 +102,7 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
-        
+
         float CenterLuma = GetIntensity(Center.rgb);
         float LeftLuma = GetIntensity(Left.rgb);
         float RightLuma = GetIntensity(Right.rgb);
@@ -129,12 +129,13 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
         Color = lerp( Color, ColorV, LongEdgeMaskV);
         Color = lerp( Color, ColorH, LongEdgeMaskH);
     }
-    
+
+    // Preserve high frequencies
     float4 R0 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, -1.5)));
-	float4 R1 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, -1.5)));
-	float4 R2 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, 1.5)));
-	float4 R3 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, 1.5)));
-        
+    float4 R1 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, -1.5)));
+    float4 R2 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.5, 1.5)));
+    float4 R3 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.5, 1.5)));
+
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
@@ -148,10 +149,10 @@ technique CShade_AntiAliasing
         VertexShader = VS_Quad;
         PixelShader = PS_Prefilter;
     }
-    
+
     pass AntiAliasing
     {
-    	VertexShader = VS_Quad;
-    	PixelShader = PS_AntiAliasing;
+        VertexShader = VS_Quad;
+        PixelShader = PS_AntiAliasing;
     }
 }
