@@ -2,6 +2,14 @@
 #include "shared/cGraphics.fxh"
 #include "shared/cColorSpaces.fxh"
 
+/*
+    Directionally Localized Anti-Aliasing (DLAA)
+    http://www.and.intercon.ru/releases/talks/dlaagdc2011/
+
+    by Dmitry Andreev
+    Copyright (C) LucasArts 2010-2011
+*/
+
 float GetIntensity(float3 Color)
 {
     return CColorSpaces_GetLuma(Color, 0);
