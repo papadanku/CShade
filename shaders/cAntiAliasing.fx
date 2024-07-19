@@ -38,10 +38,10 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float4 Top01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.5)));
     float4 Bottom01 = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.5)));
 
-	float4 Left = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0 + (Delta * float2(-1.0, 0.0)), 0.0, 0.0));
-	float4 Right = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0 + (Delta * float2(1.0, 0.0)), 0.0, 0.0));
-	float4 Top = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0 + (Delta * float2(0.0, -1.0)), 0.0, 0.0));
-	float4 Bottom = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0 + (Delta * float2(0.0, 1.0)), 0.0, 0.0));
+	float4 Left = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(-1.0, 0.0)));
+	float4 Right = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(1.0, 0.0)));
+	float4 Top = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, -1.0)));
+	float4 Bottom = tex2D(CShade_SampleGammaTex, Input.Tex0 + (Delta * float2(0.0, 1.0)));
 
     float4 WH = 2.0 * (Left01 + Right01);
     float4 WV = 2.0 * (Top01 + Bottom01);
