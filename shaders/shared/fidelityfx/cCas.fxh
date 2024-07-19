@@ -40,7 +40,7 @@
         /*
             Load a collection of samples in a 3x3 neighorhood, where e is the current pixel.
             a b
-            e
+             e
             c d
         */
         float2 Delta = fwidth(Input.Tex0.xy);

@@ -204,4 +204,39 @@
         return float3(H, S, I);
     }
 
+    /*
+        Luminance methods
+    */
+    float CColorSpaces_GetLuma(float3 Color, int Method)
+    {
+        float Luma = 0.0;
+        switch(Method)
+        {
+            case 0:
+                // Average
+                Luma = dot(Color.rgb, 1.0 / 3.0);
+                break;
+            case 1:
+                // Min
+                Luma = min(Color.r, min(Color.g, Color.b));
+                break;
+            case 2:
+                // Median
+                Luma = max(min(Color.r, Color.g), min(max(Color.r, Color.g), Color.b));
+                break;
+            case 3:
+                // Max
+                Luma = max(Color.r, max(Color.g, Color.b));
+                break;
+            case 4:
+                // Length
+                Luma = length(Color.rgb) * rsqrt(3.0);
+                break;
+            default:
+                Luma = Color;
+                break;
+        }
+        return Luma;
+    }
+
 #endif
