@@ -18,11 +18,12 @@ float GetIntensity(float3 Color)
 float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0.xy);
-    float4 Tex = Input.Tex0.xyxy + (Delta.xyxy * float4(-0.5, -0.5, 0.5, 0.5));
-    float3 SampleA = tex2D(CShade_SampleGammaTex, Tex.xw).rgb;
-    float3 SampleB = tex2D(CShade_SampleGammaTex, Tex.zw).rgb;
-    float3 SampleC = tex2D(CShade_SampleGammaTex, Tex.xy).rgb;
-    float3 SampleD = tex2D(CShade_SampleGammaTex, Tex.zy).rgb;
+    float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
+    float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
+    float3 SampleA = tex2D(CShade_SampleGammaTex, EdgeTex0.xy).rgb;
+    float3 SampleB = tex2D(CShade_SampleGammaTex, EdgeTex0.zw).rgb;
+    float3 SampleC = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
+    float3 SampleD = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
     float3 SampleE = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
     float3 Edges = 4.0 * abs((SampleA + SampleB + SampleC + SampleD) - (SampleE * 4.0));
     float EdgesLuma = GetIntensity(Edges);
