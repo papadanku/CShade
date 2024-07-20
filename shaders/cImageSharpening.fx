@@ -45,7 +45,7 @@ float4 PS_CasFilterNoScaling(VS2PS_Quad Input): SV_TARGET0
     return OutputColor;
 }
 
-technique CShade_ImageSharpen
+technique CShade_ImageSharpening
 {
     pass
     {
