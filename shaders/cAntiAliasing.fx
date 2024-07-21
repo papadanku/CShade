@@ -164,7 +164,7 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
-     return Color;
+    return Color;
 }
 
 technique CShade_AntiAliasing
