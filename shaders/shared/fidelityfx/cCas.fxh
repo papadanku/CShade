@@ -30,8 +30,7 @@
 #if !defined(INCLIDE_FFX_CAS)
     #define INCLIDE_FFX_CAS
 
-    void FFX_CAS_FilterNoScaling
-    (
+    void FFX_CAS_FilterNoScaling(
         inout float3 FilterShape,
         in CShade_VS2PS_Quad Input,
         in float Contrast

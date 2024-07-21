@@ -89,7 +89,17 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
     float4 OutputColor = 1.0;
     float Seed = _GrainSeed;
     Seed = (_UseTimeSeed) ? Seed + (rcp(1e+3 / _Time) * _Speed) : Seed;
-    FFX_Lens(OutputColor.rgb, Input, _GrainScale, _GrainAmount, _ChromAb, _Vignette, Seed);
+    FFX_Lens(
+        OutputColor.rgb,
+        CShade_SampleColorTex,
+        Input.HPos.xy,
+        Input.Tex0,
+        _GrainScale,
+        _GrainAmount,
+        _ChromAb,
+        _Vignette,
+        Seed
+    );
     return OutputColor;
 }
 

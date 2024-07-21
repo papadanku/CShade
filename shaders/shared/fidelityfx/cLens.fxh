@@ -56,8 +56,7 @@
     }
 
     // Function call to calculate the red and green wavelength/channel sample offset values.
-    float2 FFX_Lens_GetRGMag
-    (
+    float2 FFX_Lens_GetRGMag(
         float ChromAbIntensity // Intensity constant value for the chromatic aberration effect.
     )
     {
@@ -72,40 +71,40 @@
         return RedGreenMagnitude;
     }
 
-    /// Function call to apply chromatic aberration effect when sampling the Color input texture.
-    float3 FFX_Lens_SampleWithChromaticAberration
-    (
-        CShade_VS2PS_Quad VS, // The input window coordinate [0, widthPixels), [0, heightPixels).
+    // Function call to apply chromatic aberration effect when sampling the Color input texture.
+    float3 FFX_Lens_SampleWithChromaticAberration(
+        sampler2D Image,
+        float2 HPos, // The input window coordinate [0, widthPixels), [0, heightPixels).
+        float2 Tex, // The input window coordinate [0, 1), [0, 1).
         float2 CenterCoord, // The center window coordinate of the screen.
         float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
     )
     {
-        float2 RedShift = (VS.HPos.xy - CenterCoord) * RedMagnitude + CenterCoord + 0.5;
+        float2 RedShift = (HPos - CenterCoord) * RedMagnitude + CenterCoord + 0.5;
         RedShift *= (1.0 / (2.0 * CenterCoord));
-        float2 GreenShift = (VS.HPos.xy - CenterCoord) * GreenMagnitude + CenterCoord + 0.5;
+        float2 GreenShift = (HPos - CenterCoord) * GreenMagnitude + CenterCoord + 0.5;
         GreenShift *= (1.0 / (2.0 * CenterCoord));
-        float2 BlueShift = VS.Tex0;
+        float2 BlueShift = Tex;
 
         float3 RGB = 0.0;
-        RGB.r = tex2D(CShade_SampleColorTex, RedShift).r;
-        RGB.g = tex2D(CShade_SampleColorTex, GreenShift).g;
-        RGB.b = tex2D(CShade_SampleColorTex, BlueShift).b;
+        RGB.r = tex2D(Image, RedShift).r;
+        RGB.g = tex2D(Image, GreenShift).g;
+        RGB.b = tex2D(Image, BlueShift).b;
 
         return RGB;
     }
 
-    /// Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
-    void FFX_Lens_ApplyFilmGrain
-    (
-        in CShade_VS2PS_Quad VS,
+    // Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
+    void FFX_Lens_ApplyFilmGrain(
+        in float2 Tex, // The input window coordinate [0, 1), [0, 1).
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
-        float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
-        float GrainAmountValue, // Intensity constant value of the grain effect.
-        float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
+        in float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
+        in float GrainAmountValue, // Intensity constant value of the grain effect.
+        in float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 Pos = (VS.Tex0.xy * 2.0 - 1.0) * CShade_GetScreenSizeFromTex(VS.Tex0.xy);
+        float2 Pos = (Tex * 2.0 - 1.0) * CShade_GetScreenSizeFromTex(Tex);
         float2 RandomNumberFine = CProcedural_GetHash2(Pos, 0.0);
         float2 GradientN = GetGradientNoise2((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
         const float GrainShape = 3.0;
@@ -115,13 +114,12 @@
         Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
     }
 
-    /// Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
-    void FFX_Lens_ApplyVignette
-    (
-        float2 Coord, // The input window coordinate [-1, 1), [-1, 1).
-        float2 CenterCoord, // The center window coordinate of the screen.
+    // Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
+    void FFX_Lens_ApplyVignette(
+        in float2 Coord, // The input window coordinate [-1, 1), [-1, 1).
+        in float2 CenterCoord, // The center window coordinate of the screen.
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
-        float VignetteAmount // Intensity constant value of the vignette effect.
+        in float VignetteAmount // Intensity constant value of the vignette effect.
     )
     {
         float2 VignetteMask = float2(0.0, 0.0);
@@ -135,26 +133,27 @@
         Color *= clamp(VignetteMask.x * VignetteMask.y, 0.0, 1.0);
     }
 
-    /// Lens pass entry point.
-    void FFX_Lens
-    (
+    // Lens pass entry point.
+    void FFX_Lens(
         inout float3 Color,
-        in CShade_VS2PS_Quad VS,
+        in sampler2D Image,
+        in float2 HPos,
+        in float2 Tex,
         in float GrainScale,
         in float GrainAmount,
         in float ChromAb,
         in float Vignette,
         in float GrainSeed
-        )
+    )
     {
         float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-        float2 Center = CShade_GetScreenSizeFromTex(VS.Tex0.xy) / 2.0;
-        float2 UNormTex = (VS.Tex0 * 2.0) - 1.0;
+        float2 Center = CShade_GetScreenSizeFromTex(Tex) / 2.0;
+        float2 UNormTex = (Tex * 2.0) - 1.0;
 
         // Run Lens
-        Color = FFX_Lens_SampleWithChromaticAberration(VS, Center, RGMag.r, RGMag.g);
+        Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
         FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
-        FFX_Lens_ApplyFilmGrain(VS, Color, GrainScale, GrainAmount, GrainSeed);
+        FFX_Lens_ApplyFilmGrain(Tex, Color, GrainScale, GrainAmount, GrainSeed);
     }
 
 #endif
