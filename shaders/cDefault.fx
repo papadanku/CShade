@@ -1,5 +1,5 @@
 
-float4 VS_Quad() : SV_POSITION
+float4 CShade_VS_Quad() : SV_POSITION
 {
     return 0.0;
 }
@@ -14,7 +14,7 @@ technique CShade_Default
     pass
     {
         VertexCount = 0;
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Quad;
     }
 }

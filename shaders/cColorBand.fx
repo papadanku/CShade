@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cProcedural.fxh"
 
 /*
@@ -23,7 +23,7 @@ uniform int _DitherMethod <
     [Pixel Shaders]
 */
 
-float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 ColorMap = tex2D(CShade_SampleGammaTex, Input.Tex0);
 
@@ -52,7 +52,7 @@ technique CShade_ColorBand
 {
     pass
     {
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Color;
     }
 }

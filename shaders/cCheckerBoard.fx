@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -26,7 +26,7 @@ uniform bool _InvertCheckerboard <
     [Pixel Shaders]
 */
 
-float4 PS_Checkerboard(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Checkerboard = frac(dot(Input.HPos.xy, 0.5)) * 2.0;
     Checkerboard = _InvertCheckerboard ? 1.0 - Checkerboard : Checkerboard;
@@ -40,7 +40,7 @@ technique CShade_CheckerBoard
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Checkerboard;
     }
 }

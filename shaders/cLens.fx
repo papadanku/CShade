@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/fidelityfx/cLens.fxh"
 
 /*
@@ -84,7 +84,7 @@ uniform float _Vignette <
     ui_max = 2.0;
 > = 0.6;
 
-float4 PS_Lens(VS2PS_Quad Input): SV_TARGET0
+float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
     float Seed = _GrainSeed;
@@ -99,7 +99,7 @@ technique CShade_Lens
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Lens;
     }
 }

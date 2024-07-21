@@ -1,8 +1,8 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cConvolution.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cBlur.fxh"
 
-float4 PS_Bilateral(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Bilateral(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Get constant
     const float Pi2 = acos(-1.0) * 2.0;
@@ -41,7 +41,7 @@ technique CShade_Bilateral
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Bilateral;
     }
 }

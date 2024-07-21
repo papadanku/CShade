@@ -1,6 +1,6 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cColorSpaces.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 
 /*
     [Shader Options]
@@ -16,7 +16,7 @@ uniform int _Select <
     [Pixel Shaders]
 */
 
-float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
@@ -25,49 +25,49 @@ float4 PS_Chromaticity(VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 0).rg;
+            Chromaticity.rg = CColor_GetSumChromaticity(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 0).rgb;
+            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 1).rg;
+            Chromaticity.rg = CColor_GetSumChromaticity(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 1).rgb;
+            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 2).rg;
+            Chromaticity.rg = CColor_GetSumChromaticity(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 2).rgb;
+            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 2).rgb;
             break;
         case 6: // Max (XY)
-            Chromaticity.rg = CColorSpaces_GetSumChromaticity(Color, 3).rg;
+            Chromaticity.rg = CColor_GetSumChromaticity(Color, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Chromaticity.rgb = CColorSpaces_GetSumChromaticity(Color, 3).rgb;
+            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Chromaticity.rg = CColorSpaces_GetRatioRG(Color);
+            Chromaticity.rg = CColor_GetRatioRG(Color);
             break;
         case 9: // Spherical (XY)
-            Chromaticity.rg = CColorSpaces_GetSphericalRG(Color);
+            Chromaticity.rg = CColor_GetSphericalRG(Color);
             break;
         case 10: // Hue-Saturation (HSI)
-            Chromaticity.rg = CColorSpaces_GetHSIfromRGB(Color).rg;
+            Chromaticity.rg = CColor_GetHSIfromRGB(Color).rg;
             break;
         case 11: // Hue-Saturation (HSL)
-            Chromaticity.rg = CColorSpaces_GetHSLfromRGB(Color).rg;
+            Chromaticity.rg = CColor_GetHSLfromRGB(Color).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Chromaticity.rg = CColorSpaces_GetHSVfromRGB(Color).rg;
+            Chromaticity.rg = CColor_GetHSVfromRGB(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = CColorSpaces_GetCoCg(Gamma);
+            Chromaticity.rg = CColor_GetCoCg(Gamma);
             break;
         case 14: // CrCb (XY)
-            Chromaticity.rg = CColorSpaces_GetCrCb(Gamma);
+            Chromaticity.rg = CColor_GetCrCb(Gamma);
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;
@@ -81,7 +81,7 @@ technique CShade_Chromaticity
 {
     pass
     {
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Chromaticity;
     }
 }

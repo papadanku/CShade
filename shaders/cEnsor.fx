@@ -1,6 +1,6 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cColorSpaces.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 
 namespace cEnsor
 {
@@ -38,12 +38,12 @@ namespace cEnsor
     CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
     CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR)
 
-    float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
+    float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, 1.0);
     }
 
-    float4 PS_Censor(VS2PS_Quad Input) : SV_TARGET0
+    float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
         float4 Pixel = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
@@ -55,31 +55,31 @@ namespace cEnsor
         switch(_Select)
         {
             case 0:
-                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).r;
+                Feature = CColor_GetHSVfromRGB(Pixel.rgb).r;
                 break;
             case 1:
-                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).g;
+                Feature = CColor_GetHSVfromRGB(Pixel.rgb).g;
                 break;
             case 2:
-                Feature = CColorSpaces_GetHSVfromRGB(Pixel.rgb).b;
+                Feature = CColor_GetHSVfromRGB(Pixel.rgb).b;
                 break;
             case 3:
-                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).r;
+                Feature = CColor_GetHSLfromRGB(Pixel.rgb).r;
                 break;
             case 4:
-                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).g;
+                Feature = CColor_GetHSLfromRGB(Pixel.rgb).g;
                 break;
             case 5:
-                Feature = CColorSpaces_GetHSLfromRGB(Pixel.rgb).b;
+                Feature = CColor_GetHSLfromRGB(Pixel.rgb).b;
                 break;
             case 6:
-                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).r;
+                Feature = CColor_GetHSIfromRGB(Pixel.rgb).r;
                 break;
             case 7:
-                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).g;
+                Feature = CColor_GetHSIfromRGB(Pixel.rgb).g;
                 break;
             case 8:
-                Feature = CColorSpaces_GetHSIfromRGB(Pixel.rgb).b;
+                Feature = CColor_GetHSIfromRGB(Pixel.rgb).b;
                 break;
             default:
                 Feature = 0.0;
@@ -122,7 +122,7 @@ namespace cEnsor
     {
         pass
         {
-            VertexShader = VS_Quad;
+            VertexShader = CShade_VS_Quad;
             PixelShader = PS_Blit;
             RenderTarget = TempTex0_RGBA8;
         }
@@ -130,7 +130,7 @@ namespace cEnsor
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
-            VertexShader = VS_Quad;
+            VertexShader = CShade_VS_Quad;
             PixelShader = PS_Censor;
         }
     }

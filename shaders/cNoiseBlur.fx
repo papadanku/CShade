@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cProcedural.fxh"
 #include "shared/cMath.fxh"
 #include "shared/fidelityfx/cLens.fxh"
@@ -68,7 +68,7 @@ uniform bool _InvertFalloff <
     [Pixel Shaders]
 */
 
-float4 PS_NoiseBlur(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
 
@@ -125,7 +125,7 @@ technique CShade_NoiseBlur
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_NoiseBlur;
     }
 }

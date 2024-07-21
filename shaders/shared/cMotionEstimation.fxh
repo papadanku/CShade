@@ -1,5 +1,5 @@
 
-#include "cGraphics.fxh"
+#include "cShade.fxh"
 
 #if !defined(INCLUDE_MOTIONESTIMATION)
     #define INCLUDE_MOTIONESTIMATION

@@ -1,6 +1,6 @@
 
 #include "shared/cMacros.fxh"
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 #define INCLUDE_CCAMERA_INPUT
 #define INCLUDE_CCAMERA_OUTPUT
@@ -67,7 +67,7 @@ CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
     [Pixel Shaders]
 */
 
-float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Tex = Input.Tex0;
     float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
@@ -96,7 +96,7 @@ float4 PS_Blit(VS2PS_Quad Input) : SV_TARGET0
     return CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
-float3 PS_Exposure(VS2PS_Quad Input) : SV_TARGET0
+float3 PS_Exposure(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Get textures
     float Luma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
@@ -181,7 +181,7 @@ technique CShade_AutoExposure
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
         RenderTarget = LumaTex;
     }
@@ -190,7 +190,7 @@ technique CShade_AutoExposure
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Exposure;
     }
 }

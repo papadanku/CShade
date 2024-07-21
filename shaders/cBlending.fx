@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -36,12 +36,12 @@ CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, CLAMP)
     [Pixel Shaders]
 */
 
-float4 PS_Copy(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Src = tex2D(SampleSrcTex, Input.Tex0) * float4(_SrcFactor, 1.0);
     float4 Dest = tex2D(SampleDestTex, Input.Tex0) * float4(_DestFactor, 1.0);
@@ -82,7 +82,7 @@ technique CShade_CopyBuffer
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
         RenderTarget0 = SrcTex;
     }
@@ -94,7 +94,7 @@ technique CShade_BlendBuffer
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blend;
     }
 }

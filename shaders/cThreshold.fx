@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
 
 /*
@@ -34,7 +34,7 @@ uniform float _Intensity <
     [Pixel Shaders]
 */
 
-float4 PS_Threshold(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5f);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
@@ -57,7 +57,7 @@ technique CShade_Threshold
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Threshold;
     }
 }

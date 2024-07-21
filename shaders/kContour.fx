@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     MIT License
@@ -79,7 +79,7 @@ struct Grad
     float4 Iy;
 };
 
-Grad GetGrad(VS2PS_Quad Input, sampler2D SampleSource)
+Grad GetGrad(CShade_VS2PS_Quad Input, sampler2D SampleSource)
 {
     Grad Output;
 
@@ -178,7 +178,7 @@ Grad GetGrad(VS2PS_Quad Input, sampler2D SampleSource)
     return Output;
 }
 
-float3 PS_Grad(VS2PS_Quad Input) : SV_TARGET0
+float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     const float GradWeights[6] = 
     {
@@ -212,7 +212,7 @@ technique CShade_KinoContour
     {
         SRGBWriteEnable = WRITE_SRGB;
         
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Grad;
     }
 }

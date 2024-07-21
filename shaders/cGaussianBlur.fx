@@ -1,6 +1,6 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cConvolution.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cBlur.fxh"
 
 /*
     [Shader Options]
@@ -28,13 +28,13 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
     else
     {
         // Sample and weight center first to get even number sides
-        float TotalWeight = CConvolution_GetGaussianWeight(0.0, _Sigma);
+        float TotalWeight = CBlur_GetGaussianWeight(0.0, _Sigma);
         float4 OutputColor = tex2D(CShade_SampleColorTex, Tex) * TotalWeight;
 
         for(float i = 1.0; i < KernelSize; i += 2.0)
         {
             float LinearWeight = 0.0;
-            float LinearOffset = CConvolution_GetGaussianOffset(i, _Sigma, LinearWeight);
+            float LinearOffset = CBlur_GetGaussianOffset(i, _Sigma, LinearWeight);
             OutputColor += tex2Dlod(CShade_SampleColorTex, float4(Tex - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             OutputColor += tex2Dlod(CShade_SampleColorTex, float4(Tex + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;
@@ -45,12 +45,12 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
     }
 }
 
-float4 PS_HGaussianBlur(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_HGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return GetGaussianBlur(Input.Tex0, true);
 }
 
-float4 PS_VGaussianBlur(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_VGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return GetGaussianBlur(Input.Tex0, false);
 }
@@ -61,7 +61,7 @@ technique CShade_HorizontalBlur
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_HGaussianBlur;
     }
 }
@@ -72,7 +72,7 @@ technique CShade_VerticalBlur
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_VGaussianBlur;
     }
 }

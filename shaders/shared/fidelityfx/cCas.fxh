@@ -1,5 +1,5 @@
 
-#include "../cGraphics.fxh"
+#include "../cShade.fxh"
 
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
@@ -33,7 +33,7 @@
     void FFX_CAS_FilterNoScaling
     (
         inout float3 FilterShape,
-        in VS2PS_Quad Input,
+        in CShade_VS2PS_Quad Input,
         in float Contrast
     )
     {

@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -61,7 +61,7 @@ struct VS2PS
     float4 Tex0 : TEXCOORD0;
 };
 
-VS2PS VS_Overlay(APP2VS Input)
+VS2PS VS_Overlay(CShade_APP2VS Input)
 {
     VS2PS Output;
     Output.Tex0.x = (Input.ID == 2) ? 2.0 : 0.0;

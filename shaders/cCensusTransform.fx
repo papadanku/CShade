@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
 
 /*
@@ -14,7 +14,7 @@ struct VS2PS_Census
     float4 Tex2 : TEXCOORD2;
 };
 
-VS2PS_Census VS_Census(APP2VS Input)
+VS2PS_Census VS_Census(CShade_APP2VS Input)
 {
     // Sample locations:
     // [0].xy [1].xy [2].xy
@@ -24,7 +24,7 @@ VS2PS_Census VS_Census(APP2VS Input)
     const float2 PixelSize = 1.0 / float2(BUFFER_WIDTH, BUFFER_HEIGHT);
 
     // Get fullscreen texcoord and vertex position
-    VS2PS_Quad FSQuad = VS_Quad(Input);
+    CShade_VS2PS_Quad FSQuad = CShade_VS_Quad(Input);
 
     VS2PS_Census Output;
     Output.HPos = FSQuad.HPos;

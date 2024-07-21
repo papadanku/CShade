@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -15,7 +15,7 @@ uniform float4 _Color <
     [Pixel Shaders]
 */
 
-float4 PS_Color(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return _Color;
 }
@@ -31,7 +31,7 @@ technique CShade_ColorBlendOp
         DestBlend = SRCALPHA;
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Color;
     }
 }

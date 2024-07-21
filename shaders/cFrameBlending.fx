@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -23,13 +23,13 @@ CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP)
     [Pixel Shaders]
 */
 
-float4 PS_Blend(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Copy backbuffer to a that continuously blends with its previous result 
     return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, _BlendFactor);
 }
 
-float4 PS_Display(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Display the buffer
     return tex2D(SampleBlendTex, Input.Tex0);
@@ -46,7 +46,7 @@ technique CShade_FrameBlending
         DestBlend = SRCALPHA;
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blend;
         RenderTarget0 = BlendTex;
     }
@@ -55,7 +55,7 @@ technique CShade_FrameBlending
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Display;
     }
 }

@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/fidelityfx/cCas.fxh"
 
 /*
@@ -38,7 +38,7 @@ uniform float _Contrast <
     ui_max = 1.0;
 > = 0.0;
 
-float4 PS_CasFilterNoScaling(VS2PS_Quad Input): SV_TARGET0
+float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
     FFX_CAS_FilterNoScaling(OutputColor.rgb, Input, _Contrast);
@@ -51,7 +51,7 @@ technique CShade_ImageSharpening
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_CasFilterNoScaling;
     }
 }

@@ -1,8 +1,8 @@
 
 #include "cMath.fxh"
 
-#if !defined(INCLUDE_CONVOLUTION)
-    #define INCLUDE_CONVOLUTION
+#if !defined(INCLUDE_BLUR)
+    #define INCLUDE_BLUR
 
     /*
         Linear Gaussian blur
@@ -10,23 +10,23 @@
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
-    float CConvolution_GetGaussianWeight(float SampleIndex, float Sigma)
+    float CBlur_GetGaussianWeight(float SampleIndex, float Sigma)
     {
         float Output = rsqrt(2.0 * CMath_GetPi() * (Sigma * Sigma));
         return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
     }
 
-    float CConvolution_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
+    float CBlur_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
     {
         float Offset1 = SampleIndex;
         float Offset2 = SampleIndex + 1.0;
-        float Weight1 = CConvolution_GetGaussianWeight(Offset1, Sigma);
-        float Weight2 = CConvolution_GetGaussianWeight(Offset2, Sigma);
+        float Weight1 = CBlur_GetGaussianWeight(Offset1, Sigma);
+        float Weight2 = CBlur_GetGaussianWeight(Offset2, Sigma);
         LinearWeight = Weight1 + Weight2;
         return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
 
-    float4 CConvolution_GetPixelBlur(VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
+    float4 CBlur_GetPixelBlur(CShade_VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
     {
         // Initialize variables
         const int KernelSize = 10;
@@ -73,7 +73,7 @@
         Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
     */
 
-    float2 CConvolution_SampleVogel(int Index, int SamplesCount)
+    float2 CBlur_SampleVogel(int Index, int SamplesCount)
     {
         const float GoldenAngle = CMath_GetPi() * (3.0 - sqrt(5.0));
         float Radius = sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));

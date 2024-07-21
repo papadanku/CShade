@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -15,7 +15,7 @@ uniform float2 _Scale <
     [Pixel Shaders]
 */
 
-float4 PS_Letterbox(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Output a rectangle
     const float2 Scale = -_Scale * 0.5 + 0.5;
@@ -36,7 +36,7 @@ technique CShade_LetterBox
         DestBlend = ZERO;
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Letterbox;
     }
 }

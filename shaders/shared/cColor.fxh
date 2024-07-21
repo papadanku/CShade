@@ -1,8 +1,8 @@
-    
-#if !defined(INCLUDE_COLORSPACES)
-    #define INCLUDE_COLORSPACES
 
-    float3 CColorSpaces_GetSumChromaticity(float3 Color, int Method)
+#if !defined(INCLUDE_COLOR)
+    #define INCLUDE_COLOR
+
+    float3 CColor_GetSumChromaticity(float3 Color, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
@@ -35,7 +35,7 @@
         Ratio-based chromaticity
     */
 
-    float2 CColorSpaces_GetRatioRG(float3 Color)
+    float2 CColor_GetRatioRG(float3 Color)
     {
         float2 Ratio = (Color.z == 0.0) ? 1.0 : Color.xy / Color.zz;
         // x / (x + 1.0) normalizes to [0, 1] range
@@ -52,7 +52,7 @@
         Technical contribution to the H.264 Video Coding Standard. Joint Video Team (JVT) of ISO/IEC MPEG & ITU-T VCEG (ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q.6) Document JVT-I014r3.
     */
 
-    float2 CColorSpaces_GetCoCg(float3 Color)
+    float2 CColor_GetCoCg(float3 Color)
     {
         float2 CoCg = 0.0;
         float2x3 MatCoCg = float2x3
@@ -73,7 +73,7 @@
         https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html
     */
 
-    float2 CColorSpaces_GetCrCb(float3 Color)
+    float2 CColor_GetCrCb(float3 Color)
     {
         float Y = dot(Color, float3(0.299, 0.587, 0.114));
         return ((Color.br - Y) * float2(0.564, 0.713)) + 0.5;
@@ -88,7 +88,7 @@
         http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
     */
 
-    float CColorSpaces_SaturateRGB(float3 Color)
+    float CColor_SaturateRGB(float3 Color)
     {
         // Calculate min and max RGB
         float MinColor = min(min(Color.r, Color.g), Color.b);
@@ -119,7 +119,7 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
-    float3 CColorSpaces_GetHSVfromRGB(float3 Color)
+    float3 CColor_GetHSVfromRGB(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
@@ -140,7 +140,7 @@
         return Output;
     }
 
-    float3 CColorSpaces_GetHSLfromRGB(float3 Color)
+    float3 CColor_GetHSLfromRGB(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
@@ -174,7 +174,7 @@
         Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float2 CColorSpaces_GetSphericalRG(float3 Color)
+    float2 CColor_GetSphericalRG(float3 Color)
     {
         const float HalfPi = 1.0 / acos(0.0);
 
@@ -189,7 +189,7 @@
         return saturate(asin(abs(Angles)) * HalfPi);
     }
 
-    float3 CColorSpaces_GetHSIfromRGB(float3 Color)
+    float3 CColor_GetHSIfromRGB(float3 Color)
     {
         float3 O = Color.rrr;
         O += (Color.ggg * float3(-1.0, 1.0, 1.0));
@@ -207,7 +207,7 @@
     /*
         Luminance methods
     */
-    float CColorSpaces_GetLuma(float3 Color, int Method)
+    float CColor_GetLuma(float3 Color, int Method)
     {
         switch(Method)
         {

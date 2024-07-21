@@ -1,6 +1,6 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cColorSpaces.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 
 /*
     Directionally Localized Anti-Aliasing (DLAA)
@@ -12,10 +12,10 @@
 
 float GetIntensity(float3 Color)
 {
-    return CColorSpaces_GetLuma(Color, 3);
+    return CColor_GetLuma(Color, 3);
 }
 
-float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0.xy);
     float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
@@ -31,7 +31,7 @@ float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
     return float4(SampleE, EdgesLuma);
 }
 
-float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
 
@@ -171,13 +171,13 @@ technique CShade_AntiAliasing
 {
     pass PreFilter
     {
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Prefilter;
     }
 
     pass AntiAliasing
     {
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_AntiAliasing;
     }
 }

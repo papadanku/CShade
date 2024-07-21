@@ -1,6 +1,6 @@
 
-#include "shared/cGraphics.fxh"
-#include "shared/cColorSpaces.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 
 /*
     [Shader Options]
@@ -16,10 +16,10 @@ uniform int _Select <
     [Pixel Shaders]
 */
 
-float4 PS_Luminance(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 OutputColor = CColorSpaces_GetLuma(Color, _Select);
+    float4 OutputColor = CColor_GetLuma(Color, _Select);
     return OutputColor;
 }
 
@@ -29,7 +29,7 @@ technique CShade_Grayscale
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Luminance;
     }
 }

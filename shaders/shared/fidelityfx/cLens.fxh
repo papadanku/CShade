@@ -1,5 +1,5 @@
 
-#include "../cGraphics.fxh"
+#include "../cShade.fxh"
 #include "../cMath.fxh"
 #include "../cProcedural.fxh"
 
@@ -75,7 +75,7 @@
     /// Function call to apply chromatic aberration effect when sampling the Color input texture.
     float3 FFX_Lens_SampleWithChromaticAberration
     (
-        VS2PS_Quad VS, // The input window coordinate [0, widthPixels), [0, heightPixels).
+        CShade_VS2PS_Quad VS, // The input window coordinate [0, widthPixels), [0, heightPixels).
         float2 CenterCoord, // The center window coordinate of the screen.
         float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
@@ -98,14 +98,14 @@
     /// Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
     void FFX_Lens_ApplyFilmGrain
     (
-        in VS2PS_Quad VS,
+        in CShade_VS2PS_Quad VS,
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
         float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
         float GrainAmountValue, // Intensity constant value of the grain effect.
         float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 Pos = (VS.Tex0.xy * 2.0 - 1.0) * CGraphics_GetScreenSizeFromTex(VS.Tex0.xy);
+        float2 Pos = (VS.Tex0.xy * 2.0 - 1.0) * CShade_GetScreenSizeFromTex(VS.Tex0.xy);
         float2 RandomNumberFine = CProcedural_GetHash2(Pos, 0.0);
         float2 GradientN = GetGradientNoise2((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
         const float GrainShape = 3.0;
@@ -139,7 +139,7 @@
     void FFX_Lens
     (
         inout float3 Color,
-        in VS2PS_Quad VS,
+        in CShade_VS2PS_Quad VS,
         in float GrainScale,
         in float GrainAmount,
         in float ChromAb,
@@ -148,7 +148,7 @@
         )
     {
         float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-        float2 Center = CGraphics_GetScreenSizeFromTex(VS.Tex0.xy) / 2.0;
+        float2 Center = CShade_GetScreenSizeFromTex(VS.Tex0.xy) / 2.0;
         float2 UNormTex = (VS.Tex0 * 2.0) - 1.0;
 
         // Run Lens

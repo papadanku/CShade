@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 namespace cPyramidBlur
 {
@@ -46,9 +46,9 @@ namespace cPyramidBlur
         float4 Tex3 : TEXCOORD3;
     };
 
-    VS2PS_Scale GetVertexScale(APP2VS Input, float2 PixelSize, int ScaleMethod)
+    VS2PS_Scale GetVertexScale(CShade_APP2VS Input, float2 PixelSize, int ScaleMethod)
     {
-        VS2PS_Quad FSQuad = VS_Quad(Input);
+        CShade_VS2PS_Quad FSQuad = CShade_VS_Quad(Input);
 
         VS2PS_Scale Output;
 
@@ -80,7 +80,7 @@ namespace cPyramidBlur
     }
 
     #define CREATE_VS_DOWNSCALE(METHOD_NAME, INV_BUFFER_SIZE) \
-        VS2PS_Scale METHOD_NAME(APP2VS Input) \
+        VS2PS_Scale METHOD_NAME(CShade_APP2VS Input) \
         { \
             return GetVertexScale(Input, INV_BUFFER_SIZE, _Downscale); \
         }
@@ -91,7 +91,7 @@ namespace cPyramidBlur
     CREATE_VS_DOWNSCALE(VS_Downscale4, 1.0 / BUFFER_SIZE_3)
 
     #define CREATE_VS_UPSCALE(METHOD_NAME, INV_BUFFER_SIZE) \
-        VS2PS_Scale METHOD_NAME(APP2VS Input) \
+        VS2PS_Scale METHOD_NAME(CShade_APP2VS Input) \
         { \
             return GetVertexScale(Input, INV_BUFFER_SIZE, _Upscale); \
         }

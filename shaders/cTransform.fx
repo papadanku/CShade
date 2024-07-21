@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 
 /*
     [Shader Options]
@@ -24,11 +24,11 @@ uniform float2 _Scale <
     [Vertex Shaders]
 */
 
-VS2PS_Quad VS_Matrix(APP2VS Input)
+CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
 {
     // Calculate the shader's HPos and Tex0
     // We modify the Tex0's output afterward
-    VS2PS_Quad Output = VS_Quad(Input);
+    CShade_VS2PS_Quad Output = CShade_VS_Quad(Input);
 
     float RotationAngle = radians(_Angle);
 
@@ -69,7 +69,7 @@ VS2PS_Quad VS_Matrix(APP2VS Input)
     [Pixel Shaders]
 */
 
-float4 PS_Matrix(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Matrix(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return tex2D(CShade_SampleColorTex, Input.Tex0);
 }

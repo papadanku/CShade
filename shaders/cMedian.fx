@@ -1,12 +1,12 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
 
 /*
     [Pixel Shaders]
 */
 
-float4 PS_Median(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float4 Tex0 = Input.Tex0.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * PixelSize.xyyy);
@@ -38,7 +38,7 @@ technique CShade_Median
     {
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Median;
     }
 }

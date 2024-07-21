@@ -1,5 +1,5 @@
 
-#include "shared/cGraphics.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
 
 #define INCLUDE_CCAMERA_INPUT
@@ -159,7 +159,7 @@ struct Sample
     float Weight;
 };
 
-float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
@@ -219,7 +219,7 @@ float4 GetKarisAverage(Sample Group[4])
 }
 
 // 13-tap downsampling with Karis luma filtering
-float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialKaris)
+float4 GetPixelDownscale(CShade_VS2PS_Quad Input, sampler2D SampleSource, bool PartialKaris)
 {
     float4 OutputColor0 = 0.0;
 
@@ -301,7 +301,7 @@ float4 GetPixelDownscale(VS2PS_Quad Input, sampler2D SampleSource, bool PartialK
 }
 
 #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
-    float4 METHOD_NAME(VS2PS_Quad Input) : SV_TARGET0 \
+    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
     { \
         return GetPixelDownscale(Input, SAMPLER, FLICKER_FILTER); \
     }
@@ -315,13 +315,13 @@ CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
 CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
 CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
-float4 PS_GetExposure(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
     return CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
-float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
+float4 GetPixelUpscale(CShade_VS2PS_Quad Input, sampler2D SampleSource)
 {
     // A0 B0 C0
     // A1 B1 C1
@@ -352,12 +352,12 @@ float4 GetPixelUpscale(VS2PS_Quad Input, sampler2D SampleSource)
 }
 
 #define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER, LEVEL_WEIGHT) \
-    float4 METHOD_NAME(VS2PS_Quad Input) : SV_TARGET0 \
+    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
     { \
         return float4(GetPixelUpscale(Input, SAMPLER).rgb, LEVEL_WEIGHT); \
     }
 
-float4 PS_Upscale7(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Upscale7(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return float4(GetPixelUpscale(Input, SampleTempTex8).rgb * _Level8Weight, _Level7Weight);
 }
@@ -369,7 +369,7 @@ CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4, _Level3Weight)
 CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3, _Level2Weight)
 CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2, _Level1Weight)
 
-float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
@@ -395,17 +395,17 @@ float4 PS_Composite(VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Bloom
 {
     // Prefilter stuff, emulate autoexposure
-    CREATE_PASS(VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
 
     // Iteratively downsample the image (RGB) and its log luminance (A) into a "pyramid"
-    CREATE_PASS(VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
-    CREATE_PASS(VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
     // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
     #if USE_AUTOEXPOSURE
@@ -417,7 +417,7 @@ technique CShade_Bloom
             SrcBlend = SRCALPHA;
             DestBlend = INVSRCALPHA;
 
-            VertexShader = VS_Quad;
+            VertexShader = CShade_VS_Quad;
             PixelShader = PS_GetExposure;
 
             RenderTarget0 = ExposureTex;
@@ -439,20 +439,20 @@ technique CShade_Bloom
                - Level 8-2 do not upsample and accumulate
                - Level 1 is the only visable level
     */
-    CREATE_PASS(VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
-    CREATE_PASS(VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
 
     pass
     {
         ClearRenderTargets = FALSE;
         SRGBWriteEnable = WRITE_SRGB;
 
-        VertexShader = VS_Quad;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_Composite;
     }
 }
