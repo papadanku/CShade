@@ -140,7 +140,6 @@ namespace cMotionBlur
         float4 OutputColor = 0.0;
         const int Samples = 16;
 
-
         float FrameRate = 1e+3 / _FrameTime;
         float FrameTimeRatio = _TargetFrameRate / FrameRate;
 
