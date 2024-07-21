@@ -9,7 +9,7 @@
 uniform int _Select <
     ui_label = "Luminance Method";
     ui_type = "combo";
-    ui_items = "Average\0Min\0Median\0Max\0Length\0None\0";
+    ui_items = "Average\0Min\0Median\0Max\0Length\0Min+Max\0None\0";
 > = 0;
 
 /*

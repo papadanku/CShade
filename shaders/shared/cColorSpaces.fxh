@@ -209,34 +209,29 @@
     */
     float CColorSpaces_GetLuma(float3 Color, int Method)
     {
-        float Luma = 0.0;
         switch(Method)
         {
             case 0:
                 // Average
-                Luma = dot(Color.rgb, 1.0 / 3.0);
-                break;
+                return dot(Color.rgb, 1.0 / 3.0);
             case 1:
                 // Min
-                Luma = min(Color.r, min(Color.g, Color.b));
-                break;
+                return min(Color.r, min(Color.g, Color.b));
             case 2:
                 // Median
-                Luma = max(min(Color.r, Color.g), min(max(Color.r, Color.g), Color.b));
-                break;
+                return max(min(Color.r, Color.g), min(max(Color.r, Color.g), Color.b));
             case 3:
                 // Max
-                Luma = max(Color.r, max(Color.g, Color.b));
-                break;
+                return max(Color.r, max(Color.g, Color.b));
             case 4:
                 // Length
-                Luma = length(Color.rgb) * rsqrt(3.0);
-                break;
+                return length(Color.rgb) * rsqrt(3.0);
+            case 5:
+                // Min+Max
+                return lerp(min(Color.r, min(Color.g, Color.b)), max(Color.r, max(Color.g, Color.b)), 0.5);
             default:
-                Luma = Color;
-                break;
+                return 0.5;
         }
-        return Luma;
     }
 
 #endif

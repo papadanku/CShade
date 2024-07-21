@@ -12,7 +12,7 @@
 
 float GetIntensity(float3 Color)
 {
-    return CColorSpaces_GetLuma(Color, 0);
+    return CColorSpaces_GetLuma(Color, 3);
 }
 
 float4 PS_Prefilter(VS2PS_Quad Input) : SV_TARGET0
@@ -122,7 +122,7 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
 
     [branch]
-    if (LongEdgeMaskH > 0.0 || LongEdgeMaskV > 0.0)
+    if (abs(LongEdgeMaskH - LongEdgeMaskV) > 0.2)
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
@@ -164,7 +164,7 @@ float4 PS_AntiAliasing(VS2PS_Quad Input) : SV_TARGET0
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
-    return Color;
+     return Color;
 }
 
 technique CShade_AntiAliasing
