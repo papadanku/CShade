@@ -61,7 +61,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 WH = 2.0 * (Left01 + Right01);
     float4 WV = 2.0 * (Top01 + Bottom01);
 
-    // Softer (5-pixel wide high-pass)
+    // 3-pixel wide high-pass
     float4 EdgeH = abs(Left + Right - 2.0 * Center) / 2.0;
     float4 EdgeV = abs(Top + Bottom - 2.0 * Center) / 2.0;
 
@@ -86,7 +86,6 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     /*
         Long edges
     */
-
     float4 LTex0 = Input.Tex0.xyxy + (float4(1.5, 0.0, 0.0, 1.5) * Delta.xyxy);
     float4 LTex1 = Input.Tex0.xyxy + (float4(3.5, 0.0, 0.0, 3.5) * Delta.xyxy);
     float4 LTex2 = Input.Tex0.xyxy + (float4(5.5, 0.0, 0.0, 5.5) * Delta.xyxy);
