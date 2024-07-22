@@ -148,7 +148,7 @@
     {
         float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
         float2 Center = CShade_GetScreenSizeFromTex(Tex) / 2.0;
-        float2 UNormTex = (Tex * 2.0) - 1.0;
+        float2 UNormTex = Tex - 0.5;
 
         // Run Lens
         Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
