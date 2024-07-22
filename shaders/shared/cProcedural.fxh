@@ -133,7 +133,7 @@
         return Noise;
     }
 
-    float2 GetGradientNoise2(float2 Input, float Bias, bool Normalize)
+    float2 CProcedural_GetGradientNoise2(float2 Input, float Bias, bool Normalize)
     {
         float2 I = floor(Input);
         float2 F = frac(Input);
