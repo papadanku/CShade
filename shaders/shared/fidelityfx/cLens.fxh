@@ -106,7 +106,7 @@
     {
         float2 Pos = (Tex * 2.0 - 1.0) * CShade_GetScreenSizeFromTex(Tex);
         float2 RandomNumberFine = CProcedural_GetHash2(Pos, 0.0);
-        float2 GradientN = GetGradientNoise2((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
+        float2 GradientN = CProcedural_GetGradientNoise2((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
         const float GrainShape = 3.0;
 
         float Grain = 1.0 - 2.0 * exp2(-length(GradientN) * GrainShape);
