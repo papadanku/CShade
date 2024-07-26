@@ -131,4 +131,138 @@
         return Output;
     }
 
+    struct CEdge_FreiChen
+    {
+        float Divisor;
+        float Kernel[9];
+    };
+
+    /*
+        Frei-Chen edge detection
+        ---
+        https://www.rastergrid.com/blog/2011/01/frei-chen-edge-detector/
+    */
+
+    float4 CEdge_GetFreiChen(sampler2D Image, float2 Tex)
+    {
+        float2 Delta = fwidth(Tex);
+        float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
+        float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
+        float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
+
+        float4 T[9];
+        T[0] = tex2D(Image, Tex1.xy); // <-1.0, 1.0>
+        T[1] = tex2D(Image, Tex2.xy); // <0.0, 1.0>
+        T[2] = tex2D(Image, Tex3.xy); // <1.0, 1.0>
+        T[3] = tex2D(Image, Tex1.xz); // <-1.0, 0.0>
+        T[4] = tex2D(Image, Tex2.xz); // <0.0, 0.0>
+        T[5] = tex2D(Image, Tex3.xz); // <1.0, 0.0>
+        T[6] = tex2D(Image, Tex1.xw); // <-1.0, -1.0>
+        T[7] = tex2D(Image, Tex2.xw); // <0.0, -1.0>
+        T[8] = tex2D(Image, Tex3.xw); // <1.0, -1.0>
+
+        CEdge_FreiChen Masks[9];
+
+        Masks[0].Divisor = 1.0 / (2.0 * sqrt(2.0));
+        Masks[0].Kernel =
+        {
+             1.0,  sqrt(2.0),  1.0,
+             0.0,  0.0,        0.0,
+            -1.0, -sqrt(2.0), -1.0
+        };
+
+        Masks[1].Divisor = 1.0 / (2.0 * sqrt(2.0));
+        Masks[1].Kernel =
+        {
+            1.0,       0.0, -1.0,
+            sqrt(2.0), 0.0, -sqrt(2.0),
+            1.0,       0.0, -1.0
+        };
+
+        Masks[2].Divisor = 1.0 / (2.0 * sqrt(2.0));
+        Masks[2].Kernel =
+        {
+             0.0,      -1.0,  sqrt(2.0),
+             1.0,       0.0, -1.0,
+            -sqrt(2.0), 1.0,  0.0
+        };
+
+        Masks[3].Divisor = 1.0 / (2.0 * sqrt(2.0));
+        Masks[3].Kernel =
+        {
+            sqrt(2.0), -1.0,  0.0,
+            -1.0,       0.0,  1.0,
+             0.0,       1.0, -sqrt(2.0)
+        };
+
+        Masks[4].Divisor = 1.0 / 2.0;
+        Masks[4].Kernel =
+        {
+             0.0, 1.0,  0.0,
+            -1.0, 0.0, -1.0,
+             0.0, 1.0,  0.0
+        };
+
+        Masks[5].Divisor = 1.0 / 2.0;
+        Masks[5].Kernel =
+        {
+            -1.0, 0.0,  1.0,
+             0.0, 0.0,  0.0,
+             1.0, 0.0, -1.0
+        };
+
+        Masks[6].Divisor = 1.0 / 6.0;
+        Masks[6].Kernel =
+        {
+             1.0, -2.0,  1.0,
+            -2.0,  4.0, -2.0,
+             1.0, -2.0,  1.0
+        };
+
+        Masks[7].Divisor = 1.0 / 6.0;
+        Masks[7].Kernel =
+        {
+            -2.0, 1.0, -2.0,
+             1.0, 4.0,  1.0,
+            -2.0, 1.0, -2.0
+        };
+
+        Masks[8].Divisor = 1.0 / 3.0;
+        Masks[8].Kernel =
+        {
+            1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0
+        };
+
+        float4 M = 0.0;
+        float4 S = 0.0;
+
+        // Compute M
+        for (int i = 0; i < 9; i++)
+        {
+            float4 G = 0.0;
+            for (int j = 0; j < 9; j++)
+            {
+                G += T[j] * (Masks[i].Kernel[j]);
+            }
+            G *= Masks[i].Divisor;
+            G *= G;
+
+            if (i < 4)
+            {
+                M += G;
+            }
+            else
+            {
+                S += G;
+            }
+        }
+
+        // Compute S
+        S += M;
+
+        return sqrt(M / S);
+    }
+
 #endif
