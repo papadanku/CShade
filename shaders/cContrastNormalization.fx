@@ -2,6 +2,12 @@
 #include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
 
+uniform int _Select <
+    ui_label = "Filter";
+    ui_type = "combo";
+    ui_items = "Local Contrast Normalization\0Census Transform\0";
+> = 0;
+
 /*
     [Pixel Shaders]
 */
@@ -58,14 +64,23 @@ float4 GetLocalContrastNormalization(sampler2D Image, float2 Tex)
         StdDev += (G * G);
     }
 
-    StdDev = sqrt(max(StdDev / 5.0, 1e-4));
+    StdDev = sqrt(max(StdDev / 5.0, 1e-6));
     return (S[0] - Mean) / StdDev;
 }
 
 float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
-    return (dot(LCN.rgb, 1.0 / 3.0) * 0.5) + 0.5;
+    switch (_Select)
+    {
+        case 0:
+            float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
+            return (dot(LCN.rgb, 1.0 / 3.0) * 0.5) + 0.5;
+        case 1:
+            float4 CT = GetCensusTransform(CShade_SampleColorTex, Input.Tex0);
+            return dot(CT.rgb, 1.0 / 3.0);
+        default:
+            return 0.5;
+    }
 }
 
 technique CShade_ContrastNormalization
