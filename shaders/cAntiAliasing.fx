@@ -25,8 +25,9 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 SampleC = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
     float3 SampleD = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
     float3 SampleE = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
+
     float3 Mean = SampleA + SampleB + SampleC + SampleD;
-    float3 Edges = 4.0 * (abs(Mean - (SampleE * 4.0)) / Mean);
+    float3 Edges = 4.0 * abs(Mean - (SampleE * 4.0));
     float EdgesLuma = GetIntensity(Edges);
 
     return float4(SampleE, EdgesLuma);

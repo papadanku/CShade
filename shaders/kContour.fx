@@ -1,5 +1,6 @@
 
 #include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 #include "shared/cEdge.fxh"
 
 /*
@@ -32,7 +33,7 @@
 uniform int _Method <
     ui_label = "Edge Detection Method";
     ui_type = "combo";
-    ui_items = "ddx(),ddy()\0Sobel: Bilinear 3x3\0Prewitt: Bilinear 5x5\0Sobel: Bilinear 5x5\0Prewitt: 3x3\0Scharr: 3x3\0";
+    ui_items = "ddx(),ddy()\0Sobel: Bilinear 3x3\0Prewitt: Bilinear 5x5\0Sobel: Bilinear 5x5\0Prewitt: 3x3\0Scharr: 3x3\0Frei-Chen\0";
 > = 0;
 
 uniform float _Threshold <
@@ -74,41 +75,47 @@ uniform float4 _BackColor <
     [Pixel Shaders]
 */
 
+float GetGradientLuma(CEdge_Gradient Input)
+{
+    return sqrt(dot(Input.Ix.rgb, Input.Ix.rgb) + dot(Input.Iy.rgb, Input.Iy.rgb));
+}
+
 float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    CEdge_Gradient Gradient;
+    float I = 0.0;
 
     switch(_Method)
     {
         case 0: // ddx(), ddy()
-            Gradient = CEdge_GetDDXY(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetDDXY(CShade_SampleColorTex, Input.Tex0));
             break;
         case 1: // Bilinear 3x3 Sobel
-            Gradient = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Input.Tex0));
             break;
         case 2: // Bilinear 5x5 Prewitt
-            Gradient = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Input.Tex0));
             break;
         case 3: // Bilinear 5x5 Sobel by CeeJayDK
-            Gradient = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Input.Tex0));
             break;
         case 4: // 3x3 Prewitt
-            Gradient = CEdge_GetPrewitt3x3(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetPrewitt3x3(CShade_SampleColorTex, Input.Tex0));
             break;
         case 5: // 3x3 Scharr
-            Gradient = CEdge_GetScharr3x3(CShade_SampleColorTex, Input.Tex0);
+            I = GetGradientLuma(CEdge_GetScharr3x3(CShade_SampleColorTex, Input.Tex0));
+            break;
+        case 6: // Frei-Chen
+            I = CColor_GetLuma(CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0).rgb, 3);
             break;
     }
 
-    float4 I = sqrt(dot(Gradient.Ix.rgb, Gradient.Ix.rgb) + dot(Gradient.Iy.rgb, Gradient.Iy.rgb));
-
     // Thresholding
     I = I * _ColorSensitivity;
+    I = saturate((I - _Threshold) * _InverseRange);
 
     float3 Base = tex2D(CShade_SampleColorTex, Input.Tex0.xy).rgb;
-    I = saturate((I - _Threshold) * _InverseRange);
     float3 BackgoundColor = lerp(Base.rgb, _BackColor.rgb, _BackColor.a);
-    return lerp(BackgoundColor, _FrontColor.rgb, I.a * _FrontColor.a);
+    return lerp(BackgoundColor, _FrontColor.rgb, I * _FrontColor.a);
 }
 
 technique CShade_KinoContour
