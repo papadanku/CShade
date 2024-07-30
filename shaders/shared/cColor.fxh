@@ -80,28 +80,6 @@
     }
 
     /*
-        RGB to saturation value.
-        ---
-        Golland, Polina, and Alfred M. Bruckstein. "Motion from color."
-        Computer Vision and Image Understanding 68, no. 3 (1997): 346-362.
-        ---
-        http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1995/CIS/CIS9513.pdf
-    */
-
-    float CColor_SaturateRGB(float3 Color)
-    {
-        // Calculate min and max RGB
-        float MinColor = min(min(Color.r, Color.g), Color.b);
-        float MaxColor = max(max(Color.r, Color.g), Color.b);
-
-        // Calculate normalized RGB
-        float SatRGB = (MaxColor - MinColor) / MaxColor;
-        SatRGB = (MaxColor == 0.0) ? 0.0 : SatRGB;
-
-        return SatRGB;
-    }
-
-    /*
         Color-space conversion
         ---
         https://github.com/colour-science/colour
