@@ -34,7 +34,7 @@
     void FFX_CAS_FilterNoScaling(
         inout float4 FilterShape,
         in CShade_VS2PS_Quad Input,
-        in int Mode,
+        in int Detection,
         in int Kernel,
         in float Contrast,
         in float Sharpening
@@ -105,7 +105,7 @@
         float4 AmplifyRGB = saturate(min(MinRGB, 2.0 - MaxRGB) * ReciprocalMaxRGB);
 
         // Optional grayscale
-        switch (Mode)
+        switch (Detection)
         {
             case 1:
                 AmplifyRGB = CColor_GetLuma(AmplifyRGB.rgb, 0);

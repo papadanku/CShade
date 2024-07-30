@@ -30,10 +30,10 @@
     THE SOFTWARE.
 */
 
-uniform int _Mode <
-    ui_label = "Compute Mode";
+uniform int _Detection <
+    ui_label = "Detection Mode";
     ui_type = "combo";
-    ui_items = "RGB\0Luminance (Average)\0Luminance (Max)\0";
+    ui_items = "Color\0Luminance (Average)\0Luminance (Max)\0";
 > = 0;
 
 uniform int _Kernel <
@@ -62,7 +62,7 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
     FFX_CAS_FilterNoScaling(
         OutputColor,
         Input,
-        _Mode,
+        _Detection,
         _Kernel,
         _Contrast,
         _Sharpening
