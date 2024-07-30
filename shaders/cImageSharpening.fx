@@ -30,18 +30,43 @@
     THE SOFTWARE.
 */
 
+uniform int _Mode <
+    ui_label = "Compute Mode";
+    ui_type = "combo";
+    ui_items = "RGB\0Luminance (Average)\0Luminance (Max)\0";
+> = 0;
+
+uniform int _Kernel <
+    ui_label = "Kernel Shape";
+    ui_type = "combo";
+    ui_items = "CAS: 3x3 Box\0CAS: Diamond\0CShade: Bilinear Diamond\0";
+> = 2;
+
 uniform float _Contrast <
     ui_label = "Contrast";
     ui_type = "slider";
-    ui_step = 0.001;
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.0;
 
+uniform float _Sharpening <
+    ui_label = "Sharpening";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
 float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
-    FFX_CAS_FilterNoScaling(OutputColor.rgb, Input, _Contrast);
+    FFX_CAS_FilterNoScaling(
+        OutputColor,
+        Input,
+        _Mode,
+        _Kernel,
+        _Contrast,
+        _Sharpening
+    );
     return OutputColor;
 }
 
