@@ -56,17 +56,31 @@ uniform float _Sharpening <
     ui_max = 1.0;
 > = 1.0;
 
+uniform int _DisplayMode <
+    ui_label = "Display Mode";
+    ui_type = "radio";
+    ui_items = "Output\0Mask\0";
+> = 0;
+
 float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
+    float4 OutputMask = 1.0;
     FFX_CAS_FilterNoScaling(
         OutputColor,
+        OutputMask,
         Input,
         _Detection,
         _Kernel,
         _Contrast,
         _Sharpening
     );
+
+    if (_DisplayMode == 1)
+    {
+        return OutputMask;
+    }
+
     return OutputColor;
 }
 
