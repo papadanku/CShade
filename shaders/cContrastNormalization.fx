@@ -1,5 +1,6 @@
 
 #include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
 uniform int _Select <
@@ -74,10 +75,10 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         case 0:
             float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
-            return (dot(LCN.rgb, 1.0 / 3.0) * 0.5) + 0.5;
+            return (CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5;
         case 1:
             float4 CT = GetCensusTransform(CShade_SampleColorTex, Input.Tex0);
-            return dot(CT.rgb, 1.0 / 3.0);
+            return CColor_GetLuma(CT.rgb, 0);
         default:
             return 0.5;
     }
