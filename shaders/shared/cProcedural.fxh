@@ -112,11 +112,28 @@
 
         // Calculate random hash rotation
         float2 Hash = CProcedural_GetHash2(I + O, Bias) * TwoPi;
-        float4 HashSinCos = float4(sin(Hash), cos(Hash));
+        float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
+        float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
         float2 Gradient = F - O;
 
         // Calculate final dot-product
-        return float2(dot(HashSinCos.xz, Gradient), dot(HashSinCos.yw, Gradient));
+        return float2(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient));
+    }
+
+    float3 CProcedural_GetGradient3(float2 I, float2 F, float2 O, float Bias)
+    {
+        // Get constants
+        const float TwoPi = CMath_GetPi() * 2.0;
+
+        // Calculate random hash rotation
+        float3 Hash = CProcedural_GetHash3(I + O, Bias) * TwoPi;
+        float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
+        float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
+        float2 HashSinCos3 = float2(sin(Hash.z), cos(Hash.z));
+        float2 Gradient = F - O;
+
+        // Calculate final dot-product
+        return float3(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient), dot(HashSinCos3, Gradient));
     }
 
     float CProcedural_GetGradientNoise1(float2 Tex, float Bias, bool Normalize)
@@ -143,6 +160,20 @@
         float2 D = CProcedural_GetGradient2(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CProcedural_GetQuintic(F);
         float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
+        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        return Noise;
+    }
+
+    float3 CProcedural_GetGradientNoise3(float2 Input, float Bias, bool Normalize)
+    {
+        float2 I = floor(Input);
+        float2 F = frac(Input);
+        float3 A = CProcedural_GetGradient3(I, F, float2(0.0, 0.0), Bias);
+        float3 B = CProcedural_GetGradient3(I, F, float2(1.0, 0.0), Bias);
+        float3 C = CProcedural_GetGradient3(I, F, float2(0.0, 1.0), Bias);
+        float3 D = CProcedural_GetGradient3(I, F, float2(1.0, 1.0), Bias);
+        float2 UV = CProcedural_GetQuintic(F);
+        float3 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
         Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
         return Noise;
     }

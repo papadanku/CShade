@@ -32,27 +32,34 @@
 
 uniform float _Time < source = "timer"; >;
 
-uniform bool _UseTimeSeed <
+uniform int _GrainType <
     ui_category = "Grain";
-    ui_label = "Use Time-Based Seed";
-    ui_type = "radio";
-> = false;
+    ui_label = "Grain Type";
+    ui_type = "combo";
+    ui_items = "Single-Channel\0Multi-Channel\0";
+> = 0;
 
 uniform float _GrainScale <
     ui_category = "Grain";
-    ui_label = "Scale";
+    ui_label = "Grain Scale";
     ui_type = "slider";
     ui_min = 0.01;
-    ui_max = 20.0;
+    ui_max = 1.0;
 > = 0.01;
 
 uniform float _GrainAmount <
     ui_category = "Grain";
-    ui_label = "Amount";
+    ui_label = "Grain Amount";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 20.0;
+    ui_max = 1.0;
 > = 0.35;
+
+uniform bool _UseTimeSeed <
+    ui_category = "Grain";
+    ui_label = "Enable Time-Based Seed";
+    ui_type = "radio";
+> = true;
 
 uniform float _GrainSeed <
     ui_category = "Grain";
@@ -60,7 +67,7 @@ uniform float _GrainSeed <
     ui_type = "drag";
 > = 0.0;
 
-uniform float _Speed <
+uniform float _GrainSeedSpeed <
     ui_category = "Grain";
     ui_label = "Seed Speed";
     ui_type = "slider";
@@ -88,12 +95,13 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
     float Seed = _GrainSeed;
-    Seed = (_UseTimeSeed) ? Seed + (rcp(1e+3 / _Time) * _Speed) : Seed;
+    Seed = (_UseTimeSeed) ? Seed + (rcp(1e+3 / _Time) * _GrainSeedSpeed) : Seed;
     FFX_Lens(
         OutputColor.rgb,
         CShade_SampleColorTex,
         Input.HPos.xy,
         Input.Tex0,
+        _GrainType,
         _GrainScale,
         _GrainAmount,
         _ChromAb,
