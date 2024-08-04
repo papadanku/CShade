@@ -89,13 +89,14 @@ uniform int _DisplayMode <
 
 float3 GetColorFromGradient(CEdge_Gradient Input)
 {
+    float3 Color = sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
     if (_WeightMode == 1)
     {
-        return sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
+        return Color;
     }
     else
     {
-        return sqrt(dot(Input.Ix.rgb, Input.Ix.rgb) + dot(Input.Iy.rgb, Input.Iy.rgb));
+        return CColor_GetLuma(Color, 3);
     }
 }
 
@@ -107,7 +108,7 @@ float3 GetColor(float4 Input)
     }
     else
     {
-        return sqrt(dot(Input.rgb, Input.rgb));
+        return CColor_GetLuma(Input.rgb, 3);
     }
 }
 
