@@ -20,17 +20,23 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 Delta = fwidth(Input.Tex0.xy);
     float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
     float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
-    float3 SampleA = tex2D(CShade_SampleGammaTex, EdgeTex0.xy).rgb;
-    float3 SampleB = tex2D(CShade_SampleGammaTex, EdgeTex0.zw).rgb;
-    float3 SampleC = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
-    float3 SampleD = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
-    float3 SampleE = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
 
-    float3 Mean = SampleA + SampleB + SampleC + SampleD;
-    float3 Edges = abs(Mean - (SampleE * 4.0));
+    float3 Neighborhood[4];
+    float3 Center = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
+    Neighborhood[0] = tex2D(CShade_SampleGammaTex, EdgeTex0.xy).rgb;
+    Neighborhood[1] = tex2D(CShade_SampleGammaTex, EdgeTex0.zw).rgb;
+    Neighborhood[2] = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
+    Neighborhood[3] = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
+
+    // Compass edge detection on N/S/E/W
+    float3 Edges = 0.0;
+    Edges = max(Edges, abs(Center - Neighborhood[0]));
+    Edges = max(Edges, abs(Center - Neighborhood[1]));
+    Edges = max(Edges, abs(Center - Neighborhood[2]));
+    Edges = max(Edges, abs(Center - Neighborhood[3]));
     float EdgesLuma = smoothstep(0.0, 0.25, GetIntensity(Edges));
 
-    return float4(SampleE, EdgesLuma);
+    return float4(Center, EdgesLuma);
 }
 
 float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
