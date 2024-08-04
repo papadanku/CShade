@@ -31,7 +31,7 @@
     #if defined(INCLUDE_CCAMERA_OUTPUT)
         uniform float _CShadeExposureBias <
             ui_category = "Output: AutoExposure";
-            ui_label = "Exposure Compensation Bias";
+            ui_label = "Compensation Bias";
             ui_type = "slider";
             ui_step = 0.001;
             ui_min = -4.0;
@@ -40,7 +40,7 @@
 
         uniform float _CShadeExposureRange <
             ui_category = "Output: AutoExposure";
-            ui_label = "Exposure Compensation Range";
+            ui_label = "Compensation Range";
             ui_type = "slider";
             ui_step = 0.001;
             ui_min = 1.0;

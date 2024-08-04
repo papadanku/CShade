@@ -31,13 +31,13 @@
 */
 
 uniform int _Method <
-    ui_label = "Edge Detection Method";
+    ui_label = "Edge Detection Kernel";
     ui_type = "combo";
     ui_items = "ddx(),ddy()\0Sobel: Bilinear 3x3\0Prewitt: Bilinear 5x5\0Sobel: Bilinear 5x5\0Prewitt: 3x3\0Scharr: 3x3\0Frei-Chen\0";
 > = 1;
 
 uniform int _WeightMode <
-    ui_label = "Edge Weighting Method";
+    ui_label = "Edge Weighting Mode";
     ui_type = "combo";
     ui_items = "Single-Channel\0Multi-Channel\0";
 > = 0;
