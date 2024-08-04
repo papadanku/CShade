@@ -40,7 +40,7 @@ uniform int _Kernel <
     ui_label = "Kernel Shape";
     ui_type = "combo";
     ui_items = "CAS: 3x3 Box\0CAS: Diamond\0CShade: Bilinear Diamond\0";
-> = 2;
+> = 1;
 
 uniform float _Contrast <
     ui_label = "Contrast";
