@@ -10,6 +10,12 @@
     Copyright (C) LucasArts 2010-2011
 */
 
+uniform int _DisplayMode <
+    ui_label = "Display Mode";
+    ui_type = "radio";
+    ui_items = "Output\0Mask\0";
+> = 0;
+
 float GetIntensity(float3 Color)
 {
     return CColor_GetLuma(Color, 3);
@@ -170,6 +176,11 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
+
+    if (_DisplayMode == 1)
+    {
+        return Center.a;
+    }
 
     return Color;
 }
