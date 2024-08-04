@@ -33,7 +33,7 @@
 uniform int _Detection <
     ui_label = "Detection Mode";
     ui_type = "combo";
-    ui_items = "Color\0Luminance (Average)\0Luminance (Max)\0";
+    ui_items = "Multi-Channel\0Single-Channel (Average)\0Single-Channel (Max)\0";
 > = 0;
 
 uniform int _Kernel <
