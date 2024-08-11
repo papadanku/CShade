@@ -281,24 +281,33 @@
     float4 GetMedian(sampler Source, float2 Tex, float Scale)
     {
         float2 PixelSize = fwidth(Tex.xy);
-        float4 Tex0 = Tex.xyyy + (ldexp(float4(-1.0, 1.0, 0.0, -1.0), Scale) * PixelSize.xyyy);
-        float4 Tex1 = Tex.xyyy + (ldexp(float4(0.0, 1.0, 0.0, -1.0), Scale) * PixelSize.xyyy);
-        float4 Tex2 = Tex.xyyy + (ldexp(float4(1.0, 1.0, 0.0, -1.0), Scale) * PixelSize.xyyy);
+
+        float Angle = radians(45.0);
+        float2x2 Rotation = float2x2(cos(Angle), sin(Angle), -sin(Angle), cos(Angle));
+
+        float4 Offsets1 = float4(mul(Rotation, float2(1.0, 1.0)), mul(Rotation, float2(-1.0, -1.0)));
+        float4 Offsets2 = float4(mul(Rotation, float2(-1.0, 1.0)), mul(Rotation, float2(1.0, -1.0)));
+        float4 Offsets3 = float4(mul(Rotation, float2(0.0, 1.0)), mul(Rotation, float2(0.0, -1.0)));
+        float4 Offsets4 = float4(mul(Rotation, float2(-1.0, 0.0)), mul(Rotation, float2(1.0, 0.0)));
+        float4 Tex1 = Tex.xyxy + (ldexp(Offsets1, Scale) * PixelSize.xyxy);
+        float4 Tex2 = Tex.xyxy + (ldexp(Offsets2, Scale) * PixelSize.xyxy);
+        float4 Tex3 = Tex.xyxy + (ldexp(Offsets3, Scale) * PixelSize.xyxy);
+        float4 Tex4 = Tex.xyxy + (ldexp(Offsets4, Scale) * PixelSize.xyxy);
 
         // Sample locations:
         // [0].xy [1].xy [2].xy
         // [0].xz [1].xz [2].xz
         // [0].xw [1].xw [2].xw
         float4 Sample[9];
-        Sample[0] = tex2D(Source, Tex0.xy);
-        Sample[1] = tex2D(Source, Tex1.xy);
+        Sample[0] = tex2D(Source, Tex1.xy);
+        Sample[1] = tex2D(Source, Tex1.zw);
         Sample[2] = tex2D(Source, Tex2.xy);
-        Sample[3] = tex2D(Source, Tex0.xz);
-        Sample[4] = tex2D(Source, Tex1.xz);
-        Sample[5] = tex2D(Source, Tex2.xz);
-        Sample[6] = tex2D(Source, Tex0.xw);
-        Sample[7] = tex2D(Source, Tex1.xw);
-        Sample[8] = tex2D(Source, Tex2.xw);
+        Sample[3] = tex2D(Source, Tex2.zw);
+        Sample[4] = tex2D(Source, Tex);
+        Sample[5] = tex2D(Source, Tex3.xy);
+        Sample[6] = tex2D(Source, Tex3.zw);
+        Sample[7] = tex2D(Source, Tex4.xy);
+        Sample[8] = tex2D(Source, Tex4.zw);
         return Med9(Sample[0], Sample[1], Sample[2],
                     Sample[3], Sample[4], Sample[5],
                     Sample[6], Sample[7], Sample[8]);
