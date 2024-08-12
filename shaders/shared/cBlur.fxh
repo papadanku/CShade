@@ -284,12 +284,12 @@
         float2 PixelSize = fwidth(Tex.xy);
 
         float Angle = radians(45.0);
-        float2x2 Rotation = float2x2(cos(Angle), sin(Angle), -sin(Angle), cos(Angle));
+        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
 
-        float4 Offsets1 = float4(mul(Rotation, float2(1.0, 1.0)), mul(Rotation, float2(-1.0, -1.0)));
-        float4 Offsets2 = float4(mul(Rotation, float2(-1.0, 1.0)), mul(Rotation, float2(1.0, -1.0)));
-        float4 Offsets3 = float4(mul(Rotation, float2(0.0, 1.0)), mul(Rotation, float2(0.0, -1.0)));
-        float4 Offsets4 = float4(mul(Rotation, float2(-1.0, 0.0)), mul(Rotation, float2(1.0, 0.0)));
+        float4 Offsets1 = float4(mul(float2(1.0, 1.0), Rotation), mul(float2(-1.0, -1.0), Rotation));
+        float4 Offsets2 = float4(mul(float2(-1.0, 1.0), Rotation), mul(float2(1.0, -1.0), Rotation));
+        float4 Offsets3 = float4(mul(float2(0.0, 1.0), Rotation), mul(float2(0.0, -1.0), Rotation));
+        float4 Offsets4 = float4(mul(float2(-1.0, 0.0), Rotation), mul(float2(1.0, 0.0), Rotation));
         float4 Tex1 = Tex.xyxy + (ldexp(Offsets1, Scale) * PixelSize.xyxy);
         float4 Tex2 = Tex.xyxy + (ldexp(Offsets2, Scale) * PixelSize.xyxy);
         float4 Tex3 = Tex.xyxy + (ldexp(Offsets3, Scale) * PixelSize.xyxy);

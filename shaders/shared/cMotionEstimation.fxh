@@ -1,6 +1,7 @@
 
 #include "cShade.fxh"
 #include "cMath.fxh"
+#include "cProcedural.fxh"
 
 #if !defined(INCLUDE_MOTIONESTIMATION)
     #define INCLUDE_MOTIONESTIMATION
@@ -59,6 +60,24 @@
         [-IxIy/D  Iy^2/D] [-IyIt]
     */
 
+    /*
+        Remember how we did the noise blur in Project Reality 1.8's suppression effect with a downscaled texture and it worked *really* well in-tandem with upsampling?
+    */
+    float4 CMotionEstimation_GetUpsampledVectors(sampler Source, float2 Tex, float2 HPos)
+    {
+        float2 Delta = fwidth(Tex) * 16.0;
+        float Pi2 = CMath_GetPi() * 2.0;
+        float Random = CProcedural_GetGradientNoise1(HPos, 0.0, true) * Pi2;
+        float2x2 Rotation = float2x2(cos(Random), -sin(Random), sin(Random), cos(Random));
+
+        float4 Output = 0.0;
+        Output += tex2D(Source, Tex + (mul(float2(-0.5, -0.5), Rotation) * Delta));
+        Output += tex2D(Source, Tex + (mul(float2(0.5, 0.5), Rotation) * Delta));
+        Output += tex2D(Source, Tex + (mul(float2(-0.5, 0.5), Rotation) * Delta));
+        Output += tex2D(Source, Tex + (mul(float2(0.5, -0.5), Rotation) * Delta));
+        return Output * 0.25;
+    }
+
     float2 CMotionEstimation_GetPixelPyLK
     (
         float2 MainTex,
@@ -74,9 +93,6 @@
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
-
-        // Get required data to calculate main texel data
-        const float Pi2 = acos(-1.0) * 2.0;
 
         // Unpack motion vectors
         Vectors = CMotionEstimation_UnpackMotionVectors(Vectors);
