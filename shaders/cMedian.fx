@@ -14,7 +14,7 @@
 #define CREATE_MEDIAN_PS(METHOD_NAME, SCALE) \
     float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
     { \
-        return GetMedian(CShade_SampleColorTex, Input.Tex0, SCALE); \
+        return CBlur_GetMedian(CShade_SampleColorTex, Input.Tex0, SCALE); \
     } \
 
 CREATE_MEDIAN_PS(PS_Median5, 4.0)

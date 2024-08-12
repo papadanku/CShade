@@ -41,6 +41,12 @@
         return acos(-1.0);
     }
 
+    float2x2 CMath_GetRotationMatrix(float Angle)
+    {
+        float A = radians(Angle);
+        return float2x2(cos(A), sin(A), -sin(A), cos(A));
+    }
+
     int CMath_GetFactorial(int N)
     {
         int O = N;

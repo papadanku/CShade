@@ -1,5 +1,6 @@
 
 #include "cMath.fxh"
+#include "cProcedural.fxh"
 
 #if !defined(INCLUDE_BLUR)
     #define INCLUDE_BLUR
@@ -73,11 +74,11 @@
         Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
     */
 
-    float2 CBlur_SampleVogel(int Index, int SamplesCount)
+    float2 CBlur_SampleVogel(int Index, int SamplesCount, float Scale, float Phi)
     {
         const float GoldenAngle = CMath_GetPi() * (3.0 - sqrt(5.0));
-        float Radius = sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));
-        float Theta = float(Index) * GoldenAngle;
+        float Radius = Scale * sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));
+        float Theta = float(Index) * GoldenAngle + Phi;
 
         float2 SinCosTheta = 0.0;
         SinCosTheta[0] = sin(Theta);
@@ -278,7 +279,7 @@
     }
 
 
-    float4 GetMedian(sampler Source, float2 Tex, float Scale)
+    float4 CBlur_GetMedian(sampler Source, float2 Tex, float Scale)
     {
         float2 PixelSize = fwidth(Tex.xy);
 
