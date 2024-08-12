@@ -97,6 +97,7 @@
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
             float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+            AngleShift = mul(Rotation, AngleShift);
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
@@ -138,15 +139,8 @@
         float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
         float2 B = float2(-IxIt, -IyIt);
 
-        // Calculate EigenValues
-        float EigenAdd = IxIx + IxIy;
-        float EigenSub = IxIx - IxIy;
-        float EigenSqrt = sqrt((4.0 * (IxIy * IxIy)) + (EigenSub * EigenSub));
-        float Eigen1 = (EigenAdd + EigenSqrt) / 2.0;
-        float Eigen2 = (EigenAdd - EigenSqrt) / 2.0;
-
         // Calculate A^T*B
-        float2 Flow = ((Eigen1 > 0.0) && (Eigen2 > 0.0)) ? mul(B, A) : 0.0;
+        float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
         // Propagate normalized motion vectors
         Vectors += CMotionEstimation_NormalizeMotionVectors(Flow, PixelSize);
