@@ -80,7 +80,7 @@
         return X * X * X * (X * (X * 6.0 - 15.0) + 10.0);
     }
 
-    float CProcedural_GetValueNoise(float2 Tex, float Bias)
+    float CProcedural_GetValueNoise(float2 Tex, float Bias, bool UseQuintic)
     {
         float2 I = floor(Tex);
         float2 F = frac(Tex);
@@ -88,7 +88,7 @@
         float B = CProcedural_GetHash1(I + float2(1.0, 0.0), Bias);
         float C = CProcedural_GetHash1(I + float2(0.0, 1.0), Bias);
         float D = CProcedural_GetHash1(I + float2(1.0, 1.0), Bias);
-        float2 UV = CProcedural_GetQuintic(F);
+        float2 UV = UseQuintic ? CProcedural_GetQuintic(F) : F;
         return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
     }
 

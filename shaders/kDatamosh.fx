@@ -164,19 +164,19 @@ namespace kDatamosh
 
     float2 PS_PyLK_Level3(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = CMotionEstimation_GetUpsampledVectors(SampleTempTex5, Input.Tex0, Input.HPos.xy / 4.0).xy;
+        float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
         return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float2 PS_PyLK_Level2(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = CMotionEstimation_GetUpsampledVectors(SampleTempTex4, Input.Tex0, Input.HPos.xy / 4.0).xy;
+        float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
         return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
     float4 PS_PyLK_Level1(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        float2 Vectors = CMotionEstimation_GetUpsampledVectors(SampleTempTex3, Input.Tex0, Input.HPos.xy / 4.0).xy;
+        float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
         return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
     }
 
