@@ -34,11 +34,6 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     Neighborhood[2] = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
     Neighborhood[3] = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
 
-    // Get range
-    float3 MinC = min(Center, min(min(Neighborhood[0], Neighborhood[1]), min(Neighborhood[2], Neighborhood[3])));
-    float3 MaxC = max(Center, max(max(Neighborhood[0], Neighborhood[1]), max(Neighborhood[2], Neighborhood[3])));
-    float3 Range = MaxC - MinC;
-
     // Compass edge detection on N/S/E/W
     float3 Edges = 0.0;
     Edges = max(Edges, abs(Center - Neighborhood[0]));
