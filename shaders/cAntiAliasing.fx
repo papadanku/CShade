@@ -45,11 +45,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     Edges = max(Edges, abs(Center - Neighborhood[1]));
     Edges = max(Edges, abs(Center - Neighborhood[2]));
     Edges = max(Edges, abs(Center - Neighborhood[3]));
-
-    // Normalize
-    Edges = smoothstep(0.0, 1.0, Edges);
-    Edges = (Range > 0.0) ? Edges / Range : Edges;
-    float EdgesLuma = GetIntensity(Edges);
+    float EdgesLuma = smoothstep(0.0, 0.25, GetIntensity(Edges));
 
     return float4(Center, EdgesLuma);
 }
