@@ -7,15 +7,14 @@
     Copyright (C) LucasArts 2010-2011
 */
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-
 uniform int _DisplayMode <
     ui_label = "Display Mode";
     ui_type = "radio";
     ui_items = "Output\0Mask\0";
 > = 0;
 
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
 #include "shared/cBlend.fxh"
 
 float GetIntensity(float3 Color)
