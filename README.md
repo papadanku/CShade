@@ -45,7 +45,7 @@ CShade features shaders that filter images for aesthetics.
 
 ### UI
 
-- In `ui_category` or `ui_label`, use `|` to separate between subcategories, if needed
+- In `ui_category`/`ui_label`, use `|` to separate between subcategories, if needed
 
   ```md
   uniform float _Level1Weight <
@@ -57,7 +57,7 @@ CShade features shaders that filter images for aesthetics.
   > = 1.0;
   ```
 
-- Uniforms stored in `.fxh` header files: wrap `[ ]` around `ui_category` or `ui_label`
+- In uniforms stored in `.fxh` header files, wrap `[ ]` around `ui_category`/`ui_label`
 
   ```md
   uniform float _CShadeExposureSmoothingSpeed <
