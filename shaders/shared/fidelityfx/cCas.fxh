@@ -33,12 +33,11 @@
 
     void FFX_CAS_FilterNoScaling(
         inout float4 FilterShape,
-        out float4 FilterMask,
+        inout float4 FilterMask,
         in CShade_VS2PS_Quad Input,
         in int Detection,
         in int Kernel,
-        in float Contrast,
-        in float Sharpening
+        in float Contrast
     )
     {
         /*
@@ -134,9 +133,6 @@
         FilterShape += Sample[3] * Weight;
         FilterShape += Sample[4] * Weight;
         FilterShape = saturate(FilterShape * ReciprocalWeight);
-        FilterShape = lerp(Sample[0], FilterShape, Sharpening);
-
-        FilterMask = AmplifyRGB;
     }
 
 #endif

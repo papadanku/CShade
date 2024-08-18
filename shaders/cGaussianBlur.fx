@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cBlur.fxh"
-
 /*
     [Shader Options]
 */
@@ -10,6 +7,10 @@ uniform float _Sigma <
     ui_type = "drag";
     ui_min = 0.0;
 > = 1.0;
+
+#include "shared/cShade.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cBlendOp.fxh"
 
 /*
     [Pixel Shaders]
@@ -47,12 +48,12 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 
 float4 PS_HGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return GetGaussianBlur(Input.Tex0, true);
+    return float4(GetGaussianBlur(Input.Tex0, true).rgb, _CShadeAlphaFactor);
 }
 
 float4 PS_VGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return GetGaussianBlur(Input.Tex0, false);
+    return float4(GetGaussianBlur(Input.Tex0, false).rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_HorizontalBlur
@@ -60,6 +61,7 @@ technique CShade_HorizontalBlur
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_HGaussianBlur;
@@ -71,6 +73,7 @@ technique CShade_VerticalBlur
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_VGaussianBlur;

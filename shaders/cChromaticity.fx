@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-
 /*
     [Shader Options]
 */
@@ -12,6 +9,10 @@ uniform int _Select <
     ui_items = "Length (XY)\0Length (XYZ)\0Average (XY)\0Average (XYZ)\0Sum (XY)\0Sum (XYZ)\0Max (XY)\0Max (XYZ)\0Ratio (XY)\0Spherical (XY)\0Hue-Saturation (HSI)\0Hue-Saturation (HSL)\0Hue-Saturation (HSV)\0CoCg (XY)\0CrCb (XY)\0";
 > = 0;
 
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
+#include "shared/cBlendOp.fxh"
+
 /*
     [Pixel Shaders]
 */
@@ -20,7 +21,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
-    float3 Chromaticity = 0.0;
+    float4 Chromaticity = 0.0;
 
     switch(_Select)
     {
@@ -74,13 +75,15 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             break;
     }
 
-    return float4(Chromaticity, 1.0);
+    return float4(Chromaticity.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Chromaticity
 {
     pass
     {
+        CBLENDOP_OUTPUT_CREATE_STATES()
+
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Chromaticity;
     }

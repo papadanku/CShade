@@ -1,15 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMath.fxh"
-
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
-
 /*
     [Shader Options]
 */
@@ -112,6 +101,19 @@ uniform float _Level1Weight <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 1.0;
+
+#include "shared/cShade.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMath.fxh"
+
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
+#include "shared/cCamera.fxh"
+
+#define INCLUDE_CTONEMAP_OUTPUT
+#include "shared/cTonemap.fxh"
+
+#include "shared/cBlendOp.fxh"
 
 #ifndef USE_AUTOEXPOSURE
     #define USE_AUTOEXPOSURE 1
@@ -227,10 +229,9 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+    float3 Color = CTonemap_ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
 
-    float4 Color = 1.0;
-    Color.rgb = CTonemap_ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
-    return Color;
+    return float4(Color, _CShadeAlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -305,6 +306,7 @@ technique CShade_Bloom
     {
         ClearRenderTargets = FALSE;
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Composite;

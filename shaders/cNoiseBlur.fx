@@ -1,9 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cProcedural.fxh"
-#include "shared/cMath.fxh"
-#include "shared/fidelityfx/cLens.fxh"
-
 /*
     MIT License
 
@@ -25,10 +20,6 @@
     COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/*
-    [Shader Options]
 */
 
 uniform float _Radius <
@@ -63,6 +54,11 @@ uniform bool _InvertFalloff <
     ui_type = "radio";
 > = false;
 
+#include "shared/cShade.fxh"
+#include "shared/cProcedural.fxh"
+#include "shared/cMath.fxh"
+#include "shared/fidelityfx/cLens.fxh"
+#include "shared/cBlendOp.fxh"
 
 /*
     [Pixel Shaders]
@@ -116,7 +112,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
     }
 
-    return OutputColor / Weight;
+    return float4(OutputColor.rgb / Weight, _CShadeAlphaFactor);
 }
 
 technique CShade_NoiseBlur
@@ -124,6 +120,7 @@ technique CShade_NoiseBlur
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_NoiseBlur;

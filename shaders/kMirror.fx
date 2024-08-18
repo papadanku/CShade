@@ -1,6 +1,4 @@
 
-#include "shared/cShade.fxh"
-
 /*
     MIT License
 
@@ -43,6 +41,9 @@ uniform float _Roll <
 uniform bool _Symmetry <
 > = true;
 
+#include "shared/cShade.fxh"
+#include "shared/cBlendOp.fxh"
+
 /*
     [Pixel Shaders]
 */
@@ -67,7 +68,7 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Reflection at the border of the screen.
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
-    return tex2D(CShade_SampleColorTex, Input.Tex0);
+    return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_KinoMirror
@@ -75,6 +76,7 @@ technique CShade_KinoMirror
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Mirror;

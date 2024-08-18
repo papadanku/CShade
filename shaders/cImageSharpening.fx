@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/fidelityfx/cCas.fxh"
-
 /*
     Bilinear modification of AMD's CAS algorithm.
 
@@ -62,6 +59,10 @@ uniform int _DisplayMode <
     ui_items = "Output\0Mask\0";
 > = 0;
 
+#include "shared/cShade.fxh"
+#include "shared/fidelityfx/cCas.fxh"
+#include "shared/cBlendOp.fxh"
+
 float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
@@ -72,16 +73,15 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
         Input,
         _Detection,
         _Kernel,
-        _Contrast,
-        _Sharpening
+        _Contrast
     );
 
     if (_DisplayMode == 1)
     {
-        return OutputMask;
+        OutputColor = OutputMask;
     }
 
-    return OutputColor;
+    return float4(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_ImageSharpening
@@ -89,6 +89,7 @@ technique CShade_ImageSharpening
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_CasFilterNoScaling;

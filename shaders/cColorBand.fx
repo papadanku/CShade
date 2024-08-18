@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cProcedural.fxh"
-
 /*
     [Shader Options]
 */
@@ -18,6 +15,10 @@ uniform int _DitherMethod <
     ui_type = "combo";
     ui_items = "None\0Hash\0Interleaved Gradient Noise\0";
 > = 0;
+
+#include "shared/cShade.fxh"
+#include "shared/cProcedural.fxh"
+#include "shared/cBlendOp.fxh"
 
 /*
     [Pixel Shaders]
@@ -45,13 +46,15 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / (_Range);
 
-    return ColorMap;
+    return float4(ColorMap.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_ColorBand
 {
     pass
     {
+        CBLENDOP_OUTPUT_CREATE_STATES()
+
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Color;
     }

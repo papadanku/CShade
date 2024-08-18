@@ -1,20 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cMacros.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cMath.fxh"
-
-sampler2D CShade_SampleColorTexMirror
-{
-    Texture = CShade_ColorTex;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    AddressU = MIRROR;
-    AddressV = MIRROR;
-    SRGBTexture = READ_SRGB;
-};
-
 /*
     [Shader Options]
 */
@@ -22,6 +6,11 @@ sampler2D CShade_SampleColorTexMirror
 #ifndef ENABLE_MONO
     #define ENABLE_MONO 0
 #endif
+
+#include "shared/cShade.fxh"
+#include "shared/cMacros.fxh"
+#include "shared/cColor.fxh"
+#include "shared/cMath.fxh"
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
@@ -48,7 +37,7 @@ uniform int _CircleAmount <
 > = MAX_CIRCLES / 2;
 
 uniform float _InputMultiplier <
-    ui_category = "Input";
+    ui_category = "Input Color";
     ui_label = "Multiplier";
     ui_type = "slider";
     ui_min = 0.0;
@@ -56,7 +45,7 @@ uniform float _InputMultiplier <
 > = 4.0;
 
 uniform float _InputBias <
-    ui_category = "Input";
+    ui_category = "Input Color";
     ui_label = "Bias";
     ui_type = "slider";
     ui_min = 0.0;
@@ -65,7 +54,7 @@ uniform float _InputBias <
 
 #if ENABLE_MONO
     uniform float2 _Offset <
-        ui_category = "Circles";
+        ui_category = "Shaping";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
@@ -73,8 +62,8 @@ uniform float _InputBias <
     > = 0.0;
 #else
     uniform float2 _RedChannel_Offset <
-        ui_category = "Offset";
-        ui_label = "Red Channel";
+        ui_category = "Shaping";
+        ui_label = "Red Channel Offset";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -82,8 +71,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _GreenChannel_Offset <
-        ui_category = "Offset";
-        ui_label = "Green Channel";
+        ui_category = "Shaping";
+        ui_label = "Green Channel Offset";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -91,8 +80,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _BlueChannel_Offset <
-        ui_category = "Offset";
-        ui_label = "Blue Channel";
+        ui_category = "Shaping";
+        ui_label = "Blue Channel Offset";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -125,7 +114,7 @@ uniform float _InputBias <
 #endif
 
 uniform float3 _FrontColor <
-    ui_category = "Output";
+    ui_category = "Composition";
     ui_label = "Foreground";
     ui_type = "color";
     ui_min = 0.0;
@@ -133,7 +122,7 @@ uniform float3 _FrontColor <
 > = float3(0.0, 0.0, 0.0);
 
 uniform float3 _BackColor <
-    ui_category = "Output";
+    ui_category = "Composition";
     ui_label = "Background";
     ui_type = "color";
     ui_min = 0.0;
@@ -142,7 +131,7 @@ uniform float3 _BackColor <
 
 #if ENABLE_MONO
     uniform int4 _Crop <
-        ui_category = "Output";
+        ui_category = "Composition";
         ui_label = "Crop (Left, Right, Top, Bottom)";
         ui_type = "slider";
         ui_min = 0;
@@ -150,12 +139,25 @@ uniform float3 _BackColor <
     > = 0;
 #endif
 
+#include "shared/cBlendOp.fxh"
+
 /*
     [Textures and Samplers]
 */
 
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
 CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR)
+
+sampler2D CShade_SampleColorTexMirror
+{
+    Texture = CShade_ColorTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = MIRROR;
+    AddressV = MIRROR;
+    SRGBTexture = READ_SRGB;
+};
 
 /*
     [Functions]
@@ -295,7 +297,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y > _Crop.z * 2.0);
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y < (_CircleAmount - _Crop.w * 2.0));
 
-        return float4(OutputColor.rgb, 1.0);
+        return float4(OutputColor.rgb, _CShadeAlphaFactor);
     }
 #else
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -345,7 +347,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannel_Crop);
         CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannel_Crop);
 
-        return float4(OutputColor, 1.0);
+        return float4(OutputColor.rgb, _CShadeAlphaFactor);
     }
 #endif
 
@@ -361,6 +363,7 @@ technique CShade_Circles
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Circles;

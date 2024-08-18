@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/fidelityfx/cLens.fxh"
-
 /*
     Modification of AMD's lens algorithm using gradient noise.
 
@@ -32,6 +29,26 @@
 
 uniform float _Time < source = "timer"; >;
 
+uniform bool _UseTimeSeed <
+    ui_category = "Grain";
+    ui_label = "Enable Time-Based Seed";
+    ui_type = "radio";
+> = true;
+
+uniform float _GrainSeed <
+    ui_category = "Grain";
+    ui_label = "Seed Offset";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float _GrainSeedSpeed <
+    ui_category = "Grain";
+    ui_label = "Seed Speed";
+    ui_type = "slider";
+    ui_min = 0.1;
+    ui_max = 1.0;
+> = 0.5;
+
 uniform int _GrainType <
     ui_category = "Grain";
     ui_label = "Grain Type";
@@ -55,41 +72,24 @@ uniform float _GrainAmount <
     ui_max = 1.0;
 > = 0.35;
 
-uniform bool _UseTimeSeed <
-    ui_category = "Grain";
-    ui_label = "Enable Time-Based Seed";
-    ui_type = "radio";
-> = true;
-
-uniform float _GrainSeed <
-    ui_category = "Grain";
-    ui_label = "Seed Offset";
-    ui_type = "drag";
-> = 0.0;
-
-uniform float _GrainSeedSpeed <
-    ui_category = "Grain";
-    ui_label = "Seed Speed";
-    ui_type = "slider";
-    ui_min = 0.1;
-    ui_max = 1.0;
-> = 0.5;
-
 uniform float _ChromAb <
-    ui_category = "Chromatic Aberration";
-    ui_label = "Intensity";
+    ui_category = "";
+    ui_label = "Chromatic Aberration";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 20.0;
 > = 1.65;
 
 uniform float _Vignette <
-    ui_category = "Vignette";
-    ui_label = "Intensity";
+    ui_label = "Vignette";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 2.0;
 > = 0.6;
+
+#include "shared/cShade.fxh"
+#include "shared/fidelityfx/cLens.fxh"
+#include "shared/cBlendOp.fxh"
 
 float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 {
@@ -108,7 +108,7 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
         _Vignette,
         Seed
     );
-    return OutputColor;
+    return float4(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Lens
@@ -116,6 +116,7 @@ technique CShade_Lens
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Lens;

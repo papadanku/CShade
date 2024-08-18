@@ -1,6 +1,4 @@
 
-#include "shared/cShade.fxh"
-
 /*
     [Shader Options]
 */
@@ -19,6 +17,9 @@ uniform float2 _Scale <
     ui_max = 1.0;
 > = float2(1.0, 0.8);
 
+#include "shared/cShade.fxh"
+#include "shared/cBlendOp.fxh"
+
 /*
     [Pixel Shaders]
 */
@@ -29,7 +30,7 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
     Input.Tex0 = (Input.Tex0 * 2.0) - 1.0;
     Input.Tex0 += _Offset;
     float2 Shaper = step(abs(Input.Tex0), _Scale);
-    return Shaper.x * Shaper.y;
+    return float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor);
 }
 
 technique CShade_LetterBox
@@ -37,12 +38,8 @@ technique CShade_LetterBox
     pass
     {
         // Blend the rectangle with the backbuffer
-        ClearRenderTargets = FALSE;
-        BlendEnable = TRUE;
-        BlendOp = ADD;
-        SrcBlend = DESTCOLOR;
-        DestBlend = ZERO;
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Letterbox;

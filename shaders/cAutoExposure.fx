@@ -1,16 +1,4 @@
 
-#include "shared/cMacros.fxh"
-#include "shared/cShade.fxh"
-
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
-
-#include "shared/cProcedural.fxh"
-
 /*
     Automatic exposure shader using hardware blending
 */
@@ -55,6 +43,19 @@ uniform bool _DisplaySpotMeterMask <
     ui_label = "Display Spot Metering";
     ui_type = "radio";
 > = false;
+
+#include "shared/cMacros.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cProcedural.fxh"
+
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
+#include "shared/cCamera.fxh"
+
+#define INCLUDE_CTONEMAP_OUTPUT
+#include "shared/cTonemap.fxh"
+
+#include "shared/cBlendOp.fxh"
 
 /*
     [Textures & Samplers]
@@ -168,7 +169,7 @@ float3 PS_Exposure(CShade_VS2PS_Quad Input) : SV_TARGET0
         Output = lerp(Output, LumaIcon.rgb, LumaIcon.a);
     }
 
-    return Output;
+    return float4(Output.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_AutoExposure
@@ -189,6 +190,7 @@ technique CShade_AutoExposure
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Exposure;

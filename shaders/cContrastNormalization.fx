@@ -1,13 +1,14 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cMath.fxh"
-
 uniform int _Select <
     ui_label = "Filter";
     ui_type = "combo";
     ui_items = "Local Contrast Normalization\0Census Transform\0";
 > = 0;
+
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
+#include "shared/cMath.fxh"
+#include "shared/cBlendOp.fxh"
 
 /*
     [Pixel Shaders]
@@ -75,10 +76,10 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         case 0:
             float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
-            return (CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5;
+            return float4(((float3)CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5, _CShadeAlphaFactor);
         case 1:
             float4 CT = GetCensusTransform(CShade_SampleColorTex, Input.Tex0);
-            return CColor_GetLuma(CT.rgb, 0);
+            return float4((float3)CColor_GetLuma(CT.rgb, 0), _CShadeAlphaFactor);
         default:
             return 0.5;
     }
@@ -89,6 +90,7 @@ technique CShade_ContrastNormalization
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_ContrastNormalization;

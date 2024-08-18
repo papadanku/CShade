@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-
 /*
     Directionally Localized Anti-Aliasing (DLAA)
     http://www.and.intercon.ru/releases/talks/dlaagdc2011/
@@ -10,11 +7,16 @@
     Copyright (C) LucasArts 2010-2011
 */
 
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
+
 uniform int _DisplayMode <
     ui_label = "Display Mode";
     ui_type = "radio";
     ui_items = "Output\0Mask\0";
 > = 0;
+
+#include "shared/cBlendOp.fxh"
 
 float GetIntensity(float3 Color)
 {
@@ -182,7 +184,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         return Center.a;
     }
 
-    return Color;
+    return float4(Color.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_AntiAliasing
@@ -195,6 +197,8 @@ technique CShade_AntiAliasing
 
     pass AntiAliasing
     {
+        CBLENDOP_OUTPUT_CREATE_STATES()
+
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_AntiAliasing;
     }

@@ -1,10 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotionEstimation.fxh"
-#include "shared/cProcedural.fxh"
-
 namespace cMotionBlur
 {
     /*
@@ -50,6 +44,13 @@ namespace cMotionBlur
         ui_label = "Frame-Rate Scaling";
         ui_type = "radio";
     > = false;
+
+    #include "shared/cShade.fxh"
+    #include "shared/cColor.fxh"
+    #include "shared/cBlur.fxh"
+    #include "shared/cMotionEstimation.fxh"
+    #include "shared/cProcedural.fxh"
+    #include "shared/cBlendOp.fxh"
 
     /*
         [Textures & Samplers]
@@ -159,7 +160,7 @@ namespace cMotionBlur
             OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
         }
 
-        return OutputColor / Samples;
+        return float4(OutputColor.rgb / Samples, _CShadeAlphaFactor);
     }
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
@@ -216,6 +217,7 @@ namespace cMotionBlur
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
+            CBLENDOP_OUTPUT_CREATE_STATES()
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_MotionBlur;

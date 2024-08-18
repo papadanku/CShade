@@ -1,11 +1,12 @@
 
 #include "shared/cShade.fxh"
+#include "shared/cBlendOp.fxh"
 
 /*
     [Shader Options]
 */
 
-uniform float4 _Color <
+uniform float3 _Color <
     ui_label = "Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -17,19 +18,16 @@ uniform float4 _Color <
 
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return _Color;
+    return float4(_Color, _CShadeAlphaFactor);
 }
 
 // Use BlendOp to multiple the backbuffer with this quad's color
-technique CShade_ColorBlendOp
+technique CShade_SolidColor
 {
     pass
     {
-        BlendEnable = TRUE;
-        BlendOp = ADD;
-        SrcBlend = DESTCOLOR;
-        DestBlend = SRCALPHA;
         SRGBWriteEnable = WRITE_SRGB;
+        CBLENDOP_OUTPUT_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Color;

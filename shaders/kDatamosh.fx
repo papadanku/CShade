@@ -1,9 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotionEstimation.fxh"
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -94,6 +89,12 @@ namespace kDatamosh
         ui_min = 0.0;
         ui_max = 4.0;
     > = 2.0;
+
+    #include "shared/cShade.fxh"
+    #include "shared/cColor.fxh"
+    #include "shared/cBlur.fxh"
+    #include "shared/cMotionEstimation.fxh"
+    #include "shared/cBlendOp.fxh"
 
     #ifndef LINEAR_SAMPLING
         #define LINEAR_SAMPLING 0
@@ -302,7 +303,7 @@ namespace kDatamosh
         CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
 
         // If the conditions above are not met, choose work.
-        return lerp(Work, Source, CW);
+        return float4(lerp(Work.rgb, Source.rgb, CW), _CShadeAlphaFactor);
     }
 
     float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -386,6 +387,7 @@ namespace kDatamosh
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
+            CBLENDOP_OUTPUT_CREATE_STATES()
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_CopyColorTex;

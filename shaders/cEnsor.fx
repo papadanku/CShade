@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-
 namespace cEnsor
 {
     uniform int _Blockiness <
@@ -36,6 +33,10 @@ namespace cEnsor
         ui_items = "Output\0Mask\0";
     > = 0;
 
+	#include "shared/cShade.fxh"
+	#include "shared/cColor.fxh"
+	#include "shared/cBlendOp.fxh"
+
     CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
     CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR)
 
@@ -52,6 +53,7 @@ namespace cEnsor
         // Initialize variables
         float4 Feature = 0.0;
         bool4 Mask = false;
+        float4 OutputColor = 0.0;
 
         switch(_DetectionMode)
         {
@@ -114,12 +116,14 @@ namespace cEnsor
 
         if (_DisplayMode == 1)
         {
-            return Mask;
+            OutputColor = Mask;
         }
         else
         {
-            return lerp(Color, Pixel, Mask);
+            OutputColor = lerp(Color, Pixel, Mask);
         }
+
+        return float4(OutputColor.rgb, _CShadeAlphaFactor);
     }
 
     technique CShade_Censor
@@ -134,6 +138,8 @@ namespace cEnsor
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
+            CBLENDOP_OUTPUT_CREATE_STATES()
+
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_Censor;
         }
