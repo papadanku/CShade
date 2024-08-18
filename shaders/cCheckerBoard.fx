@@ -3,6 +3,13 @@
     [Shader Options]
 */
 
+uniform int _Width <
+    ui_label = "Checkerboard Width";
+    ui_type = "slider";
+    ui_min = 1;
+    ui_max = 16;
+> = 4;
+
 uniform float3 _Color1 <
     ui_label = "Color 1";
     ui_type = "color";
@@ -14,13 +21,6 @@ uniform float3 _Color2 <
     ui_type = "color";
     ui_min = 0.0;
 > = 0.0;
-
-uniform int _Width <
-    ui_label = "Checkerboard Width";
-    ui_type = "slider";
-    ui_min = 1;
-    ui_max = 16;
-> = 4;
 
 uniform bool _InvertCheckerboard <
     ui_label = "Invert Checkerboard Pattern";
