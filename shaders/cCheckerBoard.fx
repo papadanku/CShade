@@ -15,12 +15,20 @@ uniform float3 _Color2 <
     ui_min = 0.0;
 > = 0.0;
 
+uniform int _Width <
+    ui_label = "Checkerboard Width";
+    ui_type = "slider";
+    ui_min = 1;
+    ui_max = 16;
+> = 4;
+
 uniform bool _InvertCheckerboard <
     ui_label = "Invert Checkerboard Pattern";
     ui_type = "radio";
 > = false;
 
 #include "shared/cShade.fxh"
+#include "shared/cMath.fxh"
 #include "shared/cBlendOp.fxh"
 
 /*
@@ -29,7 +37,7 @@ uniform bool _InvertCheckerboard <
 
 float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Checkerboard = frac(dot(Input.HPos.xy, 0.5)) * 2.0;
+    float3 Checkerboard = frac(dot(floor(Input.HPos.xy / _Width), 0.5)) * 2.0;
     Checkerboard = _InvertCheckerboard ? 1.0 - Checkerboard : Checkerboard;
     Checkerboard = Checkerboard == 1.0 ? _Color1 : _Color2;
 
