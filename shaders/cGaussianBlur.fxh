@@ -57,27 +57,3 @@ float4 PS_VGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     return CBlend_OutputChannels(float4(GetGaussianBlur(Input.Tex0, false).rgb, _CShadeAlphaFactor));
 }
-
-technique CShade_HorizontalBlur
-{
-    pass
-    {
-        SRGBWriteEnable = WRITE_SRGB;
-        CBLEND_CREATE_STATES()
-
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_HGaussianBlur;
-    }
-}
-
-technique CShade_VerticalBlur
-{
-    pass
-    {
-        SRGBWriteEnable = WRITE_SRGB;
-        CBLEND_CREATE_STATES()
-
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_VGaussianBlur;
-    }
-}
