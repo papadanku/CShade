@@ -8,12 +8,6 @@
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 
-    #define REDEFINE_PREPROCESSOR_DEFINITION(PREPROCESSOR_NAME, PREPROCESSOR_ARG)
-        #undef PREPROCESSOR_NAME \
-        #ifndef PREPROCESSOR_NAME \
-            #define PREPROCESSOR_NAME PREPROCESSOR_ARG \
-        #endif \
-
     #define GET_EVEN(X) (X + (X & 1))
     #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
     #define GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))

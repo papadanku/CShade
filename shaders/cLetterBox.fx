@@ -33,6 +33,31 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor);
 }
 
+#undef CBLEND_BLENDENABLE
+#undef CBLEND_BLENDOP
+#undef CBLEND_SRCBLEND
+#undef CBLEND_SRCBLENDALPHA
+#undef CBLEND_DESTBLEND
+#undef CBLEND_DESTBLENDALPHA
+#ifndef CBLEND_BLENDENABLE
+    #define CBLEND_BLENDENABLE TRUE
+#endif
+#ifndef CBLEND_BLENDOP
+    #define CBLEND_BLENDOP ADD
+#endif
+#ifndef CBLEND_SRCBLEND
+    #define CBLEND_SRCBLEND DESTCOLOR
+#endif
+#ifndef CBLEND_SRCBLENDALPHA
+    #define CBLEND_SRCBLENDALPHA SRCALPHA
+#endif
+#ifndef CBLEND_DESTBLEND
+    #define CBLEND_DESTBLEND ZERO
+#endif
+#ifndef CBLEND_DESTBLENDALPHA
+    #define CBLEND_DESTBLENDALPHA ZERO
+#endif
+
 technique CShade_LetterBox
 {
     pass
