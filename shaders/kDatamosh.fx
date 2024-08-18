@@ -147,48 +147,48 @@ namespace kDatamosh
         return CColor_GetSphericalRG(Color).xy;
     }
 
-    float2 PS_HBlur_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_PrefilterHBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         return CBlur_GetPixelBlur(Input, SampleTempTex1, true).rg;
     }
 
-    float2 PS_VBlur_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_PrefilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         return CBlur_GetPixelBlur(Input, SampleTempTex2a, false).rg;
     }
 
-    float2 PS_PyLK_Level4(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = 0.0;
         return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    float2 PS_PyLK_Level3(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
         return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    float2 PS_PyLK_Level2(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
         return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
     }
 
-    float4 PS_PyLK_Level1(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
         return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
     }
 
     // NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
-    float4 PS_HBlur_Postfilter(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
+    float4 PS_PostfilterHBlur(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
     {
         Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
         return float4(CBlur_GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
     }
 
-    float4 PS_VBlur_Postfilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+    float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         return float4(CBlur_GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
     }
@@ -325,13 +325,13 @@ namespace kDatamosh
         CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)
 
         // Prefilter blur
-        CREATE_PASS(CShade_VS_Quad, PS_HBlur_Prefilter, TempTex2a_RG16F)
-        CREATE_PASS(CShade_VS_Quad, PS_VBlur_Prefilter, TempTex2b_RG16F)
+        CREATE_PASS(CShade_VS_Quad, PS_PrefilterHBlur, TempTex2a_RG16F)
+        CREATE_PASS(CShade_VS_Quad, PS_PrefilterVBlur, TempTex2b_RG16F)
 
         // Bilinear Lucas-Kanade Optical Flow
-        CREATE_PASS(CShade_VS_Quad, PS_PyLK_Level4, TempTex5_RG16F)
-        CREATE_PASS(CShade_VS_Quad, PS_PyLK_Level3, TempTex4_RG16F)
-        CREATE_PASS(CShade_VS_Quad, PS_PyLK_Level2, TempTex3_RG16F)
+        CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+        CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+        CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
         pass GetFineOpticalFlow
         {
             ClearRenderTargets = FALSE;
@@ -341,7 +341,7 @@ namespace kDatamosh
             DestBlend = SRCALPHA;
 
             VertexShader = CShade_VS_Quad;
-            PixelShader = PS_PyLK_Level1;
+            PixelShader = PS_LucasKanade1;
             RenderTarget0 = OFlowTex;
         }
 
@@ -349,7 +349,7 @@ namespace kDatamosh
         pass MRT_CopyAndBlur
         {
             VertexShader = CShade_VS_Quad;
-            PixelShader = PS_HBlur_Postfilter;
+            PixelShader = PS_PostfilterHBlur;
             RenderTarget0 = Tex2c;
             RenderTarget1 = TempTex2a_RG16F;
         }
@@ -357,7 +357,7 @@ namespace kDatamosh
         pass
         {
             VertexShader = CShade_VS_Quad;
-            PixelShader = PS_VBlur_Postfilter;
+            PixelShader = PS_PostfilterVBlur;
             RenderTarget0 = TempTex2b_RG16F;
         }
 

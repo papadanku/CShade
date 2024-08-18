@@ -6,22 +6,19 @@
 */
 
 uniform float2 _TexScale <
-    ui_category = "Texture";
-    ui_label = "Scale";
+    ui_label = "Texture | Scale";
     ui_type = "drag";
     ui_step = 0.001;
 > = float2(0.5, 0.5);
 
 uniform float2 _TexOffset <
-    ui_category = "Texture";
-    ui_label = "Offset";
+    ui_label = "Texture | Offset";
     ui_type = "drag";
     ui_step = 0.001;
 > = float2(0.0, 0.0);
 
 uniform float2 _MaskScale <
-    ui_category = "Mask";
-    ui_label = "Scale";
+    ui_label = "Mask | Scale";
     ui_type = "drag";
     ui_min = 0.0;
 > = float2(0.5, 0.25);

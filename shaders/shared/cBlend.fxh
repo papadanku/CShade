@@ -52,7 +52,7 @@
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
 
     uniform float _CShadeAlphaFactor <
-        ui_category = "Pipeline | Output | Blending";
+        ui_category = "[ Pipeline | Output | Blending ]";
         ui_label = "Alpha Factor";
         ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";

@@ -4,7 +4,7 @@
 */
 
 uniform float _BlendFactor <
-    ui_label = "Blend Factor";
+    ui_label = "Frame Blending";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;

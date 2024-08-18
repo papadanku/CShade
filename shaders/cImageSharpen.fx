@@ -46,13 +46,6 @@ uniform float _Contrast <
     ui_max = 1.0;
 > = 0.0;
 
-uniform float _Sharpening <
-    ui_label = "Sharpening";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
 uniform int _DisplayMode <
     ui_label = "Display Mode";
     ui_type = "radio";

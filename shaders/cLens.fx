@@ -30,19 +30,16 @@
 uniform float _Time < source = "timer"; >;
 
 uniform bool _UseTimeSeed <
-    ui_category = "Grain";
     ui_label = "Enable Time-Based Seed";
     ui_type = "radio";
 > = true;
 
 uniform float _GrainSeed <
-    ui_category = "Grain";
     ui_label = "Seed Offset";
     ui_type = "drag";
 > = 0.0;
 
 uniform float _GrainSeedSpeed <
-    ui_category = "Grain";
     ui_label = "Seed Speed";
     ui_type = "slider";
     ui_min = 0.1;
@@ -50,7 +47,6 @@ uniform float _GrainSeedSpeed <
 > = 0.5;
 
 uniform int _GrainType <
-    ui_category = "Grain";
     ui_label = "Grain Type";
     ui_type = "combo";
     ui_items = "Single-Channel\0Multi-Channel\0";
@@ -65,7 +61,6 @@ uniform float _GrainScale <
 > = 0.01;
 
 uniform float _GrainAmount <
-    ui_category = "Grain";
     ui_label = "Grain Amount";
     ui_type = "slider";
     ui_min = 0.0;
@@ -73,7 +68,6 @@ uniform float _GrainAmount <
 > = 0.35;
 
 uniform float _ChromAb <
-    ui_category = "";
     ui_label = "Chromatic Aberration";
     ui_type = "slider";
     ui_min = 0.0;

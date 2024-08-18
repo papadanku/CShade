@@ -4,8 +4,10 @@
 */
 
 uniform float _Sigma <
-    ui_type = "drag";
+	ui_label = "Sigma";
+    ui_type = "slider";
     ui_min = 0.0;
+    ui_max = 16.0;
 > = 1.0;
 
 #include "shared/cShade.fxh"

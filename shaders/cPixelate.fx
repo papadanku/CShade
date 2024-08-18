@@ -4,7 +4,7 @@
 */
 
 uniform int2 _Pixels <
-    ui_label = "Number of Pixels";
+    ui_label = "Pixel Amount";
     ui_type = "slider";
     ui_min = 1.0;
     ui_max = 1024.0;

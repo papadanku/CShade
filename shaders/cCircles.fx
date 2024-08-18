@@ -61,7 +61,7 @@ uniform float _InputBias <
         ui_max = 1.0;
     > = 0.0;
 #else
-    uniform float2 _RedChannel_Offset <
+    uniform float2 _RedChannelOffset <
         ui_category = "Shaping";
         ui_label = "Red Channel Offset";
         ui_type = "slider";
@@ -70,7 +70,7 @@ uniform float _InputBias <
         ui_max = 10.0;
     > = 0.0;
 
-    uniform float2 _GreenChannel_Offset <
+    uniform float2 _GreenChannelOffset <
         ui_category = "Shaping";
         ui_label = "Green Channel Offset";
         ui_type = "slider";
@@ -79,7 +79,7 @@ uniform float _InputBias <
         ui_max = 10.0;
     > = 0.0;
 
-    uniform float2 _BlueChannel_Offset <
+    uniform float2 _BlueChannelOffset <
         ui_category = "Shaping";
         ui_label = "Blue Channel Offset";
         ui_type = "slider";
@@ -88,7 +88,7 @@ uniform float _InputBias <
         ui_max = 10.0;
     > = 0.0;
 
-    uniform int4 _RedChannel_Crop <
+    uniform int4 _RedChannelCrop <
         ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Red Channel";
         ui_type = "slider";
@@ -96,7 +96,7 @@ uniform float _InputBias <
         ui_max = 10;
     > = 0;
 
-    uniform int4 _GreenChannel_Crop <
+    uniform int4 _GreenChannelCrop <
         ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Green Channel";
         ui_type = "slider";
@@ -104,7 +104,7 @@ uniform float _InputBias <
         ui_max = 10;
     > = 0;
 
-    uniform int4 _BlueChannel_Crop <
+    uniform int4 _BlueChannelCrop <
         ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Blue Channel";
         ui_type = "slider";
@@ -307,9 +307,9 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
         // Create per-color tiles
-        Tile RedChannel_Tiles = GetTiles(Input.Tex0.xy, _RedChannel_Offset);
-        Tile GreenChannel_Tiles = GetTiles(Input.Tex0.xy, _GreenChannel_Offset);
-        Tile BlueChannel_Tiles = GetTiles(Input.Tex0.xy, _BlueChannel_Offset);
+        Tile RedChannel_Tiles = GetTiles(Input.Tex0.xy, _RedChannelOffset);
+        Tile GreenChannel_Tiles = GetTiles(Input.Tex0.xy, _GreenChannelOffset);
+        Tile BlueChannel_Tiles = GetTiles(Input.Tex0.xy, _BlueChannelOffset);
 
         // Generate per-color blocks
         float3 Blocks = 0.0;
@@ -343,9 +343,9 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
 
         // Per-color cropping
-        CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannel_Crop);
-        CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannel_Crop);
-        CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannel_Crop);
+        CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannelCrop);
+        CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannelCrop);
+        CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannelCrop);
 
         return float4(OutputColor.rgb, _CShadeAlphaFactor);
     }

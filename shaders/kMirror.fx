@@ -27,14 +27,17 @@
 */
 
 uniform float _Divisor <
+    ui_label = "Divisor";
     ui_type = "drag";
 > = 0.05;
 
 uniform float _Offset <
+    ui_label = "Offset";
     ui_type = "drag";
 > = 0.05;
 
 uniform float _Roll <
+    ui_label = "Roll";
     ui_type = "drag";
 > = 0.0;
 

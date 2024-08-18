@@ -177,11 +177,11 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Under-threshold
     float Brightness = CMath_Med3(Color.r, Color.g, Color.b).r;
-    float Response_Curve = clamp(Brightness - Curve.x, 0.0, Curve.y);
-    Response_Curve = Curve.z * Response_Curve * Response_Curve;
+    float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
+    ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 
     // Combine and apply the brightness response curve
-    Color = Color * max(Response_Curve, Brightness - _Threshold) / max(Brightness, 1e-10);
+    Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
 
     return float4(Color.rgb * _ColorShift, LogLuminance);
 }
