@@ -50,12 +50,12 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 
 float4 PS_HGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(GetGaussianBlur(Input.Tex0, true).rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(GetGaussianBlur(Input.Tex0, true).rgb, _CShadeAlphaFactor));
 }
 
 float4 PS_VGaussianBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(GetGaussianBlur(Input.Tex0, false).rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(GetGaussianBlur(Input.Tex0, false).rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_HorizontalBlur

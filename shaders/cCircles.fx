@@ -297,7 +297,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y > _Crop.z * 2.0);
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y < (_CircleAmount - _Crop.w * 2.0));
 
-        return float4(OutputColor.rgb, _CShadeAlphaFactor);
+        return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
     }
 #else
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -347,7 +347,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannelCrop);
         CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannelCrop);
 
-        return float4(OutputColor.rgb, _CShadeAlphaFactor);
+        return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
     }
 #endif
 

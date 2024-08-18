@@ -30,7 +30,7 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
     Input.Tex0 = (Input.Tex0 * 2.0) - 1.0;
     Input.Tex0 += _Offset;
     float2 Shaper = step(abs(Input.Tex0), _Scale);
-    return float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor));
 }
 
 #undef CBLEND_BLENDENABLE

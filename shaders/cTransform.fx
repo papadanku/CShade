@@ -72,7 +72,7 @@ CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
 
 float4 PS_Matrix(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_Transform

@@ -21,7 +21,7 @@ float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 Luma = CColor_GetLuma(Color.rgb, _Select);
-    return float4(Luma, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(Luma, _CShadeAlphaFactor));
 }
 
 technique CShade_Grayscale

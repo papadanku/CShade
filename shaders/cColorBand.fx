@@ -46,7 +46,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / (_Range);
 
-    return float4(ColorMap.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(ColorMap.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_ColorBand

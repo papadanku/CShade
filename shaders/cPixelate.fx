@@ -22,7 +22,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 Tex = floor(Input.Tex0 * _Pixels) / _Pixels;
     float4 OutputColor = tex2D(CShade_SampleColorTex, Tex);
 
-    return float4(OutputColor.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_Pixelate

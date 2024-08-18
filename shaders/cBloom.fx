@@ -6,7 +6,7 @@
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _Threshold <
-    ui_category = "Bloom | Input";
+    ui_category = "Bloom | General";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -14,7 +14,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Bloom | Input";
+    ui_category = "Bloom | General";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -22,7 +22,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float3 _ColorShift <
-    ui_category = "Bloom | Input";
+    ui_category = "Bloom | General";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -30,13 +30,19 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
-    ui_category = "Bloom | Input";
+    ui_category = "Bloom | General";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_step = 0.001;
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.5;
+
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Base + Bloom\0Bloom\0";
+> = 0;
 
 uniform float _Level8Weight <
     ui_category = "Bloom | Level Weights";
@@ -229,9 +235,21 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
-    float3 Color = CTonemap_ApplyOutputTonemap(BaseColor + (BloomColor * _Intensity));
 
-    return float4(Color, _CShadeAlphaFactor);
+    // Bloom composition
+    float3 Color = 0.0;
+    switch (_RenderMode)
+    {
+        case 0:
+            Color = BaseColor + (BloomColor * _Intensity);
+            break;
+        case 1:
+            Color = BloomColor * _Intensity;
+            break;
+    }
+    Color = CTonemap_ApplyOutputTonemap(Color);
+
+    return CBlend_OutputChannels(float4(Color, _CShadeAlphaFactor));
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \

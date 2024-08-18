@@ -7,10 +7,10 @@
     Copyright (C) LucasArts 2010-2011
 */
 
-uniform int _DisplayMode <
-    ui_label = "Display Mode";
-    ui_type = "radio";
-    ui_items = "Output\0Mask\0";
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Render Image\0Render Mask\0";
 > = 0;
 
 #include "shared/cShade.fxh"
@@ -178,12 +178,12 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
-    if (_DisplayMode == 1)
+    if (_RenderMode == 1)
     {
         return Center.a;
     }
 
-    return float4(Color.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_AntiAliasing

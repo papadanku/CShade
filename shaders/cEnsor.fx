@@ -123,7 +123,7 @@ namespace cEnsor
             OutputColor = lerp(Color, Pixel, Mask);
         }
 
-        return float4(OutputColor.rgb, _CShadeAlphaFactor);
+        return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
     }
 
     technique CShade_Censor

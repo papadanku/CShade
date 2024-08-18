@@ -160,7 +160,7 @@ namespace cMotionBlur
             OutputColor += tex2D(CShade_SampleColorTex, RandomTex);
         }
 
-        return float4(OutputColor.rgb / Samples, _CShadeAlphaFactor);
+        return CBlend_OutputChannels(float4(OutputColor.rgb / Samples, _CShadeAlphaFactor));
     }
 
     #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

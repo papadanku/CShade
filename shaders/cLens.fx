@@ -102,7 +102,7 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
         _Vignette,
         Seed
     );
-    return float4(OutputColor.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_Lens

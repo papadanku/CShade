@@ -303,7 +303,7 @@ namespace kDatamosh
         CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
 
         // If the conditions above are not met, choose work.
-        return float4(lerp(Work.rgb, Source.rgb, CW), _CShadeAlphaFactor);
+        return CBlend_OutputChannels(float4(lerp(Work.rgb, Source.rgb, CW), _CShadeAlphaFactor));
     }
 
     float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0

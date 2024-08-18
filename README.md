@@ -57,7 +57,7 @@ CShade features shaders that filter images for aesthetics.
   > = 1.0;
   ```
 
-- In uniforms stored in `.fxh` header files, wrap `[ ]` around `ui_category`/`ui_label`
+- In uniforms stored in `.fxh` header files, wrap `[ ]` around `ui_category`
 
   ```md
   uniform float _CShadeExposureSmoothingSpeed <

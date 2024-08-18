@@ -32,7 +32,7 @@ float4 PS_Bilateral(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
     }
 
-    return float4(OutputColor / TotalWeight, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(OutputColor / TotalWeight, _CShadeAlphaFactor));
 }
 
 technique CShade_Bilateral

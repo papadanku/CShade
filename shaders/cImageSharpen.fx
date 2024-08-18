@@ -46,10 +46,10 @@ uniform float _Contrast <
     ui_max = 1.0;
 > = 0.0;
 
-uniform int _DisplayMode <
-    ui_label = "Display Mode";
-    ui_type = "radio";
-    ui_items = "Output\0Mask\0";
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Render Image\0Render Mask\0";
 > = 0;
 
 #include "shared/cShade.fxh"
@@ -69,12 +69,12 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
         _Contrast
     );
 
-    if (_DisplayMode == 1)
+    if (_RenderMode == 1)
     {
         OutputColor = OutputMask;
     }
 
-    return float4(OutputColor.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_ImageSharpen

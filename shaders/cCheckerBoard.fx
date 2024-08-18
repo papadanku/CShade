@@ -41,7 +41,7 @@ float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
     Checkerboard = _InvertCheckerboard ? 1.0 - Checkerboard : Checkerboard;
     Checkerboard = Checkerboard == 1.0 ? _Color1 : _Color2;
 
-    return float4(Checkerboard, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(Checkerboard, _CShadeAlphaFactor));
 }
 
 technique CShade_CheckerBoard

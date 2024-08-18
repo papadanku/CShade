@@ -49,7 +49,7 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
     Brightness = CMath_Med3(Color.r, Color.g, Color.b).a;
-    return float4(saturate(lerp(Brightness, Color.rgb, _Saturation) * _Intensity), _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(saturate(lerp(Brightness, Color.rgb, _Saturation) * _Intensity), _CShadeAlphaFactor));
 }
 
 technique CShade_Threshold

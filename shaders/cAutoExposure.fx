@@ -169,7 +169,7 @@ float3 PS_Exposure(CShade_VS2PS_Quad Input) : SV_TARGET0
         Output = lerp(Output, LumaIcon.rgb, LumaIcon.a);
     }
 
-    return float4(Output.rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(Output.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_AutoExposure

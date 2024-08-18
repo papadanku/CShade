@@ -33,7 +33,7 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Display the buffer
-    return float4(tex2D(SampleBlendTex, Input.Tex0).rgb, _CShadeAlphaFactor);
+    return CBlend_OutputChannels(float4(tex2D(SampleBlendTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_FrameBlend

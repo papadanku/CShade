@@ -51,6 +51,14 @@
         DestBlend = CBLEND_DESTBLEND; \
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
 
+    uniform int _CShadeOutputMode <
+        ui_category = "[ Pipeline | Output | Blending ]";
+        ui_label = "Debug Output";
+        ui_tooltip = "Reset this option once you are done debugging.";
+        ui_type = "combo";
+        ui_items = "No Debug\0Display Alpha\0";
+    > = 0;
+
     uniform float _CShadeAlphaFactor <
         ui_category = "[ Pipeline | Output | Blending ]";
         ui_label = "Alpha Factor";
@@ -59,5 +67,18 @@
         ui_min = 0.0;
         ui_max = 1.0;
     > = 1.0;
+
+    float4 CBlend_OutputChannels(float4 Color)
+    {
+        switch(_CShadeOutputMode)
+        {
+            case 0:
+                return Color;
+            case 1:
+                return Color.a;
+            default:
+            	return Color;
+        }
+    }
 
 #endif

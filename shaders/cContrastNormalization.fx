@@ -76,10 +76,10 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         case 0:
             float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
-            return float4(((float3)CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5, _CShadeAlphaFactor);
+            return CBlend_OutputChannels(float4(((float3)CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5, _CShadeAlphaFactor));
         case 1:
             float4 CT = GetCensusTransform(CShade_SampleColorTex, Input.Tex0);
-            return float4((float3)CColor_GetLuma(CT.rgb, 0), _CShadeAlphaFactor);
+            return CBlend_OutputChannels(float4((float3)CColor_GetLuma(CT.rgb, 0), _CShadeAlphaFactor));
         default:
             return 0.5;
     }
