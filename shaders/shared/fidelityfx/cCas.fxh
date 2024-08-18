@@ -133,6 +133,8 @@
         FilterShape += Sample[3] * Weight;
         FilterShape += Sample[4] * Weight;
         FilterShape = saturate(FilterShape * ReciprocalWeight);
+
+        FilterMask = AmplifyRGB;
     }
 
 #endif
