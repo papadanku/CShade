@@ -6,25 +6,33 @@
 */
 
 uniform float2 _TexScale <
-    ui_label = "Texture | Scale";
+    ui_label = "Image Scale";
     ui_type = "drag";
     ui_step = 0.001;
 > = float2(0.5, 0.5);
 
 uniform float2 _TexOffset <
-    ui_label = "Texture | Offset";
+    ui_label = "Image Offset";
     ui_type = "drag";
     ui_step = 0.001;
 > = float2(0.0, 0.0);
 
 uniform float2 _MaskScale <
-    ui_label = "Mask | Scale";
+    ui_label = "Mask Scale";
     ui_type = "drag";
     ui_min = 0.0;
+    ui_max = 1.0;
 > = float2(0.5, 0.25);
 
+uniform float2 _MaskOffset <
+    ui_label = "Mask Offset";
+    ui_type = "drag";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = float2(0.0, 0.0);
+
 #ifndef ENABLE_POINT_SAMPLING
-    #define ENABLE_POINT_SAMPLING 0
+    #define ENABLE_POINT_SAMPLING 1
 #endif
 
 /*
@@ -84,9 +92,8 @@ float4 PS_Overlay(VS2PS Input) : SV_TARGET0
     float4 Color = tex2D(SampleColorTex_Overlay, Input.Tex0.zw);
 
     // Output a rectangle
-    float2 MaskCoord = Input.Tex0.xy;
-    float2 Scale = (-_MaskScale * 0.5) + 0.5;
-    float2 Shaper = step(Scale, MaskCoord.xy) * step(Scale, 1.0 - MaskCoord.xy);
+    float2 MaskCoord = (Input.Tex0.xy * 2.0) - 1.0;
+    float2 Shaper = step(abs(MaskCoord + _MaskOffset), _MaskScale);
     float Crop = Shaper.x * Shaper.y;
 
     return float4(Color.rgb, Crop);
@@ -96,13 +103,14 @@ technique CShade_Overlay
 {
     pass
     {
+        SRGBWriteEnable = WRITE_SRGB;
+
         // Blend the rectangle with the backbuffer
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
         BlendOp = ADD;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
-        SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = VS_Overlay;
         PixelShader = PS_Overlay;
