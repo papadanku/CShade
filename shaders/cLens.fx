@@ -89,7 +89,7 @@ uniform float _Vignette <
 
 #include "shared/cShade.fxh"
 #include "shared/fidelityfx/cLens.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 {
@@ -116,7 +116,7 @@ technique CShade_Lens
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Lens;

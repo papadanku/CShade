@@ -11,7 +11,7 @@ uniform float _BlendFactor <
 > = 0.5;
 
 #include "shared/cShade.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Textures & Samplers]
@@ -36,7 +36,7 @@ float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(tex2D(SampleBlendTex, Input.Tex0).rgb, _CShadeAlphaFactor);
 }
 
-technique CShade_FrameBlending
+technique CShade_FrameBlend
 {
     pass
     {
@@ -55,7 +55,7 @@ technique CShade_FrameBlending
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Display;

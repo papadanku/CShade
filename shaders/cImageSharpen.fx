@@ -61,7 +61,7 @@ uniform int _DisplayMode <
 
 #include "shared/cShade.fxh"
 #include "shared/fidelityfx/cCas.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
@@ -84,12 +84,12 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
     return float4(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
-technique CShade_ImageSharpening
+technique CShade_ImageSharpen
 {
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_CasFilterNoScaling;

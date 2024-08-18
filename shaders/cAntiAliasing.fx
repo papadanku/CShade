@@ -16,7 +16,7 @@ uniform int _DisplayMode <
     ui_items = "Output\0Mask\0";
 > = 0;
 
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 float GetIntensity(float3 Color)
 {
@@ -197,7 +197,7 @@ technique CShade_AntiAliasing
 
     pass AntiAliasing
     {
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_AntiAliasing;

@@ -94,7 +94,7 @@ namespace kDatamosh
     #include "shared/cColor.fxh"
     #include "shared/cBlur.fxh"
     #include "shared/cMotionEstimation.fxh"
-    #include "shared/cBlendOp.fxh"
+    #include "shared/cBlend.fxh"
 
     #ifndef LINEAR_SAMPLING
         #define LINEAR_SAMPLING 0
@@ -387,7 +387,7 @@ namespace kDatamosh
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
-            CBLENDOP_OUTPUT_CREATE_STATES()
+            CBLEND_CREATE_STATES()
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_CopyColorTex;

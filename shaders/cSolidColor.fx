@@ -1,6 +1,6 @@
 
 #include "shared/cShade.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Shader Options]
@@ -27,7 +27,7 @@ technique CShade_SolidColor
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Color;

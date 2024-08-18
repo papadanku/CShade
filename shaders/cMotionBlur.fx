@@ -50,7 +50,7 @@ namespace cMotionBlur
     #include "shared/cBlur.fxh"
     #include "shared/cMotionEstimation.fxh"
     #include "shared/cProcedural.fxh"
-    #include "shared/cBlendOp.fxh"
+    #include "shared/cBlend.fxh"
 
     /*
         [Textures & Samplers]
@@ -217,7 +217,7 @@ namespace cMotionBlur
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
-            CBLENDOP_OUTPUT_CREATE_STATES()
+            CBLEND_CREATE_STATES()
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_MotionBlur;

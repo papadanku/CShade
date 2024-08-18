@@ -89,7 +89,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannel_Crop <
-        ui_category = "Crop (Left, Right, Top, Bottom)";
+        ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Red Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -97,7 +97,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _GreenChannel_Crop <
-        ui_category = "Crop (Left, Right, Top, Bottom)";
+        ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Green Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -105,7 +105,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _BlueChannel_Crop <
-        ui_category = "Crop (Left, Right, Top, Bottom)";
+        ui_category = "Crop | Left, Right, Top, Bottom";
         ui_label = "Blue Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -139,7 +139,7 @@ uniform float3 _BackColor <
     > = 0;
 #endif
 
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Textures and Samplers]
@@ -363,7 +363,7 @@ technique CShade_Circles
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Circles;

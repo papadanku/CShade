@@ -20,39 +20,39 @@
             DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA
     */
 
-    #ifndef CBLENDOP_OUTPUT_BLEND_ENABLE
-        #define CBLENDOP_OUTPUT_BLEND_ENABLE FALSE
+    #ifndef CBLEND_BLENDENABLE
+        #define CBLEND_BLENDENABLE FALSE
     #endif
-    #ifndef CBLENDOP_OUTPUT_BLEND_OP
-        #define CBLENDOP_OUTPUT_BLEND_OP ADD
+    #ifndef CBLEND_BLENDOP
+        #define CBLEND_BLENDOP ADD
     #endif
-    #ifndef CBLENDOP_OUTPUT_BLEND_OP_ALPHA
-        #define CBLENDOP_OUTPUT_BLEND_OP_ALPHA ADD
+    #ifndef CBLEND_BLENDOPALPHA
+        #define CBLEND_BLENDOPALPHA ADD
     #endif
-    #ifndef CBLENDOP_OUTPUT_SRC_BLEND
-        #define CBLENDOP_OUTPUT_SRC_BLEND ONE
+    #ifndef CBLEND_SRCBLEND
+        #define CBLEND_SRCBLEND ONE
     #endif
-    #ifndef CBLENDOP_OUTPUT_SRC_BLEND_ALPHA
-        #define CBLENDOP_OUTPUT_SRC_BLEND_ALPHA ONE
+    #ifndef CBLEND_SRCBLENDALPHA
+        #define CBLEND_SRCBLENDALPHA ONE
     #endif
-    #ifndef CBLENDOP_OUTPUT_DEST_BLEND
-        #define CBLENDOP_OUTPUT_DEST_BLEND ZERO
+    #ifndef CBLEND_DESTBLEND
+        #define CBLEND_DESTBLEND ZERO
     #endif
-    #ifndef CBLENDOP_OUTPUT_DEST_BLEND_ALPHA
-        #define CBLENDOP_OUTPUT_DEST_BLEND_ALPHA ZERO
+    #ifndef CBLEND_DESTBLENDALPHA
+        #define CBLEND_DESTBLENDALPHA ZERO
     #endif
 
-    #define CBLENDOP_OUTPUT_CREATE_STATES() \
-        BlendEnable = CBLENDOP_OUTPUT_BLEND_ENABLE; \
-        BlendOp = CBLENDOP_OUTPUT_BLEND_OP; \
-        BlendOpAlpha = CBLENDOP_OUTPUT_BLEND_OP_ALPHA; \
-        SrcBlend = CBLENDOP_OUTPUT_SRC_BLEND; \
-        SrcBlendAlpha = CBLENDOP_OUTPUT_SRC_BLEND_ALPHA; \
-        DestBlend = CBLENDOP_OUTPUT_DEST_BLEND; \
-        DestBlendAlpha = CBLENDOP_OUTPUT_DEST_BLEND_ALPHA; \
+    #define CBLEND_CREATE_STATES() \
+        BlendEnable = CBLEND_BLENDENABLE; \
+        BlendOp = CBLEND_BLENDOP; \
+        BlendOpAlpha = CBLEND_BLENDOPALPHA; \
+        SrcBlend = CBLEND_SRCBLEND; \
+        SrcBlendAlpha = CBLEND_SRCBLENDALPHA; \
+        DestBlend = CBLEND_DESTBLEND; \
+        DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
 
     uniform float _CShadeAlphaFactor <
-        ui_category = "Output: Blending";
+        ui_category = "Pipeline | Output | Blending";
         ui_label = "Alpha Factor";
         ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";

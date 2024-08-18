@@ -6,7 +6,7 @@
 uniform float _Frametime < source = "frametime"; >;
 
 uniform float _Threshold <
-    ui_category = "Bloom: Input";
+    ui_category = "Bloom | Input";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -14,7 +14,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Bloom: Input";
+    ui_category = "Bloom | Input";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -22,7 +22,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float3 _ColorShift <
-    ui_category = "Bloom: Input";
+    ui_category = "Bloom | Input";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -30,7 +30,7 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
-    ui_category = "Bloom: Input";
+    ui_category = "Bloom | Input";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_step = 0.001;
@@ -39,7 +39,7 @@ uniform float _Intensity <
 > = 0.5;
 
 uniform float _Level8Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 8";
     ui_type = "slider";
     ui_min = 0.0;
@@ -47,7 +47,7 @@ uniform float _Level8Weight <
 > = 1.0;
 
 uniform float _Level7Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 7";
     ui_type = "slider";
     ui_min = 0.0;
@@ -55,7 +55,7 @@ uniform float _Level7Weight <
 > = 1.0;
 
 uniform float _Level6Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 6";
     ui_type = "slider";
     ui_min = 0.0;
@@ -63,7 +63,7 @@ uniform float _Level6Weight <
 > = 1.0;
 
 uniform float _Level5Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 5";
     ui_type = "slider";
     ui_min = 0.0;
@@ -71,7 +71,7 @@ uniform float _Level5Weight <
 > = 1.0;
 
 uniform float _Level4Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 4";
     ui_type = "slider";
     ui_min = 0.0;
@@ -79,7 +79,7 @@ uniform float _Level4Weight <
 > = 1.0;
 
 uniform float _Level3Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 3";
     ui_type = "slider";
     ui_min = 0.0;
@@ -87,7 +87,7 @@ uniform float _Level3Weight <
 > = 1.0;
 
 uniform float _Level2Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 2";
     ui_type = "slider";
     ui_min = 0.0;
@@ -95,7 +95,7 @@ uniform float _Level2Weight <
 > = 1.0;
 
 uniform float _Level1Weight <
-    ui_category = "Bloom: Level Weights";
+    ui_category = "Bloom | Level Weights";
     ui_label = "Level 1";
     ui_type = "slider";
     ui_min = 0.0;
@@ -113,7 +113,7 @@ uniform float _Level1Weight <
 #define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 #ifndef USE_AUTOEXPOSURE
     #define USE_AUTOEXPOSURE 1
@@ -306,7 +306,7 @@ technique CShade_Bloom
     {
         ClearRenderTargets = FALSE;
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Composite;

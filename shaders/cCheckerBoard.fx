@@ -29,7 +29,7 @@ uniform bool _InvertCheckerboard <
 
 #include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
@@ -49,7 +49,7 @@ technique CShade_CheckerBoard
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Checkerboard;

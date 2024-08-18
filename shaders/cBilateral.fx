@@ -1,7 +1,7 @@
 
 #include "shared/cShade.fxh"
 #include "shared/cBlur.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 float4 PS_Bilateral(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
@@ -40,7 +40,7 @@ technique CShade_Bilateral
     pass Bilateral
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Bilateral;

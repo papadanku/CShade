@@ -1,6 +1,6 @@
 
 #include "shared/cShade.fxh"
-#include "shared/cBlendOp.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Shader Options]
@@ -80,7 +80,7 @@ technique CShade_Transform
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
-        CBLENDOP_OUTPUT_CREATE_STATES()
+        CBLEND_CREATE_STATES()
 
         VertexShader = VS_Matrix;
         PixelShader = PS_Matrix;

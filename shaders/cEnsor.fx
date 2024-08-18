@@ -35,7 +35,7 @@ namespace cEnsor
 
 	#include "shared/cShade.fxh"
 	#include "shared/cColor.fxh"
-	#include "shared/cBlendOp.fxh"
+	#include "shared/cBlend.fxh"
 
     CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
     CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR)
@@ -138,7 +138,7 @@ namespace cEnsor
         pass
         {
             SRGBWriteEnable = WRITE_SRGB;
-            CBLENDOP_OUTPUT_CREATE_STATES()
+            CBLEND_CREATE_STATES()
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_Censor;
