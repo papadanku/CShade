@@ -1,12 +1,18 @@
 
 #if !defined(INCLUDE_MACROS)
+    #define INCLUDE_MACROS
+
     /*
         [Macros and macro accessories]
         ---
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 
-    #define INCLUDE_MACROS
+    #define REDEFINE_PREPROCESSOR_DEFINITION(PREPROCESSOR_NAME, PREPROCESSOR_ARG)
+        #undef PREPROCESSOR_NAME \
+        #ifndef PREPROCESSOR_NAME \
+            #define PREPROCESSOR_NAME PREPROCESSOR_ARG \
+        #endif \
 
     #define GET_EVEN(X) (X + (X & 1))
     #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
