@@ -2,6 +2,7 @@
 #include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cEdge.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     MIT License
@@ -161,6 +162,7 @@ technique CShade_KinoContour
     pass
     {
         SRGBWriteEnable = WRITE_SRGB;
+        CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Grad;
