@@ -20,6 +20,14 @@
             DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA
     */
 
+    /*
+        Bits positions used for CBLEND_RENDERTARGETWRITEMASK, simplified for users
+    */
+    #define RED 1
+    #define GREEN 2
+    #define BLUE 4
+    #define ALPHA 8
+
     #ifndef CBLEND_BLENDENABLE
         #define CBLEND_BLENDENABLE FALSE
     #endif
@@ -41,6 +49,9 @@
     #ifndef CBLEND_DESTBLENDALPHA
         #define CBLEND_DESTBLENDALPHA ZERO
     #endif
+    #ifndef CBLEND_WRITEMASK
+        #define CBLEND_WRITEMASK RED + GREEN + BLUE + ALPHA
+    #endif
 
     #define CBLEND_CREATE_STATES() \
         BlendEnable = CBLEND_BLENDENABLE; \
@@ -50,6 +61,7 @@
         SrcBlendAlpha = CBLEND_SRCBLENDALPHA; \
         DestBlend = CBLEND_DESTBLEND; \
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
+        RenderTargetWriteMask = CBLEND_WRITEMASK; \
 
     uniform int _CShadeOutputMode <
         ui_category = "[ Pipeline | Output | Blending ]";
@@ -77,7 +89,7 @@
             case 1:
                 return Color.a;
             default:
-            	return Color;
+                return Color;
         }
     }
 
