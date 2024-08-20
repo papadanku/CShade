@@ -61,7 +61,7 @@
         SrcBlendAlpha = CBLEND_SRCBLENDALPHA; \
         DestBlend = CBLEND_DESTBLEND; \
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
-        RenderTargetWriteMask = CBLEND_WRITEMASK; \
+        RenderTargetWriteMask = int(CBLEND_WRITEMASK); \
 
     uniform int _CShadeOutputMode <
         ui_category = "[ Pipeline | Output | Blending ]";
