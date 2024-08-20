@@ -93,4 +93,9 @@
         }
     }
 
+    // Undefine so other shaders can use these names
+    #undef RED
+    #undef GREEN
+    #undef BLUE
+    #undef ALPHA
 #endif
