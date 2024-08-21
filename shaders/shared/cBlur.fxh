@@ -67,6 +67,40 @@
         return OutputColor / TotalWeight;
     }
 
+    float4 PS_Bilateral(sampler Source, float2 Tex)
+    {
+        // Get constant
+        const float Pi2 = CMath_GetPi() * 2.0;
+
+        // Initialize variables we need to accumulate samples and calculate offsets
+        float4 OutputColor = 0.0;
+
+        // Offset and weighting attributes
+        float2 PixelSize = fwidth(Tex);
+
+        // Get bilateral filter
+        float4 TotalWeight = 0.0;
+        float4 Center = tex2D(Source, Tex);
+        [unroll]
+        for(int i = 1; i < 4; ++i)
+        {
+            [unroll]
+            for(int j = 0; j < 4 * i; ++j)
+            {
+                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
+                sincos(Shift, Shift.x, Shift.y);
+                Shift *= float(i);
+
+                float4 Pixel = tex2D(Source, Tex + (Shift * PixelSize));
+                float4 Weight = abs(1.0 - abs(Pixel - Center));
+                OutputColor += (Pixel * Weight);
+                TotalWeight += Weight;
+            }
+        }
+
+        return OutputColor / TotalWeight;
+    }
+
     /*
         Wojciech Sterna's shadow sampling code as a screen-space convolution (http://maxest.gct-game.net/content/chss.pdf)
         ---
