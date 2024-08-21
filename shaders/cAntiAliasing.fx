@@ -216,7 +216,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     [branch]
     if (SkipFXAA(LN))
     {
-        return LN.C;
+        return CBlend_OutputChannels(float4(LN.C.rgb, _CShadeAlphaFactor));
     }
     else
     {
