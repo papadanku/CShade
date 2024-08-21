@@ -242,7 +242,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
             BlendTex.x += (BlendFactor * E.PixelStep);
         }
 
-        float4 FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0));
+        float4 FXAA = tex2Dlod(CShade_SampleColorTex, float4(BlendTex, 0.0, 0.0));
         return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
     }
 }
