@@ -1,199 +1,248 @@
 
 /*
-    Directionally Localized Anti-Aliasing (DLAA)
-    http://www.and.intercon.ru/releases/talks/dlaagdc2011/
+    Single-Pass FXAA modification of:
+        - https://bitbucket.org/catlikecodingunitytutorials/custom-srp-17-fxaa/src
+        - https://catlikecoding.com/unity/tutorials/custom-srp/fxaa/
 
-    by Dmitry Andreev
-    Copyright (C) LucasArts 2010-2011
+    MIT No Attribution (MIT-0)
+
+    Copyright 2021 Jasper Flick
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-uniform int _RenderMode <
-    ui_label = "Render Mode";
-    ui_type = "combo";
-    ui_items = "Render Image\0Render Mask\0";
-> = 0;
+#define CONTRAST_THRESHOLD 0.0312
+#define RELATIVE_THRESHOLD 0.063
+#define SUBPIXEL_BLENDING 0.75
 
 #include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cBlend.fxh"
 
-float GetIntensity(float3 Color)
+float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
+    float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
+    float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
     return CColor_GetLuma(Color, 0);
 }
 
-float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+struct LumaNeighborhood
 {
-    float2 Delta = fwidth(Input.Tex0.xy);
-    float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
-    float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
+    float4 C;
+    float M, N, E, S, W;
+    float Highest, Lowest, Range;
+};
 
-    float3 Neighborhood[4];
-    float3 Center = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
-    Neighborhood[0] = tex2D(CShade_SampleGammaTex, EdgeTex0.xy).rgb;
-    Neighborhood[1] = tex2D(CShade_SampleGammaTex, EdgeTex0.zw).rgb;
-    Neighborhood[2] = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
-    Neighborhood[3] = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
+LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
+{
+    LumaNeighborhood L;
+    L.C = tex2Dlod(CShade_SampleGammaTex, float4(Tex, 0.0, 0.0));
+    L.M = CColor_GetLuma(L.C.rgb, 0);
+    L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
+    L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
+    L.S = SampleLuma(Tex, float2(0.0, -1.0), Delta);
+    L.W = SampleLuma(Tex, float2(-1.0, 0.0), Delta);
+    L.Highest = max(max(max(max(L.M, L.N), L.E), L.S), L.W);
+    L.Lowest = min(min(min(min(L.M, L.N), L.E), L.S), L.W);
+    L.Range = L.Highest - L.Lowest;
+    return L;
+}
 
-    // Compass edge detection on N/S/E/W
-    float3 Edges = 0.0;
-    Edges = max(Edges, abs(Center - Neighborhood[0]));
-    Edges = max(Edges, abs(Center - Neighborhood[1]));
-    Edges = max(Edges, abs(Center - Neighborhood[2]));
-    Edges = max(Edges, abs(Center - Neighborhood[3]));
-    float EdgesLuma = smoothstep(0.0, 0.25, GetIntensity(Edges));
+struct LumaDiagonals
+{
+    float NE, SE, SW, NW;
+};
 
-    return float4(Center, EdgesLuma);
+LumaDiagonals GetLumaDiagonals(float2 Tex, float2 Delta)
+{
+    LumaDiagonals L;
+    L.NE = SampleLuma(Tex, float2(1.0, 1.0), Delta);
+    L.SE = SampleLuma(Tex, float2(1.0, -1.0), Delta);
+    L.SW = SampleLuma(Tex, float2(-1.0, -1.0), Delta);
+    L.NW = SampleLuma(Tex, float2(-1.0, 1.0), Delta);
+    return L;
+}
+
+float GetSubpixelBlendFactor(LumaNeighborhood LN, LumaDiagonals LD)
+{
+    float Blend = 2.0 * (LN.N + LN.E + LN.S + LN.W);
+    Blend += LD.NE + LD.NW + LD.SE + LD.SW;
+    Blend *= (1.0 / 12.0);
+    Blend = abs(Blend - LN.M);
+    Blend = saturate(Blend / LN.Range);
+    Blend = smoothstep(0.0, 1.0, Blend);
+    return Blend * Blend * SUBPIXEL_BLENDING;
+}
+
+bool IsHorizontalEdge(LumaNeighborhood LN, LumaDiagonals LD)
+{
+    float Horizontal =
+        2.0 * abs(LN.N + LN.S - 2.0 * LN.M) +
+        abs(LD.NE + LD.SE - 2.0 * LN.E) +
+        abs(LD.NW + LD.SW - 2.0 * LN.W);
+    float Vertical =
+        2.0 * abs(LN.E + LN.W - 2.0 * LN.M) +
+        abs(LD.NE + LD.NW - 2.0 * LN.N) +
+        abs(LD.SE + LD.SW - 2.0 * LN.S);
+    return Horizontal >= Vertical;
+}
+
+bool SkipFXAA(LumaNeighborhood LN)
+{
+    return LN.Range < max(CONTRAST_THRESHOLD, RELATIVE_THRESHOLD * LN.Highest);
+}
+
+struct Edge
+{
+    bool IsHorizontal;
+    float PixelStep;
+    float LumaGradient, OtherLuma;
+};
+
+Edge GetEdge(LumaNeighborhood LN, LumaDiagonals LD, float2 Delta)
+{
+    Edge E;
+    E.IsHorizontal = IsHorizontalEdge(LN, LD);
+    E.PixelStep = (E.IsHorizontal) ? Delta.y : Delta.x;
+    float LumaP = (E.IsHorizontal) ? LN.N : LN.E;
+    float LumaN = (E.IsHorizontal) ? LN.S : LN.W;
+
+    float GradientP = abs(LumaP - LN.M);
+    float GradientN = abs(LumaN - LN.M);
+    if (GradientP < GradientN)
+    {
+        E.PixelStep = -E.PixelStep;
+        E.LumaGradient = GradientN;
+        E.OtherLuma = LumaN;
+    }
+    else
+    {
+        E.LumaGradient = GradientP;
+        E.OtherLuma = LumaP;
+    }
+
+    return E;
+}
+
+float GetEdgeBlendFactor(LumaNeighborhood LN, LumaDiagonals LD, Edge E, float2 Tex, float2 Delta)
+{
+    const int EdgeStepCount = 4;
+    const float EdgeSteps[EdgeStepCount] = { 1.0, 1.5, 2.0, 4.0 };
+    const float LastStep = 12.0;
+
+    float2 EdgeTex = Tex;
+    float2 TexStep = 0.0;
+    if (E.IsHorizontal)
+    {
+        EdgeTex.y += (E.PixelStep * 0.5);
+        TexStep.x = Delta.x;
+    }
+    else
+    {
+        EdgeTex.x += (E.PixelStep * 0.5);
+        TexStep.y = Delta.y;
+    }
+
+    // Precompute this
+    float EdgeLuma = 0.5 * (LN.M + E.OtherLuma);
+    float GradientThreshold = 0.25 * E.LumaGradient;
+
+    // March in the positive direction
+    float2 TexP = EdgeTex + TexStep;
+    float LumaDeltaP = SampleLuma(TexP, 0.0, Delta) - EdgeLuma;
+    bool AtEndP = abs(LumaDeltaP) >= GradientThreshold;
+    [unroll]
+    for (int i = 0; i < EdgeStepCount && !AtEndP; i++)
+    {
+        TexP += (TexStep * EdgeSteps[i]);
+        LumaDeltaP = SampleLuma(TexP, 0.0, Delta) - EdgeLuma;
+        AtEndP = abs(LumaDeltaP) >= GradientThreshold;
+    }
+    if (!AtEndP)
+    {
+        TexP += (TexStep * LastStep);
+    }
+
+    // March in the negative direction
+    float2 TexN = EdgeTex - TexStep;
+    float LumaDeltaN = SampleLuma(TexN, 0.0, Delta) - EdgeLuma;
+    bool AtEndN = abs(LumaDeltaN) >= GradientThreshold;
+    [unroll]
+    for (int i = 0; i < EdgeStepCount && !AtEndN; i++)
+    {
+        TexN -= (TexStep * EdgeSteps[i]);
+        LumaDeltaN = SampleLuma(TexN, 0.0, Delta) - EdgeLuma;
+        AtEndN = abs(LumaDeltaN) >= GradientThreshold;
+    }
+    if (!AtEndN)
+    {
+        TexN -= (TexStep * LastStep);
+    }
+
+    float DistanceToEndP = (E.IsHorizontal) ? TexP.x - Tex.x : TexP.y - Tex.y;
+    float DistanceToEndN = (E.IsHorizontal) ? Tex.x - TexN.x : Tex.y - TexN.y;
+
+    float DistanceToNearestEnd = 0.0;
+    float DeltaSign = 0.0;
+
+    if (DistanceToEndP <= DistanceToEndN)
+    {
+        DistanceToNearestEnd = DistanceToEndP;
+        DeltaSign = LumaDeltaP >= 0;
+    }
+    else
+    {
+        DistanceToNearestEnd = DistanceToEndN;
+        DeltaSign = LumaDeltaN >= 0;
+    }
+
+    if (DeltaSign == (LN.M - EdgeLuma >= 0))
+    {
+        return 0.0;
+    }
+    else
+    {
+        return 0.5 - DistanceToNearestEnd / (DistanceToEndP + DistanceToEndN);
+    }
 }
 
 float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
-
-    const float Lambda = 3.0;
-    const float Epsilon = 0.1;
-
-    /*
-        Short edges
-    */
-    float4 ShortEdgeTex0 = Input.Tex0.xyxy + (float4(-1.5, 0.0, 1.5, 0.0) * Delta.xyxy);
-    float4 ShortEdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.5, 0.0, 1.5) * Delta.xyxy);
-    float4 ShortEdgeTex2 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
-    float4 ShortEdgeTex3 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
-
-    float4 Center = tex2D(CShade_SampleGammaTex, Input.Tex0);
-
-    float4 Left01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex0.xy);
-    float4 Right01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex0.zw);
-    float4 Top01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex1.xy);
-    float4 Bottom01 = tex2D(CShade_SampleGammaTex, ShortEdgeTex1.zw);
-
-    float4 Left = tex2D(CShade_SampleGammaTex, ShortEdgeTex2.xy);
-    float4 Right = tex2D(CShade_SampleGammaTex, ShortEdgeTex2.zw);
-    float4 Top = tex2D(CShade_SampleGammaTex, ShortEdgeTex3.xy);
-    float4 Bottom = tex2D(CShade_SampleGammaTex, ShortEdgeTex3.zw);
-
-    float4 WH = 2.0 * (Left01 + Right01);
-    float4 WV = 2.0 * (Top01 + Bottom01);
-
-    // 3-pixel wide high-pass
-    float4 EdgeH = abs(Left + Right - 2.0 * Center) / 2.0;
-    float4 EdgeV = abs(Top + Bottom - 2.0 * Center) / 2.0;
-
-    // Get low-pass
-    float4 BlurH = (WH + 2.0 * Center) / 6.0;
-    float4 BlurV = (WV + 2.0 * Center) / 6.0;
-
-    // Get respective intensities
-    float EdgeLumaH = GetIntensity(EdgeH.rgb);
-    float EdgeLumaV = GetIntensity(EdgeV.rgb);
-    float BlurLumaH = GetIntensity(BlurH.rgb);
-    float BlurLumaV = GetIntensity(BlurV.rgb);
-
-    // Edge masks
-    float EdgeMaskH = saturate((Lambda * EdgeLumaH - Epsilon) / BlurLumaV);
-    float EdgeMaskV = saturate((Lambda * EdgeLumaV - Epsilon) / BlurLumaH);
-
-    float4 Color = Center;
-    Color = lerp(Color, BlurH, EdgeMaskV);
-    Color = lerp(Color, BlurV, EdgeMaskH);
-
-    /*
-        Long edges
-    */
-    float4 LTex0 = Input.Tex0.xyxy + (float4(1.5, 0.0, 0.0, 1.5) * Delta.xyxy);
-    float4 LTex1 = Input.Tex0.xyxy + (float4(3.5, 0.0, 0.0, 3.5) * Delta.xyxy);
-    float4 LTex2 = Input.Tex0.xyxy + (float4(5.5, 0.0, 0.0, 5.5) * Delta.xyxy);
-    float4 LTex3 = Input.Tex0.xyxy + (float4(7.5, 0.0, 0.0, 7.5) * Delta.xyxy);
-    float4 LTex4 = Input.Tex0.xyxy + (float4(-1.5, 0.0, 0.0, -1.5) * Delta.xyxy);
-    float4 LTex5 = Input.Tex0.xyxy + (float4(-3.5, 0.0, 0.0, -3.5) * Delta.xyxy);
-    float4 LTex6 = Input.Tex0.xyxy + (float4(-5.5, 0.0, 0.0, -5.5) * Delta.xyxy);
-    float4 LTex7 = Input.Tex0.xyxy + (float4(-7.5, 0.0, 0.0, -7.5) * Delta.xyxy);
-
-    float4 H0 = tex2D(CShade_SampleGammaTex, LTex0.xy);
-    float4 H1 = tex2D(CShade_SampleGammaTex, LTex1.xy);
-    float4 H2 = tex2D(CShade_SampleGammaTex, LTex2.xy);
-    float4 H3 = tex2D(CShade_SampleGammaTex, LTex3.xy);
-    float4 H4 = tex2D(CShade_SampleGammaTex, LTex4.xy);
-    float4 H5 = tex2D(CShade_SampleGammaTex, LTex5.xy);
-    float4 H6 = tex2D(CShade_SampleGammaTex, LTex6.xy);
-    float4 H7 = tex2D(CShade_SampleGammaTex, LTex7.xy);
-
-    float4 V0 = tex2D(CShade_SampleGammaTex, LTex0.zw);
-    float4 V1 = tex2D(CShade_SampleGammaTex, LTex1.zw);
-    float4 V2 = tex2D(CShade_SampleGammaTex, LTex2.zw);
-    float4 V3 = tex2D(CShade_SampleGammaTex, LTex3.zw);
-    float4 V4 = tex2D(CShade_SampleGammaTex, LTex4.zw);
-    float4 V5 = tex2D(CShade_SampleGammaTex, LTex5.zw);
-    float4 V6 = tex2D(CShade_SampleGammaTex, LTex6.zw);
-    float4 V7 = tex2D(CShade_SampleGammaTex, LTex7.zw);
-
-    // In CShade, we take .rgb out of branch
-    float4 LongBlurH = (H0 + H1 + H2 + H3 + H4 + H5 + H6 + H7) / 8.0;
-    float4 LongBlurV = (V0 + V1 + V2 + V3 + V4 + V5 + V6 + V7) / 8.0;
-
-    float LongEdgeMaskH = saturate((LongBlurH.a * 2.0) - 1.0);
-    float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
+    LumaNeighborhood LN = GetLumaNeighborhood(Input.Tex0, Delta);
 
     [branch]
-    if (abs(LongEdgeMaskH - LongEdgeMaskV) > 0.25)
+    if (SkipFXAA(LN))
     {
-        float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
-        float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
-
-        float CenterLuma = GetIntensity(Center.rgb);
-        float LeftLuma = GetIntensity(Left.rgb);
-        float RightLuma = GetIntensity(Right.rgb);
-        float TopLuma = GetIntensity(Top.rgb);
-        float BottomLuma = GetIntensity(Bottom.rgb);
-
-        float4 ColorH = Center;
-        float4 ColorV = Center;
-
-        // Vectorized search
-        float HX = saturate(0.0 + (LongBlurLumaH - TopLuma) / (CenterLuma - TopLuma));
-        float HY = saturate(1.0 + (LongBlurLumaH - CenterLuma) / (CenterLuma - BottomLuma));
-        float VX = saturate(0.0 + (LongBlurLumaV - LeftLuma) / (CenterLuma - LeftLuma));
-        float VY = saturate(1.0 + (LongBlurLumaV - CenterLuma) / (CenterLuma - RightLuma));
-
-        float4 VHXY = float4(VX, VY, HX, HY);
-        VHXY = (VHXY == float4(0.0, 0.0, 0.0, 0.0)) ? float4(1.0, 1.0, 1.0, 1.0) : VHXY;
-
-        ColorV = lerp(Left, ColorV, VHXY.x);
-        ColorV = lerp(Right, ColorV, VHXY.y);
-        ColorH = lerp(Top, ColorH, VHXY.z);
-        ColorH = lerp(Bottom, ColorH, VHXY.w);
-
-        Color = lerp(Color, ColorV, LongEdgeMaskV);
-        Color = lerp(Color, ColorH, LongEdgeMaskH);
+        return LN.C;
     }
-
-    // Preserve high frequencies
-    float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
-    float4 R0 = tex2D(CShade_SampleGammaTex, RTex.xw);
-    float4 R1 = tex2D(CShade_SampleGammaTex, RTex.zw);
-    float4 R2 = tex2D(CShade_SampleGammaTex, RTex.xy);
-    float4 R3 = tex2D(CShade_SampleGammaTex, RTex.zy);
-
-    float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
-    Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
-
-    if (_RenderMode == 1)
+    else
     {
-        return Center.a;
-    }
+        LumaDiagonals LD = GetLumaDiagonals(Input.Tex0, Delta);
 
-    return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
+        Edge E = GetEdge(LN, LD, Delta);
+        float SubpixelBlendFactor = GetSubpixelBlendFactor(LN, LD);
+        float EdgeBlendFactor = GetEdgeBlendFactor(LN, LD, E, Input.Tex0, Delta);
+        float BlendFactor = max(SubpixelBlendFactor, EdgeBlendFactor);
+
+        float2 BlendTex = Input.Tex0;
+        if (E.IsHorizontal)
+        {
+            BlendTex.y += (BlendFactor * E.PixelStep);
+        }
+        else
+        {
+            BlendTex.x += (BlendFactor * E.PixelStep);
+        }
+
+        return CBlend_OutputChannels(tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb, _CShadeAlphaFactor);
+    }
 }
 
 technique CShade_AntiAliasing
 {
-    pass PreFilter
-    {
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Prefilter;
-    }
-
     pass AntiAliasing
     {
         CBLEND_CREATE_STATES()
