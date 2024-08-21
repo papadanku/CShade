@@ -21,11 +21,16 @@
 #include "shared/cColor.fxh"
 #include "shared/cBlend.fxh"
 
+float GetLuma(float3 Color)
+{
+    return sqrt(CColor_GetLuma(Color, 0));
+}
+
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
     float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
-    float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
-    return CColor_GetLuma(Color, 0);
+    float3 Color = tex2Dlod(CShade_SampleColorTex, Tex1).rgb;
+    return GetLuma(Color);
 }
 
 struct LumaNeighborhood
@@ -38,8 +43,8 @@ struct LumaNeighborhood
 LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
 {
     LumaNeighborhood L;
-    L.C = tex2Dlod(CShade_SampleGammaTex, float4(Tex, 0.0, 0.0));
-    L.M = CColor_GetLuma(L.C.rgb, 0);
+    L.C = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
+    L.M = GetLuma(L.C.rgb);
     L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
     L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
     L.S = SampleLuma(Tex, float2(0.0, -1.0), Delta);
@@ -246,6 +251,7 @@ technique CShade_AntiAliasing
 {
     pass AntiAliasing
     {
+        SRGBWriteEnable = WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
