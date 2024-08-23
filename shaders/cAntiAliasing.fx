@@ -25,7 +25,7 @@ float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
     float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
     float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
-    return CColor_GetLuma(Color, 0);
+    return dot(Color, CColor_Rec709_Coefficients);
 }
 
 struct LumaNeighborhood
