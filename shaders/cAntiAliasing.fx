@@ -21,16 +21,11 @@
 #include "shared/cColor.fxh"
 #include "shared/cBlend.fxh"
 
-float GetLuma(float3 Color)
-{
-    return CColor_GetLuma(Color, 0);
-}
-
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
     float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
     float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
-    return GetLuma(Color);
+    return CColor_GetLuma(Color, 0);
 }
 
 struct LumaNeighborhood
@@ -237,7 +232,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
     }
 
-    float4 FXAA = tex2Dlod(CShade_SampleColorTex, float4(BlendTex, 0.0, 0.0));
+    float4 FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0));
     return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
 }
 
@@ -245,7 +240,6 @@ technique CShade_AntiAliasing
 {
     pass AntiAliasing
     {
-        SRGBWriteEnable = WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
