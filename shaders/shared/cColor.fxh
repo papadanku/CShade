@@ -1,4 +1,6 @@
 
+#include "cMath.fxh"
+
 #if !defined(INCLUDE_COLOR)
     #define INCLUDE_COLOR
 
@@ -214,4 +216,40 @@
         }
     }
 
+    /*
+        Copyright (c) 2020 Björn Ottosson
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    */
+    float3 CColor_GetOKLabFromRGB(float3 Color)
+    {
+        float3 LMS = 0.0;
+        LMS.r = dot(Color, float3(0.4122214708, 0.5363325363, 0.0514459929));
+        LMS.g = dot(Color, float3(0.2119034982, 0.6806995451, 0.1073969566));
+        LMS.b = dot(Color, float3(0.0883024619, 0.2817188376, 0.6299787005));
+        LMS = pow(LMS, 1.0 / 3.0);
+        LMS = dot(Color, float3(0.2104542553, 0.7936177850, -0.0040720468));
+        LMS = dot(Color, float3(1.9779984951, -2.4285922050, 0.4505937099));
+        LMS = dot(Color, float3(0.0259040371, 0.7827717662, -0.8086757660));
+        return LMS;
+    }
+
+    float3 CColor_GetOKLchFromOKLab(float3 Color)
+    {
+        float Pi2 = CMath_GetPi() * 2.0;
+        float3 OKlab = 0.0;
+        OKlab.x = Color.x;
+        OKlab.y = length(Color.yz);
+        OKlab.z = atan2(Color.z, Color.y) / Pi2;
+        return OKlab;
+    }
+
+    float3 CColor_GetOKLchFromRGB(float3 Color)
+    {
+        return CColor_GetOKLchFromOKLab(CColor_GetOKLabFromRGB(Color));
+    }
 #endif
