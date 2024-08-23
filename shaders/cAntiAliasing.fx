@@ -23,19 +23,18 @@
 
 float GetLuma(float3 Color)
 {
-    return sqrt(CColor_GetLuma(Color, 0));
+    return CColor_GetLuma(Color, 0);
 }
 
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
     float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
-    float3 Color = tex2Dlod(CShade_SampleColorTex, Tex1).rgb;
+    float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
     return GetLuma(Color);
 }
 
 struct LumaNeighborhood
 {
-    float4 C;
     float M, N, E, S, W;
     float Highest, Lowest, Range;
 };
@@ -43,8 +42,7 @@ struct LumaNeighborhood
 LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
 {
     LumaNeighborhood L;
-    L.C = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
-    L.M = GetLuma(L.C.rgb);
+    L.M = SampleLuma(Tex, float2(0.0, 0.0), Delta);
     L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
     L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
     L.S = SampleLuma(Tex, float2(0.0, -1.0), Delta);
@@ -217,13 +215,10 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
     LumaNeighborhood LN = GetLumaNeighborhood(Input.Tex0, Delta);
+    float2 BlendTex = Input.Tex0;
 
     [branch]
-    if (SkipFXAA(LN))
-    {
-        return CBlend_OutputChannels(float4(LN.C.rgb, _CShadeAlphaFactor));
-    }
-    else
+    if (!SkipFXAA(LN))
     {
         LumaDiagonals LD = GetLumaDiagonals(Input.Tex0, Delta);
 
@@ -232,7 +227,6 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         float EdgeBlendFactor = GetEdgeBlendFactor(LN, LD, E, Input.Tex0, Delta);
         float BlendFactor = max(SubpixelBlendFactor, EdgeBlendFactor);
 
-        float2 BlendTex = Input.Tex0;
         if (E.IsHorizontal)
         {
             BlendTex.y += (BlendFactor * E.PixelStep);
@@ -241,10 +235,10 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         {
             BlendTex.x += (BlendFactor * E.PixelStep);
         }
-
-        float4 FXAA = tex2Dlod(CShade_SampleColorTex, float4(BlendTex, 0.0, 0.0));
-        return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
     }
+
+    float4 FXAA = tex2Dlod(CShade_SampleColorTex, float4(BlendTex, 0.0, 0.0));
+    return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_AntiAliasing
