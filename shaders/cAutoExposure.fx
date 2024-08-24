@@ -45,7 +45,6 @@ uniform bool _DisplaySpotMeterMask <
 > = false;
 
 #include "shared/cMacros.fxh"
-#include "shared/cShade.fxh"
 #include "shared/cProcedural.fxh"
 
 #define INCLUDE_CCAMERA_INPUT
@@ -55,6 +54,7 @@ uniform bool _DisplaySpotMeterMask <
 #define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*

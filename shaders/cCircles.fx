@@ -7,7 +7,6 @@
     #define ENABLE_MONO 0
 #endif
 
-#include "shared/cShade.fxh"
 #include "shared/cMacros.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
@@ -139,6 +138,7 @@ uniform float3 _BackColor <
     > = 0;
 #endif
 
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*

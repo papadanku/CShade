@@ -1,9 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cEdge.fxh"
-#include "shared/cBlend.fxh"
-
 /*
     MIT License
 
@@ -30,6 +25,9 @@
 /*
     [Shader Options]
 */
+
+#include "shared/cColor.fxh"
+#include "shared/cEdge.fxh"
 
 uniform int _Method <
     ui_label = "Edge Detection Kernel";
@@ -83,6 +81,9 @@ uniform int _DisplayMode <
     ui_type = "radio";
     ui_items = "Output\0Mask\0";
 > = 0;
+
+#include "shared/cShade.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]

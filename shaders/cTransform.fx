@@ -1,7 +1,4 @@
 
-#include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
-
 /*
     [Shader Options]
 */
@@ -20,6 +17,9 @@ uniform float2 _Scale <
     ui_label = "Scaling";
     ui_type = "drag";
 > = 1.0;
+
+#include "shared/cShade.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Vertex Shaders]

@@ -27,8 +27,9 @@ uniform float _Intensity <
     ui_min = 0.0;
 > = 1.0;
 
-#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
+
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*
