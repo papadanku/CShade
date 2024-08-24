@@ -18,7 +18,7 @@ uniform float _BlendFactor <
 */
 
 CREATE_TEXTURE(BlendTex, BUFFER_SIZE_0, RGBA8, 1)
-CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP)
+CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]

@@ -146,7 +146,7 @@ uniform float3 _BackColor <
 */
 
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR)
+CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR, MIRROR, MIRROR)
 
 sampler2D CShade_SampleColorTexMirror
 {

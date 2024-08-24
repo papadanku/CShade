@@ -4,6 +4,39 @@
 #if !defined(INCLUDE_GRAPHICS)
     #define INCLUDE_GRAPHICS
 
+    #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+        sampler2D SAMPLER_NAME \
+        { \
+            Texture = TEXTURE; \
+            MagFilter = FILTER; \
+            MinFilter = FILTER; \
+            MipFilter = FILTER; \
+            AddressU = ADDRESSU; \
+            AddressV = ADDRESSV; \
+            AddressW = ADDRESSW; \
+        };
+
+    #if BUFFER_COLOR_BIT_DEPTH == 8
+        #define READ_SRGB TRUE
+        #define WRITE_SRGB TRUE
+    #else
+        #define READ_SRGB FALSE
+        #define WRITE_SRGB FALSE
+    #endif
+
+    #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+        sampler2D SAMPLER_NAME \
+        { \
+            Texture = TEXTURE; \
+            MagFilter = FILTER; \
+            MinFilter = FILTER; \
+            MipFilter = FILTER; \
+            AddressU = ADDRESSU; \
+            AddressV = ADDRESSV; \
+            AddressW = ADDRESSW; \
+            SRGBTexture = READ_SRGB; \
+        };
+
     /*
         [Buffer]
     */

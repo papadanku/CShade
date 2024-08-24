@@ -62,7 +62,7 @@ uniform bool _DisplaySpotMeterMask <
 */
 
 CREATE_TEXTURE(LumaTex, int2(256, 256), R16F, 9)
-CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP)
+CREATE_SAMPLER(SampleLumaTex, LumaTex, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]

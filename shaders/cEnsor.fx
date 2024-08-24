@@ -38,7 +38,7 @@ namespace cEnsor
     #include "shared/cBlend.fxh"
 
     CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
-    CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR)
+    CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR, MIRROR, MIRROR)
 
     float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
