@@ -31,48 +31,41 @@
     #define OFF 0
 
     #ifndef CBLEND_BLENDENABLE
-        #define CBLEND_BLENDENABLE OFF
+        #define CBLEND_BLENDENABLE FALSE
     #endif
 
-    #if (CBLEND_BLENDENABLE == ON)
-        #ifndef CBLEND_BLENDOP
-            #define CBLEND_BLENDOP ADD
-        #endif
-        #ifndef CBLEND_BLENDOPALPHA
-            #define CBLEND_BLENDOPALPHA ADD
-        #endif
-        #ifndef CBLEND_SRCBLEND
-            #define CBLEND_SRCBLEND ONE
-        #endif
-        #ifndef CBLEND_SRCBLENDALPHA
-            #define CBLEND_SRCBLENDALPHA ONE
-        #endif
-        #ifndef CBLEND_DESTBLEND
-            #define CBLEND_DESTBLEND ZERO
-        #endif
-        #ifndef CBLEND_DESTBLENDALPHA
-            #define CBLEND_DESTBLENDALPHA ZERO
-        #endif
+    #ifndef CBLEND_BLENDOP
+        #define CBLEND_BLENDOP ADD
+    #endif
+    #ifndef CBLEND_BLENDOPALPHA
+        #define CBLEND_BLENDOPALPHA ADD
+    #endif
+    #ifndef CBLEND_SRCBLEND
+        #define CBLEND_SRCBLEND ONE
+    #endif
+    #ifndef CBLEND_SRCBLENDALPHA
+        #define CBLEND_SRCBLENDALPHA ONE
+    #endif
+    #ifndef CBLEND_DESTBLEND
+        #define CBLEND_DESTBLEND ZERO
+    #endif
+    #ifndef CBLEND_DESTBLENDALPHA
+        #define CBLEND_DESTBLENDALPHA ZERO
     #endif
 
     #ifndef CBLEND_WRITEMASK
         #define CBLEND_WRITEMASK RED + GREEN + BLUE + ALPHA
     #endif
 
-    #if (CBLEND_BLENDENABLE == ON)
-        #define CBLEND_CREATE_STATES() \
-            BlendEnable = CBLEND_BLENDENABLE; \
-            BlendOp = CBLEND_BLENDOP; \
-            BlendOpAlpha = CBLEND_BLENDOPALPHA; \
-            SrcBlend = CBLEND_SRCBLEND; \
-            SrcBlendAlpha = CBLEND_SRCBLENDALPHA; \
-            DestBlend = CBLEND_DESTBLEND; \
-            DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
-            RenderTargetWriteMask = int(CBLEND_WRITEMASK);
-    #else
-        #define CBLEND_CREATE_STATES() \
-            RenderTargetWriteMask = int(CBLEND_WRITEMASK);
-    #endif
+    #define CBLEND_CREATE_STATES() \
+        BlendEnable = CBLEND_BLENDENABLE; \
+        BlendOp = CBLEND_BLENDOP; \
+        BlendOpAlpha = CBLEND_BLENDOPALPHA; \
+        SrcBlend = CBLEND_SRCBLEND; \
+        SrcBlendAlpha = CBLEND_SRCBLENDALPHA; \
+        DestBlend = CBLEND_DESTBLEND; \
+        DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
+        RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
     uniform int _CShadeOutputMode <
         ui_category = "[ Pipeline | Output | Blending ]";

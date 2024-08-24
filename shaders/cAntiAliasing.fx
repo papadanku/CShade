@@ -13,9 +13,41 @@
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CONTRAST_THRESHOLD 0.0625
-#define RELATIVE_THRESHOLD 0.125
-#define SUBPIXEL_BLENDING 0.75
+uniform int _RelativeThreshold <
+    ui_label = "Relative Threshold";
+    ui_tooltip = "Trims the algorithm from processing darks.";
+    ui_type = "combo";
+    ui_items = "High\0Medium\0Low\0";
+> = 1;
+
+static const float RelativeThresholds[3] =
+{
+    1.0 / 12.0, 1.0 / 16.0, 1.0 / 32.0
+};
+
+uniform int _ContrastThreshold <
+    ui_label = "Contrast Threshold";
+    ui_tooltip = "The minimum amount of local contrast required to apply algorithm.";
+    ui_type = "combo";
+    ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
+> = 3;
+
+static const float ContrastThresholds[5] =
+{
+    1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
+};
+
+uniform int _SubpixelBlending <
+    ui_label = "Subpixel Blending";
+    ui_tooltip = "Choose the amount of sub-pixel aliasing removal.";
+    ui_type = "combo";
+    ui_items = "High\0Medium\0Low\0Very Low\0Off\0";
+> = 1;
+
+static const float SubpixelBlendings[5] =
+{
+    1.0, 3.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0, 0.0
+};
 
 #include "shared/cColor.fxh"
 
@@ -72,7 +104,7 @@ float GetSubpixelBlendFactor(LumaNeighborhood LN, LumaDiagonals LD)
     Blend = abs(Blend - LN.M);
     Blend = saturate(Blend / LN.Range);
     Blend = smoothstep(0.0, 1.0, Blend);
-    return Blend * Blend * SUBPIXEL_BLENDING;
+    return Blend * Blend * SubpixelBlendings[_SubpixelBlending];
 }
 
 bool IsHorizontalEdge(LumaNeighborhood LN, LumaDiagonals LD)
@@ -90,7 +122,7 @@ bool IsHorizontalEdge(LumaNeighborhood LN, LumaDiagonals LD)
 
 bool SkipFXAA(LumaNeighborhood LN)
 {
-    return LN.Range < max(CONTRAST_THRESHOLD, RELATIVE_THRESHOLD * LN.Highest);
+    return LN.Range < max(RelativeThresholds[_RelativeThreshold], ContrastThresholds[_ContrastThreshold]* LN.Highest);
 }
 
 struct Edge
@@ -128,8 +160,8 @@ Edge GetEdge(LumaNeighborhood LN, LumaDiagonals LD, float2 Delta)
 float GetEdgeBlendFactor(LumaNeighborhood LN, LumaDiagonals LD, Edge E, float2 Tex, float2 Delta)
 {
     const int EdgeStepCount = 4;
-    const float EdgeSteps[EdgeStepCount] = { 1.0, 1.5, 2.0, 4.0 };
-    const float LastStep = 12.0;
+    const float EdgeSteps[EdgeStepCount] = { 1.0, 1.5, 2.0, 2.0 };
+    const float LastStep = 8.0;
 
     float2 EdgeTex = Tex;
     float2 TexStep = 0.0;
