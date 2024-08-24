@@ -17,8 +17,8 @@
 #define RELATIVE_THRESHOLD 0.125
 #define SUBPIXEL_BLENDING 0.75
 
-#include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)

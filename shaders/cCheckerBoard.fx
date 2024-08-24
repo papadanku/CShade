@@ -27,8 +27,8 @@ uniform bool _InvertCheckerboard <
     ui_type = "radio";
 > = false;
 
-#include "shared/cShade.fxh"
 #include "shared/cMath.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*

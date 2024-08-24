@@ -81,8 +81,8 @@ uniform float _Vignette <
     ui_max = 2.0;
 > = 0.6;
 
-#include "shared/cShade.fxh"
 #include "shared/fidelityfx/cLens.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0

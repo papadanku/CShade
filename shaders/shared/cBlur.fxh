@@ -27,7 +27,7 @@
         return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
 
-    float4 CBlur_GetPixelBlur(CShade_VS2PS_Quad Input, sampler2D SampleSource, bool Horizontal)
+    float4 CBlur_GetPixelBlur(float2 Tex, sampler2D SampleSource, bool Horizontal)
     {
         // Initialize variables
         const int KernelSize = 10;
@@ -35,7 +35,7 @@
         const float4 VShift = float4(0.0, -1.0, 0.0, 1.0);
 
         float4 OutputColor = 0.0;
-        float4 PSize = fwidth(Input.Tex0).xyxy;
+        float2 Delta = fwidth(Tex);
 
         const float Offsets[KernelSize] =
         {
@@ -51,13 +51,13 @@
 
         // Sample and weight center first to get even number sides
         float TotalWeight = Weights[0];
-        OutputColor = tex2D(SampleSource, Input.Tex0 + (Offsets[0] * PSize.xy)) * Weights[0];
+        OutputColor = tex2D(SampleSource, Tex + (Offsets[0] * Delta)) * Weights[0];
 
         // Sample neighboring pixels
         for(int i = 1; i < KernelSize; i++)
         {
             const float4 Offset = (Horizontal) ? Offsets[i] * HShift: Offsets[i] * VShift;
-            float4 Tex = Input.Tex0.xyxy + (Offset * PSize);
+            float4 Tex = Tex.xyxy + (Offset * Delta.xyxy);
             OutputColor += tex2D(SampleSource, Tex.xy) * Weights[i];
             OutputColor += tex2D(SampleSource, Tex.zw) * Weights[i];
             TotalWeight += (Weights[i] * 2.0);

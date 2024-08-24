@@ -54,10 +54,10 @@ uniform bool _InvertFalloff <
     ui_type = "radio";
 > = false;
 
-#include "shared/cShade.fxh"
-#include "shared/cProcedural.fxh"
-#include "shared/cMath.fxh"
 #include "shared/fidelityfx/cLens.fxh"
+#include "shared/cMath.fxh"
+#include "shared/cProcedural.fxh"
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*
