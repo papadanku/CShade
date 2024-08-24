@@ -1,4 +1,6 @@
 
+#include "shared/cShade.fxh"
+
 /*
     [Shader Options]
 */
@@ -18,8 +20,6 @@ uniform float3 _DestFactor <
     ui_label = "Destination Factor (RGB)";
     ui_type = "drag";
 > = 1.0;
-
-#include "shared/cShade.fxh"
 
 /*
     [Textures & Samplers]

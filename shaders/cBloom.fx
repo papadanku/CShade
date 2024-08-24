@@ -108,6 +108,7 @@ uniform float _Level1Weight <
     ui_max = 1.0;
 > = 1.0;
 
+#include "shared/cShade.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMath.fxh"
 
@@ -118,7 +119,6 @@ uniform float _Level1Weight <
 #define INCLUDE_CTONEMAP_OUTPUT
 #include "shared/cTonemap.fxh"
 
-#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 #ifndef USE_AUTOEXPOSURE

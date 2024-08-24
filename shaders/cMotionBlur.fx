@@ -45,11 +45,11 @@ namespace cMotionBlur
         ui_type = "radio";
     > = false;
 
+    #include "shared/cShade.fxh"
     #include "shared/cColor.fxh"
     #include "shared/cBlur.fxh"
     #include "shared/cMotionEstimation.fxh"
     #include "shared/cProcedural.fxh"
-    #include "shared/cShade.fxh"
     #include "shared/cBlend.fxh"
 
     /*
@@ -88,12 +88,12 @@ namespace cMotionBlur
 
     float2 PS_PrefilterHBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        return CBlur_GetPixelBlur(Input.Tex0, SampleTempTex1, true).rg;
+        return CBlur_GetPixelBlur(Input, SampleTempTex1, true).rg;
     }
 
     float2 PS_PrefilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        return CBlur_GetPixelBlur(Input.Tex0, SampleTempTex2a, false).rg;
+        return CBlur_GetPixelBlur(Input, SampleTempTex2a, false).rg;
     }
 
     // Run Lucas-Kanade
@@ -128,12 +128,12 @@ namespace cMotionBlur
     float4 PS_PostfilterHBlur(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
     {
         Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
-        return float4(CBlur_GetPixelBlur(Input.Tex0, SampleOFlowTex, true).rg, 0.0, 1.0);
+        return float4(CBlur_GetPixelBlur(Input, SampleOFlowTex, true).rg, 0.0, 1.0);
     }
 
     float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        return float4(CBlur_GetPixelBlur(Input.Tex0, SampleTempTex2a, false).rg, 0.0, 1.0);
+        return float4(CBlur_GetPixelBlur(Input, SampleTempTex2a, false).rg, 0.0, 1.0);
     }
 
     float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0

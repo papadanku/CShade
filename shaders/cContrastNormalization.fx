@@ -5,9 +5,9 @@ uniform int _Select <
     ui_items = "Local Contrast Normalization\0Census Transform\0";
 > = 0;
 
+#include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
-#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 /*

@@ -1,4 +1,6 @@
 
+#include "shared/cShade.fxh"
+
 /*
     [Shader Options]
 */
@@ -32,8 +34,6 @@ uniform float2 _MaskOffset <
 #ifndef ENABLE_POINT_SAMPLING
     #define ENABLE_POINT_SAMPLING 1
 #endif
-
-#include "shared/cShade.fxh"
 
 /*
     [Textures & Samplers]

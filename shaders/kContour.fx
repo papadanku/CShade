@@ -1,4 +1,9 @@
 
+#include "shared/cShade.fxh"
+#include "shared/cColor.fxh"
+#include "shared/cEdge.fxh"
+#include "shared/cBlend.fxh"
+
 /*
     MIT License
 
@@ -79,11 +84,6 @@ uniform int _DisplayMode <
     ui_items = "Output\0Mask\0";
 > = 0;
 
-#include "shared/cColor.fxh"
-#include "shared/cEdge.fxh"
-#include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
-
 /*
     [Pixel Shaders]
 */
@@ -113,9 +113,9 @@ float3 GetColor(float4 Input)
     }
 }
 
-float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
+float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 I = 0.0;
+    float3 I = 0.0;
 
     switch(_Method)
     {
@@ -148,14 +148,13 @@ float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_DisplayMode == 1)
     {
-        return float4(I.rgb, _CShadeAlphaFactor);
+        return I;
     }
 
     // Thresholding
     I = I * _ColorSensitivity;
-    float4 Mask = saturate((I - _Threshold) * _InverseRange);
-    float3 Contour = lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
-    return CBlend_OutputChannels(float4(Contour, _CShadeAlphaFactor));
+    float3 Mask = saturate((I - _Threshold) * _InverseRange);
+    return lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
 }
 
 technique CShade_KinoContour

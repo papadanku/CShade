@@ -33,8 +33,8 @@ namespace cEnsor
         ui_items = "Output\0Mask\0";
     > = 0;
 
-    #include "shared/cColor.fxh"
     #include "shared/cShade.fxh"
+    #include "shared/cColor.fxh"
     #include "shared/cBlend.fxh"
 
     CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)

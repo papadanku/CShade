@@ -52,8 +52,8 @@ uniform int _RenderMode <
     ui_items = "Render Image\0Render Mask\0";
 > = 0;
 
-#include "shared/fidelityfx/cCas.fxh"
 #include "shared/cShade.fxh"
+#include "shared/fidelityfx/cCas.fxh"
 #include "shared/cBlend.fxh"
 
 float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0

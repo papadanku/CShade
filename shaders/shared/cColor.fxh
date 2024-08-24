@@ -4,7 +4,7 @@
 #if !defined(INCLUDE_COLOR)
     #define INCLUDE_COLOR
 
-    static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
+    static const float CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 
     float3 CColor_GetSumChromaticity(float3 Color, int Method)
     {
