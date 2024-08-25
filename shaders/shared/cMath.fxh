@@ -41,9 +41,8 @@
         return acos(-1.0);
     }
 
-    float2x2 CMath_GetRotationMatrix(float Angle)
+    float2x2 CMath_GetRotationMatrix(float A)
     {
-        float A = radians(Angle);
         return float2x2(cos(A), sin(A), -sin(A), cos(A));
     }
 
@@ -55,6 +54,42 @@
             O *= i;
         }
         return O;
+    }
+
+    float2 CMath_Transform2D(
+        float2 Tex, // [-1, 1]
+        float Angle,
+        float2 Translate,
+        float2 Scale
+    )
+    {
+        float2x2 RotationMatrix = CMath_GetRotationMatrix(Angle);
+
+        float3x3 TranslationMatrix = float3x3
+        (
+            1.0, 0.0, 0.0, // Row 1
+            0.0, 1.0, 0.0, // Row 2
+            Translate.x, Translate.y, 1.0 // Row 3
+        );
+
+        float2x2 ScalingMatrix = float2x2
+        (
+            Scale.x, 0.0, // Row 1
+            0.0, Scale.y // Row 2
+        );
+
+        // Scale TexCoord from [0,1] to [-1,1]
+        Tex = (Tex * 2.0) - 1.0;
+
+        // Do transformations here
+        Tex = mul(Tex, RotationMatrix);
+        Tex = mul(float3(Tex, 1.0), TranslationMatrix).xy;
+        Tex = mul(Tex, ScalingMatrix);
+
+        // Scale TexCoord from [-1,1] to [0,1]
+        Tex = (Tex * 0.5) + 0.5;
+
+        return Tex;
     }
 
 #endif
