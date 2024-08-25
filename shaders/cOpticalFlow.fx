@@ -292,7 +292,7 @@ technique CShade_OpticalFlow
             ClearRenderTargets = FALSE;
             BlendEnable = TRUE;
             BlendOp = ADD;
-            SrcBlend = ZERO;
+            SrcBlend = ONE;
             DestBlend = ZERO;
         }
     #else
