@@ -42,6 +42,7 @@ uniform float _Roll <
 > = 0.0;
 
 uniform bool _Symmetry <
+    ui_label = "Symmetry";
 > = true;
 
 #include "shared/cShade.fxh"
