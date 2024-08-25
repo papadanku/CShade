@@ -34,12 +34,10 @@ uniform int _DitherMethod <
 
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    // Color texture data
     float2 ColorMapTex = floor(Input.Tex0 * _Resolution) / _Resolution;
     float4 ColorMap = tex2D(CShade_SampleGammaTex, ColorMapTex);
 
-    // Dither data
-    float2 HashTex = trunc((Input.Tex0 - 0.5) * _Resolution);
+    float2 HashTex = floor(Input.Tex0 * _Resolution);
     float3 Dither = 0.0;
 
     switch (_DitherMethod)
