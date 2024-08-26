@@ -54,9 +54,9 @@ static const float SubpixelBlendings[5] =
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
-float SampleLuma(float2 Tex, float4 Offset, float2 Delta)
+float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
-    float4 Tex1 = Tex.xyxy + (Offset * Delta.xyxy);
+    float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
     float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
     return dot(Color, CColor_Rec709_Coefficients);
 }
@@ -70,11 +70,11 @@ struct LumaNeighborhood
 LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
 {
     LumaNeighborhood L;
-    L.M = SampleLuma(Tex, float4(0.0, 0.0, 0.0, 0.0), Delta);
-    L.N = SampleLuma(Tex, float4(0.0, 1.0, 0.0, 0.0), Delta);
-    L.E = SampleLuma(Tex, float4(1.0, 0.0, 0.0, 0.0), Delta);
-    L.S = SampleLuma(Tex, float4(0.0, -1.0, 0.0, 0.0), Delta);
-    L.W = SampleLuma(Tex, float4(-1.0, 0.0, 0.0, 0.0), Delta);
+    L.M = SampleLuma(Tex, float2(0.0, 0.0), Delta);
+    L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
+    L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
+    L.S = SampleLuma(Tex, float2(0.0, -1.0), Delta);
+    L.W = SampleLuma(Tex, float2(-1.0, 0.0), Delta);
     L.Highest = max(max(max(max(L.M, L.N), L.E), L.S), L.W);
     L.Lowest = min(min(min(min(L.M, L.N), L.E), L.S), L.W);
     L.Range = L.Highest - L.Lowest;
@@ -89,10 +89,10 @@ struct LumaDiagonals
 LumaDiagonals GetLumaDiagonals(float2 Tex, float2 Delta)
 {
     LumaDiagonals L;
-    L.NE = SampleLuma(Tex, float4(1.0, 1.0, 0.0, 0.0), Delta);
-    L.SE = SampleLuma(Tex, float4(1.0, -1.0, 0.0, 0.0), Delta);
-    L.SW = SampleLuma(Tex, float4(-1.0, -1.0, 0.0, 0.0), Delta);
-    L.NW = SampleLuma(Tex, float4(-1.0, 1.0, 0.0, 0.0), Delta);
+    L.NE = SampleLuma(Tex, float2(1.0, 1.0), Delta);
+    L.SE = SampleLuma(Tex, float2(1.0, -1.0), Delta);
+    L.SW = SampleLuma(Tex, float2(-1.0, -1.0), Delta);
+    L.NW = SampleLuma(Tex, float2(-1.0, 1.0), Delta);
     return L;
 }
 
@@ -142,10 +142,17 @@ Edge GetEdge(LumaNeighborhood LN, LumaDiagonals LD, float2 Delta)
 
     float GradientP = abs(LumaP - LN.M);
     float GradientN = abs(LumaN - LN.M);
-    bool GradientPN = GradientP < GradientN;
-    E.PixelStep = (GradientPN) ? -E.PixelStep : E.PixelStep;
-    E.LumaGradient = (GradientPN) ? GradientN : GradientP;
-    E.OtherLuma = (GradientPN) ? LumaN : LumaP;
+    if (GradientP < GradientN)
+    {
+        E.PixelStep = -E.PixelStep;
+        E.LumaGradient = GradientN;
+        E.OtherLuma = LumaN;
+    }
+    else
+    {
+        E.LumaGradient = GradientP;
+        E.OtherLuma = LumaP;
+    }
 
     return E;
 }
