@@ -109,15 +109,15 @@ float GetSubpixelBlendFactor(LumaNeighborhood LN, LumaDiagonals LD)
 
 bool IsHorizontalEdge(LumaNeighborhood LN, LumaDiagonals LD)
 {
-    float Horizontal =
-        2.0 * abs(LN.N + LN.S - 2.0 * LN.M) +
-        abs(LD.NE + LD.SE - 2.0 * LN.E) +
-        abs(LD.NW + LD.SW - 2.0 * LN.W);
-    float Vertical =
-        2.0 * abs(LN.E + LN.W - 2.0 * LN.M) +
-        abs(LD.NE + LD.NW - 2.0 * LN.N) +
-        abs(LD.SE + LD.SW - 2.0 * LN.S);
-    return Horizontal >= Vertical;
+    float Horizontal = 0.0;
+    Horizontal += (LD.NW + (LN.N * 2.0) + LD.NE);
+    Horizontal += (LD.SW + (LN.S * 2.0) + LD.SE);
+    Horizontal -= (2.0 * (LN.W + (LN.M * 2.0) + LN.E));
+    float Vertical = 0.0;
+    Vertical += (LD.NW + (LN.W * 2.0) + LD.SW);
+    Vertical += (LD.NE + (LN.E * 2.0) + LD.SE);
+    Vertical -= (2.0 * (LN.N + (LN.M * 2.0) + LN.S));
+    return abs(Horizontal) >= abs(Vertical);
 }
 
 bool SkipFXAA(LumaNeighborhood LN)
