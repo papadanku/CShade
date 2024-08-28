@@ -30,7 +30,7 @@ CShade features shaders that deal with getting information about an image.
   - Gaussian blur
   - Edge detection
 - Image sharpening
-- Local Image Normalization
+- Local normalization
   - Census transform
   - Local contrast normalization
 
