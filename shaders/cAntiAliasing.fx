@@ -30,7 +30,7 @@ uniform int _ContrastThreshold <
     ui_tooltip = "The minimum amount of local contrast required to apply algorithm.";
     ui_type = "combo";
     ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
-> = 3;
+> = 2;
 
 static const float ContrastThresholds[5] =
 {
