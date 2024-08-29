@@ -43,13 +43,13 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     // Under-threshold
-    float Brightness = CMath_Med3(Color.r, Color.g, Color.b).a;
+    float Brightness = CMath_Float4_Med3(Color.r, Color.g, Color.b).a;
     float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
     ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
-    Brightness = CMath_Med3(Color.r, Color.g, Color.b).a;
+    Brightness = CMath_Float4_Med3(Color.r, Color.g, Color.b).a;
     return CBlend_OutputChannels(float4(saturate(lerp(Brightness, Color.rgb, _Saturation) * _Intensity), _CShadeAlphaFactor));
 }
 

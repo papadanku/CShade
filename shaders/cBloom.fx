@@ -182,7 +182,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LogLuminance = GetLogLuminance(ColorTex.rgb);
 
     // Under-threshold
-    float Brightness = CMath_Med3(Color.r, Color.g, Color.b).r;
+    float Brightness = CMath_Float1_Med3(Color.r, Color.g, Color.b);
     float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
     ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 

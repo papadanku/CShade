@@ -122,7 +122,7 @@ bool IsHorizontalEdge(LumaNeighborhood LN, LumaDiagonals LD)
 
 bool SkipFXAA(LumaNeighborhood LN)
 {
-    return LN.Range < max(RelativeThresholds[_RelativeThreshold], ContrastThresholds[_ContrastThreshold]* LN.Highest);
+    return LN.Range < max(RelativeThresholds[_RelativeThreshold], ContrastThresholds[_ContrastThreshold] * LN.Highest);
 }
 
 struct Edge

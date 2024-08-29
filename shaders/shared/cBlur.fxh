@@ -343,9 +343,11 @@
         Sample[6] = tex2D(Source, Tex3.zw);
         Sample[7] = tex2D(Source, Tex4.xy);
         Sample[8] = tex2D(Source, Tex4.zw);
-        return Med9(Sample[0], Sample[1], Sample[2],
-                    Sample[3], Sample[4], Sample[5],
-                    Sample[6], Sample[7], Sample[8]);
+        return CMath_Float4_Med9(
+            Sample[0], Sample[1], Sample[2],
+            Sample[3], Sample[4], Sample[5],
+            Sample[6], Sample[7], Sample[8]
+        );
     }
 
 #endif

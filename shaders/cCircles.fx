@@ -180,7 +180,7 @@ Tile GetTiles(float2 Tex, float2 Translation)
     Output.Value = Tiles * _CircleAmount;
 
     // Shift the tiles so they are ~0.5 units apart from each-other
-    Output.Value.x = (CMath_GetModulus(trunc(Output.Value.y), 2.0) == 1.0) ? Output.Value.x + 0.25: Output.Value.x - 0.25;
+    Output.Value.x = (CMath_Float1_GetModulus(trunc(Output.Value.y), 2.0) == 1.0) ? Output.Value.x + 0.25: Output.Value.x - 0.25;
 
     // Get tile index
     Output.Index = floor(Output.Value);
