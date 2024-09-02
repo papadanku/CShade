@@ -351,7 +351,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
 #endif
 
-technique CShade_Circles
+technique CShade_Circles < ui_tooltip = "Creates circles based on image features"; >
 {
     pass
     {

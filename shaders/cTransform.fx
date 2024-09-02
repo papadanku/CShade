@@ -60,7 +60,7 @@ float4 PS_Matrix(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Transform
+technique CShade_Transform < ui_tooltip = "Translate, scale, and/or rotate the backbuffer"; >
 {
     pass
     {

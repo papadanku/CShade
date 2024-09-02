@@ -239,7 +239,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_OpticalFlow
+technique CShade_OpticalFlow < ui_tooltip = "Lucas-Kanade optical flow"; >
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)

@@ -58,7 +58,7 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
     #define CBLEND_DESTBLENDALPHA ZERO
 #endif
 
-technique CShade_LetterBox
+technique CShade_LetterBox < ui_tooltip = "Adjustable letterboxing effect"; >
 {
     pass
     {

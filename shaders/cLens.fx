@@ -106,7 +106,7 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Lens
+technique CShade_Lens < ui_tooltip = "FidelityFX | Lens"; >
 {
     pass
     {

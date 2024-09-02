@@ -36,7 +36,7 @@ float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(tex2D(SampleBlendTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_FrameBlend
+technique CShade_FrameBlend < ui_tooltip = "Frame-blending effect"; >
 {
     pass
     {

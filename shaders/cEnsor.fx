@@ -125,7 +125,7 @@ float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Censor
+technique CShade_Censor < ui_tooltip = "Pixelates the screen based on features"; >
 {
     pass
     {

@@ -158,7 +158,7 @@ float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
     return lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
 }
 
-technique CShade_KinoContour
+technique CShade_KinoContour < ui_tooltip = "Keijiro Takahashi | Contour line filter"; >
 {
     pass
     {

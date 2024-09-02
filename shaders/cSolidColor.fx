@@ -17,8 +17,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(_Color, _CShadeAlphaFactor));
 }
 
-// Use BlendOp to multiple the backbuffer with this quad's color
-technique CShade_SolidColor
+technique CShade_SolidColor < ui_tooltip = "Output a solid color (use \"Preprocessor Definitions\" for blending)"; >
 {
     pass
     {

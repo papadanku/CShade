@@ -45,7 +45,7 @@ float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(Checkerboard, _CShadeAlphaFactor));
 }
 
-technique CShade_CheckerBoard
+technique CShade_CheckerBoard < ui_tooltip = "Adjustable checkerboard effect"; >
 {
     pass
     {

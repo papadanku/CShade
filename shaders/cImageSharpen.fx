@@ -38,7 +38,7 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_ImageSharpen
+technique CShade_ImageSharpen < ui_tooltip = "FidelityFX | Robust Contrast Adaptive Sharpening (RCAS)"; >
 {
     pass
     {

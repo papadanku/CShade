@@ -272,7 +272,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_Bloom
+technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexposure"; >
 {
     // Prefilter stuff, emulate autoexposure
     CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)

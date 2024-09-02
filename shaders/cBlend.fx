@@ -76,7 +76,7 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
     return OutputColor;
 }
 
-technique CShade_CopyBuffer
+technique CShade_CopyBuffer < ui_tooltip = "Create CBlend's copy texture"; >
 {
     pass
     {
@@ -88,7 +88,7 @@ technique CShade_CopyBuffer
     }
 }
 
-technique CShade_BlendBuffer
+technique CShade_BlendBuffer < ui_tooltip = "Blend with CBlend's copy texture"; >
 {
     pass
     {

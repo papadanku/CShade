@@ -99,7 +99,7 @@ float4 PS_Overlay(VS2PS Input) : SV_TARGET0
     return float4(Color.rgb, Crop);
 }
 
-technique CShade_Overlay
+technique CShade_Overlay < ui_tooltip = "Applies a zoomed copy of the backbuffer"; >
 {
     pass
     {

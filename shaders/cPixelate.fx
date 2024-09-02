@@ -25,7 +25,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Pixelate
+technique CShade_Pixelate < ui_tooltip = "Adjustable pixelation effect"; >
 {
     pass
     {

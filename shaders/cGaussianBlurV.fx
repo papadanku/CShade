@@ -1,7 +1,7 @@
 
 #include "cGaussianBlur.fxh"
 
-technique CShade_VerticalBlur
+technique CShade_VerticalBlur < ui_tooltip = "Horizonal Gaussian blur effect"; >
 {
     pass
     {
