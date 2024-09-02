@@ -25,7 +25,7 @@ float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(Luma, _CShadeAlphaFactor));
 }
 
-technique CShade_Grayscale < ui_tooltip = "Grayscale effect"; >
+technique CShade_Grayscale < ui_tooltip = "Adjustable grayscale effect"; >
 {
     pass
     {
