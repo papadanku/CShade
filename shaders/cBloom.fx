@@ -27,14 +27,6 @@ uniform float _Smooth <
     ui_max = 1.0;
 > = 0.5;
 
-uniform float3 _ColorShift <
-    ui_category = "Bloom";
-    ui_label = "Color Shift (RGB)";
-    ui_type = "color";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
 uniform float _Intensity <
     ui_category = "Bloom";
     ui_label = "Intensity";
@@ -43,6 +35,14 @@ uniform float _Intensity <
     ui_min = 0.0;
     ui_max = 2.0;
 > = 0.8;
+
+uniform float3 _ColorShift <
+    ui_category = "Bloom";
+    ui_label = "Color Shift (RGB)";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
 
 #include "shared/cBlur.fxh"
 #include "shared/cMath.fxh"
