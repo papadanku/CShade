@@ -28,6 +28,44 @@
     THE SOFTWARE.
 */
 
+/*
+    https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/fsr1/ffx_fsr1.h
+
+    FSR - [RCAS] ROBUST CONTRAST ADAPTIVE SHARPENING
+
+    CAS uses a simplified mechanism to convert local contrast into a variable amount of sharpness.
+    RCAS uses a more exact mechanism, solving for the maximum local sharpness possible before clipping.
+    RCAS also has a built in process to limit sharpening of what it detects as possible noise.
+    RCAS sharper does not support scaling, as it should be applied after EASU scaling.
+    Pass EASU output straight into RCAS, no color conversions necessary.
+
+    RCAS is based on the following logic.
+    RCAS uses a 5 tap filter in a cross pattern (same as CAS),
+        w                n
+      w 1 w  for taps  w m e
+        w                s
+
+    Where 'w' is the negative lobe weight.
+      output = (w*(n+e+w+s)+m)/(4*w+1)
+
+    RCAS solves for 'w' by seeing where the signal might clip out of the {0 to 1} input range,
+      0 == (w*(n+e+w+s)+m)/(4*w+1) -> w = -m/(n+e+w+s)
+      1 == (w*(n+e+w+s)+m)/(4*w+1) -> w = (1-m)/(n+e+w+s-4*1)
+
+    Then chooses the 'w' which results in no clipping, limits 'w', and multiplies by the 'sharp' amount.
+    This solution above has issues with MSAA input as the steps along the gradient cause edge detection issues.
+    So RCAS uses 4x the maximum and 4x the minimum (depending on equation)in place of the individual taps.
+    As well as switching from 'm' to either the minimum or maximum (depending on side), to help in energy conservation.
+    This stabilizes RCAS.
+
+    RCAS does a simple highpass which is normalized against the local contrast then shaped,
+           0.25
+      0.25  -1  0.25
+           0.25
+    This is used as a noise detection filter, to reduce the effect of RCAS on grain, and focus on real edges.
+*/
+#define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
+
 #if !defined(INCLIDE_FFX_CAS)
     #define INCLIDE_FFX_CAS
 
@@ -36,105 +74,63 @@
         inout float4 FilterMask,
         in float2 Tex,
         in float2 Delta,
-        in int Detection,
-        in int Kernel,
-        in float Contrast
+        in float Sharpening
     )
     {
-        /*
-            Load a collection of samples in a 3x3 neighorhood, where e is the current pixel.
-            5 3 6 |   3   | 1 3
-            1 0 2 | 1 0 2 |  0
-            7 4 8 |   4   | 2 4
-        */
+        float4 TexArray[2];
+        TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
+        TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
 
-        // Select kernel sample
-        float4 TexArray[3];
-        float4 Sample[9];
-        switch (Kernel)
-        {
-            case 0:
-                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-                TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-                TexArray[2] = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
-                Sample[5] = tex2D(CShade_SampleColorTex, TexArray[2].xw);
-                Sample[6] = tex2D(CShade_SampleColorTex, TexArray[2].zw);
-                Sample[7] = tex2D(CShade_SampleColorTex, TexArray[2].xy);
-                Sample[8] = tex2D(CShade_SampleColorTex, TexArray[2].zy);
-                break;
-            case 1:
-                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-                TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
-                break;
-            case 2:
-                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-0.5, -0.5, 0.5, 0.5));
-                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xw);
-                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[0].zy);
-                break;
-            default:
-                break;
-        }
+        float4 Sample[5];
+        Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+        Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
+        Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
+        Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
+        Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
 
-        // Get polar min/max
-        float4 MinRGB = min(Sample[0], min(min(Sample[1], Sample[2]), min(Sample[3], Sample[4])));
-        float4 MaxRGB = max(Sample[0], max(max(Sample[1], Sample[2]), max(Sample[3], Sample[4])));
+        // Luma times 2.
+        float Luma[5];
+        Luma[0] = dot(Sample[0].rgb, float3(0.5, 0.5, 1.0));
+        Luma[1] = dot(Sample[1].rgb, float3(0.5, 0.5, 1.0));
+        Luma[2] = dot(Sample[2].rgb, float3(0.5, 0.5, 1.0));
+        Luma[3] = dot(Sample[3].rgb, float3(0.5, 0.5, 1.0));
+        Luma[4] = dot(Sample[4].rgb, float3(0.5, 0.5, 1.0));
 
-        if (Kernel == 0)
-        {
-            MinRGB = min(MinRGB, min(min(Sample[5], Sample[6]), min(Sample[7], Sample[8])));
-            MaxRGB = max(MaxRGB, max(max(Sample[5], Sample[6]), max(Sample[7], Sample[8])));
-        }
+        // Noise detection using a normalized local contrast filter
+        float Noise = ((Luma[1] + Luma[2] + Luma[3] + Luma[4]) * 0.25) - Luma[0];
+        float MaxLuma = max(Luma[0], max(max(Luma[1], Luma[2]), max(Luma[3], Luma[4])));
+        float MinLuma = min(Luma[0], min(min(Luma[1], Luma[2]), min(Luma[3], Luma[4])));
+        float RangeLuma = MaxLuma - MinLuma;
+        Noise = saturate(abs(Noise) / RangeLuma);
+        Noise = (-0.5 * Noise) + 1.0;
 
-        // Get needed reciprocal
-        float4 ReciprocalMaxRGB = 1.0 / MaxRGB;
+        // Min and max of ring.
+        float4 MaxRGB = max(max(Sample[1], Sample[2]), max(Sample[3], Sample[4]));
+        float4 MinRGB = min(min(Sample[1], Sample[2]), min(Sample[3], Sample[4]));
 
-        // Amplify
-        float4 AmplifyRGB = saturate(min(MinRGB, 2.0 - MaxRGB) * ReciprocalMaxRGB);
+        // Immediate constants for peak range.
+        float2 PeakC = float2(1.0, -1.0 * 4.0);
 
-        // Optional grayscale
-        switch (Detection)
-        {
-            case 1:
-                AmplifyRGB = CColor_GetLuma(AmplifyRGB.rgb, 0);
-                break;
-            case 2:
-                AmplifyRGB = CColor_GetLuma(AmplifyRGB.rgb, 3);
-                break;
-        }
+        // Limiters, these need to be high precision RCPs.
+        float4 HitMinRGB = MinRGB / (4.0 * MaxRGB);
+        float4 HitMaxRGB = (PeakC.x - MaxRGB) / ((4.0 * MinRGB) + PeakC.y);
+        float4 LobeRGB = max(-HitMinRGB, HitMaxRGB);
+        float MaxLobe = max(max(LobeRGB.r, LobeRGB.g), LobeRGB.b);
 
-        // Shaping amount of sharpening.
-        AmplifyRGB *= rsqrt(AmplifyRGB);
+        Sharpening = 1.0 - Sharpening;
+        float4 Lobe = max(-FSR_RCAS_LIMIT, min(MaxLobe, 0.0)) * int(exp2(-Sharpening));
 
-        /* Filter shape.
-              w   |   w   | w w
-            w 1 w | w 1 w |  1
-              w   |   w   | w w
-        */
-        float4 Peak = -(1.0 / lerp(8.0, 5.0, Contrast));
-        float4 Weight = AmplifyRGB * Peak;
-        float4 ReciprocalWeight = 1.0 / (1.0 + (4.0 * Weight));
+        // Apply noise removal
+        Lobe *= Noise;
 
+        // Resolve, which needs the medium precision rcp approximation to avoid visible tonality changes.
+        float4 RcpL = 1.0 / ((4.0 * Lobe) + 1.0);
         FilterShape = Sample[0];
-        FilterShape += Sample[1] * Weight;
-        FilterShape += Sample[2] * Weight;
-        FilterShape += Sample[3] * Weight;
-        FilterShape += Sample[4] * Weight;
-        FilterShape = saturate(FilterShape * ReciprocalWeight);
-
-        FilterMask = AmplifyRGB;
+        FilterShape += (Lobe * Sample[1]);
+        FilterShape += (Lobe * Sample[2]);
+        FilterShape += (Lobe * Sample[3]);
+        FilterShape += (Lobe * Sample[4]);
+        FilterShape *= RcpL;
     }
 
 #endif
