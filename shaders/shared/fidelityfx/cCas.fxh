@@ -119,12 +119,12 @@
         float MaxLobe = max(max(LobeRGB.r, LobeRGB.g), LobeRGB.b);
 
         Sharpening = 1.0 - Sharpening;
-        float4 Lobe = max(-FSR_RCAS_LIMIT, min(MaxLobe, 0.0)) * int(exp2(-Sharpening));
+        float4 Lobe = max(-FSR_RCAS_LIMIT, min(MaxLobe, 0.0)) * exp2(-Sharpening);
 
         // Apply noise removal
         Lobe *= Noise;
 
-        // Resolve, which needs the medium precision rcp approximation to avoid visible tonality changes.
+        // Resolve
         float4 RcpL = 1.0 / ((4.0 * Lobe) + 1.0);
         FilterShape = Sample[0];
         FilterShape += (Lobe * Sample[1]);
