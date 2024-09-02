@@ -16,7 +16,7 @@
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Render Image\0Render Directions\0";
+    ui_items = "Image\0Directions\0";
 > = 0;
 
 uniform int _RelativeThreshold <
