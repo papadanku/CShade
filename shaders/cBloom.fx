@@ -106,13 +106,17 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Apply auto-exposure backbuffer
     #if USE_AUTOEXPOSURE
+        // Store log luminance in alpha channel
+        float LogLuminance = GetLogLuminance(Color.rgb);
+
+        // Apply auto-exposure to input
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
+    #else
+        float LogLuminance = 1.0;
     #endif
 
-    // Store log luminance in alpha channel
-    float LogLuminance = GetLogLuminance(Color.rgb);
 
     // Under-threshold
     float Brightness = CMath_Float1_Med3(Color.r, Color.g, Color.b);
@@ -165,7 +169,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
-    // Apply auto-exposure backbuffer
+    // Apply auto-exposure to input
     #if USE_AUTOEXPOSURE
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
@@ -243,7 +247,7 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
         PixelShader = PS_Composite;
     }
 
-    // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
+    // Take the lowest level of the log luminance pyramid to make an accumulation texture
     #if USE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
         {
