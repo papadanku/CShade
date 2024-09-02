@@ -6,8 +6,8 @@ uniform int _RenderMode <
 > = 0;
 
 uniform float _Sharpening <
-    ui_category = "Sharpening";
-    ui_label = "Contrast";
+    ui_category = "Robust Contrast Adaptive Sharpening";
+    ui_label = "Sharpening";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;

@@ -1,7 +1,4 @@
 
-#include "../cShade.fxh"
-#include "../cColor.fxh"
-
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
 
@@ -64,6 +61,10 @@
            0.25
     This is used as a noise detection filter, to reduce the effect of RCAS on grain, and focus on real edges.
 */
+
+#include "../cShade.fxh"
+#include "../cColor.fxh"
+
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
 
 #if !defined(INCLIDE_FFX_CAS)
