@@ -171,8 +171,8 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 ColorTex = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Color = ColorTex;
 
+    // Apply auto-exposure backbuffer
     #if USE_AUTOEXPOSURE
-        // Apply auto-exposure here
         float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
@@ -235,6 +235,13 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+
+    // Apply auto-exposure backbuffer
+    #if USE_AUTOEXPOSURE
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
+    #endif
 
     // Bloom composition
     float3 Color = 0.0;
