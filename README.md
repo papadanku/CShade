@@ -21,7 +21,6 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 CShade features shaders that deal with getting information about an image.
 
-- Anti-aliasing
 - Color conversions
   - Chromaticity spaces
   - Polar color spaces
@@ -29,10 +28,11 @@ CShade features shaders that deal with getting information about an image.
 - Convolutions
   - Gaussian blur
   - Edge detection
-- Image sharpening
+- [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
 - Local normalization
   - Census transform
   - Local contrast normalization
+- [Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
 
 ### Video Processing
 
