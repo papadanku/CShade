@@ -211,7 +211,7 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
     // Prefilter
     CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
 
-    // Iteratively downsample the image (RGB) and its log luminance (A) into a "pyramid"
+    // Iteratively downsample the image (RGB) and its log luminance (A) into a pyramid.
     CREATE_PASS(CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
     CREATE_PASS(CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
     CREATE_PASS(CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
@@ -243,7 +243,10 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
         PixelShader = PS_Composite;
     }
 
-    // Take the lowest level of the log luminance pyramid to make an accumulation texture
+    /*
+        Store the coarsest level of the log luminance pyramid in an accumulation texture.
+        We store the coarsest level here to synchronize the auto-exposure Luma texture in the prefilter and compositing passes.
+    */
     #if USE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
         {
