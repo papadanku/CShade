@@ -12,7 +12,7 @@ uniform int _RenderMode <
 > = 0;
 
 uniform float _Threshold <
-    ui_category = "Bloom | General";
+    ui_category = "Bloom";
     ui_label = "Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -20,7 +20,7 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Bloom | General";
+    ui_category = "Bloom";
     ui_label = "Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -28,7 +28,7 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float3 _ColorShift <
-    ui_category = "Bloom | General";
+    ui_category = "Bloom";
     ui_label = "Color Shift (RGB)";
     ui_type = "color";
     ui_min = 0.0;
@@ -36,76 +36,12 @@ uniform float3 _ColorShift <
 > = 1.0;
 
 uniform float _Intensity <
-    ui_category = "Bloom | General";
+    ui_category = "Bloom";
     ui_label = "Intensity";
     ui_type = "slider";
     ui_step = 0.001;
     ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.5;
-
-uniform float _Level8Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 8";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level7Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 7";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level6Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 6";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level5Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 5";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level4Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 4";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level3Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 3";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level2Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 2";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
-> = 1.0;
-
-uniform float _Level1Weight <
-    ui_category = "Bloom | Level Weights";
-    ui_label = "Level 1";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 1.0;
+    ui_max = 2.0;
 > = 1.0;
 
 #include "shared/cBlur.fxh"
@@ -166,11 +102,17 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float Knee = mad(_Threshold, _Smooth, 1e-5);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
 
-    float4 ColorTex = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 Color = ColorTex;
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+
+    // Apply auto-exposure backbuffer
+    #if USE_AUTOEXPOSURE
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
+    #endif
 
     // Store log luminance in alpha channel
-    float LogLuminance = GetLogLuminance(ColorTex.rgb);
+    float LogLuminance = GetLogLuminance(Color.rgb);
 
     // Under-threshold
     float Brightness = CMath_Float1_Med3(Color.r, Color.g, Color.b);
@@ -204,28 +146,31 @@ float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
-#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER, LEVEL_WEIGHT) \
+#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
     float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
     { \
-        return float4(CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb, LEVEL_WEIGHT); \
+        return float4(CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb, 1.0); \
     }
 
-float4 PS_Upscale7(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    return float4(CBlur_UpsampleTent(SampleTempTex8, Input.Tex0).rgb * _Level8Weight, _Level7Weight);
-}
-
-CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7, _Level6Weight)
-CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6, _Level5Weight)
-CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5, _Level4Weight)
-CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4, _Level3Weight)
-CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3, _Level2Weight)
-CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2, _Level1Weight)
+CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
+CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
+CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
+CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
+CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
+CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
+CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+
+    // Apply auto-exposure backbuffer
+    #if USE_AUTOEXPOSURE
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
+    #endif
 
     // Bloom composition
     float3 Color = 0.0;
@@ -239,13 +184,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
             break;
     }
 
-    // Apply auto-exposure backbuffer
-    #if USE_AUTOEXPOSURE
-        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-        Exposure ExposureData = CCamera_GetExposureData(Luma);
-        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
-    #endif
-
+    // Apply tonemapping
     Color = CTonemap_ApplyOutputTonemap(Color);
 
     return CBlend_OutputChannels(float4(Color, _CShadeAlphaFactor));
@@ -258,7 +197,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         BlendEnable = IS_ADDITIVE; \
         BlendOp = ADD; \
         SrcBlend = ONE; \
-        DestBlend = SRCALPHA; \
+        DestBlend = ONE; \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
         RenderTarget0 = RENDER_TARGET; \
@@ -279,37 +218,12 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
     CREATE_PASS(CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
     CREATE_PASS(CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
-    // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
-    #if USE_AUTOEXPOSURE
-        pass CCamera_CreateExposureTex
-        {
-            ClearRenderTargets = FALSE;
-            BlendEnable = TRUE;
-            BlendOp = ADD;
-            SrcBlend = SRCALPHA;
-            DestBlend = INVSRCALPHA;
-
-            VertexShader = CShade_VS_Quad;
-            PixelShader = PS_GetExposure;
-
-            RenderTarget0 = ExposureTex;
-        }
-    #endif
-
     /*
-        Weighted iterative upsampling.
+        Additive iterative upsampling.
 
-        Formula: Upsample(Level[N+1]) + Level[N]*weight(Level[N])
-                 ^^^^^^^^^              ^^^^^^^^^^
+        Formula: Upsample(Level[N+1]) + Level[N])
+                 ^^^^^^^^^              ^^^^^^^^^
                  Left-Side              Right-Side
-
-        Why this works:
-            1. The Left-Side and Right-Side are the same resolutions
-            2. Example A (Level 8 Weight = 1.0, Level 7-1 Weight = 0.0):
-               - Level 8 upsamples and accumulates 7 times until it is in the Level 1 texture
-            3. Example B (Level 8-2 Weight = 0.0, Level 1 Weight = 1.0):
-               - Level 8-2 do not upsample and accumulate
-               - Level 1 is the only visable level
     */
     CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
     CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
@@ -328,4 +242,20 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Composite;
     }
+
+    // Take the lowest level of the log luminance in the pyramid and make an accumulation texture
+    #if USE_AUTOEXPOSURE
+        pass CCamera_CreateExposureTex
+        {
+            ClearRenderTargets = FALSE;
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = SRCALPHA;
+            DestBlend = INVSRCALPHA;
+
+            VertexShader = CShade_VS_Quad;
+            PixelShader = PS_GetExposure;
+            RenderTarget0 = ExposureTex;
+        }
+    #endif
 }
