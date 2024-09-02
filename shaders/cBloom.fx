@@ -42,7 +42,7 @@ uniform float _Intensity <
     ui_step = 0.001;
     ui_min = 0.0;
     ui_max = 2.0;
-> = 1.0;
+> = 0.8;
 
 #include "shared/cBlur.fxh"
 #include "shared/cMath.fxh"
