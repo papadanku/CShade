@@ -21,6 +21,13 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 CShade features shaders that deal with getting information about an image.
 
+- AMD FidelityFX
+  - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
+  - [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/)
+  - [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
+- Anti-aliasing
+  - [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
+  - [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
 - Color conversions
   - Chromaticity spaces
   - Polar color spaces
@@ -28,11 +35,9 @@ CShade features shaders that deal with getting information about an image.
 - Convolutions
   - Gaussian blur
   - Edge detection
-- [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
 - Local normalization
   - Census transform
   - Local contrast normalization
-- [Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
 
 ### Video Processing
 
