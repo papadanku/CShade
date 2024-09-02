@@ -1,6 +1,7 @@
 
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+    https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/fsr1/ffx_fsr1.h
 
     This file is part of the FidelityFX SDK.
 
@@ -26,8 +27,6 @@
 */
 
 /*
-    https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/fsr1/ffx_fsr1.h
-
     FSR - [RCAS] ROBUST CONTRAST ADAPTIVE SHARPENING
 
     CAS uses a simplified mechanism to convert local contrast into a variable amount of sharpness.
@@ -38,16 +37,16 @@
 
     RCAS is based on the following logic.
     RCAS uses a 5 tap filter in a cross pattern (same as CAS),
-        w                n
-      w 1 w  for taps  w m e
-        w                s
+          w                n
+        w 1 w  for taps  w m e
+          w                s
 
     Where 'w' is the negative lobe weight.
-      output = (w*(n+e+w+s)+m)/(4*w+1)
+        output = (w*(n+e+w+s)+m)/(4*w+1)
 
     RCAS solves for 'w' by seeing where the signal might clip out of the {0 to 1} input range,
-      0 == (w*(n+e+w+s)+m)/(4*w+1) -> w = -m/(n+e+w+s)
-      1 == (w*(n+e+w+s)+m)/(4*w+1) -> w = (1-m)/(n+e+w+s-4*1)
+        0 == (w*(n+e+w+s)+m)/(4*w+1) -> w = -m/(n+e+w+s)
+        1 == (w*(n+e+w+s)+m)/(4*w+1) -> w = (1-m)/(n+e+w+s-4*1)
 
     Then chooses the 'w' which results in no clipping, limits 'w', and multiplies by the 'sharp' amount.
     This solution above has issues with MSAA input as the steps along the gradient cause edge detection issues.
@@ -56,9 +55,9 @@
     This stabilizes RCAS.
 
     RCAS does a simple highpass which is normalized against the local contrast then shaped,
-           0.25
-      0.25  -1  0.25
-           0.25
+             0.25
+        0.25  -1  0.25
+             0.25
     This is used as a noise detection filter, to reduce the effect of RCAS on grain, and focus on real edges.
 */
 

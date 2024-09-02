@@ -287,7 +287,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
 }
 
-technique CShade_AntiAliasing < ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)"; >
+technique CShade_FXAA < ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)"; >
 {
     pass AntiAliasing
     {
