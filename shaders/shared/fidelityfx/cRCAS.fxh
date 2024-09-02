@@ -67,10 +67,10 @@
 
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
 
-#if !defined(INCLIDE_FFX_CAS)
-    #define INCLIDE_FFX_CAS
+#if !defined(INCLUDE_FFX_RCAS)
+    #define INCLUDE_FFX_RCAS
 
-    void FFX_CAS_FilterNoScaling(
+    void FFX_RCAS(
         inout float4 FilterShape,
         inout float4 FilterMask,
         in float2 Tex,

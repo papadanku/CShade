@@ -22,7 +22,7 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
     float4 OutputMask = 1.0;
-    FFX_CAS_FilterNoScaling(
+    FFX_RCAS(
         OutputColor,
         OutputMask,
         Input.Tex0,
