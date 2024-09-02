@@ -183,7 +183,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_RenderMode == 1)
     {
-        return Center.a;
+        return tex2D(SampleTempTex0, Input.Tex0).a;
     }
 
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
