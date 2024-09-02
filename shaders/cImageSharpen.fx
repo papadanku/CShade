@@ -13,7 +13,7 @@ uniform float _Sharpening <
     ui_max = 1.0;
 > = 1.0;
 
-#include "shared/fidelityfx/cCas.fxh"
+#include "shared/fidelityfx/cRCAS.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

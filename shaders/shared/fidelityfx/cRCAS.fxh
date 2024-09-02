@@ -132,6 +132,8 @@
         FilterShape += (Lobe * Sample[3]);
         FilterShape += (Lobe * Sample[4]);
         FilterShape *= RcpL;
+
+        FilterMask = -Lobe;
     }
 
 #endif
