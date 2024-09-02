@@ -27,30 +27,33 @@
     THE SOFTWARE.
 */
 
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Image\0Mask\0";
+> = 0;
+
 uniform int _Detection <
+    ui_category = "Sharpening";
     ui_label = "Detection Mode";
     ui_type = "combo";
     ui_items = "Multi-Channel\0Single-Channel (Average)\0Single-Channel (Max)\0";
 > = 0;
 
 uniform int _Kernel <
+    ui_category = "Sharpening";
     ui_label = "Kernel Shape";
     ui_type = "combo";
     ui_items = "CAS: Box\0CAS: Diamond\0CShade: Bilinear Diamond\0";
 > = 1;
 
 uniform float _Contrast <
+    ui_category = "Sharpening";
     ui_label = "Contrast";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.0;
-
-uniform int _RenderMode <
-    ui_label = "Render Mode";
-    ui_type = "combo";
-    ui_items = "Render Image\0Render Mask\0";
-> = 0;
 
 #include "shared/fidelityfx/cCas.fxh"
 

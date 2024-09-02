@@ -5,6 +5,12 @@
 
 uniform float _Frametime < source = "frametime"; >;
 
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Base + Bloom\0Bloom\0";
+> = 0;
+
 uniform float _Threshold <
     ui_category = "Bloom | General";
     ui_label = "Threshold";
@@ -37,12 +43,6 @@ uniform float _Intensity <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.5;
-
-uniform int _RenderMode <
-    ui_label = "Render Mode";
-    ui_type = "combo";
-    ui_items = "Base + Bloom\0Bloom\0";
-> = 0;
 
 uniform float _Level8Weight <
     ui_category = "Bloom | Level Weights";
