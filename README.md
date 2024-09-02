@@ -21,7 +21,7 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 CShade features shaders that deal with getting information about an image.
 
-- AMD FidelityFX
+- [AMD FidelityFX](https://gpuopen.com/amd-fidelityfx-sdk/)
   - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
   - [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/)
   - [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
