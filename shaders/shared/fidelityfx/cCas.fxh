@@ -34,7 +34,8 @@
     void FFX_CAS_FilterNoScaling(
         inout float4 FilterShape,
         inout float4 FilterMask,
-        in CShade_VS2PS_Quad Input,
+        in float2 Tex,
+        in float2 Delta,
         in int Detection,
         in int Kernel,
         in float Contrast
@@ -48,41 +49,40 @@
         */
 
         // Select kernel sample
-        float4 Tex[3];
+        float4 TexArray[3];
         float4 Sample[9];
-        float2 Delta = fwidth(Input.Tex0.xy);
         switch (Kernel)
         {
             case 0:
-                Tex[0] = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-                Tex[1] = Input.Tex0.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-                Tex[2] = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Input.Tex0);
-                Sample[1] = tex2D(CShade_SampleColorTex, Tex[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, Tex[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, Tex[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, Tex[1].zw);
-                Sample[5] = tex2D(CShade_SampleColorTex, Tex[2].xw);
-                Sample[6] = tex2D(CShade_SampleColorTex, Tex[2].zw);
-                Sample[7] = tex2D(CShade_SampleColorTex, Tex[2].xy);
-                Sample[8] = tex2D(CShade_SampleColorTex, Tex[2].zy);
+                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
+                TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
+                TexArray[2] = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
+                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
+                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
+                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
+                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
+                Sample[5] = tex2D(CShade_SampleColorTex, TexArray[2].xw);
+                Sample[6] = tex2D(CShade_SampleColorTex, TexArray[2].zw);
+                Sample[7] = tex2D(CShade_SampleColorTex, TexArray[2].xy);
+                Sample[8] = tex2D(CShade_SampleColorTex, TexArray[2].zy);
                 break;
             case 1:
-                Tex[0] = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-                Tex[1] = Input.Tex0.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Input.Tex0);
-                Sample[1] = tex2D(CShade_SampleColorTex, Tex[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, Tex[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, Tex[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, Tex[1].zw);
+                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
+                TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
+                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
+                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
+                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
+                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
                 break;
             case 2:
-                Tex[0] = Input.Tex0.xyxy + (Delta.xyxy * float4(-0.5, -0.5, 0.5, 0.5));
-                Sample[0] = tex2D(CShade_SampleColorTex, Input.Tex0);
-                Sample[1] = tex2D(CShade_SampleColorTex, Tex[0].xw);
-                Sample[2] = tex2D(CShade_SampleColorTex, Tex[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, Tex[0].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, Tex[0].zy);
+                TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-0.5, -0.5, 0.5, 0.5));
+                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xw);
+                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
+                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
+                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[0].zy);
                 break;
             default:
                 break;

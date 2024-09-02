@@ -67,7 +67,8 @@ float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
     FFX_CAS_FilterNoScaling(
         OutputColor,
         OutputMask,
-        Input,
+        Input.Tex0,
+        fwidth(Input.Tex0.xy),
         _Detection,
         _Kernel,
         _Contrast
