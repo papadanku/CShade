@@ -106,7 +106,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Apply auto-exposure backbuffer
     #if USE_AUTOEXPOSURE
-        // Store log luminance in alpha channel
+        // Store log luminance in the alpha channel
         float LogLuminance = GetLogLuminance(Color.rgb);
 
         // Apply auto-exposure to input
@@ -116,7 +116,6 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     #else
         float LogLuminance = 1.0;
     #endif
-
 
     // Under-threshold
     float Brightness = CMath_Float1_Med3(Color.r, Color.g, Color.b);
@@ -224,10 +223,7 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
 
     /*
         Additive iterative upsampling.
-
         Formula: Upsample(Level[N+1]) + Level[N])
-                 ^^^^^^^^^              ^^^^^^^^^
-                 Left-Side              Right-Side
     */
     CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
     CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
