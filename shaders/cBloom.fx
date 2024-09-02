@@ -154,14 +154,12 @@ CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, CLAMP, CLAMP, CLAMP)
 
-
 /*
     [Pixel Shaders]
     ---
     Thresholding: https://github.com/keijiro/Kino [MIT]
     Tonemapping: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */
-
 
 float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
@@ -170,13 +168,6 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     float4 ColorTex = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Color = ColorTex;
-
-    // Apply auto-exposure backbuffer
-    #if USE_AUTOEXPOSURE
-        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-        Exposure ExposureData = CCamera_GetExposureData(Luma);
-        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
-    #endif
 
     // Store log luminance in alpha channel
     float LogLuminance = GetLogLuminance(ColorTex.rgb);
@@ -236,13 +227,6 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
-    // Apply auto-exposure backbuffer
-    #if USE_AUTOEXPOSURE
-        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-        Exposure ExposureData = CCamera_GetExposureData(Luma);
-        BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
-    #endif
-
     // Bloom composition
     float3 Color = 0.0;
     switch (_RenderMode)
@@ -254,6 +238,14 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
             Color = BloomColor * _Intensity;
             break;
     }
+
+    // Apply auto-exposure backbuffer
+    #if USE_AUTOEXPOSURE
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
+    #endif
+
     Color = CTonemap_ApplyOutputTonemap(Color);
 
     return CBlend_OutputChannels(float4(Color, _CShadeAlphaFactor));
@@ -274,7 +266,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexposure"; >
 {
-    // Prefilter stuff, emulate autoexposure
+    // Prefilter
     CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
 
     // Iteratively downsample the image (RGB) and its log luminance (A) into a "pyramid"
