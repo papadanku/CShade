@@ -72,6 +72,7 @@ float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 
 struct LumaNeighborhood
 {
+    float4 C;
     float M, N, E, S, W;
     float Highest, Lowest, Range;
 };
@@ -79,7 +80,8 @@ struct LumaNeighborhood
 LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
 {
     LumaNeighborhood L;
-    L.M = SampleLuma(Tex, float2(0.0, 0.0), Delta);
+    L.C = tex2Dlod(CShade_SampleGammaTex, float4(Tex, 0.0, 0.0));
+    L.M = dot(L.C.rgb, CColor_Rec709_Coefficients);
     L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
     L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
     L.S = SampleLuma(Tex, float2(0.0, -1.0), Delta);
@@ -252,14 +254,19 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
     LumaNeighborhood LN = GetLumaNeighborhood(Input.Tex0, Delta);
+    float3 FXAA = 0.0;
     float2 BlendTex = Input.Tex0;
 
     [branch]
-    if (!SkipFXAA(LN))
+    if (SkipFXAA(LN))
+    {
+        FXAA = LN.C.rgb;
+    }
+    else
     {
         LumaDiagonals LD = GetLumaDiagonals(Input.Tex0, Delta);
-
         Edge E = GetEdge(LN, LD, Delta);
+
         float SubpixelBlendFactor = GetSubpixelBlendFactor(LN, LD);
         float EdgeBlendFactor = GetEdgeBlendFactor(LN, LD, E, Input.Tex0, Delta);
         float BlendFactor = max(SubpixelBlendFactor, EdgeBlendFactor);
@@ -272,19 +279,17 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         {
             BlendTex.x += (BlendFactor * E.PixelStep);
         }
+
+        FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
     }
 
     if (_RenderMode == 1)
     {
-        float3 FXAA = float3(Input.Tex0 - BlendTex, 0.0);
+        FXAA = float3(Input.Tex0 - BlendTex, 0.0);
         FXAA.xy = (normalize(FXAA.xy) * 0.5) + 0.5;
-        return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
     }
-    else
-    {
-        float3 FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
-        return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
-    }
+
+    return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
 }
 
 technique CShade_FXAA < ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)"; >
