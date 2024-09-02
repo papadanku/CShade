@@ -32,7 +32,7 @@ CREATE_MEDIAN_PS(PS_Median1, 0.0)
         PixelShader = PIXELSHADER; \
     } \
 
-technique CShade_Median < ui_tooltip = "CShade_Median"; >
+technique CShade_Median < ui_tooltip = "Iterative median filter"; >
 {
     #if HIERARCHIAL_LEVELS > 4
         CREATE_MEDIAN_PASS(PS_Median5)
