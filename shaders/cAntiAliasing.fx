@@ -13,6 +13,12 @@
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Render Image\0Render Directions\0";
+> = 0;
+
 uniform int _RelativeThreshold <
     ui_label = "Relative Threshold";
     ui_tooltip = "Trims the algorithm from processing darks.";
@@ -265,8 +271,17 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
     }
 
-    float4 FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0));
-    return CBlend_OutputChannels(float4(FXAA.rgb, _CShadeAlphaFactor));
+    if (_RenderMode == 1)
+    {
+        float3 FXAA = float3(Input.Tex0 - BlendTex, 0.0);
+        FXAA.xy = (normalize(FXAA.xy) * 0.5) + 0.5;
+        return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
+    }
+    else
+    {
+        float3 FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
+        return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
+    }
 }
 
 technique CShade_AntiAliasing
