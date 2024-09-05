@@ -223,7 +223,7 @@ technique CShade_Bloom < ui_tooltip = "Dual-Kawase bloom with built-in autoexpos
 
     /*
         Additive iterative upsampling.
-        Formula: Upsample(Level[N+1]) + Level[N])
+        Formula: Upsample(Level[N+1]) + Level[N]
     */
     CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
     CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
