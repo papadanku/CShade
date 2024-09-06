@@ -13,6 +13,18 @@ uniform int _RenderMode <
     ui_items = "Render Image\0Render Mask\0";
 > = 0;
 
+uniform int _ContrastThreshold <
+    ui_label = "Long Edge Threshold";
+    ui_tooltip = "The minimum amount of noise required to detect long edges.";
+    ui_type = "combo";
+    ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
+> = 1;
+
+static const float ContrastThresholds[5] =
+{
+    1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
+};
+
 #include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cBlend.fxh"
@@ -139,7 +151,7 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
 
     [branch]
-    if (abs(LongEdgeMaskH - LongEdgeMaskV) > 0.25)
+    if (abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[ContrastThresholds])
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
