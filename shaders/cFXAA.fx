@@ -250,7 +250,7 @@ float GetEdgeBlendFactor(LumaNeighborhood LN, LumaDiagonals LD, Edge E, float2 T
     }
 }
 
-float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
     LumaNeighborhood LN = GetLumaNeighborhood(Input.Tex0, Delta);
@@ -294,11 +294,11 @@ float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_FXAA < ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)"; >
 {
-    pass AntiAliasing
+    pass FXAA
     {
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_AntiAliasing;
+        PixelShader = PS_FXAA;
     }
 }
