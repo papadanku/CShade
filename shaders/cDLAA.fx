@@ -151,7 +151,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
 
     [branch]
-    if (abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[ContrastThresholds])
+    if (abs(LongEdgeMaskH - LongEdgeMaskV) > _ContrastThreshold[ContrastThresholds])
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
