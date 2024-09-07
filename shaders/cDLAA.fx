@@ -25,8 +25,9 @@ static const float ContrastThresholds[5] =
     1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
 };
 
-#include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
+
+#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 0)
@@ -34,7 +35,7 @@ CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR, MIRROR, MIRROR)
 
 float GetIntensity(float3 Color)
 {
-    return CColor_GetLuma(Color, 0);
+    return dot(Color, CColor_Rec709_Coefficients);
 }
 
 float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
