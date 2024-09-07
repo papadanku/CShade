@@ -61,7 +61,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(Center, EdgesLuma);
 }
 
-float4 PS_AntiAliasing(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
 
@@ -210,11 +210,11 @@ technique CShade_DLAA < ui_tooltip = "Directionally Localized Anti-Aliasing (DLA
         RenderTarget0 = TempTex0_RGBA8;
     }
 
-    pass AntiAliasing
+    pass DLAA
     {
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_AntiAliasing;
+        PixelShader = PS_DLAA;
     }
 }
