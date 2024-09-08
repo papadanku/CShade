@@ -36,60 +36,62 @@ uniform int _DisplayMode <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
-CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, POINT, MIRROR, MIRROR, MIRROR)
+CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
+CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, POINT, MIRROR, MIRROR, MIRROR)
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, 1.0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+
+    switch(_DetectionMode)
+    {
+        case 0:
+            Color.a = 1.0;
+            break;
+        case 1:
+            Color.a = CColor_GetHSVfromRGB(Color.rgb).r;
+            break;
+        case 2:
+            Color.a = CColor_GetHSVfromRGB(Color.rgb).g;
+            break;
+        case 3:
+            Color.a = CColor_GetHSVfromRGB(Color.rgb).b;
+            break;
+        case 4:
+            Color.a = CColor_GetHSLfromRGB(Color.rgb).r;
+            break;
+        case 5:
+            Color.a = CColor_GetHSLfromRGB(Color.rgb).g;
+            break;
+        case 6:
+            Color.a = CColor_GetHSLfromRGB(Color.rgb).b;
+            break;
+        case 7:
+            Color.a = CColor_GetHSIfromRGB(Color.rgb).r;
+            break;
+        case 8:
+            Color.a = CColor_GetHSIfromRGB(Color.rgb).g;
+            break;
+        case 9:
+            Color.a = CColor_GetHSIfromRGB(Color.rgb).b;
+            break;
+        default:
+            Color.a = 1.0;
+            break;
+    }
+
+    return Color;
 }
 
 float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 Pixel = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
+    float4 Blocks = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
 
     // Initialize variables
-    float4 Feature = 0.0;
-    bool4 Mask = false;
-    float4 OutputColor = 0.0;
-
-    switch(_DetectionMode)
-    {
-        case 0:
-            Feature = Pixel;
-            break;
-        case 1:
-            Feature = CColor_GetHSVfromRGB(Pixel.rgb).r;
-            break;
-        case 2:
-            Feature = CColor_GetHSVfromRGB(Pixel.rgb).g;
-            break;
-        case 3:
-            Feature = CColor_GetHSVfromRGB(Pixel.rgb).b;
-            break;
-        case 4:
-            Feature = CColor_GetHSLfromRGB(Pixel.rgb).r;
-            break;
-        case 5:
-            Feature = CColor_GetHSLfromRGB(Pixel.rgb).g;
-            break;
-        case 6:
-            Feature = CColor_GetHSLfromRGB(Pixel.rgb).b;
-            break;
-        case 7:
-            Feature = CColor_GetHSIfromRGB(Pixel.rgb).r;
-            break;
-        case 8:
-            Feature = CColor_GetHSIfromRGB(Pixel.rgb).g;
-            break;
-        case 9:
-            Feature = CColor_GetHSIfromRGB(Pixel.rgb).b;
-            break;
-        default:
-            Feature = 0.0;
-            break;
-    }
+    float3 Feature = (_DetectionMode == 0) ? Blocks.rgb : Blocks.aaa;
+    bool3 Mask = false;
+    float3 OutputColor = 0.0;
 
     switch (_Comparison)
     {
@@ -119,10 +121,10 @@ float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
     else
     {
-        OutputColor = lerp(Color, Pixel, Mask);
+        OutputColor = lerp(Color.rgb, Blocks.rgb, Mask);
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+    return CBlend_OutputChannels(float4(OutputColor, _CShadeAlphaFactor));
 }
 
 technique CShade_Censor < ui_tooltip = "Pixelates the screen based on features"; >
@@ -131,7 +133,7 @@ technique CShade_Censor < ui_tooltip = "Pixelates the screen based on features";
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = TempTex0_RGBA8;
+        RenderTarget = TempTex0_RGBA8_8;
     }
 
     pass

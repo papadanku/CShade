@@ -145,8 +145,8 @@ uniform float3 _BackColor <
     [Textures and Samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
+CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, LINEAR, MIRROR, MIRROR, MIRROR)
 
 sampler2D CShade_SampleColorTexMirror
 {
@@ -226,12 +226,47 @@ float GetTileCircleLength(Tile Input)
     [Pixel Shaders]
 */
 
-float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    return tex2D(CShade_SampleColorTex, Input.Tex0);
-}
-
 #if ENABLE_MONO
+    float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
+    {
+        float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+        switch(_Select)
+        {
+            case 0:
+                Color.a = CColor_GetHSVfromRGB(Color.rgb).r;
+                break;
+            case 1:
+                Color.a = CColor_GetHSVfromRGB(Color.rgb).g;
+                break;
+            case 2:
+                Color.a = CColor_GetHSVfromRGB(Color.rgb).b;
+                break;
+            case 3:
+                Color.a = CColor_GetHSLfromRGB(Color.rgb).r;
+                break;
+            case 4:
+                Color.a = CColor_GetHSLfromRGB(Color.rgb).g;
+                break;
+            case 5:
+                Color.a = CColor_GetHSLfromRGB(Color.rgb).b;
+                break;
+            case 6:
+                Color.a = CColor_GetHSIfromRGB(Color.rgb).r;
+                break;
+            case 7:
+                Color.a = CColor_GetHSIfromRGB(Color.rgb).g;
+                break;
+            case 8:
+                Color.a = CColor_GetHSIfromRGB(Color.rgb).b;
+                break;
+            default:
+                Color.a = 1.0;
+                break;
+        }
+
+        return Color;
+    }
+
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
@@ -243,53 +278,17 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 
         // Get texture information
         float4 Blocks = tex2Dlod(SampleTempTex0, float4(GetBlockTex(MainTiles.Index), 0.0, LOD));
-        Blocks = (Blocks * _InputMultiplier) + _InputBias;
-
-        float Feature = 0.0;
-
-        switch(_Select)
-        {
-            case 0:
-                Feature = CColor_GetHSVfromRGB(Blocks.rgb).r;
-                break;
-            case 1:
-                Feature = CColor_GetHSVfromRGB(Blocks.rgb).g;
-                break;
-            case 2:
-                Feature = CColor_GetHSVfromRGB(Blocks.rgb).b;
-                break;
-            case 3:
-                Feature = CColor_GetHSLfromRGB(Blocks.rgb).r;
-                break;
-            case 4:
-                Feature = CColor_GetHSLfromRGB(Blocks.rgb).g;
-                break;
-            case 5:
-                Feature = CColor_GetHSLfromRGB(Blocks.rgb).b;
-                break;
-            case 6:
-                Feature = CColor_GetHSIfromRGB(Blocks.rgb).r;
-                break;
-            case 7:
-                Feature = CColor_GetHSIfromRGB(Blocks.rgb).g;
-                break;
-            case 8:
-                Feature = CColor_GetHSIfromRGB(Blocks.rgb).b;
-                break;
-            default:
-                Feature = 0.0;
-                break;
-        }
+        Blocks.a = (Blocks.a * _InputMultiplier) + _InputBias;
 
         // Create the UV for the circles
         float CircleDist = GetTileCircleLength(MainTiles);
 
         // Create the circle
-        float Circles = smoothstep(0.89 - fwidth(CircleDist), 0.9, CircleDist + Feature);
+        float Circles = smoothstep(0.89 - fwidth(CircleDist), 0.9, CircleDist + Blocks.a);
 
         // Mix colors together
         float3 OutputColor = lerp(_FrontColor, _BackColor, Circles);
-        OutputColor = lerp(OutputColor, _BackColor, saturate(Feature));
+        OutputColor = lerp(OutputColor, _BackColor, saturate(Blocks.a));
 
         // Crop the image
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.x > _Crop.x);
@@ -300,6 +299,11 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
     }
 #else
+    float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
+    {
+        return tex2D(CShade_SampleColorTex, Input.Tex0);
+    }
+
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
@@ -357,7 +361,7 @@ technique CShade_Circles < ui_tooltip = "Creates circles based on image features
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = TempTex0_RGBA8;
+        RenderTarget = TempTex0_RGBA8_8;
     }
 
     pass
