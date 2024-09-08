@@ -90,11 +90,11 @@
 
         // Luma times 2.
         float Luma[5];
-        Luma[0] = dot(Sample[0].rgb, float3(0.5, 0.5, 1.0));
-        Luma[1] = dot(Sample[1].rgb, float3(0.5, 0.5, 1.0));
-        Luma[2] = dot(Sample[2].rgb, float3(0.5, 0.5, 1.0));
-        Luma[3] = dot(Sample[3].rgb, float3(0.5, 0.5, 1.0));
-        Luma[4] = dot(Sample[4].rgb, float3(0.5, 0.5, 1.0));
+        Luma[0] = dot(Sample[0].rgb, 2.0 / 3.0);
+        Luma[1] = dot(Sample[1].rgb, 2.0 / 3.0);
+        Luma[2] = dot(Sample[2].rgb, 2.0 / 3.0);
+        Luma[3] = dot(Sample[3].rgb, 2.0 / 3.0);
+        Luma[4] = dot(Sample[4].rgb, 2.0 / 3.0);
 
         // Noise detection using a normalized local contrast filter
         float Noise = ((Luma[1] + Luma[2] + Luma[3] + Luma[4]) * 0.25) - Luma[0];

@@ -18,7 +18,7 @@ uniform float _Sharpening <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
-float4 PS_CasFilterNoScaling(CShade_VS2PS_Quad Input): SV_TARGET0
+float4 PS_RCAS(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
     float4 OutputMask = 1.0;
@@ -46,6 +46,6 @@ technique CShade_RCAS < ui_tooltip = "AMD FidelityFX | Robust Contrast Adaptive 
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_CasFilterNoScaling;
+        PixelShader = PS_RCAS;
     }
 }
