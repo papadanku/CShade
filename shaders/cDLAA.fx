@@ -35,7 +35,7 @@ CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, MIRROR, MIRROR, MIRROR)
 
 float GetIntensity(float3 Color)
 {
-    return dot(Color, CColor_Rec709_Coefficients);
+    return dot(Color, 1.0 / 3.0);
 }
 
 float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -45,11 +45,11 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
     float3 Neighborhood[4];
-    float3 Center = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
-    Neighborhood[0] = tex2D(CShade_SampleGammaTex, EdgeTex0.xy).rgb;
-    Neighborhood[1] = tex2D(CShade_SampleGammaTex, EdgeTex0.zw).rgb;
-    Neighborhood[2] = tex2D(CShade_SampleGammaTex, EdgeTex1.xy).rgb;
-    Neighborhood[3] = tex2D(CShade_SampleGammaTex, EdgeTex1.zw).rgb;
+    float3 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
+    Neighborhood[0] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex0.xy, 0.0, 0.0)).rgb;
+    Neighborhood[1] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex0.zw, 0.0, 0.0)).rgb;
+    Neighborhood[2] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.xy, 0.0, 0.0)).rgb;
+    Neighborhood[3] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.zw, 0.0, 0.0)).rgb;
 
     // Compass edge detection on N/S/E/W
     float3 Edges = 0.0;
@@ -57,9 +57,9 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     Edges = max(Edges, abs(Center - Neighborhood[1]));
     Edges = max(Edges, abs(Center - Neighborhood[2]));
     Edges = max(Edges, abs(Center - Neighborhood[3]));
-    float EdgesLuma = smoothstep(0.0, 0.25, GetIntensity(Edges));
 
-    return float4(Center, EdgesLuma);
+    // It costs more ALU, but we should do the multiplication in the sampling pass for precision reasons
+    return float4(Center, smoothstep(0.0, 0.25, GetIntensity(Edges)));
 }
 
 float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -77,17 +77,17 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 ShortEdgeTex2 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
     float4 ShortEdgeTex3 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
-    float4 Center = tex2D(CShade_SampleGammaTex, Input.Tex0);
+    float4 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
 
-    float4 Left01 = tex2D(SampleTempTex0, ShortEdgeTex0.xy);
-    float4 Right01 = tex2D(SampleTempTex0, ShortEdgeTex0.zw);
-    float4 Top01 = tex2D(SampleTempTex0, ShortEdgeTex1.xy);
-    float4 Bottom01 = tex2D(SampleTempTex0, ShortEdgeTex1.zw);
+    float4 Left01 = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex0.xy, 0.0, 0.0));
+    float4 Right01 = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex0.zw, 0.0, 0.0));
+    float4 Top01 = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex1.xy, 0.0, 0.0));
+    float4 Bottom01 = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex1.zw, 0.0, 0.0));
 
-    float4 Left = tex2D(SampleTempTex0, ShortEdgeTex2.xy);
-    float4 Right = tex2D(SampleTempTex0, ShortEdgeTex2.zw);
-    float4 Top = tex2D(SampleTempTex0, ShortEdgeTex3.xy);
-    float4 Bottom = tex2D(SampleTempTex0, ShortEdgeTex3.zw);
+    float4 Left = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex2.xy, 0.0, 0.0));
+    float4 Right = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex2.zw, 0.0, 0.0));
+    float4 Top = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex3.xy, 0.0, 0.0));
+    float4 Bottom = tex2Dlod(SampleTempTex0, float4(ShortEdgeTex3.zw, 0.0, 0.0));
 
     float4 WH = 2.0 * (Left01 + Right01);
     float4 WV = 2.0 * (Top01 + Bottom01);
@@ -126,23 +126,23 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 LTex6 = Input.Tex0.xyxy + (float4(-5.5, 0.0, 0.0, -5.5) * Delta.xyxy);
     float4 LTex7 = Input.Tex0.xyxy + (float4(-7.5, 0.0, 0.0, -7.5) * Delta.xyxy);
 
-    float4 H0 = tex2D(SampleTempTex0, LTex0.xy);
-    float4 H1 = tex2D(SampleTempTex0, LTex1.xy);
-    float4 H2 = tex2D(SampleTempTex0, LTex2.xy);
-    float4 H3 = tex2D(SampleTempTex0, LTex3.xy);
-    float4 H4 = tex2D(SampleTempTex0, LTex4.xy);
-    float4 H5 = tex2D(SampleTempTex0, LTex5.xy);
-    float4 H6 = tex2D(SampleTempTex0, LTex6.xy);
-    float4 H7 = tex2D(SampleTempTex0, LTex7.xy);
+    float4 H0 = tex2Dlod(SampleTempTex0, float4(LTex0.xy, 0.0, 0.0));
+    float4 H1 = tex2Dlod(SampleTempTex0, float4(LTex1.xy, 0.0, 0.0));
+    float4 H2 = tex2Dlod(SampleTempTex0, float4(LTex2.xy, 0.0, 0.0));
+    float4 H3 = tex2Dlod(SampleTempTex0, float4(LTex3.xy, 0.0, 0.0));
+    float4 H4 = tex2Dlod(SampleTempTex0, float4(LTex4.xy, 0.0, 0.0));
+    float4 H5 = tex2Dlod(SampleTempTex0, float4(LTex5.xy, 0.0, 0.0));
+    float4 H6 = tex2Dlod(SampleTempTex0, float4(LTex6.xy, 0.0, 0.0));
+    float4 H7 = tex2Dlod(SampleTempTex0, float4(LTex7.xy, 0.0, 0.0));
 
-    float4 V0 = tex2D(SampleTempTex0, LTex0.zw);
-    float4 V1 = tex2D(SampleTempTex0, LTex1.zw);
-    float4 V2 = tex2D(SampleTempTex0, LTex2.zw);
-    float4 V3 = tex2D(SampleTempTex0, LTex3.zw);
-    float4 V4 = tex2D(SampleTempTex0, LTex4.zw);
-    float4 V5 = tex2D(SampleTempTex0, LTex5.zw);
-    float4 V6 = tex2D(SampleTempTex0, LTex6.zw);
-    float4 V7 = tex2D(SampleTempTex0, LTex7.zw);
+    float4 V0 = tex2Dlod(SampleTempTex0, float4(LTex0.zw, 0.0, 0.0));
+    float4 V1 = tex2Dlod(SampleTempTex0, float4(LTex1.zw, 0.0, 0.0));
+    float4 V2 = tex2Dlod(SampleTempTex0, float4(LTex2.zw, 0.0, 0.0));
+    float4 V3 = tex2Dlod(SampleTempTex0, float4(LTex3.zw, 0.0, 0.0));
+    float4 V4 = tex2Dlod(SampleTempTex0, float4(LTex4.zw, 0.0, 0.0));
+    float4 V5 = tex2Dlod(SampleTempTex0, float4(LTex5.zw, 0.0, 0.0));
+    float4 V6 = tex2Dlod(SampleTempTex0, float4(LTex6.zw, 0.0, 0.0));
+    float4 V7 = tex2Dlod(SampleTempTex0, float4(LTex7.zw, 0.0, 0.0));
 
     // In CShade, we take .rgb out of branch
     float4 LongBlurH = (H0 + H1 + H2 + H3 + H4 + H5 + H6 + H7) / 8.0;
@@ -186,17 +186,17 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Preserve high frequencies
     float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
-    float4 R0 = tex2D(SampleTempTex0, RTex.xw);
-    float4 R1 = tex2D(SampleTempTex0, RTex.zw);
-    float4 R2 = tex2D(SampleTempTex0, RTex.xy);
-    float4 R3 = tex2D(SampleTempTex0, RTex.zy);
+    float4 R0 = tex2Dlod(SampleTempTex0, float4(RTex.xw, 0.0, 0.0));
+    float4 R1 = tex2Dlod(SampleTempTex0, float4(RTex.zw, 0.0, 0.0));
+    float4 R2 = tex2Dlod(SampleTempTex0, float4(RTex.xy, 0.0, 0.0));
+    float4 R3 = tex2Dlod(SampleTempTex0, float4(RTex.zy, 0.0, 0.0));
 
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
     if (_RenderMode == 1)
     {
-        return tex2D(SampleTempTex0, Input.Tex0).a;
+        return tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, 0.0)).a;
     }
 
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
