@@ -10,7 +10,7 @@
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Render Image\0Render Mask\0";
+    ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
 > = 0;
 
 uniform int _ContrastThreshold <
@@ -194,9 +194,14 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + Top01 + Bottom01 + Left01 + Right01) / 25.0;
     Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
 
-    if (_RenderMode == 1)
+    switch (_RenderMode)
     {
-        return tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, 0.0)).a;
+        case 1:
+            Color = float4(EdgeMaskH, EdgeMaskV, 0.0, 0.0);
+            break;
+        case 2:
+            Color = float4(LongEdgeMaskH, LongEdgeMaskV, 0.0, 0.0);
+            break;
     }
 
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
