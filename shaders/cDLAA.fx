@@ -173,7 +173,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
         float VY = saturate(1.0 + (LongBlurLumaV - CenterLuma) / (CenterLuma - RightLuma));
 
         float4 VHXY = float4(VX, VY, HX, HY);
-        VHXY = (VHXY == float4(0.0, 0.0, 0.0, 0.0)) ? float4(1.0, 1.0, 1.0, 1.0) : VHXY;
+        VHXY = (VHXY == 0.0) ? 1.0 : VHXY;
 
         ColorV = lerp(Left, ColorV, VHXY.x);
         ColorV = lerp(Right, ColorV, VHXY.y);
