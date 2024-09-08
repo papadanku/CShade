@@ -46,12 +46,6 @@ uniform float _GrainSeedSpeed <
     ui_max = 1.0;
 > = 0.5;
 
-uniform int _GrainType <
-    ui_label = "Grain Type";
-    ui_type = "combo";
-    ui_items = "Single-Channel\0Multi-Channel\0";
-> = 0;
-
 uniform float _GrainScale <
     ui_category = "Grain";
     ui_label = "Grain Scale";
@@ -96,7 +90,6 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
         CShade_SampleColorTex,
         Input.HPos.xy,
         Input.Tex0,
-        _GrainType,
         _GrainScale,
         _GrainAmount,
         _ChromAb,

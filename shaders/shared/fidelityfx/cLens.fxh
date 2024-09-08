@@ -97,20 +97,18 @@
 
     // Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
     void FFX_Lens_ApplyFilmGrain(
-        in float2 Tex, // The input window coordinate [0, 1), [0, 1).
+        in float2 Pos, // The input window coordinate [0, Width), [0, Height).
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration function.
-        in int GrainType, // Grain formula
         in float GrainScaleValue, // Scaling constant value for the grain's noise frequency.
         in float GrainAmountValue, // Intensity constant value of the grain effect.
         in float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 Pos = (Tex * 2.0 - 1.0) * CShade_GetScreenSizeFromTex(Tex);
-        float2 RandomNumberFine = CProcedural_GetHash2(Pos, 0.0);
-        float3 GradientN = CProcedural_GetGradientNoise3((Pos / GrainScaleValue / 8.0) + RandomNumberFine, GrainSeedValue, false);
+        float2 RandomNumberFine = CProcedural_GetHash2(Pos, GrainSeedValue);
+        float2 GradientN = FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
 
         const float GrainShape = 3.0;
-        float3 Grain = (GrainType == 1) ? exp2(-sqrt(abs(GradientN)) * GrainShape) : exp2(-length(GradientN) * GrainShape);
+        float Grain = exp2(-length(GradientN) * GrainShape);
         Grain = 1.0 - 2.0 * Grain;
         Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
     }
@@ -140,7 +138,6 @@
         in sampler2D Image,
         in float2 HPos,
         in float2 Tex,
-        in int GrainType,
         in float GrainScale,
         in float GrainAmount,
         in float ChromAb,
@@ -155,7 +152,7 @@
         // Run Lens
         Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
         FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
-        FFX_Lens_ApplyFilmGrain(Tex, Color, GrainType, GrainScale, GrainAmount, GrainSeed);
+        FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
     }
 
 #endif
