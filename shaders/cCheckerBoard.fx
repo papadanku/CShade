@@ -1,4 +1,6 @@
 
+#include "shared/cMath.fxh"
+
 /*
     [Shader Options]
 */
@@ -26,8 +28,6 @@ uniform bool _InvertCheckerboard <
     ui_label = "Invert Checkerboard Pattern";
     ui_type = "radio";
 > = false;
-
-#include "shared/cMath.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

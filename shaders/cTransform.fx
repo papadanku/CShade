@@ -3,6 +3,8 @@
     [Shader Options]
 */
 
+#include "shared/cMath.fxh"
+
 uniform float _Angle <
     ui_label = "Rotation Angle";
     ui_type = "drag";
@@ -27,8 +29,6 @@ uniform float2 _Scale <
 #ifndef BACKBUFFER_ADDRESSW
     #define BACKBUFFER_ADDRESSW CLAMP
 #endif
-
-#include "shared/cMath.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

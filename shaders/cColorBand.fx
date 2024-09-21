@@ -1,4 +1,6 @@
 
+#include "shared/cProcedural.fxh"
+
 /*
     [Shader Options]
 */
@@ -22,8 +24,6 @@ uniform int _DitherMethod <
     ui_type = "combo";
     ui_items = "None\0Hash\0Interleaved Gradient Noise\0";
 > = 0;
-
-#include "shared/cProcedural.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

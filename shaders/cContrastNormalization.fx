@@ -1,12 +1,16 @@
 
+#include "shared/cColor.fxh"
+#include "shared/cMath.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform int _Select <
     ui_label = "Filter";
     ui_type = "combo";
     ui_items = "Local Contrast Normalization\0Census Transform\0";
 > = 0;
-
-#include "shared/cColor.fxh"
-#include "shared/cMath.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

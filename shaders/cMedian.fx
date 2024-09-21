@@ -2,11 +2,11 @@
 #include "shared/cBlur.fxh"
 #include "shared/cMath.fxh"
 
+#include "shared/cShade.fxh"
+
 #ifndef HIERARCHIAL_LEVELS
     #define HIERARCHIAL_LEVELS 5
 #endif
-
-#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]

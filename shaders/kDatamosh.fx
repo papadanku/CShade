@@ -26,13 +26,13 @@
     For more information, please refer to <http://unlicense.org/>
 */
 
-/*
-    [Shader Options]
-*/
-
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
+
+/*
+    [Shader Options]
+*/
 
 uniform float _Time < source = "timer"; >;
 

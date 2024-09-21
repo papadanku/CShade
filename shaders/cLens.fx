@@ -27,6 +27,12 @@
     THE SOFTWARE.
 */
 
+#include "shared/fidelityfx/cLens.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform float _Time < source = "timer"; >;
 
 uniform bool _UseTimeSeed <
@@ -74,8 +80,6 @@ uniform float _Vignette <
     ui_min = 0.0;
     ui_max = 2.0;
 > = 0.6;
-
-#include "shared/fidelityfx/cLens.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

@@ -1,4 +1,8 @@
 
+#include "shared/cMacros.fxh"
+#include "shared/cColor.fxh"
+#include "shared/cMath.fxh"
+
 /*
     [Shader Options]
 */
@@ -6,10 +10,6 @@
 #ifndef ENABLE_MONO
     #define ENABLE_MONO 0
 #endif
-
-#include "shared/cMacros.fxh"
-#include "shared/cColor.fxh"
-#include "shared/cMath.fxh"
 
 #define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 

@@ -1,4 +1,10 @@
 
+#include "shared/fidelityfx/cRCAS.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
@@ -12,8 +18,6 @@ uniform float _Sharpening <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.5;
-
-#include "shared/fidelityfx/cRCAS.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

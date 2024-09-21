@@ -1,4 +1,10 @@
 
+#include "shared/cColor.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform int _Blockiness <
     ui_label = "Blockiness";
     ui_type = "slider";
@@ -30,8 +36,6 @@ uniform int _DisplayMode <
     ui_type = "radio";
     ui_items = "Output\0Mask\0";
 > = 0;
-
-#include "shared/cColor.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

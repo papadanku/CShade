@@ -1,4 +1,14 @@
 
+#include "shared/cBlur.fxh"
+#include "shared/cMath.fxh"
+
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
+#include "shared/cCamera.fxh"
+
+#define INCLUDE_CTONEMAP_OUTPUT
+#include "shared/cTonemap.fxh"
+
 /*
     [Shader Options]
 */
@@ -43,16 +53,6 @@ uniform float3 _ColorShift <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 1.0;
-
-#include "shared/cBlur.fxh"
-#include "shared/cMath.fxh"
-
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

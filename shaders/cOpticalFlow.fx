@@ -23,6 +23,10 @@
     SOFTWARE.
 */
 
+#include "shared/cColor.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMotionEstimation.fxh"
+
 /*
     [Shader Options]
 */
@@ -40,10 +44,6 @@ uniform float _BlendFactor <
     ui_min = 0.0;
     ui_max = 0.9;
 > = 0.45;
-
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotionEstimation.fxh"
 
 #include "shared/cShade.fxh"
 

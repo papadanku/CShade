@@ -1,4 +1,6 @@
 
+#include "shared/cColor.fxh"
+
 /*
     [Shader Options]
 */
@@ -8,8 +10,6 @@ uniform int _Select <
     ui_type = "combo";
     ui_items = "Average\0Min\0Median\0Max\0Length\0Min+Max\0None\0";
 > = 0;
-
-#include "shared/cColor.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

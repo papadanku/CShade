@@ -1,4 +1,10 @@
 
+#include "shared/fidelityfx/cCAS.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
@@ -19,8 +25,6 @@ uniform float _Contrast <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.0;
-
-#include "shared/fidelityfx/cCAS.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

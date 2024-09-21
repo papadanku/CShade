@@ -22,6 +22,14 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "shared/fidelityfx/cLens.fxh"
+#include "shared/cProcedural.fxh"
+#include "shared/cMath.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform float _Radius <
     ui_label = "Radius";
     ui_type = "slider";
@@ -53,10 +61,6 @@ uniform bool _InvertFalloff <
     ui_label = "Invert Radius Falloff";
     ui_type = "radio";
 > = false;
-
-#include "shared/fidelityfx/cLens.fxh"
-#include "shared/cProcedural.fxh"
-#include "shared/cMath.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

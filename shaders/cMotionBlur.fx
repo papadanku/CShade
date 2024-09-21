@@ -1,4 +1,9 @@
 
+#include "shared/cColor.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMotionEstimation.fxh"
+#include "shared/cProcedural.fxh"
+
 /*
     [Shader Options]
 */
@@ -42,11 +47,6 @@ uniform bool _FrameRateScaling <
     ui_label = "Frame-Rate Scaling";
     ui_type = "radio";
 > = false;
-
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotionEstimation.fxh"
-#include "shared/cProcedural.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

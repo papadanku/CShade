@@ -1,4 +1,8 @@
 
+/*
+    [Shader Options]
+*/
+
 uniform float3 _Color <
     ui_label = "Color";
     ui_type = "color";

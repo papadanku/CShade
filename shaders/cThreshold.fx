@@ -1,4 +1,6 @@
 
+#include "shared/cMath.fxh"
+
 /*
     [Shader Options]
 */
@@ -26,8 +28,6 @@ uniform float _Intensity <
     ui_type = "drag";
     ui_min = 0.0;
 > = 1.0;
-
-#include "shared/cMath.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

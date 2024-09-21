@@ -3,6 +3,16 @@
     Automatic exposure shader using hardware blending
 */
 
+#include "shared/cMacros.fxh"
+#include "shared/cProcedural.fxh"
+
+#define INCLUDE_CCAMERA_INPUT
+#define INCLUDE_CCAMERA_OUTPUT
+#include "shared/cCamera.fxh"
+
+#define INCLUDE_CTONEMAP_OUTPUT
+#include "shared/cTonemap.fxh"
+
 /*
     [Shader Options]
 */
@@ -43,16 +53,6 @@ uniform bool _DisplaySpotMeterMask <
     ui_label = "Display Spot Metering";
     ui_type = "radio";
 > = false;
-
-#include "shared/cMacros.fxh"
-#include "shared/cProcedural.fxh"
-
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

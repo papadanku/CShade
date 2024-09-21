@@ -7,6 +7,12 @@
     Copyright (C) LucasArts 2010-2011
 */
 
+#include "shared/cColor.fxh"
+
+/*
+    [Shader Options]
+*/
+
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
@@ -24,8 +30,6 @@ static const float ContrastThresholds[5] =
 {
     1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
 };
-
-#include "shared/cColor.fxh"
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

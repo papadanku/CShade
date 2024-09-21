@@ -22,12 +22,12 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "shared/cColor.fxh"
+#include "shared/cEdge.fxh"
+
 /*
     [Shader Options]
 */
-
-#include "shared/cColor.fxh"
-#include "shared/cEdge.fxh"
 
 uniform int _Method <
     ui_label = "Edge Detection Kernel";
