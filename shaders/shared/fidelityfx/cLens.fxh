@@ -115,7 +115,7 @@
 
     // Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
     void FFX_Lens_ApplyVignette(
-        in float2 Coord, // The input window coordinate [-1, 1), [-1, 1).
+        in float2 Coord, // The input window coordinate [-0.5, 0.5), [-0.5, 0.5).
         in float2 CenterCoord, // The center window coordinate of the screen.
         inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
         in float VignetteAmount // Intensity constant value of the vignette effect.
