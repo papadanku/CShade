@@ -126,8 +126,8 @@
 
         const float PiOver4 = CMath_GetPi() * 0.25;
         VignetteMask = cos(CoordFromCenter * VignetteAmount * PiOver4);
-        VignetteMask = VignetteMask * VignetteMask;
-        VignetteMask = VignetteMask * VignetteMask;
+        VignetteMask *= VignetteMask;
+        VignetteMask *= VignetteMask;
 
         Color *= clamp(VignetteMask.x * VignetteMask.y, 0.0, 1.0);
     }
