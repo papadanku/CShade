@@ -1,4 +1,5 @@
 
+#include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
 /*
@@ -16,12 +17,6 @@ uniform float _Smooth <
     ui_type = "drag";
     ui_min = 0.0;
 > = 0.5;
-
-uniform float _Saturation <
-    ui_label = "Saturation";
-    ui_type = "drag";
-    ui_min = 0.0;
-> = 1.0;
 
 uniform float _Intensity <
     ui_label = "Intensity";
@@ -43,14 +38,13 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     // Under-threshold
-    float Brightness = CMath_Float4_Med3(Color.r, Color.g, Color.b).a;
+    float Brightness = CColor_GetLuma(Color.rgb, 3);
     float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
     ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
-    Brightness = CMath_Float4_Med3(Color.r, Color.g, Color.b).a;
-    return CBlend_OutputChannels(float4(saturate(lerp(Brightness, Color.rgb, _Saturation) * _Intensity), _CShadeAlphaFactor));
+    return CBlend_OutputChannels(float4(saturate(Color.rgb * _Intensity), _CShadeAlphaFactor));
 }
 
 technique CShade_Threshold < ui_tooltip = "Threshold the image (use \"Preprocessor Definitions\" for blending)"; >
