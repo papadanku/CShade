@@ -90,11 +90,11 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     // Compute optional radius falloff
-    float3 FalloffFactor = 1.0;
+    float FalloffFactor = 1.0;
 
     if (_EnableFalloff)
     {
-        FFX_Lens_ApplyVignette(UNormTex + _FalloffOffset, 0.0, FalloffFactor, _FalloffAmount);
+        FalloffFactor = FFX_Lens_GetVignetteMask(UNormTex + _FalloffOffset, 0.0, _FalloffAmount);
     }
 
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
@@ -109,7 +109,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
             sincos(Shift, AngleShift.x, AngleShift.y);
             AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor.xy;
+            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
             SampleOffset *= _Radius;
             SampleOffset.x *= AspectRatio;
             OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));

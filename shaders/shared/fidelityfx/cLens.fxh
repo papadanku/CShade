@@ -113,15 +113,13 @@
         Color += Grain * min(Color, 1.0 - Color) * GrainAmountValue;
     }
 
-    // Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
-    void FFX_Lens_ApplyVignette(
+    float FFX_Lens_GetVignetteMask(
         in float2 Coord, // The input window coordinate [-0.5, 0.5), [-0.5, 0.5).
         in float2 CenterCoord, // The center window coordinate of the screen.
-        inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
         in float VignetteAmount // Intensity constant value of the vignette effect.
     )
     {
-        float2 VignetteMask = float2(0.0, 0.0);
+        float2 VignetteMask = 0.0;
         float2 CoordFromCenter = abs(Coord - CenterCoord);
 
         const float Pi = CMath_GetPi();
@@ -131,7 +129,19 @@
         VignetteMask *= VignetteMask;
         VignetteMask *= VignetteMask;
 
-        Color *= clamp(VignetteMask.x * VignetteMask.y, 0.0, 1.0);
+        return clamp(VignetteMask.x * VignetteMask.y, 0.0, 1.0);
+    }
+
+    // Function call to apply vignette effect to inout Color. This call could be skipped entirely as the choice to use the vignette is optional.
+    void FFX_Lens_ApplyVignette(
+        in float2 Coord, // The input window coordinate [-0.5, 0.5), [-0.5, 0.5).
+        in float2 CenterCoord, // The center window coordinate of the screen.
+        inout float3 Color, // The current running Color, or more clearly, the sampled input Color texture Color after being modified by chromatic aberration and film grain functions.
+        in float VignetteAmount // Intensity constant value of the vignette effect.
+    )
+    {
+        float VignetteMask = FFX_Lens_GetVignetteMask(Coord, CenterCoord, VignetteAmount);
+        Color *= VignetteMask;
     }
 
     // Lens pass entry point.
