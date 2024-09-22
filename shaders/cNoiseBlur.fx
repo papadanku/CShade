@@ -94,12 +94,12 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_EnableFalloff)
     {
-        FFX_Lens_ApplyVignette(clamp(UNormTex + _FalloffOffset, -1.0, 1.0), 0.0, FalloffFactor, _FalloffAmount);
+        FFX_Lens_ApplyVignette(UNormTex + _FalloffOffset, 0.0, FalloffFactor, _FalloffAmount);
     }
 
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
-    float4 Weight = 0.0;
+    float Weight = 0.0;
     [unroll] for(int i = 1; i < 4; ++i)
     {
         [unroll] for(int j = 0; j < 4 * i; ++j)

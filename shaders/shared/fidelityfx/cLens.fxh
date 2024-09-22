@@ -124,8 +124,10 @@
         float2 VignetteMask = float2(0.0, 0.0);
         float2 CoordFromCenter = abs(Coord - CenterCoord);
 
-        const float PiOver4 = CMath_GetPi() * 0.25;
-        VignetteMask = cos(CoordFromCenter * VignetteAmount * PiOver4);
+        const float Pi = CMath_GetPi();
+        const float PiOver2 = Pi * 0.5;
+        const float PiOver4 = Pi * 0.25;
+        VignetteMask = cos(min(CoordFromCenter * VignetteAmount * PiOver4, PiOver2));
         VignetteMask *= VignetteMask;
         VignetteMask *= VignetteMask;
 
