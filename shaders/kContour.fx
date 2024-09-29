@@ -24,7 +24,6 @@
 */
 
 #include "shared/cColor.fxh"
-#include "shared/cEdge.fxh"
 
 /*
     [Shader Options]
@@ -85,6 +84,8 @@ uniform int _DisplayMode <
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
+
+#include "shared/cEdge.fxh"
 
 /*
     [Pixel Shaders]
