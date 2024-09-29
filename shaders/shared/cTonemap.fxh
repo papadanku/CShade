@@ -105,30 +105,6 @@
     }
 
     /*
-        ACES: The next generation of filmic tone operators.
-    */
-
-    float3 CTonemap_ApplyACES(float3 HDR)
-    {
-        const float A = 2.51;
-        const float B = 0.03;
-        const float C = 2.43;
-        const float D = 0.59;
-        const float E = 0.14;
-        return saturate((HDR * (A * HDR + B)) / (HDR * (C * HDR + D) + E));
-    }
-
-    float3 CTonemap_ApplyInverseACES(float3 SDR)
-    {
-        const float A = 2.51;
-        const float B = 0.03;
-        const float C = 2.43;
-        const float D = 0.59;
-        const float E = 0.14;
-        return 0.5 * (D*SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C*SDR);
-    }
-
-    /*
         https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
     */
 
@@ -142,13 +118,13 @@
     // When the filter kernel is a weighted sum of fetched colors,
     // it is more optimal to fold the weighting into the tonemap operation.
     float3 CTonemap_ApplyAMDTonemapWithWeight(float3 HDR, float Weight)
-    { 
+    {
         return HDR * (Weight / (max(max(HDR.r, HDR.g), HDR.b) + 1.0));
     }
 
     // Apply this to restore the linear HDR color before writing out the result of the resolve.
     float3 CTonemap_ApplyInverseAMDTonemap(float3 HDR)
-    { 
+    {
         return HDR / (1.0 - max(max(HDR.r, HDR.g), HDR.b));
     }
 

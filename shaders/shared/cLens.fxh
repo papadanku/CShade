@@ -1,9 +1,8 @@
 
-#include "../cMath.fxh"
-#include "../cProcedural.fxh"
-
 /*
-    https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+    Modification of AMD's lens algorithm using gradient noise.
+
+    Source: https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/lens/ffx_lens.h
 
     This file is part of the FidelityFX SDK.
 
@@ -28,9 +27,11 @@
     THE SOFTWARE.
 */
 
+#include "shared/cMath.fxh"
+#include "shared/cProcedural.fxh"
+
 #if !defined(INCLUDE_FIDELITYFX_LENS)
     #define INCLUDE_FIDELITYFX_LENS
-
     // Simplex noise, transforms given position onto triangle grid
     // This logic should be kept at 32-bit floating point precision. 16 bits causes artifacting.
     float2 FFX_Lens_Simplex(float2 P)
@@ -70,30 +71,30 @@
         return RedGreenMagnitude;
     }
 
-    // Function call to apply chromatic aberration effect when sampling the Color input texture.
-    float3 FFX_Lens_SampleWithChromaticAberration(
-        sampler2D Image,
+    struct FFX_Lens_ChromaticAberrationTex
+    {
+        float2 Red;
+        float2 Green;
+        float2 Blue;
+    };
+
+    FFX_Lens_ChromaticAberrationTex FFX_Lens_GetChromaticAberrationTex(
         float2 Tex, // The input window coordinate [0, 1), [0, 1).
         float2 CenterCoord, // The center window coordinate of the screen.
         float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
     )
     {
+        FFX_Lens_ChromaticAberrationTex Output;
+
         float2 Delta = fwidth(Tex);
-        float2 HalfDelta = Delta * 0.5;
+        Output.Red = ((Tex - CenterCoord) * RedMagnitude) + (Delta * 0.5);
+        Output.Red += CenterCoord;
+        Output.Green = ((Tex - CenterCoord) * GreenMagnitude) + (Delta * 0.5);
+        Output.Green += CenterCoord;
+        Output.Blue = Tex;
 
-        float2 RedShift = ((Tex - CenterCoord) * RedMagnitude) + HalfDelta;
-        RedShift += CenterCoord;
-        float2 GreenShift = ((Tex - CenterCoord) * GreenMagnitude) + HalfDelta;
-        GreenShift += CenterCoord;
-        float2 BlueShift = Tex;
-
-        float3 RGB = 0.0;
-        RGB.r = tex2D(Image, RedShift).r;
-        RGB.g = tex2D(Image, GreenShift).g;
-        RGB.b = tex2D(Image, BlueShift).b;
-
-        return RGB;
+        return Output;
     }
 
     // Function call to apply film grain effect to inout Color. This call could be skipped entirely as the choice to use the film grain is optional.
@@ -143,28 +144,6 @@
     {
         float VignetteMask = FFX_Lens_GetVignetteMask(Coord, CenterCoord, VignetteAmount);
         Color *= VignetteMask;
-    }
-
-    // Lens pass entry point.
-    void FFX_Lens(
-        inout float3 Color,
-        in sampler2D Image,
-        in float2 HPos,
-        in float2 Tex,
-        in float GrainScale,
-        in float GrainAmount,
-        in float ChromAb,
-        in float Vignette,
-        in float GrainSeed
-    )
-    {
-        float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-        float2 UNormTex = Tex - 0.5;
-
-        // Run Lens
-        Color = FFX_Lens_SampleWithChromaticAberration(Image, Tex, 0.5, RGMag.r, RGMag.g);
-        FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
-        FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
     }
 
 #endif

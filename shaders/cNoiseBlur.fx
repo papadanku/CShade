@@ -22,7 +22,7 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "shared/fidelityfx/cLens.fxh"
+#include "shared/cLens.fxh"
 #include "shared/cProcedural.fxh"
 #include "shared/cMath.fxh"
 

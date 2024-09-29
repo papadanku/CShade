@@ -67,7 +67,7 @@
         ui_label = "Inverse Tonemap";
         ui_tooltip = "Select a tonemap operator for sampling the backbuffer";
         ui_type = "combo";
-        ui_items = "None\0Inverse Reinhard\0Inverse Reinhard Squared\0Inverse Standard\0Inverse Exponential\0Inverse ACES Filmic Curve\0Inverse AMD Resolve\0";
+        ui_items = "None\0Inverse Reinhard\0Inverse Reinhard Squared\0Inverse Standard\0Inverse Exponential\0Inverse AMD Resolve\0";
     > = 0;
 
     float4 CTonemap_ApplyInputTonemap(float4 SDR)
@@ -90,9 +90,6 @@
                 SDR.rgb = CTonemap_ApplyInverseExponential(SDR.rgb);
                 break;
             case 5:
-                SDR.rgb = CTonemap_ApplyInverseACES(SDR.rgb);
-                break;
-            case 6:
                 SDR.rgb = CTonemap_ApplyInverseAMDTonemap(SDR.rgb);
                 break;
             default:

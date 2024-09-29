@@ -33,8 +33,8 @@
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0AMD Resolve\0";
-    > = 5;
+        ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0AMD Resolve\0";
+    > = 3;
 
     float3 CTonemap_ApplyOutputTonemap(float3 HDR)
     {
@@ -51,8 +51,6 @@
             case 4:
                 return CTonemap_ApplyExponential(HDR);
             case 5:
-                return CTonemap_ApplyACES(HDR);
-            case 6:
                 return CTonemap_ApplyAMDTonemap(HDR);
             default:
                 return HDR;

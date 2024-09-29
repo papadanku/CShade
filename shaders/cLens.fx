@@ -27,7 +27,9 @@
     THE SOFTWARE.
 */
 
-#include "shared/fidelityfx/cLens.fxh"
+#include "shared/cMath.fxh"
+#include "shared/cProcedural.fxh"
+#include "shared/cLens.fxh"
 
 /*
     [Shader Options]
@@ -84,6 +86,31 @@ uniform float _Vignette <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
+// Lens pass entry point.
+void FFX_Lens(
+    inout float3 Color,
+    in float2 HPos,
+    in float2 Tex,
+    in float GrainScale,
+    in float GrainAmount,
+    in float ChromAb,
+    in float Vignette,
+    in float GrainSeed
+)
+{
+    float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
+    FFX_Lens_ChromaticAberrationTex ChromaticAberrationTex = FFX_Lens_GetChromaticAberrationTex(Tex, 0.5, RGMag.r, RGMag.g);
+    float2 UNormTex = Tex - 0.5;
+
+    // Run Lens
+    Color = 1.0;
+    Color.r = CShade_BackBuffer2D(ChromaticAberrationTex.Red).r;
+    Color.g = CShade_BackBuffer2D(ChromaticAberrationTex.Green).g;
+    Color.b = CShade_BackBuffer2D(ChromaticAberrationTex.Blue).b;
+    FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
+    FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
+}
+
 float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 {
     float4 OutputColor = 1.0;
@@ -91,7 +118,6 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
     Seed = (_UseTimeSeed) ? Seed + (rcp(1e+3 / _Time) * _GrainSeedSpeed) : Seed;
     FFX_Lens(
         OutputColor.rgb,
-        CShade_SampleColorTex,
         Input.HPos.xy,
         Input.Tex0,
         _GrainScale,
