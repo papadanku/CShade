@@ -1,3 +1,4 @@
+#define CSHADE_OVERLAY
 
 /*
     [Shader Options]
@@ -33,7 +34,7 @@ uniform float2 _MaskOffset <
     #define ENABLE_POINT_SAMPLING 1
 #endif
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 
 /*
     [Textures & Samplers]
@@ -89,7 +90,7 @@ VS2PS VS_Overlay(CShade_APP2VS Input)
 
 float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 {
-    float4 Color = tex2D(SampleColorTex_Overlay, Input.Tex0.zw);
+    float4 Color = CTonemap_ApplyInverseTonemap(tex2D(SampleColorTex_Overlay, Input.Tex0.zw), _CShadeInputTonemapOperator);
 
     // Output a rectangle
     float2 MaskCoord = (Input.Tex0.xy * 2.0) - 1.0;

@@ -1,9 +1,10 @@
+#define CSHADE_BLOOM
 
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cCameraInput.fxh"
 #include "shared/cCameraOutput.fxh"
 #include "shared/cTonemapOutput.fxh"

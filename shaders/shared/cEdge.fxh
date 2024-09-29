@@ -2,6 +2,13 @@
 #if !defined(INCLUDE_CEDGE)
     #define INCLUDE_CEDGE
 
+    #if defined(CSHADE_CONTOUR)
+    #include "cShadeHDR.fxh"
+        #define CEDGE_SAMPLE(SAMPLER, TEX) CShade_BackBuffer2D(TEX)
+    #else
+        #define CEDGE_SAMPLE(SAMPLER, TEX) tex2D(SAMPLER, TEX)
+    #endif
+
     struct CEdge_Gradient
     {
         float4 Ix;
@@ -11,7 +18,7 @@
     CEdge_Gradient CEdge_GetDDXY(sampler2D Image, float2 Tex)
     {
         float2 Delta = fwidth(Tex);
-        float4 Color = tex2D(Image, Tex);
+        float4 Color = CEDGE_SAMPLE(Image, Tex);
 
         CEdge_Gradient Output;
         Output.Ix = ddx(Color);
@@ -23,10 +30,10 @@
     {
         float2 Delta = fwidth(Tex);
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
-        float4 A0 = tex2D(Image, Tex0.xw) * 4.0; // <-0.5, +0.5>
-        float4 C0 = tex2D(Image, Tex0.zw) * 4.0; // <+0.5, +0.5>
-        float4 A2 = tex2D(Image, Tex0.xy) * 4.0; // <-0.5, -0.5>
-        float4 C2 = tex2D(Image, Tex0.zy) * 4.0; // <+0.5, -0.5>
+        float4 A0 = CEDGE_SAMPLE(Image, Tex0.xw) * 4.0; // <-0.5, +0.5>
+        float4 C0 = CEDGE_SAMPLE(Image, Tex0.zw) * 4.0; // <+0.5, +0.5>
+        float4 A2 = CEDGE_SAMPLE(Image, Tex0.xy) * 4.0; // <-0.5, -0.5>
+        float4 C2 = CEDGE_SAMPLE(Image, Tex0.zy) * 4.0; // <+0.5, -0.5>
 
         CEdge_Gradient Output;
         Output.Ix = ((C0 + C2) - (A0 + A2)) / 4.0;
@@ -45,14 +52,14 @@
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.5, 0.0, -1.5) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.5, 1.5, 0.0, -1.5) * Delta.xyyy);
 
-        float4 A0 = tex2D(Image, Tex1.xy) * 4.0; // <-1.5, +1.5>
-        float4 A1 = tex2D(Image, Tex1.xz) * 2.0; // <-1.5,  0.0>
-        float4 A2 = tex2D(Image, Tex1.xw) * 4.0; // <-1.5, -1.5>
-        float4 B0 = tex2D(Image, Tex2.xy) * 2.0; // < 0.0, +1.5>
-        float4 B2 = tex2D(Image, Tex2.xw) * 2.0; // < 0.0, -1.5>
-        float4 C0 = tex2D(Image, Tex3.xy) * 4.0; // <+1.5, +1.5>
-        float4 C1 = tex2D(Image, Tex3.xz) * 2.0; // <+1.5,  0.0>
-        float4 C2 = tex2D(Image, Tex3.xw) * 4.0; // <+1.5, -1.5>
+        float4 A0 = CEDGE_SAMPLE(Image, Tex1.xy) * 4.0; // <-1.5, +1.5>
+        float4 A1 = CEDGE_SAMPLE(Image, Tex1.xz) * 2.0; // <-1.5,  0.0>
+        float4 A2 = CEDGE_SAMPLE(Image, Tex1.xw) * 4.0; // <-1.5, -1.5>
+        float4 B0 = CEDGE_SAMPLE(Image, Tex2.xy) * 2.0; // < 0.0, +1.5>
+        float4 B2 = CEDGE_SAMPLE(Image, Tex2.xw) * 2.0; // < 0.0, -1.5>
+        float4 C0 = CEDGE_SAMPLE(Image, Tex3.xy) * 4.0; // <+1.5, +1.5>
+        float4 C1 = CEDGE_SAMPLE(Image, Tex3.xz) * 2.0; // <+1.5,  0.0>
+        float4 C2 = CEDGE_SAMPLE(Image, Tex3.xw) * 4.0; // <+1.5, -1.5>
 
         CEdge_Gradient Output;
         Output.Ix = ((C0 + C1 + C2) - (A0 + A1 + A2)) / 10.0;
@@ -72,14 +79,14 @@
         float4 Tex1 = Tex.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * Delta.xxyy);
         float4 Tex2 = Tex.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * Delta.xxyy);
 
-        float4 A0 = tex2D(Image, Tex1.xw) * 4.0; // <-1.5, +0.5>
-        float4 A1 = tex2D(Image, Tex1.yw) * 4.0; // <+1.5, +0.5>
-        float4 A2 = tex2D(Image, Tex1.xz) * 4.0; // <-1.5, -0.5>
-        float4 B0 = tex2D(Image, Tex1.yz) * 4.0; // <+1.5, -0.5>
-        float4 B1 = tex2D(Image, Tex2.xw) * 4.0; // <-0.5, +1.5>
-        float4 B2 = tex2D(Image, Tex2.yw) * 4.0; // <+0.5, +1.5>
-        float4 C0 = tex2D(Image, Tex2.xz) * 4.0; // <-0.5, -1.5>
-        float4 C1 = tex2D(Image, Tex2.yz) * 4.0; // <+0.5, -1.5>
+        float4 A0 = CEDGE_SAMPLE(Image, Tex1.xw) * 4.0; // <-1.5, +0.5>
+        float4 A1 = CEDGE_SAMPLE(Image, Tex1.yw) * 4.0; // <+1.5, +0.5>
+        float4 A2 = CEDGE_SAMPLE(Image, Tex1.xz) * 4.0; // <-1.5, -0.5>
+        float4 B0 = CEDGE_SAMPLE(Image, Tex1.yz) * 4.0; // <+1.5, -0.5>
+        float4 B1 = CEDGE_SAMPLE(Image, Tex2.xw) * 4.0; // <-0.5, +1.5>
+        float4 B2 = CEDGE_SAMPLE(Image, Tex2.yw) * 4.0; // <+0.5, +1.5>
+        float4 C0 = CEDGE_SAMPLE(Image, Tex2.xz) * 4.0; // <-0.5, -1.5>
+        float4 C1 = CEDGE_SAMPLE(Image, Tex2.yz) * 4.0; // <+0.5, -1.5>
 
         CEdge_Gradient Output;
         Output.Ix = ((B2 + A1 + B0 + C1) - (B1 + A0 + A2 + C0)) / 12.0;
@@ -94,14 +101,14 @@
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
 
-        float4 A0 = tex2D(Image, Tex1.xy) * 1.0; // <-1.0, 1.0>
-        float4 A1 = tex2D(Image, Tex1.xz) * 1.0; // <-1.0, 0.0>
-        float4 A2 = tex2D(Image, Tex1.xw) * 1.0; // <-1.0, -1.0>
-        float4 B0 = tex2D(Image, Tex2.xy) * 1.0; // <0.0, 1.0>
-        float4 B2 = tex2D(Image, Tex2.xw) * 1.0; // <0.0, -1.0>
-        float4 C0 = tex2D(Image, Tex3.xy) * 1.0; // <1.0, 1.0>
-        float4 C1 = tex2D(Image, Tex3.xz) * 1.0; // <1.0, 0.0>
-        float4 C2 = tex2D(Image, Tex3.xw) * 1.0; // <1.0, -1.0>
+        float4 A0 = CEDGE_SAMPLE(Image, Tex1.xy) * 1.0; // <-1.0, 1.0>
+        float4 A1 = CEDGE_SAMPLE(Image, Tex1.xz) * 1.0; // <-1.0, 0.0>
+        float4 A2 = CEDGE_SAMPLE(Image, Tex1.xw) * 1.0; // <-1.0, -1.0>
+        float4 B0 = CEDGE_SAMPLE(Image, Tex2.xy) * 1.0; // <0.0, 1.0>
+        float4 B2 = CEDGE_SAMPLE(Image, Tex2.xw) * 1.0; // <0.0, -1.0>
+        float4 C0 = CEDGE_SAMPLE(Image, Tex3.xy) * 1.0; // <1.0, 1.0>
+        float4 C1 = CEDGE_SAMPLE(Image, Tex3.xz) * 1.0; // <1.0, 0.0>
+        float4 C2 = CEDGE_SAMPLE(Image, Tex3.xw) * 1.0; // <1.0, -1.0>
 
         CEdge_Gradient Output;
         Output.Ix = ((C0 + C1 + C2) - (A0 + A1 + A2)) / 3.0;
@@ -116,14 +123,14 @@
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
 
-        float4 A0 = tex2D(Image, Tex1.xy) * 3.0;  // <-1.0, 1.0>
-        float4 A1 = tex2D(Image, Tex1.xz) * 10.0; // <-1.0, 0.0>
-        float4 A2 = tex2D(Image, Tex1.xw) * 3.0;  // <-1.0, -1.0>
-        float4 B0 = tex2D(Image, Tex2.xy) * 10.0; // <0.0, 1.0>
-        float4 B2 = tex2D(Image, Tex2.xw) * 10.0; // <0.0, -1.0>
-        float4 C0 = tex2D(Image, Tex3.xy) * 3.0;  // <1.0, 1.0>
-        float4 C1 = tex2D(Image, Tex3.xz) * 10.0; // <1.0, 0.0>
-        float4 C2 = tex2D(Image, Tex3.xw) * 3.0;  // <1.0, -1.0>
+        float4 A0 = CEDGE_SAMPLE(Image, Tex1.xy) * 3.0;  // <-1.0, 1.0>
+        float4 A1 = CEDGE_SAMPLE(Image, Tex1.xz) * 10.0; // <-1.0, 0.0>
+        float4 A2 = CEDGE_SAMPLE(Image, Tex1.xw) * 3.0;  // <-1.0, -1.0>
+        float4 B0 = CEDGE_SAMPLE(Image, Tex2.xy) * 10.0; // <0.0, 1.0>
+        float4 B2 = CEDGE_SAMPLE(Image, Tex2.xw) * 10.0; // <0.0, -1.0>
+        float4 C0 = CEDGE_SAMPLE(Image, Tex3.xy) * 3.0;  // <1.0, 1.0>
+        float4 C1 = CEDGE_SAMPLE(Image, Tex3.xz) * 10.0; // <1.0, 0.0>
+        float4 C2 = CEDGE_SAMPLE(Image, Tex3.xw) * 3.0;  // <1.0, -1.0>
 
         CEdge_Gradient Output;
         Output.Ix = ((C0 + C1 + C2) - (A0 + A1 + A2)) / 16.0;
@@ -151,15 +158,15 @@
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
 
         float4 T[9];
-        T[0] = tex2D(Image, Tex1.xy); // <-1.0, 1.0>
-        T[1] = tex2D(Image, Tex2.xy); // <0.0, 1.0>
-        T[2] = tex2D(Image, Tex3.xy); // <1.0, 1.0>
-        T[3] = tex2D(Image, Tex1.xz); // <-1.0, 0.0>
-        T[4] = tex2D(Image, Tex2.xz); // <0.0, 0.0>
-        T[5] = tex2D(Image, Tex3.xz); // <1.0, 0.0>
-        T[6] = tex2D(Image, Tex1.xw); // <-1.0, -1.0>
-        T[7] = tex2D(Image, Tex2.xw); // <0.0, -1.0>
-        T[8] = tex2D(Image, Tex3.xw); // <1.0, -1.0>
+        T[0] = CEDGE_SAMPLE(Image, Tex1.xy); // <-1.0, 1.0>
+        T[1] = CEDGE_SAMPLE(Image, Tex2.xy); // <0.0, 1.0>
+        T[2] = CEDGE_SAMPLE(Image, Tex3.xy); // <1.0, 1.0>
+        T[3] = CEDGE_SAMPLE(Image, Tex1.xz); // <-1.0, 0.0>
+        T[4] = CEDGE_SAMPLE(Image, Tex2.xz); // <0.0, 0.0>
+        T[5] = CEDGE_SAMPLE(Image, Tex3.xz); // <1.0, 0.0>
+        T[6] = CEDGE_SAMPLE(Image, Tex1.xw); // <-1.0, -1.0>
+        T[7] = CEDGE_SAMPLE(Image, Tex2.xw); // <0.0, -1.0>
+        T[8] = CEDGE_SAMPLE(Image, Tex3.xw); // <1.0, -1.0>
 
         CEdge_FreiChen Masks[9];
 

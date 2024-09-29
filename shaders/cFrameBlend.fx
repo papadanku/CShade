@@ -1,3 +1,4 @@
+#define CSHADE_FRAMEBLEND
 
 /*
     [Shader Options]
@@ -10,7 +11,7 @@ uniform float _BlendFactor <
     ui_max = 1.0;
 > = 0.5;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

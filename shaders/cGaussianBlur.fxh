@@ -1,6 +1,4 @@
 
-#include "shared/cBlur.fxh"
-
 /*
     [Shader Options]
 */
@@ -12,8 +10,10 @@ uniform float _Sigma <
     ui_max = 16.0;
 > = 1.0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
+
+#include "shared/cBlur.fxh"
 
 /*
     [Pixel Shaders]

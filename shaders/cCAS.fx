@@ -1,3 +1,4 @@
+#define CSHADE_CAS
 
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
@@ -53,7 +54,7 @@ uniform float _Contrast <
     ui_max = 1.0;
 > = 0.0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 void FFX_CAS(

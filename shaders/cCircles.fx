@@ -1,3 +1,4 @@
+#define CSHADE_CIRCLES
 
 #include "shared/cMacros.fxh"
 #include "shared/cColor.fxh"
@@ -138,7 +139,7 @@ uniform float3 _BackColor <
     > = 0;
 #endif
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

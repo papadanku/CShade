@@ -1,3 +1,4 @@
+#define CSHADE_CHROMATICITY
 
 #include "shared/cColor.fxh"
 
@@ -11,7 +12,7 @@ uniform int _Select <
     ui_items = "Length (XY)\0Length (XYZ)\0Average (XY)\0Average (XYZ)\0Sum (XY)\0Sum (XYZ)\0Max (XY)\0Max (XYZ)\0Ratio (XY)\0Spherical (XY)\0Hue-Saturation (HSI)\0Hue-Saturation (HSL)\0Hue-Saturation (HSV)\0CoCg (XY)\0CrCb (XY)\0";
 > = 0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

@@ -1,3 +1,4 @@
+#define CSHADE_QUANTIZATION
 
 #include "shared/cProcedural.fxh"
 

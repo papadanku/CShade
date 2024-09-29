@@ -1,3 +1,4 @@
+#define CSHADE_MOTIONBLUR
 
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
@@ -48,7 +49,7 @@ uniform bool _FrameRateScaling <
     ui_type = "radio";
 > = false;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

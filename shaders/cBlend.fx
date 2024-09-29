@@ -1,3 +1,4 @@
+#define CSHADE_BLEND
 
 /*
     [Shader Options]
@@ -19,7 +20,7 @@ uniform float3 _DestFactor <
     ui_type = "drag";
 > = 1.0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 
 /*
     [Textures & Samplers]

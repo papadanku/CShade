@@ -1,3 +1,4 @@
+#define CSHADE_RCAS
 
 /*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
@@ -80,7 +81,7 @@ uniform float _Sharpening <
     ui_max = 1.0;
 > = 0.5;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))

@@ -1,3 +1,4 @@
+#define CSHADE_OPTICALFLOW
 
 /*
     MIT License
@@ -45,7 +46,7 @@ uniform float _BlendFactor <
     ui_max = 0.9;
 > = 0.45;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 
 #ifndef RENDER_VELOCITY_STREAMS
     #define RENDER_VELOCITY_STREAMS 1

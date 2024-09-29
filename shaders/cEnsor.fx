@@ -1,3 +1,4 @@
+#define CSHADE_CENSOR
 
 #include "shared/cColor.fxh"
 
@@ -37,7 +38,7 @@ uniform int _DisplayMode <
     ui_items = "Output\0Mask\0";
 > = 0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)

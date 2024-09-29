@@ -1,3 +1,4 @@
+#define CSHADE_SOLIDCOLOR
 
 /*
     [Shader Options]

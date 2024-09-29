@@ -1,3 +1,4 @@
+#define CSHADE_FXAA
 
 /*
     Single-Pass FXAA modification of:

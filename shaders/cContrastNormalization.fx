@@ -1,3 +1,4 @@
+#define CSHADE_CONTRASTNORMALIZATION
 
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
@@ -12,14 +13,14 @@ uniform int _Select <
     ui_items = "Local Contrast Normalization\0Census Transform\0";
 > = 0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
 */
 
-float4 GetCensusTransform(sampler2D Image, float2 Tex)
+float4 GetCensusTransform(float2 Tex)
 {
     float4 Transform = 0.0;
 
@@ -51,16 +52,16 @@ float4 GetCensusTransform(sampler2D Image, float2 Tex)
     return Transform * (1.0 / (exp2(8) - 1));
 }
 
-float4 GetLocalContrastNormalization(sampler2D Image, float2 Tex)
+float4 GetLocalContrastNormalization(float2 Tex)
 {
     float2 Delta = fwidth(Tex);
 
     float4 S[5];
-    S[0] = tex2D(Image, Tex);
-    S[1] = tex2D(Image, Tex + (float2(-1.5, 0.0) * Delta));
-    S[2] = tex2D(Image, Tex + (float2(1.5, 0.0) * Delta));
-    S[3] = tex2D(Image, Tex + (float2(0.0, -1.5) * Delta));
-    S[4] = tex2D(Image, Tex + (float2(0.0, 1.5) * Delta));
+    S[0] = CShade_BackBuffer2D(Tex);
+    S[1] = CShade_BackBuffer2D(Tex + (float2(-1.5, 0.0) * Delta));
+    S[2] = CShade_BackBuffer2D(Tex + (float2(1.5, 0.0) * Delta));
+    S[3] = CShade_BackBuffer2D(Tex + (float2(0.0, -1.5) * Delta));
+    S[4] = CShade_BackBuffer2D(Tex + (float2(0.0, 1.5) * Delta));
     float4 Mean = (S[0] + S[1] + S[2] + S[3] + S[4]) / 5.0;
 
     // Calculate standard deviation
@@ -80,10 +81,10 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
     switch (_Select)
     {
         case 0:
-            float4 LCN = GetLocalContrastNormalization(CShade_SampleColorTex, Input.Tex0);
+            float4 LCN = GetLocalContrastNormalization(Input.Tex0);
             return CBlend_OutputChannels(float4(((float3)CColor_GetLuma(LCN.rgb, 0) * 0.5) + 0.5, _CShadeAlphaFactor));
         case 1:
-            float4 CT = GetCensusTransform(CShade_SampleColorTex, Input.Tex0);
+            float4 CT = GetCensusTransform(Input.Tex0);
             return CBlend_OutputChannels(float4((float3)CColor_GetLuma(CT.rgb, 0), _CShadeAlphaFactor));
         default:
             return 0.5;

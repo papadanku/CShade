@@ -1,3 +1,4 @@
+#define CSHADE_DATAMOSH
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -92,7 +93,7 @@ uniform float _Diffusion <
     ui_max = 4.0;
 > = 2.0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 #ifndef LINEAR_SAMPLING
@@ -307,7 +308,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return CShade_BackBuffer2D(Input.Tex0);
+    return tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

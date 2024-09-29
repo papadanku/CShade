@@ -1,3 +1,4 @@
+#define CSHADE_LETTERBOX
 
 /*
     [Shader Options]

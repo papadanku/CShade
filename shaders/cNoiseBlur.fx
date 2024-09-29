@@ -1,3 +1,4 @@
+#define CSHADE_NOISEBLUR
 
 /*
     MIT License
@@ -62,7 +63,7 @@ uniform bool _InvertFalloff <
     ui_type = "radio";
 > = false;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

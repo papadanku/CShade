@@ -1,3 +1,4 @@
+#define CSHADE_CHECKERBOARD
 
 #include "shared/cMath.fxh"
 

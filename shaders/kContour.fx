@@ -1,3 +1,4 @@
+#define CSHADE_CONTOUR
 
 /*
     MIT License
@@ -82,7 +83,7 @@ uniform int _DisplayMode <
     ui_items = "Output\0Mask\0";
 > = 0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

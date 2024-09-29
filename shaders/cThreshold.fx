@@ -1,3 +1,4 @@
+#define CSHADE_THRESHOLD
 
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
@@ -24,7 +25,7 @@ uniform float _Intensity <
     ui_min = 0.0;
 > = 1.0;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

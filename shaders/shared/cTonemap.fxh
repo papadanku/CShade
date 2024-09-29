@@ -128,4 +128,55 @@
         return HDR / (1.0 - max(max(HDR.r, HDR.g), HDR.b));
     }
 
+    float3 CTonemap_ApplyTonemap(float3 HDR, int Tonemapper)
+    {
+        switch (Tonemapper)
+        {
+            case 0:
+                return HDR;
+            case 1:
+                return CTonemap_ApplyReinhard(HDR, 1.0);
+            case 2:
+                return CTonemap_ApplyReinhardSquared(HDR, 0.25);
+            case 3:
+                return CTonemap_ApplyStandard(HDR);
+            case 4:
+                return CTonemap_ApplyExponential(HDR);
+            case 5:
+                return CTonemap_ApplyAMDTonemap(HDR);
+            default:
+                return HDR;
+        }
+    }
+
+    float4 CTonemap_ApplyInverseTonemap(float4 SDR, int Tonemapper)
+    {
+        switch (Tonemapper)
+        {
+            case 0:
+                SDR.rgb = SDR.rgb;
+                break;
+            case 1:
+                SDR.rgb = CTonemap_ApplyInverseReinhard(SDR.rgb, 1.0);
+                break;
+            case 2:
+                SDR.rgb = CTonemap_ApplyInverseReinhardSquared(SDR.rgb, 0.25);
+                break;
+            case 3:
+                SDR.rgb = CTonemap_ApplyInverseStandard(SDR.rgb);
+                break;
+            case 4:
+                SDR.rgb = CTonemap_ApplyInverseExponential(SDR.rgb);
+                break;
+            case 5:
+                SDR.rgb = CTonemap_ApplyInverseAMDTonemap(SDR.rgb);
+                break;
+            default:
+                SDR.rgb = SDR.rgb;
+                break;
+        }
+
+        return SDR;
+    }
+
 #endif

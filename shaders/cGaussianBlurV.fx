@@ -1,3 +1,4 @@
+#define CSHADE_GAUSSIANBLURV
 
 #include "cGaussianBlur.fxh"
 

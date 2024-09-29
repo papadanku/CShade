@@ -1,3 +1,4 @@
+#define CSHADE_DLAA
 
 /*
     Directionally Localized Anti-Aliasing (DLAA)

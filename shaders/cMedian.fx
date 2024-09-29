@@ -1,8 +1,9 @@
+#define CSHADE_MEDIAN
 
 #include "shared/cBlur.fxh"
 #include "shared/cMath.fxh"
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 
 #ifndef HIERARCHIAL_LEVELS
     #define HIERARCHIAL_LEVELS 5

@@ -1,3 +1,4 @@
+#define CSHADE_LENS
 
 /*
     Modification of AMD's lens algorithm using gradient noise.
@@ -83,7 +84,7 @@ uniform float _Vignette <
     ui_max = 2.0;
 > = 0.6;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 // Lens pass entry point.

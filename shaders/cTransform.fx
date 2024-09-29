@@ -1,3 +1,4 @@
+#define CSHADE_TRANSFORM
 
 /*
     [Shader Options]
@@ -30,7 +31,7 @@ uniform float2 _Scale <
     #define BACKBUFFER_ADDRESSW CLAMP
 #endif
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)

@@ -1,3 +1,4 @@
+#define CSHADE_MIRROR
 
 /*
     MIT License
@@ -45,7 +46,7 @@ uniform bool _Symmetry <
     ui_label = "Symmetry";
 > = true;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
 /*

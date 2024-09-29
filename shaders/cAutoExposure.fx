@@ -1,3 +1,4 @@
+#define CSHADE_AUTOEXPOSURE
 
 /*
     Automatic exposure shader using hardware blending
@@ -47,7 +48,7 @@ uniform bool _DisplaySpotMeterMask <
     ui_type = "radio";
 > = false;
 
-#include "shared/cShade.fxh"
+#include "shared/cShadeHDR.fxh"
 #include "shared/cCameraInput.fxh"
 #include "shared/cCameraOutput.fxh"
 #include "shared/cTonemapOutput.fxh"
