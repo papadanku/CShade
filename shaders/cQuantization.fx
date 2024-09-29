@@ -43,8 +43,15 @@ uniform int _DitherMethod <
 
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 ColorMapTex = (_Pixelate) ? floor(Input.Tex0 * _Resolution) / _Resolution : Input.Tex0;
-    float2 HashTex = (_Pixelate) ? floor(Input.Tex0 * _Resolution) : Input.HPos.xy;
+    float2 ColorMapTex = Input.Tex0;
+    float2 HashTex = Input.HPos.xy;
+
+    if (_Pixelate)
+    {
+        float2 Grid = floor(Input.Tex0 * _Resolution);
+        float2 ColorMapTex = Grid / _Resolution;
+        float2 HashTex = Grid;
+    }
 
     float4 ColorMap = tex2D(CShade_SampleGammaTex, ColorMapTex);
     float3 Dither = 0.0;
