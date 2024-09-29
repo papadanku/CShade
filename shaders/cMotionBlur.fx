@@ -32,7 +32,7 @@ uniform int _BlurMode <
     ui_label = "Blur Mode";
     ui_type = "combo";
     ui_items = "Average\0Max\0";
-> = 1;
+> = 0;
 
 uniform float _Scale <
     ui_category = "Shader | Motion Blur";
@@ -164,13 +164,14 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float Random = (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
         float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
-        if (_BlurMode == 1)
+  	  float4 Color = CShade_BackBuffer2D(RandomTex);      
+		if (_BlurMode == 1)
         {
-            OutputColor = max(OutputColor, CShade_BackBuffer2D(RandomTex));
+            OutputColor = max(Color, OutputColor);
         }
         else
         {
-            OutputColor += CShade_BackBuffer2D(RandomTex) / Samples;
+            OutputColor += Color / Samples;
         }
     }
 
