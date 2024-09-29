@@ -128,13 +128,37 @@
         return 0.5 * (D*SDR - sqrt(((D*D - 4.0*C*E) * SDR + 4.0*A*E-2.0*B*D) * SDR + B*B) - B) / (A - C*SDR);
     }
 
+    /*
+        https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
+    */
+
+    // Apply this to tonemap linear HDR color "HDR" after a sample is fetched in the resolve.
+    // Note "HDR" 1.0 maps to the expected limit of low-dynamic-range monitor output.
+    float3 CTonemap_ApplyAMDTonemap(float3 HDR)
+    {
+        return HDR / (max(max(HDR.r, HDR.g), HDR.b) + 1.0);
+    }
+
+    // When the filter kernel is a weighted sum of fetched colors,
+    // it is more optimal to fold the weighting into the tonemap operation.
+    float3 CTonemap_ApplyAMDTonemapWithWeight(float3 HDR, float Weight)
+    { 
+        return HDR * (Weight / (max(max(HDR.r, HDR.g), HDR.b) + 1.0));
+    }
+
+    // Apply this to restore the linear HDR color before writing out the result of the resolve.
+    float3 CTonemap_ApplyAMDTonemapInvert(float3 HDR)
+    { 
+        return HDR / (1.0 - max(max(HDR.r, HDR.g), HDR.b));
+    }
+
     #if defined(INCLUDE_CTONEMAP_OUTPUT)
         uniform int _CShadeTonemapOperator <
             ui_category = "[ Pipeline | Output | Tonemapping ]";
             ui_label = "Tonemap Operator";
             ui_tooltip = "Select a tonemap operator for the output";
             ui_type = "combo";
-            ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0";
+            ui_items = "None\0Reinhard\0Reinhard Squared\0Standard\0Exponential\0ACES Filmic Curve\0AMD Resolve\0";
         > = 5;
 
         float3 CTonemap_ApplyOutputTonemap(float3 HDR)
@@ -153,6 +177,8 @@
                     return CTonemap_ApplyExponential(HDR);
                 case 5:
                     return CTonemap_ApplyACES(HDR);
+                case 6:
+                    return CTonemap_ApplyAMDTonemap(HDR);
                 default:
                     return HDR;
             }
