@@ -3,8 +3,8 @@
 #include "cMath.fxh"
 #include "cProcedural.fxh"
 
-#if !defined(INCLUDE_MOTIONESTIMATION)
-    #define INCLUDE_MOTIONESTIMATION
+#if !defined(INCLUDE_CMOTIONESTIMATION)
+    #define INCLUDE_CMOTIONESTIMATION
 
     float CMotionEstimation_GetHalfMax()
     {

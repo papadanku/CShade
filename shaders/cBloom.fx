@@ -3,12 +3,10 @@
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
+#include "shared/cShade.fxh"
+#include "shared/cCameraInput.fxh"
+#include "shared/cCameraOutput.fxh"
+#include "shared/cTonemapOutput.fxh"
 
 /*
     [Shader Options]
@@ -55,7 +53,6 @@ uniform float3 _ColorShift <
     ui_max = 1.0;
 > = 1.0;
 
-#include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
 #ifndef USE_AUTOEXPOSURE
@@ -103,7 +100,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float Knee = mad(_Threshold, _Smooth, 1e-5);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
 
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShade_BackBuffer2D(Input.Tex0);
 
     // Apply auto-exposure backbuffer
     #if USE_AUTOEXPOSURE
@@ -166,7 +163,7 @@ CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 BaseColor = CShade_BackBuffer2D(Input.Tex0).rgb;
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
 
     // Apply auto-exposure to input

@@ -45,7 +45,7 @@ CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, POINT, MIRROR, MIRROR, MIR
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShade_BackBuffer2D(Input.Tex0);
 
     switch(_DetectionMode)
     {
@@ -89,7 +89,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShade_BackBuffer2D(Input.Tex0);
     float4 Blocks = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
 
     // Initialize variables

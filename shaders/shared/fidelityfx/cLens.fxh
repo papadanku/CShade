@@ -1,5 +1,4 @@
 
-#include "../cShade.fxh"
 #include "../cMath.fxh"
 #include "../cProcedural.fxh"
 
@@ -74,17 +73,19 @@
     // Function call to apply chromatic aberration effect when sampling the Color input texture.
     float3 FFX_Lens_SampleWithChromaticAberration(
         sampler2D Image,
-        float2 HPos, // The input window coordinate [0, widthPixels), [0, heightPixels).
         float2 Tex, // The input window coordinate [0, 1), [0, 1).
         float2 CenterCoord, // The center window coordinate of the screen.
         float RedMagnitude, // Magnitude value for the offset calculation of the red wavelength (texture channel).
         float GreenMagnitude // Magnitude value for the offset calculation of the green wavelength (texture channel).
     )
     {
-        float2 RedShift = (HPos - CenterCoord) * RedMagnitude + CenterCoord + 0.5;
-        RedShift *= (1.0 / (2.0 * CenterCoord));
-        float2 GreenShift = (HPos - CenterCoord) * GreenMagnitude + CenterCoord + 0.5;
-        GreenShift *= (1.0 / (2.0 * CenterCoord));
+        float2 Delta = fwidth(Tex);
+        float2 HalfDelta = Delta * 0.5;
+
+        float2 RedShift = ((Tex - CenterCoord) * RedMagnitude) + HalfDelta;
+        RedShift += CenterCoord;
+        float2 GreenShift = ((Tex - CenterCoord) * GreenMagnitude) + HalfDelta;
+        GreenShift += CenterCoord;
         float2 BlueShift = Tex;
 
         float3 RGB = 0.0;
@@ -158,11 +159,10 @@
     )
     {
         float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-        float2 Center = CShade_GetScreenSizeFromTex(Tex) / 2.0;
         float2 UNormTex = Tex - 0.5;
 
         // Run Lens
-        Color = FFX_Lens_SampleWithChromaticAberration(Image, HPos, Tex, Center, RGMag.r, RGMag.g);
+        Color = FFX_Lens_SampleWithChromaticAberration(Image, Tex, 0.5, RGMag.r, RGMag.g);
         FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
         FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
     }

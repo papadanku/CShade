@@ -112,7 +112,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
             float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
             SampleOffset *= _Radius;
             SampleOffset.x *= AspectRatio;
-            OutputColor += tex2D(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
+            OutputColor += CShade_BackBuffer2D(Input.Tex0 + (SampleOffset * 0.01));
             Weight++;
         }
     }

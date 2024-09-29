@@ -61,7 +61,6 @@
     This is used as a noise detection filter, to reduce the effect of RCAS on grain, and focus on real edges.
 */
 
-#include "../cShade.fxh"
 #include "../cColor.fxh"
 
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
@@ -70,6 +69,7 @@
     #define INCLUDE_FFX_RCAS
 
     void FFX_RCAS(
+        sampler Source,
         inout float4 FilterShape,
         inout float4 FilterMask,
         in float2 Tex,
@@ -82,11 +82,11 @@
         TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
 
         float4 Sample[5];
-        Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-        Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-        Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-        Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-        Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
+        Sample[0] = tex2D(Source, Tex);
+        Sample[1] = tex2D(Source, TexArray[0].xy);
+        Sample[2] = tex2D(Source, TexArray[0].zw);
+        Sample[3] = tex2D(Source, TexArray[1].xy);
+        Sample[4] = tex2D(Source, TexArray[1].zw);
 
         // Luma times 2.
         float Luma[5];

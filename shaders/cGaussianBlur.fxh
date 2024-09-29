@@ -27,20 +27,20 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 
     if(_Sigma == 0.0)
     {
-        return tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
+        return CShade_BackBuffer2Dlod(float4(Tex, 0.0, 0.0));
     }
     else
     {
         // Sample and weight center first to get even number sides
         float TotalWeight = CBlur_GetGaussianWeight(0.0, _Sigma);
-        float4 OutputColor = tex2D(CShade_SampleColorTex, Tex) * TotalWeight;
+        float4 OutputColor = CShade_BackBuffer2D(Tex) * TotalWeight;
 
         for(float i = 1.0; i < KernelSize; i += 2.0)
         {
             float LinearWeight = 0.0;
             float LinearOffset = CBlur_GetGaussianOffset(i, _Sigma, LinearWeight);
-            OutputColor += tex2Dlod(CShade_SampleColorTex, float4(Tex - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
-            OutputColor += tex2Dlod(CShade_SampleColorTex, float4(Tex + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
+            OutputColor += CShade_BackBuffer2Dlod(float4(Tex - LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
+            OutputColor += CShade_BackBuffer2Dlod(float4(Tex + LinearOffset * PixelSize, 0.0, 0.0)) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;
         }
 

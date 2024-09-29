@@ -6,13 +6,6 @@
 #include "shared/cMacros.fxh"
 #include "shared/cProcedural.fxh"
 
-#define INCLUDE_CCAMERA_INPUT
-#define INCLUDE_CCAMERA_OUTPUT
-#include "shared/cCamera.fxh"
-
-#define INCLUDE_CTONEMAP_OUTPUT
-#include "shared/cTonemap.fxh"
-
 /*
     [Shader Options]
 */
@@ -55,6 +48,10 @@ uniform bool _DisplaySpotMeterMask <
 > = false;
 
 #include "shared/cShade.fxh"
+#include "shared/cCameraInput.fxh"
+#include "shared/cCameraOutput.fxh"
+#include "shared/cTonemapOutput.fxh"
+
 #include "shared/cBlend.fxh"
 
 /*
@@ -91,7 +88,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
         Tex = SpotMeterTex;
     }
 
-    float4 Color = tex2D(CShade_SampleColorTex, Tex);
+    float4 Color = CShade_BackBuffer2D(Tex);
     float LogLuminance = GetLogLuminance(Color.rgb);
 
     return CCamera_CreateExposureTex(LogLuminance, _Frametime);
@@ -101,7 +98,7 @@ float3 PS_Exposure(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Get textures
     float Luma = tex2Dlod(SampleLumaTex, float4(Input.Tex0, 0.0, 99.0)).r;
-    float4 NonExposedColor = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 NonExposedColor = CShade_BackBuffer2D(Input.Tex0);
 
     // Get exposure data
     Exposure ExposureData = CCamera_GetExposureData(Luma);

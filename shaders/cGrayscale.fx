@@ -20,7 +20,7 @@ uniform int _Select <
 
 float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShade_BackBuffer2D(Input.Tex0);
     float3 Luma = CColor_GetLuma(Color.rgb, _Select);
     return CBlend_OutputChannels(float4(Luma, _CShadeAlphaFactor));
 }

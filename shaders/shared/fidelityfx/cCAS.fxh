@@ -49,25 +49,25 @@
             case 0:
                 TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
                 TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
+                Sample[0] = CShade_BackBuffer2D(Tex);
+                Sample[1] = CShade_BackBuffer2D(TexArray[0].xy);
+                Sample[2] = CShade_BackBuffer2D(TexArray[0].zw);
+                Sample[3] = CShade_BackBuffer2D(TexArray[1].xy);
+                Sample[4] = CShade_BackBuffer2D(TexArray[1].zw);
                 break;
             case 1:
                 TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
                 TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
                 TexArray[2] = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-                Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-                Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-                Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-                Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-                Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
-                Sample[5] = tex2D(CShade_SampleColorTex, TexArray[2].xw);
-                Sample[6] = tex2D(CShade_SampleColorTex, TexArray[2].zw);
-                Sample[7] = tex2D(CShade_SampleColorTex, TexArray[2].xy);
-                Sample[8] = tex2D(CShade_SampleColorTex, TexArray[2].zy);
+                Sample[0] = CShade_BackBuffer2D(Tex);
+                Sample[1] = CShade_BackBuffer2D(TexArray[0].xy);
+                Sample[2] = CShade_BackBuffer2D(TexArray[0].zw);
+                Sample[3] = CShade_BackBuffer2D(TexArray[1].xy);
+                Sample[4] = CShade_BackBuffer2D(TexArray[1].zw);
+                Sample[5] = CShade_BackBuffer2D(TexArray[2].xw);
+                Sample[6] = CShade_BackBuffer2D(TexArray[2].zw);
+                Sample[7] = CShade_BackBuffer2D(TexArray[2].xy);
+                Sample[8] = CShade_BackBuffer2D(TexArray[2].zy);
                 break;
             default:
                 break;

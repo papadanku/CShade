@@ -1,6 +1,6 @@
 
-#if !defined(INCLUDE_EDGE)
-    #define INCLUDE_EDGE
+#if !defined(INCLUDE_CEDGE)
+    #define INCLUDE_CEDGE
 
     struct CEdge_Gradient
     {

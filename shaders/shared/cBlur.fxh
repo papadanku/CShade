@@ -2,8 +2,8 @@
 #include "cMath.fxh"
 #include "cProcedural.fxh"
 
-#if !defined(INCLUDE_BLUR)
-    #define INCLUDE_BLUR
+#if !defined(INCLUDE_CBLUR)
+    #define INCLUDE_CBLUR
 
     /*
         Linear Gaussian blur

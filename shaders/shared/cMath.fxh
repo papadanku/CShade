@@ -3,8 +3,8 @@
     https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/DoFMedianFilterCS.hlsl
 */
 
-#if !defined(INCLUDE_MATH)
-    #define INCLUDE_MATH
+#if !defined(INCLUDE_CMATH)
+    #define INCLUDE_CMATH
 
     float4 CMath_Float4_Max3(float4 A, float4 B, float4 C)
     {

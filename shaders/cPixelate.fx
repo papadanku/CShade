@@ -20,7 +20,7 @@ uniform int2 _Pixels <
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Tex = floor(Input.Tex0 * _Pixels) / _Pixels;
-    float4 OutputColor = tex2D(CShade_SampleColorTex, Tex);
+    float4 OutputColor = CShade_BackBuffer2D(Tex);
 
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }

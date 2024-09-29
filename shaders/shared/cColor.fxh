@@ -1,8 +1,8 @@
 
 #include "cMath.fxh"
 
-#if !defined(INCLUDE_COLOR)
-    #define INCLUDE_COLOR
+#if !defined(INCLUDE_CCOLOR)
+    #define INCLUDE_CCOLOR
 
     static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 

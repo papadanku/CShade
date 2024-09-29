@@ -1,6 +1,6 @@
 
-#if !defined(INCLUDE_MACROS)
-    #define INCLUDE_MACROS
+#if !defined(INCLUDE_CMACROS)
+    #define INCLUDE_CMACROS
 
     /*
         [Macros and macro accessories]

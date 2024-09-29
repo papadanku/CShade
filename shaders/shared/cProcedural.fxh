@@ -1,8 +1,8 @@
 
 #include "cMath.fxh"
 
-#if !defined(INCLUDE_PROCEDURAL)
-    #define INCLUDE_PROCEDURAL
+#if !defined(INCLUDE_CPROCEDURAL)
+    #define INCLUDE_CPROCEDURAL
 
     /*
         https://www.shadertoy.com/view/4djSRW

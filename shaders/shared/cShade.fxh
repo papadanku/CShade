@@ -1,8 +1,9 @@
 
 #include "cMacros.fxh"
+#include "cTonemap.fxh"
 
-#if !defined(INCLUDE_GRAPHICS)
-    #define INCLUDE_GRAPHICS
+#if !defined(INCLUDE_CSHADE)
+    #define INCLUDE_CSHADE
 
     #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
@@ -60,6 +61,57 @@
         MipFilter = LINEAR;
         SRGBTexture = FALSE;
     };
+
+    uniform int _CShadeInputTonemapOperator <
+        ui_category = "[ Pipeline | Input | Pre-Processing ]";
+        ui_label = "Inverse Tonemap";
+        ui_tooltip = "Select a tonemap operator for sampling the backbuffer";
+        ui_type = "combo";
+        ui_items = "None\0Inverse Reinhard\0Inverse Reinhard Squared\0Inverse Standard\0Inverse Exponential\0Inverse ACES Filmic Curve\0Inverse AMD Resolve\0";
+    > = 0;
+
+    float4 CTonemap_ApplyInputTonemap(float4 SDR)
+    {
+        switch (_CShadeInputTonemapOperator)
+        {
+            case 0:
+                SDR.rgb = SDR.rgb;
+                break;
+            case 1:
+                SDR.rgb = CTonemap_ApplyInverseReinhard(SDR.rgb, 1.0);
+                break;
+            case 2:
+                SDR.rgb = CTonemap_ApplyInverseReinhardSquared(SDR.rgb, 0.25);
+                break;
+            case 3:
+                SDR.rgb = CTonemap_ApplyInverseStandard(SDR.rgb);
+                break;
+            case 4:
+                SDR.rgb = CTonemap_ApplyInverseExponential(SDR.rgb);
+                break;
+            case 5:
+                SDR.rgb = CTonemap_ApplyInverseACES(SDR.rgb);
+                break;
+            case 6:
+                SDR.rgb = CTonemap_ApplyInverseAMDTonemap(SDR.rgb);
+                break;
+            default:
+                SDR.rgb = SDR.rgb;
+                break;
+        }
+
+        return SDR;
+    }
+
+    float4 CShade_BackBuffer2D(float2 Tex)
+    {
+        return CTonemap_ApplyInputTonemap(tex2D(CShade_SampleColorTex, Tex));
+    }
+
+    float4 CShade_BackBuffer2Dlod(float4 Tex)
+    {
+        return CTonemap_ApplyInputTonemap(tex2Dlod(CShade_SampleColorTex, Tex));
+    }
 
     /*
         [Simple Vertex Shader]

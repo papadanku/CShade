@@ -27,7 +27,7 @@ CREATE_SRGB_SAMPLER(SampleBlendTex, BlendTex, 1, CLAMP, CLAMP, CLAMP)
 float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Copy backbuffer to a that continuously blends with its previous result 
-    return float4(tex2D(CShade_SampleColorTex, Input.Tex0).rgb, _BlendFactor);
+    return float4(CShade_BackBuffer2D(Input.Tex0).rgb, _BlendFactor);
 }
 
 float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0

@@ -229,7 +229,7 @@ float GetTileCircleLength(Tile Input)
 #if ENABLE_MONO
     float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+        float4 Color = CShade_BackBuffer2D(Input.Tex0);
         switch(_Select)
         {
             case 0:
@@ -301,7 +301,7 @@ float GetTileCircleLength(Tile Input)
 #else
     float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        return tex2D(CShade_SampleColorTex, Input.Tex0);
+        return CShade_BackBuffer2D(Input.Tex0);
     }
 
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0

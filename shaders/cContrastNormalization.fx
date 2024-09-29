@@ -30,15 +30,15 @@ float4 GetCensusTransform(sampler2D Image, float2 Tex)
 
     const int Neighbors = 8;
     float4 SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = tex2D(CShade_SampleColorTex, Tex0.xy);
-    SampleNeighbor[1] = tex2D(CShade_SampleColorTex, Tex1.xy);
-    SampleNeighbor[2] = tex2D(CShade_SampleColorTex, Tex2.xy);
-    SampleNeighbor[3] = tex2D(CShade_SampleColorTex, Tex0.xz);
-    SampleNeighbor[4] = tex2D(CShade_SampleColorTex, Tex2.xz);
-    SampleNeighbor[5] = tex2D(CShade_SampleColorTex, Tex0.xw);
-    SampleNeighbor[6] = tex2D(CShade_SampleColorTex, Tex1.xw);
-    SampleNeighbor[7] = tex2D(CShade_SampleColorTex, Tex2.xw);
-    float4 CenterSample = tex2D(CShade_SampleColorTex, Tex1.xz);
+    SampleNeighbor[0] = CShade_BackBuffer2D(Tex0.xy);
+    SampleNeighbor[1] = CShade_BackBuffer2D(Tex1.xy);
+    SampleNeighbor[2] = CShade_BackBuffer2D(Tex2.xy);
+    SampleNeighbor[3] = CShade_BackBuffer2D(Tex0.xz);
+    SampleNeighbor[4] = CShade_BackBuffer2D(Tex2.xz);
+    SampleNeighbor[5] = CShade_BackBuffer2D(Tex0.xw);
+    SampleNeighbor[6] = CShade_BackBuffer2D(Tex1.xw);
+    SampleNeighbor[7] = CShade_BackBuffer2D(Tex2.xw);
+    float4 CenterSample = CShade_BackBuffer2D(Tex1.xz);
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)

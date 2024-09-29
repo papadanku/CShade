@@ -1,6 +1,6 @@
 
-#if !defined(INCLUDE_BLENDOP)
-    #define INCLUDE_BLENDOP
+#if !defined(INCLUDE_CBLENDOP)
+    #define INCLUDE_CBLENDOP
 
     /*
         BlendEnable0 to BlendEnable7 allow to enable or disable color and alpha blending for the respective render target.

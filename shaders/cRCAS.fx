@@ -12,7 +12,6 @@ uniform int _RenderMode <
 > = 0;
 
 uniform float _Sharpening <
-    ui_category = "Robust Contrast Adaptive Sharpening";
     ui_label = "Sharpening";
     ui_type = "slider";
     ui_min = 0.0;
@@ -27,6 +26,7 @@ float4 PS_RCAS(CShade_VS2PS_Quad Input): SV_TARGET0
     float4 OutputColor = 1.0;
     float4 OutputMask = 1.0;
     FFX_RCAS(
+        CShade_SampleColorTex,
         OutputColor,
         OutputMask,
         Input.Tex0,
