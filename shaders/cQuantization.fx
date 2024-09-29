@@ -5,7 +5,14 @@
     [Shader Options]
 */
 
+uniform bool _Pixelate <
+    ui_category = "Shader | Pixelation";
+    ui_label = "Enable";
+    ui_type = "radio";
+> = false;
+
 uniform int2 _Resolution <
+    ui_category = "Shader | Pixelation";
     ui_label = "Resolution";
     ui_type = "slider";
     ui_min = 16;
@@ -13,6 +20,7 @@ uniform int2 _Resolution <
 > = int2(128, 128);
 
 uniform int3 _Range <
+    ui_category = "Shader | Color Banding";
     ui_label = "Color Band Range";
     ui_type = "slider";
     ui_min = 1.0;
@@ -20,6 +28,7 @@ uniform int3 _Range <
 > = 8;
 
 uniform int _DitherMethod <
+    ui_category = "Shader | Color Banding";
     ui_label = "Dither Method";
     ui_type = "combo";
     ui_items = "None\0Hash\0Interleaved Gradient Noise\0";
@@ -34,7 +43,7 @@ uniform int _DitherMethod <
 
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 ColorMapTex = floor(Input.Tex0 * _Resolution) / _Resolution;
+    float2 ColorMapTex = (_Pixelate) ? floor(Input.Tex0 * _Resolution) / _Resolution : Input.Tex0;
     float4 ColorMap = tex2D(CShade_SampleGammaTex, ColorMapTex);
 
     float2 HashTex = floor(Input.Tex0 * _Resolution);
@@ -63,7 +72,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(ColorMap.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_ColorBand < ui_tooltip = "Artificial quantization effect"; >
+technique CShade_Quantization < ui_tooltip = "Artificial quantization effect"; >
 {
     pass
     {
