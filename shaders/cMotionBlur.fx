@@ -12,7 +12,7 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform float _MipBias <
-    ui_category = "Optical Flow";
+    ui_category = "Shader | Optical Flow";
     ui_label = "Mipmap Bias";
     ui_type = "slider";
     ui_min = 0.0;
@@ -20,15 +20,22 @@ uniform float _MipBias <
 > = 4.5;
 
 uniform float _BlendFactor <
-    ui_category = "Optical Flow";
+    ui_category = "Shader | Optical Flow";
     ui_label = "Temporal Blending Factor";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
 > = 0.25;
 
+uniform int _BlurMode <
+    ui_category = "Shader | Motion Blur";
+    ui_label = "Blur Mode";
+    ui_type = "combo";
+    ui_items = "Average\0Max\0";
+> = 1;
+
 uniform float _Scale <
-    ui_category = "Motion Blur";
+    ui_category = "Shader | Motion Blur";
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -36,7 +43,7 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _TargetFrameRate <
-    ui_category = "Motion Blur";
+    ui_category = "Shader | Motion Blur";
     ui_label = "Target Frame-Rate";
     ui_type = "slider";
     ui_min = 0.0;
@@ -44,7 +51,7 @@ uniform float _TargetFrameRate <
 > = 60.0;
 
 uniform bool _FrameRateScaling <
-    ui_category = "Motion Blur";
+    ui_category = "Shader | Motion Blur";
     ui_label = "Frame-Rate Scaling";
     ui_type = "radio";
 > = false;
@@ -157,10 +164,17 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float Random = (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
         float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
-        OutputColor += CShade_BackBuffer2D(RandomTex);
+        if (_BlurMode == 1)
+        {
+            OutputColor = max(OutputColor, CShade_BackBuffer2D(RandomTex));
+        }
+        else
+        {
+            OutputColor += CShade_BackBuffer2D(RandomTex) / Samples;
+        }
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb / Samples, _CShadeAlphaFactor));
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
