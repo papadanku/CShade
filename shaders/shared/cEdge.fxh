@@ -3,7 +3,6 @@
     #define INCLUDE_CEDGE
 
     #if defined(CSHADE_CONTOUR)
-    #include "cShadeHDR.fxh"
         #define CEDGE_SAMPLE(SAMPLER, TEX) CShade_BackBuffer2D(TEX)
     #else
         #define CEDGE_SAMPLE(SAMPLER, TEX) tex2D(SAMPLER, TEX)
