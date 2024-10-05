@@ -98,4 +98,36 @@
         return Tex;
     }
 
+
+    float CMath_GetHalfMax()
+    {
+        // Get the Half format distribution of bits
+        // Sign Exponent Significand
+        // 0    00000    000000000
+        const int SignBit = 0;
+        const int ExponentBits = 5;
+        const int SignificandBits = 10;
+
+        const int Bias = -15;
+        const int Exponent = exp2(ExponentBits);
+        const int Significand = exp2(SignificandBits);
+
+        const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
+        const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
+
+        return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
+    }
+
+    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
+    float2 CMath_HalfToNorm(float2 Half2)
+    {
+        return clamp(Half2 / CMath_GetHalfMax(), -1.0, 1.0);
+    }
+
+    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
+    float2 CMath_NormToHalf(float2 Half2)
+    {
+        return Half2 * CMath_GetHalfMax();
+    }
+
 #endif

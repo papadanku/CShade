@@ -6,37 +6,6 @@
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
 
-    float CMotionEstimation_GetHalfMax()
-    {
-        // Get the Half format distribution of bits
-        // Sign Exponent Significand
-        // 0    00000    000000000
-        const int SignBit = 0;
-        const int ExponentBits = 5;
-        const int SignificandBits = 10;
-
-        const int Bias = -15;
-        const int Exponent = exp2(ExponentBits);
-        const int Significand = exp2(SignificandBits);
-
-        const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
-        const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
-
-        return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
-    }
-
-    // [-Half, Half] -> [-1.0, 1.0]
-    float2 CMotionEstimation_UnpackMotionVectors(float2 Half2)
-    {
-        return clamp(Half2 / CMotionEstimation_GetHalfMax(), -1.0, 1.0);
-    }
-
-    // [-1.0, 1.0] -> [-Half, Half]
-    float2 CMotionEstimation_PackMotionVectors(float2 Half2)
-    {
-        return Half2 * CMotionEstimation_GetHalfMax();
-    }
-
     // [-1.0, 1.0] -> [Width, Height]
     float2 CMotionEstimation_UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
     {
@@ -76,16 +45,14 @@
         float IxIt = 0.0;
         float IyIt = 0.0;
 
-        // Unpack motion vectors
-        Vectors = CMotionEstimation_UnpackMotionVectors(Vectors);
-
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex.zw += Vectors; // Warp in [-0.5, 0.5) range
-        WarpTex.zw += 0.5; // Push into [0.0, 1.0) range
+        WarpTex.zw = CMath_NormToHalf(WarpTex.zw) + Vectors; // Warp in [-HalfMax, HalfMax) range
+        WarpTex.zw = CMath_HalfToNorm(WarpTex.zw) + 0.5; // Push into [0.0, 1.0) range
+        WarpTex.zw = saturate(WarpTex.zw); // Clamp into [0.0, 1.0) range
 
         // Get gradient information
         float4 TexIx = ddx(WarpTex);
@@ -145,14 +112,17 @@
         // Calculate A^T*B
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
-        // Propagate normalized motion vectors
+        // Convert motion vectors from Half -> Norm
+        Vectors = CMath_HalfToNorm(Vectors);
+
+        // Propagate normalized motion vectors in Norm Range
         Vectors += CMotionEstimation_NormalizeMotionVectors(Flow, PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Pack motion vectors to Half format
-        return CMotionEstimation_PackMotionVectors(Vectors);
+        return CMath_NormToHalf(Vectors);
     }
 
 #endif

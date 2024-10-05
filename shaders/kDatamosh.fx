@@ -227,7 +227,7 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_HalfToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -266,7 +266,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_HalfToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);

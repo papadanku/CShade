@@ -112,7 +112,7 @@ struct VS2PS_Streaming
         float2 VelocityCoord;
         VelocityCoord.x = Origin.x * PixelSize.x;
         VelocityCoord.y = 1.0 - (Origin.y * PixelSize.y);
-        Output.Velocity = CMotionEstimation_UnpackMotionVectors(tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy) / PixelSize;
+        Output.Velocity = CMath_HalfToNorm(tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy) / PixelSize;
         Output.Velocity.y *= -1.0;
 
         // Scale velocity
@@ -221,7 +221,6 @@ float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    Vectors = CMotionEstimation_UnnormalizeMotionVectors(CMotionEstimation_UnpackMotionVectors(Vectors), fwidth(Input.Tex0));
     Vectors.y *= -1.0;
     float Magnitude = length(float3(Vectors, 1.0));
 
