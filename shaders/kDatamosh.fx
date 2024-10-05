@@ -212,7 +212,7 @@ float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
     Random.z = RandUV(Tex.yx - Time.xx);
 
     // Normalized screen space -> Pixel coordinates
-    MV = CMotionEstimation_UnnormalizeMotionVectors(MV * _Scale, TexSize);
+    MV = CMotionEstimation_UnnormalizeMV(MV * _Scale, TexSize);
 
     // Small random displacement (diffusion)
     MV += (Random.xy - 0.5)  * _Diffusion;
@@ -275,7 +275,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     float RandomMotion = RandUV(Input.Tex0 + length(MV));
 
     // Pixel coordinates -> Normalized screen space
-    MV = CMotionEstimation_NormalizeMotionVectors(MV, TexSize);
+    MV = CMotionEstimation_NormalizeMV(MV, TexSize);
 
     // Color from the original image
     float4 Source = CShade_BackBuffer2D(Input.Tex0);

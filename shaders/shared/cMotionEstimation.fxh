@@ -7,13 +7,13 @@
     #define INCLUDE_CMOTIONESTIMATION
 
     // [-1.0, 1.0] -> [Width, Height]
-    float2 CMotionEstimation_UnnormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
     {
         return Vectors / abs(ImageSize);
     }
 
     // [Width, Height] -> [-1.0, 1.0]
-    float2 CMotionEstimation_NormalizeMotionVectors(float2 Vectors, float2 ImageSize)
+    float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
     {
         return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
     }
@@ -116,7 +116,7 @@
         Vectors = CMath_HalfToNorm(Vectors);
 
         // Propagate normalized motion vectors in Norm Range
-        Vectors += CMotionEstimation_NormalizeMotionVectors(Flow, PixelSize);
+        Vectors += CMotionEstimation_NormalizeMV(Flow, PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
