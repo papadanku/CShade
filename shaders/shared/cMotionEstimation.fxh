@@ -44,6 +44,7 @@
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
+        float SSD = 0.0;
 
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
@@ -95,6 +96,8 @@
             // IxIt = B1; IyIt = B2
             IxIt += dot(Ix, IT);
             IyIt += dot(Iy, IT);
+
+            SSD += dot(IT, IT);
         }
 
         /*
@@ -104,6 +107,13 @@
             [-IxIy/D  Iy^2/D] [-IyIt]
         */
 
+        float M = (SSD / (IxIx + IyIy)) > 0.1;
+        IxIx *= M;
+        IyIy *= M;
+        IxIy *= M;
+        IxIt *= M;
+        IyIt *= M;
+        
         // Calculate A^-1 and B
         float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
         float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
