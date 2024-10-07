@@ -112,7 +112,7 @@
             https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
         */
 
-        float M = (SSD / (IxIx + IyIy)) > 0.1;
+        float M = (SSD / (IxIx + IyIy)) < 0.1;
         IxIx *= M;
         IyIy *= M;
         IxIy *= M;
