@@ -4,6 +4,10 @@
     [Shader Options]
 */
 
+#ifndef ENABLE_POINT_SAMPLING
+    #define ENABLE_POINT_SAMPLING 1
+#endif
+
 uniform float2 _TexScale <
     ui_label = "Image Scale";
     ui_type = "drag";
@@ -29,10 +33,6 @@ uniform float2 _MaskOffset <
     ui_min = -1.0;
     ui_max = 1.0;
 > = float2(0.0, 0.0);
-
-#ifndef ENABLE_POINT_SAMPLING
-    #define ENABLE_POINT_SAMPLING 1
-#endif
 
 #include "shared/cShadeHDR.fxh"
 

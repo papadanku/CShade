@@ -1,4 +1,4 @@
-#define CSHADE_CONTRASTNORMALIZATION
+#define CSHADE_NORMALIZE
 
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
@@ -91,7 +91,7 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
 }
 
-technique CShade_ContrastNormalization < ui_tooltip = "Local normalization algorithms"; >
+technique CShade_Normalize < ui_tooltip = "Local normalization algorithms"; >
 {
     pass
     {

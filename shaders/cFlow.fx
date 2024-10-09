@@ -1,4 +1,4 @@
-#define CSHADE_OPTICALFLOW
+#define CSHADE_FLOW
 
 /*
     MIT License
@@ -31,23 +31,6 @@
 /*
     [Shader Options]
 */
-
-uniform float _MipBias <
-    ui_label = "Mipmap Bias";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 7.0;
-> = 0.0;
-
-uniform float _BlendFactor <
-    ui_label = "Temporal Blending Factor";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 0.9;
-> = 0.45;
-
-#include "shared/cShadeHDR.fxh"
-
 #ifndef RENDER_VELOCITY_STREAMS
     #define RENDER_VELOCITY_STREAMS 1
 #endif
@@ -66,7 +49,24 @@ uniform float _BlendFactor <
     #define SPACE_X (BUFFER_WIDTH / LINES_X)
     #define SPACE_Y (BUFFER_HEIGHT / LINES_Y)
     #define VELOCITY_SCALE (SPACE_X + SPACE_Y) * 1
-#else
+#endif
+
+uniform float _MipBias <
+    ui_label = "Mipmap Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 0.0;
+
+uniform float _BlendFactor <
+    ui_label = "Temporal Blending Factor";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 0.9;
+> = 0.45;
+
+#include "shared/cShadeHDR.fxh"
+#if !RENDER_VELOCITY_STREAMS
     #include "shared/cBlend.fxh"
 #endif
 
@@ -239,7 +239,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_OpticalFlow < ui_tooltip = "Lucas-Kanade optical flow"; >
+technique CShade_Flow < ui_tooltip = "Lucas-Kanade optical flow"; >
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)

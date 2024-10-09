@@ -1,4 +1,4 @@
-#define CSHADE_CIRCLES
+#define CSHADE_DOTS
 
 #include "shared/cMacros.fxh"
 #include "shared/cColor.fxh"
@@ -356,7 +356,7 @@ float GetTileCircleLength(Tile Input)
     }
 #endif
 
-technique CShade_Circles < ui_tooltip = "Creates circles based on image features"; >
+technique CShade_Dots < ui_tooltip = "Creates circles based on image features"; >
 {
     pass
     {

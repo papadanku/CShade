@@ -35,6 +35,16 @@
     [Shader Options]
 */
 
+#ifndef LINEAR_SAMPLING
+    #define LINEAR_SAMPLING 0
+#endif
+
+#if LINEAR_SAMPLING == 1
+    #define FILTERING LINEAR
+#else
+    #define FILTERING POINT
+#endif
+
 uniform float _Time < source = "timer"; >;
 
 uniform float _MipBias <
@@ -95,16 +105,6 @@ uniform float _Diffusion <
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
-
-#ifndef LINEAR_SAMPLING
-    #define LINEAR_SAMPLING 0
-#endif
-
-#if LINEAR_SAMPLING == 1
-    #define FILTERING LINEAR
-#else
-    #define FILTERING POINT
-#endif
 
 /*
     [Textures and samplers]

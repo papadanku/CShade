@@ -6,6 +6,16 @@
 
 #include "shared/cMath.fxh"
 
+#ifndef BACKBUFFER_ADDRESSU
+    #define BACKBUFFER_ADDRESSU CLAMP
+#endif
+#ifndef BACKBUFFER_ADDRESSV
+    #define BACKBUFFER_ADDRESSV CLAMP
+#endif
+#ifndef BACKBUFFER_ADDRESSW
+    #define BACKBUFFER_ADDRESSW CLAMP
+#endif
+
 uniform float _Angle <
     ui_label = "Rotation Angle";
     ui_type = "drag";
@@ -20,16 +30,6 @@ uniform float2 _Scale <
     ui_label = "Scaling";
     ui_type = "drag";
 > = 1.0;
-
-#ifndef BACKBUFFER_ADDRESSU
-    #define BACKBUFFER_ADDRESSU CLAMP
-#endif
-#ifndef BACKBUFFER_ADDRESSV
-    #define BACKBUFFER_ADDRESSV CLAMP
-#endif
-#ifndef BACKBUFFER_ADDRESSW
-    #define BACKBUFFER_ADDRESSW CLAMP
-#endif
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
