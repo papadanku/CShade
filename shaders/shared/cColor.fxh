@@ -331,14 +331,14 @@
         https://www.arri.com/en/learn-help/learn-help-camera-system/image-science/log-c
     */
 
-    struct CCamera_LogC_Constants
+    struct CColor_LogC_Constants
     {
         float A, B, C, S, T;
     };
 
-    CCamera_LogC_Constants CCamera_GetLogC_Constants()
+    CColor_LogC_Constants CColor_GetLogC_Constants()
     {
-        CCamera_LogC_Constants Output;
+        CColor_LogC_Constants Output;
         const float A = (exp2(18.0) - 16.0) / 117.45;
         const float B = (1023.0 - 95.0) / 1023.0;
         const float C = 95.0 / 1023.0;
@@ -353,18 +353,18 @@
     }
 
     // LogC4 Curve Encoding Function
-    float3 CCamera_EncodeLogC(float3 Color)
+    float3 CColor_EncodeLogC(float3 Color)
     {
-        CCamera_LogC_Constants LogC = CCamera_GetLogC_Constants();
+        CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
         float3 A = (Color - LogC.T) / LogC.S;
         float3 B = (log2(LogC.A * Color + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
         return lerp(B, A, Color < LogC.T);
     }
 
     // LogC4 Curve Decoding Function
-    float3 CCamera_DecodeLogC(float3 Color)
+    float3 CColor_DecodeLogC(float3 Color)
     {
-        CCamera_LogC_Constants LogC = CCamera_GetLogC_Constants();
+        CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
         float3 A = Color * LogC.S + LogC.T;
         float3 P = 14.0 * (Color - LogC.C) / LogC.B + 6.0;
         float3 B = (exp2(P) - 64.0) / LogC.A;
