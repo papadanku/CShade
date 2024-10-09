@@ -384,7 +384,7 @@ void ApplyColorGrading(inout float3 Color)
     // Convert user-friendly uniform settings
     float PostExposure = exp2(_GradePostExposure);
     float Contrast = (_GradeContrast / 100.0) + 1.0;
-    float HueShift = _GradeHueShift / 360.0;
+    float HueShift = (_GradeHueShift / 360.0) * CMath_GetPi();
     float Saturation = (_GradeSaturation / 100.0) + 1.0;
 
     // Apply post exposure
@@ -395,13 +395,17 @@ void ApplyColorGrading(inout float3 Color)
     Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
     Color = CCamera_DecodeLogC(Color);
 
-    // Apply hue shifting
-    Color = CColor_GetHSVfromRGB(Color);
-    Color.x += HueShift;
-    Color = CColor_GetRGBfromHSV(Color);
-
     // Apply color filter
     Color *= _GradeColorFilter;
+
+    // Apply hue shifting
+    Color = CColor_GetOKLCHfromRGB(Color);
+    Color.z += HueShift;
+    Color = CColor_GetRGBfromOKLCH(Color);
+
+    // Apply saturation
+    float Luminance = CColor_GetLuma(Color, 3);
+    Color = lerp(Luminance, Color, Saturation);
 
     Color = max(Color, 0.0);
 }
