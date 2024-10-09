@@ -47,43 +47,6 @@
     }
 
     /*
-        https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/
-        ---
-        YCoCg-R: A Color Space with RGB Reversibility and Low Dynamic Range
-        Henrique S. Malvar, Gary Sullivan
-        MSR-TR-2003-103 | July 2003
-        ---
-        Technical contribution to the H.264 Video Coding Standard. Joint Video Team (JVT) of ISO/IEC MPEG & ITU-T VCEG (ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q.6) Document JVT-I014r3.
-    */
-
-    float2 CColor_GetCoCg(float3 Color)
-    {
-        float2 CoCg = 0.0;
-        float2x3 MatCoCg = float2x3
-        (
-            float3(1.0, 0.0, -1.0),
-            float3(-0.5, 1.0, -0.5)
-        );
-
-        CoCg.x = dot(Color, MatCoCg[0]);
-        CoCg.y = dot(Color, MatCoCg[1]);
-
-        return (CoCg * 0.5) + 0.5;
-    }
-
-    /*
-        RGB to CrCb
-        ---
-        https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html
-    */
-
-    float2 CColor_GetCrCb(float3 Color)
-    {
-        float Y = dot(Color, float3(0.299, 0.587, 0.114));
-        return ((Color.br - Y) * float2(0.564, 0.713)) + 0.5;
-    }
-
-    /*
         Color-space conversion
         ---
         https://github.com/colour-science/colour
@@ -100,6 +63,31 @@
 
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
+
+    float3 CColor_GetYCOCGfromRGB(float3 RGB, bool Normalize)
+    {
+        float3x3 M = float3x3
+        (
+            1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0,
+            1.0 / 2.0, 0.0, -1.0 / 2.0,
+            -1.0 / 4.0, 1.0 / 2.0, -1.0 / 4.0
+        );
+
+        RGB = (Normalize) ? mul(M, RGB) + 0.5 : mul(M, RGB);
+        return RGB;
+    }
+
+    float3 CColor_GetRGBfromYCOCG(float3 YCoCg)
+    {
+        float3x3 M = float3x3
+        (
+            1.0, 1.0, -1.0,
+            1.0, 0.0, 1.0,
+            1.0, -1.0, -1.0
+        );
+
+        return mul(M, YCoCg);
+    }
 
     float3 CColor_GetHSVfromRGB(float3 Color)
     {
@@ -298,12 +286,14 @@
         return LMS;
     }
 
-    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab)
+    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab, bool Normalize)
     {
+        const float Pi2 = CMath_GetPi() * 2.0;
         float3 OKLch = 0.0;
         OKLch.x = OKLab.x;
         OKLch.y = length(OKLab.yz);
         OKLch.z = atan2(OKLab.z, OKLab.y);
+        OKLch.z = (Normalize) ? OKLch.z / Pi2 : OKLch.z;
         return OKLch;
     }
 
@@ -316,9 +306,9 @@
         return OKLab;
     }
 
-    float3 CColor_GetOKLCHfromRGB(float3 Color)
+    float3 CColor_GetOKLCHfromRGB(float3 Color, bool Normalize)
     {
-        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color));
+        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color), Normalize);
     }
 
     float3 CColor_GetRGBfromOKLCH(float3 OKLch)

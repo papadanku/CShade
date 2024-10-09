@@ -395,17 +395,22 @@ void ApplyColorGrading(inout float3 Color)
     Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
     Color = CColor_DecodeLogC(Color);
 
+    Color = max(Color, 0.0);
+
     // Apply color filter
     Color *= _GradeColorFilter;
 
-    // Apply hue shifting
-    Color = CColor_GetOKLCHfromRGB(Color);
+    // Convert RGB to OKLch
+    Color = CColor_GetOKLCHfromRGB(Color, false);
+
+    // Apply hue shift
     Color.z += HueShift;
-    Color = CColor_GetRGBfromOKLCH(Color);
 
     // Apply saturation
-    float Luminance = CColor_GetLuma(Color, 3);
-    Color = lerp(Luminance, Color, Saturation);
+    Color.y *= Saturation;
+
+    // Convert OKLch to RGB
+    Color = CColor_GetRGBfromOKLCH(Color);
 
     Color = max(Color, 0.0);
 }
