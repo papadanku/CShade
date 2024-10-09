@@ -391,9 +391,9 @@ void ApplyColorGrading(inout float3 Color)
     Color *= PostExposure;
 
     // Apply contrast
-    Color = CCamera_EncodeLogC(Color);
+    Color = CColor_EncodeLogC(Color);
     Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
-    Color = CCamera_DecodeLogC(Color);
+    Color = CColor_DecodeLogC(Color);
 
     // Apply color filter
     Color *= _GradeColorFilter;
