@@ -9,7 +9,7 @@
 uniform int _Select <
     ui_label = "Chromaticity Method";
     ui_type = "combo";
-    ui_items = "Length (XY)\0Length (XYZ)\0Average (XY)\0Average (XYZ)\0Sum (XY)\0Sum (XYZ)\0Max (XY)\0Max (XYZ)\0Ratio (XY)\0Spherical (XY)\0Hue-Saturation (HSI)\0Hue-Saturation (HSL)\0Hue-Saturation (HSV)\0CoCg (XY)\0CrCb (XY)\0";
+    ui_items = "Length (XY)\0Length (XYZ)\0Average (XY)\0Average (XYZ)\0Sum (XY)\0Sum (XYZ)\0Max (XY)\0Max (XYZ)\0Ratio (XY)\0Spherical (XY)\0Hue-Saturation (HSI)\0Hue-Saturation (HSL)\0Hue-Saturation (HSV)\0YCoCg (XY)\0OKLab (AB)\0OKLch (CH)\0";
 > = 0;
 
 #include "shared/cShadeHDR.fxh"
@@ -67,10 +67,13 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = CColor_GetHSVfromRGB(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = CColor_GetCoCg(Gamma);
+            Chromaticity.rg = CColor_GetYCOCGfromRGB(Gamma, true).yz;
             break;
-        case 14: // CrCb (XY)
-            Chromaticity.rg = CColor_GetCrCb(Gamma);
+        case 14: // OKLab (AB)
+            Chromaticity.rg = CColor_GetOKLABfromRGB(Color).yz;
+            break;
+        case 15: // OKLch (CH)
+            Chromaticity.rg = CColor_GetOKLCHfromRGB(Color, true).yz;
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;
