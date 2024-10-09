@@ -196,11 +196,14 @@ uniform float _GradeSaturation <
         float2 SpotMeterTex = (Tex * 2.0) - 1.0;
 
         // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
-        #if !ENABLE_BLOOM && (BUFFER_WIDTH > BUFFER_HEIGHT)
-            SpotMeterTex.x /= ASPECT_RATIO;
-        #else
-            SpotMeterTex.y /= ASPECT_RATIO;
+        #if !ENABLE_BLOOM
+            #if BUFFER_WIDTH > BUFFER_HEIGHT
+                SpotMeterTex.x /= ASPECT_RATIO;
+            #else
+                SpotMeterTex.y /= ASPECT_RATIO;
+            #endif
         #endif
+
         SpotMeterTex *= _ExposureScale;
         SpotMeterTex += float2(_ExposureOffset.x, -_ExposureOffset.y);
         SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
@@ -216,12 +219,12 @@ uniform float _GradeSaturation <
                 Height conversion | [0, 1] -> [-N, N]
         */
         float2 OverlayPos = UnormTex;
-        OverlayPos += float2(-_ExposureOffset.x, _ExposureOffset.y);
+        OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
         OverlayPos /= _ExposureScale;
 
         // Shrink the UV so [-1, 1] fills a square
         #if !ENABLE_BLOOM
-            #if (BUFFER_WIDTH > BUFFER_HEIGHT)
+            #if BUFFER_WIDTH > BUFFER_HEIGHT
                 OverlayPos.x *= ASPECT_RATIO;
             #else
                 OverlayPos.y *= ASPECT_RATIO;
@@ -229,7 +232,7 @@ uniform float _GradeSaturation <
         #endif
 
         // Create the needed mask; output 1 if the texcoord is within square range
-        float Factor = 1.0 * _ExposureScale;
+        float Factor = 2.0 * _ExposureScale;
         float SquareMask = all(abs(OverlayPos) <= Factor);
 
         float2 DotPos = UnormTex;
@@ -284,7 +287,8 @@ uniform float _GradeSaturation <
         #if ENABLE_BLOOM
             float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
         #else
-            float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+            float2 Tex = (_ExposureMeter == 1) ? GetSpotMeterTex(Input.Tex0) : Input.Tex0;
+            float3 Color = CShade_BackBuffer2D(Tex).rgb;
             float LogLuminance = CCamera_GetLogLuminance(Color);
         #endif
 
@@ -496,6 +500,19 @@ technique CShade_RaySchism < ui_tooltip = "CShade's Color Multi-tool."; >
         CREATE_PASS(CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
         CREATE_PASS(CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
         CREATE_PASS(CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
+    #elif ENABLE_AUTOEXPOSURE
+        pass CCamera_CreateExposureTex
+        {
+            ClearRenderTargets = FALSE;
+            BlendEnable = TRUE;
+            BlendOp = ADD;
+            SrcBlend = SRCALPHA;
+            DestBlend = INVSRCALPHA;
+
+            VertexShader = CShade_VS_Quad;
+            PixelShader = PS_GetExposure;
+            RenderTarget0 = ExposureTex;
+        }
     #endif
 
     pass Composition
@@ -512,7 +529,7 @@ technique CShade_RaySchism < ui_tooltip = "CShade's Color Multi-tool."; >
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
         We store the coarsest level here to synchronize the auto-exposure Luma texture in the PS_Prefilter and PS_Composite passes.
     */
-    #if ENABLE_AUTOEXPOSURE
+    #if ENABLE_BLOOM && ENABLE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
         {
             ClearRenderTargets = FALSE;
