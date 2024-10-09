@@ -19,13 +19,13 @@
 
 // Bloom-specific settings
 #if ENABLE_BLOOM
-    uniform int _RenderMode <
+    uniform int _BloomRenderMode <
         ui_label = "Bloom";
         ui_type = "combo";
         ui_items = "Base + Bloom\0Bloom\0";
     > = 0;
 
-    uniform float _Threshold <
+    uniform float _BloomThreshold <
         ui_category = "Bloom";
         ui_label = "Threshold";
         ui_type = "slider";
@@ -33,7 +33,7 @@
         ui_max = 1.0;
     > = 0.8;
 
-    uniform float _Smooth <
+    uniform float _BloomSmoothing <
         ui_category = "Bloom";
         ui_label = "Smoothing";
         ui_type = "slider";
@@ -41,7 +41,7 @@
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float _Intensity <
+    uniform float _BloomIntensity <
         ui_category = "Bloom";
         ui_label = "Intensity";
         ui_type = "slider";
@@ -50,7 +50,7 @@
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float3 _ColorShift <
+    uniform float3 _BloomColorShift <
         ui_category = "Bloom";
         ui_label = "Color Shift (RGB)";
         ui_type = "color";
@@ -63,37 +63,37 @@
 #if ENABLE_AUTOEXPOSURE
     uniform float _Frametime < source = "frametime"; >;
 
-    uniform int _Meter <
-        ui_category = "Auto-Exposure";
+    uniform int _ExposureMeter <
+        ui_category = "Exposure";
         ui_label = "Method";
         ui_type = "combo";
         ui_items = "Average\0Spot\0";
     > = 0;
 
-    uniform float _Scale <
-        ui_category = "Auto-Exposure";
+    uniform float _ExposureScale <
+        ui_category = "Exposure";
         ui_label = "Spot Scale";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float2 _Offset <
-        ui_category = "Auto-Exposure";
+    uniform float2 _ExposureOffset <
+        ui_category = "Exposure";
         ui_label = "Spot Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
     > = 0.0;
 
-    uniform bool _DisplayAverageLumaOverlay <
-        ui_category = "Auto-Exposure";
+    uniform bool _ExposureLumaOverlay <
+        ui_category = "Exposure";
         ui_label = "Display Average Luminance";
         ui_type = "radio";
     > = false;
 
-    uniform bool _DisplaySpotMeterOverlay <
-        ui_category = "Auto-Exposure";
+    uniform bool _ExposureSpotMeterOverlay <
+        ui_category = "Exposure";
         ui_label = "Display Spot Metering";
         ui_type = "radio";
     > = false;
@@ -163,8 +163,8 @@
         #else
             SpotMeterTex.y /= ASPECT_RATIO;
         #endif
-        SpotMeterTex *= _Scale;
-        SpotMeterTex += float2(_Offset.x, -_Offset.y);
+        SpotMeterTex *= _ExposureScale;
+        SpotMeterTex += float2(_ExposureOffset.x, -_ExposureOffset.y);
         SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
 
         return SpotMeterTex;
@@ -178,8 +178,8 @@
                 Height conversion | [0, 1] -> [-N, N]
         */
         float2 OverlayPos = UnormTex;
-        OverlayPos -= float2(_Offset.x, -_Offset.y);
-        OverlayPos /= _Scale;
+        OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
+        OverlayPos /= _ExposureScale;
 
         // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
@@ -189,7 +189,7 @@
         #endif
 
         // Create the needed mask; output 1 if the texcoord is within square range
-        float Factor = 1.0 * _Scale;
+        float Factor = 1.0 * _ExposureScale;
         float SquareMask = all(abs(OverlayPos) <= Factor);
         float DotMask = CProcedural_GetAntiAliasShape(length(OverlayPos), Factor * 0.1);
 
@@ -250,7 +250,7 @@
         // Apply auto-exposure to the backbuffer
         #if ENABLE_AUTOEXPOSURE
             // Store log luminance in the alpha channel
-            if (_Meter == 1)
+            if (_ExposureMeter == 1)
             {
                 float3 ColorArea = CShade_BackBuffer2D(GetSpotMeterTex(Input.Tex0)).rgb;
                 Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
@@ -267,8 +267,8 @@
         #endif
 
         // Thresholding phase
-        const float Knee = mad(_Threshold, _Smooth, 1e-5);
-        const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
+        const float Knee = mad(_BloomThreshold, _BloomSmoothing, 1e-5);
+        const float3 Curve = float3(_BloomThreshold - Knee, Knee * 2.0, 0.25 / Knee);
 
         // Under-threshold
         float Brightness = CColor_GetLuma(Color.rgb, 3);
@@ -276,9 +276,9 @@
         ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 
         // Combine and apply the brightness response curve
-        Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
+        Color = Color * max(ResponseCurve, Brightness - _BloomThreshold) / max(Brightness, 1e-10);
 
-        return float4(Color.rgb * _ColorShift, Luminance);
+        return float4(Color.rgb * _BloomColorShift, Luminance);
     }
 
     #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
@@ -325,8 +325,8 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Bloom composition
     #if ENABLE_BLOOM
-        float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb * _Intensity;
-        BaseColor = (_RenderMode == 0) ? BaseColor + BloomColor : BloomColor;
+        float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb * _BloomIntensity;
+        BaseColor = (_BloomRenderMode == 0) ? BaseColor + BloomColor : BloomColor;
     #endif
 
     // Apply tonemapping
@@ -336,17 +336,17 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     #if ENABLE_AUTOEXPOSURE
         float2 UnormTex = (Input.Tex0 * 2.0) - 1.0;
 
-        if (_DisplaySpotMeterOverlay)
+        if (_ExposureSpotMeterOverlay)
         {
             ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
         }
 
-        if (_DisplayAverageLumaOverlay)
+        if (_ExposureLumaOverlay)
         {
             ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
         }
     #endif
-
+    BaseColor = saturate(BaseColor);
     return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));
 }
 
@@ -362,7 +362,6 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         PixelShader = PIXEL_SHADER; \
         RenderTarget0 = RENDER_TARGET; \
     }
-
 
 technique CShade_RaySchism < ui_tooltip = "CShade's Color Multi-tool."; >
 {

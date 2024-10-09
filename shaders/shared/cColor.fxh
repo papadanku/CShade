@@ -122,6 +122,28 @@
         return Output;
     }
 
+    float3 CColor_GetRGBfromHSV(float3 HSV)
+    {
+        float H = HSV.x * 6.0;
+        float S = HSV.y;
+        float V = HSV.z;
+
+        float I = floor(H);
+        float J = V * (1.0 - S);
+        float K = V * (1.0 - S * (H - I));
+        float L = V * (1.0 - S * (1.0 - (H - I)));
+        float4 P = float4(V, J, K, L);
+
+        float3 O = 0.0;
+        O = (I < 6) ? P.xyz : O;
+        O = (I < 5) ? P.wyx : O;
+        O = (I < 4) ? P.yzx : O;
+        O = (I < 3) ? P.yxw : O;
+        O = (I < 2) ? P.zxy : O;
+        O = (I < 1) ? P.xwy : O;
+        return O;
+    }
+
     float3 CColor_GetHSLfromRGB(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
@@ -232,12 +254,11 @@
         LMS.g = dot(Color, float3(0.2119034982, 0.6806995451, 0.1073969566));
         LMS.b = dot(Color, float3(0.0883024619, 0.2817188376, 0.6299787005));
         LMS = pow(LMS, 1.0 / 3.0);
-        LMS = dot(Color, float3(0.2104542553, 0.7936177850, -0.0040720468));
-        LMS = dot(Color, float3(1.9779984951, -2.4285922050, 0.4505937099));
-        LMS = dot(Color, float3(0.0259040371, 0.7827717662, -0.8086757660));
+        LMS.r = dot(LMS, float3(0.2104542553, 0.7936177850, -0.0040720468));
+        LMS.g = dot(LMS, float3(1.9779984951, -2.4285922050, 0.4505937099));
+        LMS.b = dot(LMS, float3(0.0259040371, 0.7827717662, -0.8086757660));
         return LMS;
     }
-
     float3 CColor_GetOKLchFromOKLab(float3 Color)
     {
         float Pi2 = CMath_GetPi() * 2.0;
@@ -251,5 +272,50 @@
     float3 CColor_GetOKLchFromRGB(float3 Color)
     {
         return CColor_GetOKLchFromOKLab(CColor_GetOKLabFromRGB(Color));
+    }
+
+    /*
+        LogC conversion
+        https://www.arri.com/en/learn-help/learn-help-camera-system/image-science/log-c
+    */
+
+    struct CCamera_LogC_Constants
+    {
+        float A, B, C, S, T;
+    };
+
+    CCamera_LogC_Constants CCamera_GetLogC_Constants()
+    {
+        CCamera_LogC_Constants Output;
+        const float A = (exp2(18.0) - 16.0) / 117.45;
+        const float B = (1023.0 - 95.0) / 1023.0;
+        const float C = 95.0 / 1023.0;
+        const float S = (7.0 * log(2.0) * exp2(7.0 - 14.0 * C / B)) / (A * B);
+        const float T = (exp2(14.0 * (-C / B) + 6.0) - 64.0) / A;
+        Output.A = A;
+        Output.B = B;
+        Output.C = C;
+        Output.S = S;
+        Output.T = T;
+    }
+
+    // LogC4 Curve Encoding Function
+    float3 CCamera_EncodeLogC(float3 Color)
+    {
+        CCamera_LogC_Constants LogC = CCamera_GetLogC_Constants();
+        float3 A = (Color - LogC.T) / LogC.S;
+        float3 B = (log2(LogC.A * Color + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
+        return lerp(B, A, Color < LogC.T);
+    }
+
+    // LogC4 Curve Decoding Function
+    float3 CCamera_DecodeLogC(float3 Color)
+    {
+        CCamera_LogC_Constants LogC = CCamera_GetLogC_Constants();
+        float3 A = Color * LogC.S + LogC.T;
+        float3 P = 14.0 * (Color - LogC.C) / LogC.B + 6.0;
+        float3 B = (exp2(P) - 64.0) / LogC.A;
+
+        return lerp(B, A, Color < 0.0);
     }
 #endif
