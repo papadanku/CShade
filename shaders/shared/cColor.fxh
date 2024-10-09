@@ -105,19 +105,23 @@
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
-        float DeltaRGB = MaxRGB - MinRGB;
 
-        // Calculate hue
-        float3 Hue = (Color.gbr - Color.brg) / DeltaRGB;
-        Hue = (Hue * (60.0 / 360.0)) + (float3(0.0, 120.0, 240.0) / 360.0);
-        float OutputHue = 0.0;
-        OutputHue = (MaxRGB == Color.r) ? Hue.r : OutputHue;
-        OutputHue = (MaxRGB == Color.g) ? Hue.g : OutputHue;
-        OutputHue = (MaxRGB == Color.b) ? Hue.b : OutputHue;
+        // Calculate Value (V)
+        float Delta = MaxRGB - MinRGB;
+
+        // Calculate Hue (H)
+        float3 DeltaRGB = (((MaxRGB - Color.rgb) / 6.0) + (Delta / 2.0)) / Delta;
+        float Hue = DeltaRGB.b - DeltaRGB.g;
+        Hue = (MaxRGB == Color.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
+        Hue = (MaxRGB == Color.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
+        Hue = (Hue < 0.0) ? Hue + 1.0 : (Hue > 1.0) ? Hue - 1.0 : Hue;
+
+        // Calcuate Saturation (S)
+        float Saturation = Delta / MaxRGB;
 
         float3 Output = 0.0;
-        Output.x = (DeltaRGB == 0.0) ? 0.0 : OutputHue;
-        Output.y = (DeltaRGB == 0.0) ? 0.0 : DeltaRGB / MaxRGB;
+        Output.x = Hue;
+        Output.y = Saturation;
         Output.z = MaxRGB;
         return Output;
     }
@@ -134,13 +138,12 @@
         float L = V * (1.0 - S * (1.0 - (H - I)));
         float4 P = float4(V, J, K, L);
 
-        float3 O = 0.0;
-        O = (I < 6) ? P.xyz : O;
-        O = (I < 5) ? P.wyx : O;
-        O = (I < 4) ? P.yzx : O;
-        O = (I < 3) ? P.yxw : O;
-        O = (I < 2) ? P.zxy : O;
-        O = (I < 1) ? P.xwy : O;
+        float3 O = P.xwy;
+        O = (I >= 1) ? P.zxy : O;
+        O = (I >= 2) ? P.yxw : O;
+        O = (I >= 3) ? P.yzx : O;
+        O = (I >= 4) ? P.wyx : O;
+        O = (I >= 5) ? P.xyz : O;
         return O;
     }
 
@@ -148,23 +151,25 @@
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
-        float AddRGB = MaxRGB + MinRGB;
-        float DeltaRGB = MaxRGB - MinRGB;
+        float DeltaAdd = MaxRGB + MinRGB;
+        float DeltaSub = MaxRGB - MinRGB;
 
-        float Lightness = AddRGB / 2.0;
-        float Saturation = (Lightness < 0.5) ?  DeltaRGB / AddRGB : DeltaRGB / (2.0 - AddRGB);
+        // Calculate Lightnes (L)
+        float Lightness = DeltaAdd / 2.0;
 
-        // Calculate hue
-        float3 Hue = (Color.gbr - Color.brg) / DeltaRGB;
-        Hue = (Hue * (60.0 / 360.0)) + (float3(0.0, 120.0, 240.0) / 360.0);
-        float OutputHue = 0.0;
-        OutputHue = (MaxRGB == Color.r) ? Hue.r : OutputHue;
-        OutputHue = (MaxRGB == Color.g) ? Hue.g : OutputHue;
-        OutputHue = (MaxRGB == Color.b) ? Hue.b : OutputHue;
+        // Calclate Saturation (S)
+        float Saturation = (Lightness < 0.5) ?  DeltaSub / DeltaAdd : DeltaSub / (2.0 - DeltaSub);
+
+        // Calculate Hue (H)
+        float3 DeltaRGB = (((MaxRGB - Color.rgb) / 6.0) + (DeltaSub / 2.0)) / DeltaSub;
+        float Hue = DeltaRGB.b - DeltaRGB.g;
+        Hue = (MaxRGB == Color.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
+        Hue = (MaxRGB == Color.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
+        Hue = (Hue < 0.0) ? Hue + 1.0 : (Hue > 1.0) ? Hue - 1.0 : Hue;
 
         float3 Output = 0.0;
-        Output.x = (DeltaRGB == 0.0) ? 0.0 : OutputHue;
-        Output.y = (DeltaRGB == 0.0) ? 0.0 : Saturation;
+        Output.x = (DeltaAdd == 0.0) ? 0.0 : Hue;
+        Output.y = (DeltaAdd == 0.0) ? 0.0 : Saturation;
         Output.z = Lightness;
         return Output;
     }
@@ -241,24 +246,58 @@
     /*
         Copyright (c) 2020 Björn Ottosson
 
+        https://bottosson.github.io/posts/oklab/
+
         Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
         The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
+
     float3 CColor_GetOKLabFromRGB(float3 Color)
     {
-        float3 LMS = 0.0;
-        LMS.r = dot(Color, float3(0.4122214708, 0.5363325363, 0.0514459929));
-        LMS.g = dot(Color, float3(0.2119034982, 0.6806995451, 0.1073969566));
-        LMS.b = dot(Color, float3(0.0883024619, 0.2817188376, 0.6299787005));
+        float3 M1[3] =
+        {
+            float3(+0.4122214708, +0.2119034982, +0.0883024619),
+            float3(+0.5363325363, +0.6806995451, +0.2817188376),
+            float3(+0.0514459929, +0.1073969566, +0.6299787005)
+        };
+
+        float3 M2[3] =
+        {
+            float3(+0.2104542553, +1.9779984951, +0.0259040371),
+            float3(+0.7936177850, -2.4285922050, +0.7827717662),
+            float3(-0.0040720468, +0.4505937099, -0.8086757660)
+        };
+
+        float3 LMS = M1[0] * Color.rrr + M1[1] * Color.ggg + M1[2] * Color.bbb;
         LMS = pow(LMS, 1.0 / 3.0);
-        LMS.r = dot(LMS, float3(0.2104542553, 0.7936177850, -0.0040720468));
-        LMS.g = dot(LMS, float3(1.9779984951, -2.4285922050, 0.4505937099));
-        LMS.b = dot(LMS, float3(0.0259040371, 0.7827717662, -0.8086757660));
+        LMS = M2[0] * LMS.rrr + M2[1] * LMS.ggg + M2[2] * LMS.bbb;
         return LMS;
     }
+
+    float3 CColor_GetRGBfromOKLab(float3 OKLab)
+    {
+        float3 M1[2] =
+        {
+            float3(+0.3963377774, -0.1055613458, -0.0894841775),
+            float3(+0.2158037573, -0.0638541728, -1.2914855480)
+        };
+
+        float3 M2[3] =
+        {
+            float3(+4.0767416621, -1.2684380046, -0.0041960863),
+            float3(-3.3077115913, +2.6097574011, -0.7034186147),
+            float3(+0.2309699292, -0.3413193965, +1.7076147010)
+        };
+
+        float3 LMS = OKLab.xxx + M1[0] * OKLab.yyy + M1[1] * OKLab.zzz;
+        LMS = LMS * LMS * LMS;
+        LMS = M2[0] * LMS.xxx + M2[1] * LMS.yyy + M2[2] * LMS.zzz;
+        return LMS;
+    }
+
     float3 CColor_GetOKLchFromOKLab(float3 Color)
     {
         float Pi2 = CMath_GetPi() * 2.0;
@@ -297,6 +336,7 @@
         Output.C = C;
         Output.S = S;
         Output.T = T;
+        return Output;
     }
 
     // LogC4 Curve Encoding Function

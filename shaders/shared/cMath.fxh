@@ -47,6 +47,11 @@
         return acos(-1.0);
     }
 
+    float CMath_GetNAN()
+    {
+        return 0.0 / 0.0;
+    }
+
     float2x2 CMath_GetRotationMatrix(float A)
     {
         return float2x2(cos(A), sin(A), -sin(A), cos(A));
