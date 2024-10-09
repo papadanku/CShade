@@ -255,7 +255,7 @@
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
 
-    float3 CColor_GetOKLabFromRGB(float3 Color)
+    float3 CColor_GetOKLABfromRGB(float3 Color)
     {
         float3 M1[3] =
         {
@@ -277,7 +277,7 @@
         return LMS;
     }
 
-    float3 CColor_GetRGBfromOKLab(float3 OKLab)
+    float3 CColor_GetRGBfromOKLAB(float3 OKLab)
     {
         float3 M1[2] =
         {
@@ -298,7 +298,7 @@
         return LMS;
     }
 
-    float3 CColor_GetOKLchFromOKLab(float3 OKLab)
+    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab)
     {
         float3 OKLch = 0.0;
         OKLch.x = OKLab.x;
@@ -307,7 +307,7 @@
         return OKLch;
     }
 
-    float3 CColor_GetOKLabFromOKLch(float3 OKLch)
+    float3 CColor_GetOKLABfromOKLCH(float3 OKLch)
     {
         float3 OKLab = 0.0;
         OKLab.x = OKLch.x;
@@ -316,9 +316,14 @@
         return OKLab;
     }
 
-    float3 CColor_GetOKLchFromRGB(float3 Color)
+    float3 CColor_GetOKLCHfromRGB(float3 Color)
     {
-        return CColor_GetOKLchFromOKLab(CColor_GetOKLabFromRGB(Color));
+        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color));
+    }
+
+    float3 CColor_GetRGBfromOKLCH(float3 OKLch)
+    {
+        return CColor_GetRGBfromOKLAB(CColor_GetOKLABfromOKLCH(OKLch));
     }
 
     /*
