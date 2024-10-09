@@ -99,6 +99,44 @@
     > = false;
 #endif
 
+uniform float _GradePostExposure <
+    ui_category = "Color Grading";
+    ui_label = "Post Exposure";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float _GradeContrast <
+    ui_category = "Color Grading";
+    ui_label = "Contrast";
+    ui_type = "slider";
+    ui_min = -100.0;
+    ui_max = 100.0;
+> = 0.0;
+
+uniform float3 _GradeColorFilter <
+    ui_category = "Color Grading";
+    ui_label = "Color Filter";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
+uniform float _GradeHueShift <
+    ui_category = "Color Grading";
+    ui_label = "Hue Shift";
+    ui_type = "slider";
+    ui_min = -180.0;
+    ui_max = 180.0;
+> = 0.0;
+
+uniform float _GradeSaturation <
+    ui_category = "Color Grading";
+    ui_label = "Saturation";
+    ui_type = "slider";
+    ui_min = -100.0;
+    ui_max = 100.0;
+> = 0.0;
+
 #include "shared/cShadeHDR.fxh"
 #if ENABLE_AUTOEXPOSURE
     #include "shared/cCameraInput.fxh"
@@ -158,7 +196,7 @@
         float2 SpotMeterTex = (Tex * 2.0) - 1.0;
 
         // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
-        #if BUFFER_WIDTH > BUFFER_HEIGHT
+        #if !ENABLE_BLOOM && (BUFFER_WIDTH > BUFFER_HEIGHT)
             SpotMeterTex.x /= ASPECT_RATIO;
         #else
             SpotMeterTex.y /= ASPECT_RATIO;
@@ -178,20 +216,34 @@
                 Height conversion | [0, 1] -> [-N, N]
         */
         float2 OverlayPos = UnormTex;
-        OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
+        OverlayPos += float2(-_ExposureOffset.x, _ExposureOffset.y);
         OverlayPos /= _ExposureScale;
 
         // Shrink the UV so [-1, 1] fills a square
-        #if BUFFER_WIDTH > BUFFER_HEIGHT
-            OverlayPos.x *= ASPECT_RATIO;
-        #else
-            OverlayPos.y *= ASPECT_RATIO;
+        #if !ENABLE_BLOOM
+            #if (BUFFER_WIDTH > BUFFER_HEIGHT)
+                OverlayPos.x *= ASPECT_RATIO;
+            #else
+                OverlayPos.y *= ASPECT_RATIO;
+            #endif
         #endif
 
         // Create the needed mask; output 1 if the texcoord is within square range
         float Factor = 1.0 * _ExposureScale;
         float SquareMask = all(abs(OverlayPos) <= Factor);
-        float DotMask = CProcedural_GetAntiAliasShape(length(OverlayPos), Factor * 0.1);
+
+        float2 DotPos = UnormTex;
+        DotPos += float2(-_ExposureOffset.x, _ExposureOffset.y);
+        DotPos /= _ExposureScale;
+
+       // Shrink the UV so [-1, 1] fills a square
+        #if BUFFER_WIDTH > BUFFER_HEIGHT
+            DotPos.x *= ASPECT_RATIO;
+        #else
+            DotPos.y *= ASPECT_RATIO;
+        #endif
+
+        float DotMask = CProcedural_GetAntiAliasShape(length(DotPos), Factor * 0.1);
 
         // Apply square mask to output
         Color = lerp(Color, NonExposedColor.rgb, SquareMask);
@@ -311,6 +363,49 @@
     CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 #endif
 
+/*
+    Modification of Jasper's color grading tutorial
+    https://catlikecoding.com/unity/tutorials/custom-srp/color-grading/
+
+    MIT No Attribution (MIT-0)
+
+    Copyright 2021 Jasper Flick
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+void ApplyColorGrading(inout float3 Color)
+{
+    // Constants
+    const float ACEScc_MIDGRAY = 0.4135884;
+
+    // Convert user-friendly uniform settings
+    float PostExposure = exp2(_GradePostExposure);
+    float Contrast = (_GradeContrast / 100.0) + 1.0;
+    float HueShift = _GradeHueShift / 360.0;
+    float Saturation = (_GradeSaturation / 100.0) + 1.0;
+
+    // Apply post exposure
+    Color *= PostExposure;
+
+    // Apply contrast
+    Color = CCamera_EncodeLogC(Color);
+    Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
+    Color = CCamera_DecodeLogC(Color);
+
+    // Apply hue shifting
+    Color = CColor_GetHSVfromRGB(Color);
+    Color.x += HueShift;
+    Color = CColor_GetRGBfromHSV(Color);
+
+    // Apply color filter
+    Color *= _GradeColorFilter;
+
+    Color = max(Color, 0.0);
+}
+
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = CShade_BackBuffer2D(Input.Tex0).rgb;
@@ -329,6 +424,8 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         BaseColor = (_BloomRenderMode == 0) ? BaseColor + BloomColor : BloomColor;
     #endif
 
+    ApplyColorGrading(BaseColor);
+
     // Apply tonemapping
     BaseColor = CTonemap_ApplyOutputTonemap(BaseColor);
 
@@ -346,7 +443,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
             ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
         }
     #endif
-    BaseColor = saturate(BaseColor);
+
     return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));
 }
 
