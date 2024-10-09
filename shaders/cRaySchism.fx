@@ -74,7 +74,7 @@
         ui_category = "Exposure";
         ui_label = "Spot Scale";
         ui_type = "slider";
-        ui_min = 0.0;
+        ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.5;
 
@@ -221,6 +221,7 @@ uniform float _GradeSaturation <
         float2 OverlayPos = UnormTex;
         OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
         OverlayPos /= _ExposureScale;
+        float2 DotPos = OverlayPos;
 
         // Shrink the UV so [-1, 1] fills a square
         #if !ENABLE_BLOOM
@@ -232,12 +233,7 @@ uniform float _GradeSaturation <
         #endif
 
         // Create the needed mask; output 1 if the texcoord is within square range
-        float Factor = 2.0 * _ExposureScale;
-        float SquareMask = all(abs(OverlayPos) <= Factor);
-
-        float2 DotPos = UnormTex;
-        DotPos += float2(-_ExposureOffset.x, _ExposureOffset.y);
-        DotPos /= _ExposureScale;
+        float SquareMask = all(abs(OverlayPos) <= 1.0);
 
        // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
@@ -245,8 +241,7 @@ uniform float _GradeSaturation <
         #else
             DotPos.y *= ASPECT_RATIO;
         #endif
-
-        float DotMask = CProcedural_GetAntiAliasShape(length(DotPos), Factor * 0.1);
+        float DotMask = CProcedural_GetAntiAliasShape(length(DotPos), 0.1);
 
         // Apply square mask to output
         Color = lerp(Color, NonExposedColor.rgb, SquareMask);
