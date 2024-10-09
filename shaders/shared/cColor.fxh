@@ -298,14 +298,22 @@
         return LMS;
     }
 
-    float3 CColor_GetOKLchFromOKLab(float3 Color)
+    float3 CColor_GetOKLchFromOKLab(float3 OKLab)
     {
-        float Pi2 = CMath_GetPi() * 2.0;
-        float3 OKlab = 0.0;
-        OKlab.x = Color.x;
-        OKlab.y = length(Color.yz);
-        OKlab.z = atan2(Color.z, Color.y) / Pi2;
-        return OKlab;
+        float3 OKLch = 0.0;
+        OKLch.x = OKLab.x;
+        OKLch.y = length(OKLab.yz);
+        OKLch.z = atan2(OKLab.z, OKLab.y);
+        return OKLch;
+    }
+
+    float3 CColor_GetOKLabFromOKLch(float3 OKLch)
+    {
+        float3 OKLab = 0.0;
+        OKLab.x = OKLch.x;
+        OKLab.y = OKLch.y * cos(OKLch.z);
+        OKLab.z = OKLch.y * sin(OKLch.z);
+        return OKLab;
     }
 
     float3 CColor_GetOKLchFromRGB(float3 Color)
