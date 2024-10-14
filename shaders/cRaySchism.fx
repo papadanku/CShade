@@ -137,6 +137,22 @@ uniform float _GradeSaturation <
     ui_max = 100.0;
 > = 0.0;
 
+uniform float _GradeTemperature <
+    ui_category = "Color Grading";
+    ui_label = "Temperature";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = 0.0;
+
+uniform float _GradeTint <
+    ui_category = "Color Grading";
+    ui_label = "Tint";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
+> = 0.0;
+
 #include "shared/cShadeHDR.fxh"
 #if ENABLE_AUTOEXPOSURE
     #include "shared/cCameraInput.fxh"
@@ -393,7 +409,6 @@ void ApplyColorGrading(inout float3 Color)
     Color = CColor_EncodeLogC(Color);
     Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
     Color = CColor_DecodeLogC(Color);
-
     Color = max(Color, 0.0);
 
     // Apply color filter

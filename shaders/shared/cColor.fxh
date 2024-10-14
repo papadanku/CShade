@@ -243,46 +243,47 @@
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
 
+    static const float3x3 CColor_OKLABfromRGB_M1 = float3x3
+    (
+        float3(0.4122214708, +0.5363325363, +0.0514459929),
+        float3(0.2119034982, +0.6806995451, +0.1073969566),
+        float3(0.0883024619, +0.2817188376, +0.6299787005)
+    );
+
+    static const float3x3 CColor_OKLABfromRGB_M2 = float3x3
+    (
+        float3(0.2104542553, +0.7936177850f, -0.0040720468),
+        float3(1.9779984951, -2.4285922050f, +0.4505937099),
+        float3(0.0259040371, +0.7827717662f, -0.8086757660)
+    );
+
     float3 CColor_GetOKLABfromRGB(float3 Color)
     {
-        float3 M1[3] =
-        {
-            float3(+0.4122214708, +0.2119034982, +0.0883024619),
-            float3(+0.5363325363, +0.6806995451, +0.2817188376),
-            float3(+0.0514459929, +0.1073969566, +0.6299787005)
-        };
-
-        float3 M2[3] =
-        {
-            float3(+0.2104542553, +1.9779984951, +0.0259040371),
-            float3(+0.7936177850, -2.4285922050, +0.7827717662),
-            float3(-0.0040720468, +0.4505937099, -0.8086757660)
-        };
-
-        float3 LMS = M1[0] * Color.rrr + M1[1] * Color.ggg + M1[2] * Color.bbb;
+        float3 LMS = mul(CColor_OKLABfromRGB_M1, Color);
         LMS = pow(LMS, 1.0 / 3.0);
-        LMS = M2[0] * LMS.rrr + M2[1] * LMS.ggg + M2[2] * LMS.bbb;
+        LMS = mul(CColor_OKLABfromRGB_M2, LMS);
         return LMS;
-    }
+    };
+
+    static const float3x2 CColor_RGBfromOKLAB_M1 = float3x2
+    (
+        float2(+0.3963377774, +0.2158037573),
+        float2(-0.1055613458, -0.0638541728),
+        float2(-0.0894841775, -1.2914855480)
+    );
+
+    static const float3x3 CColor_RGBfromOKLAB_M2 = float3x3
+    (
+        float3(+4.0767416621, -3.3077115913, +0.2309699292),
+        float3(-1.2684380046, +2.6097574011, -0.3413193965),
+        float3(-0.0041960863, -0.7034186147, +1.7076147010)
+    );
 
     float3 CColor_GetRGBfromOKLAB(float3 OKLab)
     {
-        float3 M1[2] =
-        {
-            float3(+0.3963377774, -0.1055613458, -0.0894841775),
-            float3(+0.2158037573, -0.0638541728, -1.2914855480)
-        };
-
-        float3 M2[3] =
-        {
-            float3(+4.0767416621, -1.2684380046, -0.0041960863),
-            float3(-3.3077115913, +2.6097574011, -0.7034186147),
-            float3(+0.2309699292, -0.3413193965, +1.7076147010)
-        };
-
-        float3 LMS = OKLab.xxx + M1[0] * OKLab.yyy + M1[1] * OKLab.zzz;
+        float3 LMS = OKLab.xxx + mul(CColor_RGBfromOKLAB_M1, OKLab.yz);
         LMS = LMS * LMS * LMS;
-        LMS = M2[0] * LMS.xxx + M2[1] * LMS.yyy + M2[2] * LMS.zzz;
+        LMS = mul(CColor_RGBfromOKLAB_M2, LMS);
         return LMS;
     }
 
