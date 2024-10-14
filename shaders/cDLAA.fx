@@ -27,6 +27,11 @@ uniform int _ContrastThreshold <
     ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
 > = 1;
 
+uniform bool _PreserveFrequencies <
+    ui_label = "Preserve High Frequencies";
+    ui_type = "radio";
+> = true;
+
 static const float ContrastThresholds[5] =
 {
     1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
@@ -184,14 +189,17 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
 
     // Preserve high frequencies
-    float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
-    float4 R0 = tex2Dlod(SampleTempTex0, float4(RTex.xw, 0.0, 0.0));
-    float4 R1 = tex2Dlod(SampleTempTex0, float4(RTex.zw, 0.0, 0.0));
-    float4 R2 = tex2Dlod(SampleTempTex0, float4(RTex.xy, 0.0, 0.0));
-    float4 R3 = tex2Dlod(SampleTempTex0, float4(RTex.zy, 0.0, 0.0));
+    if (_PreserveFrequencies)
+    {
+        float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
+        float4 R0 = tex2Dlod(SampleTempTex0, float4(RTex.xw, 0.0, 0.0));
+        float4 R1 = tex2Dlod(SampleTempTex0, float4(RTex.zw, 0.0, 0.0));
+        float4 R2 = tex2Dlod(SampleTempTex0, float4(RTex.xy, 0.0, 0.0));
+        float4 R3 = tex2Dlod(SampleTempTex0, float4(RTex.zy, 0.0, 0.0));
 
-    float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + V0 + V4 + H4 + H0) / 25.0;
-    Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
+        float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + V0 + V4 + H4 + H0) / 25.0;
+        Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
+    }
 
     switch (_RenderMode)
     {
