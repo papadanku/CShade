@@ -99,10 +99,26 @@
     > = false;
 #endif
 
-uniform float _GradePostExposure <
+uniform float _GradeLightness <
     ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Post Exposure";
+    ui_label = "Post Lightness Bias";
     ui_type = "drag";
+> = 0.0;
+
+uniform float _GradeHueShift <
+    ui_category = "Color Grading | Color Adjustments";
+    ui_label = "Hue Shift";
+    ui_type = "slider";
+    ui_min = -180.0;
+    ui_max = 180.0;
+> = 0.0;
+
+uniform float _GradeSaturation <
+    ui_category = "Color Grading | Color Adjustments";
+    ui_label = "Saturation";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float _GradeContrast <
@@ -120,22 +136,6 @@ uniform float3 _GradeColorFilter <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 1.0;
-
-uniform float _GradeHueShift <
-    ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Hue Shift";
-    ui_type = "slider";
-    ui_min = -180.0;
-    ui_max = 180.0;
-> = 0.0;
-
-uniform float _GradeSaturation <
-    ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Saturation";
-    ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
-> = 0.0;
 
 uniform float _GradeTemperature <
     ui_category = "Color Grading | White Balance";
@@ -499,11 +499,11 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Apply color-grading
     CColor_ApplyColorGrading(
         BaseColor,
-        _GradePostExposure,
-        _GradeContrast,
-        _GradeColorFilter,
+        _GradeLightness,
         _GradeHueShift,
         _GradeSaturation,
+        _GradeContrast,
+        _GradeColorFilter,
         _GradeTemperature,
         _GradeTint,
         _GradeShadows,
