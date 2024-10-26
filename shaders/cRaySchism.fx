@@ -99,10 +99,26 @@
     > = false;
 #endif
 
-uniform float _GradePostExposure <
+uniform float _GradeLightness <
     ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Post Exposure";
+    ui_label = "Post Lightness Bias";
     ui_type = "drag";
+> = 0.0;
+
+uniform float _GradeHueShift <
+    ui_category = "Color Grading | Color Adjustments";
+    ui_label = "Hue Shift";
+    ui_type = "slider";
+    ui_min = -180.0;
+    ui_max = 180.0;
+> = 0.0;
+
+uniform float _GradeSaturation <
+    ui_category = "Color Grading | Color Adjustments";
+    ui_label = "Saturation";
+    ui_type = "slider";
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float _GradeContrast <
@@ -120,22 +136,6 @@ uniform float3 _GradeColorFilter <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 1.0;
-
-uniform float _GradeHueShift <
-    ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Hue Shift";
-    ui_type = "slider";
-    ui_min = -180.0;
-    ui_max = 180.0;
-> = 0.0;
-
-uniform float _GradeSaturation <
-    ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Saturation";
-    ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
-> = 0.0;
 
 uniform float _GradeTemperature <
     ui_category = "Color Grading | White Balance";
@@ -198,7 +198,7 @@ uniform float3 _GradeMixBlue <
 > = float3(0.0, 0.0, 1.0);
 
 uniform float3 _GradeMidtoneShadowColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadow Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -206,7 +206,7 @@ uniform float3 _GradeMidtoneShadowColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float3 _GradeMidtoneColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Midtone Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -214,7 +214,7 @@ uniform float3 _GradeMidtoneColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float3 _GradeMidtoneHighlightColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlight Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -222,7 +222,7 @@ uniform float3 _GradeMidtoneHighlightColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float _GradeMidtoneShadowStart <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadows Start";
     ui_type = "slider";
     ui_min = 0.0;
@@ -230,7 +230,7 @@ uniform float _GradeMidtoneShadowStart <
 > = 0.0;
 
 uniform float _GradeMidtoneShadowEnd <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadows End";
     ui_type = "slider";
     ui_min = 0.0;
@@ -238,7 +238,7 @@ uniform float _GradeMidtoneShadowEnd <
 > = 0.3;
 
 uniform float _GradeMidtoneHighlightStart <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlights Start";
     ui_type = "slider";
     ui_min = 0.0;
@@ -246,7 +246,7 @@ uniform float _GradeMidtoneHighlightStart <
 > = 0.55;
 
 uniform float _GradeMidtoneHighlightEnd <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlights End";
     ui_type = "slider";
     ui_min = 0.0;
@@ -499,11 +499,11 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Apply color-grading
     CColor_ApplyColorGrading(
         BaseColor,
-        _GradePostExposure,
-        _GradeContrast,
-        _GradeColorFilter,
+        _GradeLightness,
         _GradeHueShift,
         _GradeSaturation,
+        _GradeContrast,
+        _GradeColorFilter,
         _GradeTemperature,
         _GradeTint,
         _GradeShadows,

@@ -523,11 +523,11 @@
 
     void CColor_ApplyColorGrading(
         inout float3 Color,
-        float PostExposure, // [0.0, N); default = 0.0
-        float Contrast, // [-1.0, 1.0); default = 0.0
-        float3 ColorFilter, // [0.0, 1.0); default = 1.0
+        float Lightness, // [0.0, N); default = 0.0
         float HueShift, // [-180.0, 180.0); default = 0.0
         float Saturation, // [-1.0, 1.0); default = 0.0
+        float Contrast, // [-1.0, 1.0); default = 0.0
+        float3 ColorFilter, // [0.0, 1.0); default = 1.0
         float Temperature, // [-1.0, 1.0); default = 0.0
         float Tint, // [-1.0, 1.0); default = 0.0
         float3 Shadows, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
@@ -550,27 +550,17 @@
 
         // Convert user-friendly uniform settings
         float3x3 ChannelMixMat = float3x3(MixRed, MixGreen, MixBlue);
-        PostExposure = exp2(PostExposure);
         Contrast += 1.0;
         HueShift = (HueShift / 360.0) * CMath_GetPi();
         Saturation += 1.0;
         Temperature /= 10.0;
         Tint /= 10.0;
 
-        // Apply post exposure
-        Color *= PostExposure;
-
-        // Apply contrast
-        Color = CColor_EncodeLogC(Color);
-        Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
-        Color = CColor_DecodeLogC(Color);
-        Color = max(Color, 0.0);
-
-        // Apply color filter
-        Color *= ColorFilter;
-
         // Convert RGB to OKLab
         Color = CColor_GetOKLABfromRGB(Color);
+
+        // Apply lightness bias
+        Color.x += Lightness;
 
         // Apply temperature shift
         Color.z += Temperature;
@@ -590,6 +580,13 @@
         // Convert OKLch to RGB
         Color = CColor_GetRGBfromOKLCH(Color);
 
+        // Apply color filter
+        Color *= ColorFilter;
+
+        // Apply contrast
+        Color = CColor_EncodeLogC(Color);
+        Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
+        Color = CColor_DecodeLogC(Color);
         Color = max(Color, 0.0);
 
         // Apply gamma-space split-toning
@@ -616,7 +613,9 @@
 
         float3x3 MidtoneColorMatrix = float3x3
         (
-            MidtoneShadowColor, MidtoneColor, MidtoneHightlightColor
+            MidtoneShadowColor,
+            MidtoneColor,
+            MidtoneHightlightColor
         );
 
         Color *= mul(MidtoneWeights, MidtoneColorMatrix);

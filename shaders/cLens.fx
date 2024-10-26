@@ -39,7 +39,7 @@
 uniform float _Time < source = "timer"; >;
 
 uniform bool _UseTimeSeed <
-    ui_label = "Enable Time-Based Seed";
+    ui_label = "Enable Time Seed";
     ui_type = "radio";
 > = true;
 
