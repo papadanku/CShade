@@ -101,16 +101,8 @@
 
 uniform float _GradeLightness <
     ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Post Lightness Bias";
+    ui_label = "Lightness";
     ui_type = "drag";
-> = 0.0;
-
-uniform float _GradeHueShift <
-    ui_category = "Color Grading | Color Adjustments";
-    ui_label = "Hue Shift";
-    ui_type = "slider";
-    ui_min = -180.0;
-    ui_max = 180.0;
 > = 0.0;
 
 uniform float _GradeSaturation <
@@ -119,6 +111,14 @@ uniform float _GradeSaturation <
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
+> = 0.0;
+
+uniform float _GradeHueShift <
+    ui_category = "Color Grading | Color Adjustments";
+    ui_label = "Hue";
+    ui_type = "slider";
+    ui_min = -180.0;
+    ui_max = 180.0;
 > = 0.0;
 
 uniform float _GradeContrast <
