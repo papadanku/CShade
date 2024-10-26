@@ -393,14 +393,12 @@
         return LMS;
     }
 
-    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab, bool Normalize)
+    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab)
     {
-        const float Pi2 = CMath_GetPi() * 2.0;
         float3 OKLch = 0.0;
         OKLch.x = OKLab.x;
         OKLch.y = length(OKLab.yz);
         OKLch.z = atan2(OKLab.z, OKLab.y);
-        OKLch.z = (Normalize) ? OKLch.z / Pi2 : OKLch.z;
         return OKLch;
     }
 
@@ -413,9 +411,9 @@
         return OKLab;
     }
 
-    float3 CColor_GetOKLCHfromRGB(float3 Color, bool Normalize)
+    float3 CColor_GetOKLCHfromRGB(float3 Color)
     {
-        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color), Normalize);
+        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color));
     }
 
     float3 CColor_GetRGBfromOKLCH(float3 OKLch)
@@ -569,7 +567,7 @@
         Color.y += Tint;
 
         // Convert OKLab to OKLch
-        Color = CColor_GetOKLCHfromOKLAB(Color, false);
+        Color = CColor_GetOKLCHfromOKLAB(Color);
 
         // Apply lightness
         Color.x *= Lightness;
