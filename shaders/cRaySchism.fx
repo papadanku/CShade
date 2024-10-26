@@ -117,8 +117,8 @@ uniform float _GradeHueShift <
     ui_category = "Color Grading | Color Adjustments";
     ui_label = "Hue";
     ui_type = "slider";
-    ui_min = -180.0;
-    ui_max = 180.0;
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float _GradeContrast <

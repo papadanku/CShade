@@ -526,7 +526,7 @@
     void CColor_ApplyColorGrading(
         inout float3 Color,
         float Lightness, // [0.0, N); default = 0.0
-        float HueShift, // [-180.0, 180.0); default = 0.0
+        float HueShift, // [-1.0, 1.0); default = 0.0
         float Saturation, // [-1.0, 1.0); default = 0.0
         float Contrast, // [-1.0, 1.0); default = 0.0
         float3 ColorFilter, // [0.0, 1.0); default = 1.0
@@ -554,7 +554,7 @@
         float3x3 ChannelMixMat = float3x3(MixRed, MixGreen, MixBlue);
         Lightness += 1.0;
         Saturation += 1.0;
-        HueShift = (HueShift / 360.0) * CMath_GetPi();
+        HueShift *= CMath_GetPi();
         Contrast += 1.0;
         Temperature /= 10.0;
         Tint /= 10.0;
