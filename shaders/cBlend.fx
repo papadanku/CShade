@@ -4,10 +4,18 @@
     [Shader Options]
 */
 
-uniform int _Blend <
-    ui_label = "Blend Mode";
+#include "shared/cColor.fxh"
+
+uniform int _ColorBlend <
+    ui_label = "Color Blend Mode";
     ui_type = "combo";
-    ui_items = "Add\0Subtract\0Multiply\0Min\0Max\0Screen\0";
+    ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
+> = 0;
+
+uniform int _AlphaBlend <
+    ui_label = "Alpha Blend Mode";
+    ui_type = "combo";
+    ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
 > = 0;
 
 uniform float3 _SrcFactor <
@@ -44,37 +52,19 @@ float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Src = tex2D(SampleSrcTex, Input.Tex0) * float4(_SrcFactor, 1.0);
-    float4 Dest = tex2D(SampleDestTex, Input.Tex0) * float4(_DestFactor, 1.0);
+    float4 Src = tex2D(SampleSrcTex, Input.Tex0);
+    float4 Dest = tex2D(SampleDestTex, Input.Tex0);
 
-    float4 OutputColor = 0.0;
+    Src.rgb *= _SrcFactor;
+    Dest.rgb *= _DestFactor;
 
-    switch(_Blend)
-    {
-        case 0: // Add
-            OutputColor = Src + Dest;
-            break;
-        case 1: // Subtract
-            OutputColor = Src - Dest;
-            break;
-        case 2: // Multiply
-            OutputColor = Src * Dest;
-            break;
-        case 3: // Min
-            OutputColor = min(Src, Dest);
-            break;
-        case 4: // Max
-            OutputColor = max(Src, Dest);
-            break;
-        case 5: // Screen
-            OutputColor = (Src + Dest) - (Src * Dest);
-            break;
-        default:
-            OutputColor = Dest;
-            break;
-    }
+    float3 SrcAlpha = Src.a;
+    float3 DestAlpha = Dest.a;
 
-    return OutputColor;
+    float3 ColorBlend = CColor_Blend(Dest.rgb, Src.rgb, _ColorBlend);
+    float AlphaBlend = CColor_Blend(DestAlpha, SrcAlpha, _AlphaBlend).r;
+
+    return float4(ColorBlend, AlphaBlend);
 }
 
 technique CShade_CopyBuffer < ui_tooltip = "Create CBlend's copy texture"; >

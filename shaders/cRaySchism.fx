@@ -169,8 +169,8 @@ uniform float _GradeBalance <
     ui_category = "Color Grading | Split Toning";
     ui_label = "Balance";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float3 _GradeMixRed <

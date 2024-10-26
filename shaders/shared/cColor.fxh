@@ -107,6 +107,8 @@
                 return CColor_BlendDifference(B, S);
             case 11: // Exclusion
                 return CColor_BlendExclusion(B, S);
+            default:
+            	return CColor_BlendNormal(B, S);
         }
     }
 
@@ -349,22 +351,22 @@
 
     static const float3x3 CColor_OKLABfromRGB_M1 = float3x3
     (
-        float3(0.4122214708, +0.5363325363, +0.0514459929),
-        float3(0.2119034982, +0.6806995451, +0.1073969566),
-        float3(0.0883024619, +0.2817188376, +0.6299787005)
+        float3(+0.4122214708, +0.5363325363, +0.0514459929),
+        float3(+0.2119034982, +0.6806995451, +0.1073969566),
+        float3(+0.0883024619, +0.2817188376, +0.6299787005)
     );
 
     static const float3x3 CColor_OKLABfromRGB_M2 = float3x3
     (
-        float3(0.2104542553, +0.7936177850f, -0.0040720468),
-        float3(1.9779984951, -2.4285922050f, +0.4505937099),
-        float3(0.0259040371, +0.7827717662f, -0.8086757660)
+        float3(+0.2104542553, +0.7936177850f, -0.0040720468),
+        float3(+1.9779984951, -2.4285922050f, +0.4505937099),
+        float3(+0.0259040371, +0.7827717662f, -0.8086757660)
     );
 
     float3 CColor_GetOKLABfromRGB(float3 Color)
     {
         float3 LMS = mul(CColor_OKLABfromRGB_M1, Color);
-        LMS = pow(LMS, 1.0 / 3.0);
+        LMS = pow(abs(LMS), 1.0 / 3.0);
         LMS = mul(CColor_OKLABfromRGB_M2, LMS);
         return LMS;
     };
@@ -531,8 +533,8 @@
         float Temperature, // [-1.0, 1.0); default = 0.0
         float Tint, // [-1.0, 1.0); default = 0.0
         float3 Shadows, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
-        float3 HighLights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
-        float Balance, // [-100.0, 100.0); default = 0.0
+        float3 Highlights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
+        float Balance, // [-1.0, 1.0); default = 0.0
         float3 MixRed, // [0.0, 1.0); default = float3(1.0, 0.0, 0.0)
         float3 MixGreen, // [0.0, 1.0); default = float3(0.0, 1.0, 0.0)
         float3 MixBlue, // [0.0, 1.0); default = float3(0.0, 0.0, 1.0)
@@ -593,7 +595,7 @@
         Color = pow(abs(Color), 1.0 / 2.2);
         float T = saturate(CColor_GetLuma(Color, 0) + Balance);
         float3 SplitShadows = lerp(0.5, Shadows, 1.0 - T);
-        float3 SplitHighlights = lerp(0.5, HighLights, T);
+        float3 SplitHighlights = lerp(0.5, Highlights, T);
         Color = CColor_BlendSoftLight(Color, SplitShadows);
         Color = CColor_BlendSoftLight(Color, SplitHighlights);
         Color = pow(abs(Color), 2.2);
