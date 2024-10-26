@@ -6,6 +6,110 @@
 
     static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 
+    /*
+        https://printtechnologies.org/standards/files/pdf-reference-1.6-addendum-blend-modes.pdf
+    */
+
+    float3 CColor_BlendNormal(float3 B, float3 S)
+    {
+        return S;
+    }
+
+    float3 CColor_BlendMultiply(float3 B, float3 S)
+    {
+        return B * S;
+    }
+
+    float3 CColor_BlendScreen(float3 B, float3 S)
+    {
+        return B + S - (B * S);
+    }
+
+    float3 CColor_BlendHardLight(float3 B, float3 S)
+    {
+        float3 Blend = (S <= 0.5)
+        ? CColor_BlendMultiply(B, 2.0 * S)
+        : CColor_BlendScreen(B, 2.0 * S - 1.0);
+        return Blend;
+    }
+
+    float3 CColor_BlendOverlay(float3 B, float3 S)
+    {
+        return CColor_BlendHardLight(S, B);
+    }
+
+    float3 CColor_BlendDarken(float3 B, float3 S)
+    {
+        return min(B, S);
+    }
+
+    float3 CColor_BlendLighten(float3 B, float3 S)
+    {
+        return max(B, S);
+    }
+
+    float3 CColor_BlendColorDodge(float3 B, float3 S)
+    {
+        float3 Blend = (S < 1.0) ? min(1.0, B / (1.0 - S)) : 1.0;
+        return Blend;
+    }
+
+    float3 CColor_BlendColorBurn(float3 B, float3 S)
+    {
+        float3 Blend = (S == 0.0) ? 0.0 : 1.0 - min(1.0, (1.0 - B) / S);
+        return Blend;
+    }
+
+    float3 CColor_BlendSoftLight(float3 B, float3 S)
+    {
+        float3 D = (B <= 0.25) ? ((16.0 * B - 12.0) * B + 4.0) * B : sqrt(B);
+        float3 Blend = (S <= 0.5)
+        ? B - (1.0 - 2.0 * S) * B * (1.0 - B)
+        : B + (2.0 * S - 1.0) * (D - B);
+        return Blend;
+    }
+
+    float3 CColor_BlendDifference(float3 B, float3 S)
+    {
+        return abs(B - S);
+    }
+
+    float3 CColor_BlendExclusion(float3 B, float3 S)
+    {
+        return B + S - 2.0 * B * S;
+    }
+
+    float3 CColor_Blend(float3 B, float3 S, int Blend)
+    {
+        switch (Blend)
+        {
+            case 0: // Normal
+                return CColor_BlendNormal(B, S);
+            case 1: // Multiply
+                return CColor_BlendMultiply(B, S);
+            case 2: // Screen
+                return CColor_BlendScreen(B, S);
+            case 3: // Overlay
+                return CColor_BlendOverlay(B, S);
+            case 4: // Darken
+                return CColor_BlendDarken(B, S);
+            case 5: // Lighten
+                return CColor_BlendLighten(B, S);
+            case 6: // Color Dodge
+                return CColor_BlendColorDodge(B, S);
+            case 7: // Color Burn
+                return CColor_BlendColorBurn(B, S);
+            case 8: // Hard Light
+                return CColor_BlendHardLight(B, S);
+            case 9: // Soft Light
+                return CColor_BlendSoftLight(B, S);
+            case 10: // Difference
+                return CColor_BlendDifference(B, S);
+            case 11: // Exclusion
+                return CColor_BlendExclusion(B, S);
+        }
+    }
+
     float3 CColor_GetSumChromaticity(float3 Color, int Method)
     {
         float Sum = 0.0;
@@ -361,5 +465,160 @@
         float3 B = (exp2(P) - 64.0) / LogC.A;
 
         return lerp(B, A, Color < 0.0);
+    }
+
+    /*
+        https://github.com/BradLarson/GPUImage3
+
+        Copyright (c) 2018, Brad Larson and Janie Clayton.
+        All rights reserved.
+
+        Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+        Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+        Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+        Neither the name of the GPUImage framework nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    */
+
+    static const float3x3 CColor_RGBtoYIQ = float3x3
+    (
+        float3(0.299, 0.587, 0.114),
+        float3(0.596, -0.274, -0.322),
+        float3(0.212, -0.523, 0.311)
+    );
+
+    static const float3x3 CColor_YIQtoRGB = float3x3
+    (
+        float3(1.0, 0.956, 0.621),
+        float3(1.0, -0.272, -0.647),
+        float3(1.0, -1.105, 1.702)
+    );
+
+    float3 CColor_GetYIQfromRGB(float3 Color)
+    {
+        return mul(CColor_RGBtoYIQ, Color);
+    }
+
+    float3 CColor_GetRGBfromYIQ(float3 Color)
+    {
+        return mul(CColor_YIQtoRGB, Color);
+    }
+
+    /*
+        Modification of Jasper's color grading tutorial
+        https://catlikecoding.com/unity/tutorials/custom-srp/color-grading/
+
+        MIT No Attribution (MIT-0)
+
+        Copyright 2021 Jasper Flick
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    */
+
+    void CColor_ApplyColorGrading(
+        inout float3 Color,
+        float PostExposure, // [0.0, N); default = 0.0
+        float Contrast, // [-1.0, 1.0); default = 0.0
+        float3 ColorFilter, // [0.0, 1.0); default = 1.0
+        float HueShift, // [-180.0, 180.0); default = 0.0
+        float Saturation, // [-1.0, 1.0); default = 0.0
+        float Temperature, // [-1.0, 1.0); default = 0.0
+        float Tint, // [-1.0, 1.0); default = 0.0
+        float3 Shadows, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
+        float3 HighLights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
+        float Balance, // [-100.0, 100.0); default = 0.0
+        float3 MixRed, // [0.0, 1.0); default = float3(1.0, 0.0, 0.0)
+        float3 MixGreen, // [0.0, 1.0); default = float3(0.0, 1.0, 0.0)
+        float3 MixBlue, // [0.0, 1.0); default = float3(0.0, 0.0, 1.0)
+        float3 MidtoneShadowColor, // [0.0, 1.0); default = float3(1.0, 1.0, 1.0)
+        float3 MidtoneColor, // [0.0, 1.0); default = float3(1.0, 1.0, 1.0)
+        float3 MidtoneHightlightColor, // [0.0, 1.0); default = float3(1.0, 1.0, 1.0)
+        float MidtoneShadowStart, // [0.0, 1.0); default = 0.0
+        float MidtoneShadowEnd, // [0.0, 1.0); default = 0.3
+        float MidtoneHighlightStart, // [0.0, 1.0); default = 0.55
+        float MidtoneHighlightEnd // [0.0, 1.0); default = 1.0
+    )
+    {
+        // Constants
+        const float ACEScc_MIDGRAY = 0.4135884;
+
+        // Convert user-friendly uniform settings
+        float3x3 ChannelMixMat = float3x3(MixRed, MixGreen, MixBlue);
+        PostExposure = exp2(PostExposure);
+        Contrast += 1.0;
+        HueShift = (HueShift / 360.0) * CMath_GetPi();
+        Saturation += 1.0;
+        Temperature /= 10.0;
+        Tint /= 10.0;
+
+        // Apply post exposure
+        Color *= PostExposure;
+
+        // Apply contrast
+        Color = CColor_EncodeLogC(Color);
+        Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
+        Color = CColor_DecodeLogC(Color);
+        Color = max(Color, 0.0);
+
+        // Apply color filter
+        Color *= ColorFilter;
+
+        // Convert RGB to OKLab
+        Color = CColor_GetOKLABfromRGB(Color);
+
+        // Apply temperature shift
+        Color.z += Temperature;
+
+        // Apply tint shift
+        Color.y += Tint;
+
+        // Convert OKLab to OKLch
+        Color = CColor_GetOKLCHfromOKLAB(Color, false);
+
+        // Apply hue shift
+        Color.z += HueShift;
+
+        // Apply saturation
+        Color.y *= Saturation;
+
+        // Convert OKLch to RGB
+        Color = CColor_GetRGBfromOKLCH(Color);
+
+        Color = max(Color, 0.0);
+
+        // Apply gamma-space split-toning
+        Color = pow(abs(Color), 1.0 / 2.2);
+        float T = saturate(CColor_GetLuma(Color, 0) + Balance);
+        float3 SplitShadows = lerp(0.5, Shadows, 1.0 - T);
+        float3 SplitHighlights = lerp(0.5, HighLights, T);
+        Color = CColor_BlendSoftLight(Color, SplitShadows);
+        Color = CColor_BlendSoftLight(Color, SplitHighlights);
+        Color = pow(abs(Color), 2.2);
+
+        // Apply channel mixer
+        Color = mul(ChannelMixMat, Color);
+
+        // Apply midtones
+        float Luminance = CColor_GetLuma(Color, 0);
+        float3 MidtoneWeights = 0.0;
+        // Shadow weight
+        MidtoneWeights[0] = 1.0 - smoothstep(MidtoneShadowStart, MidtoneShadowEnd, Luminance);
+        // Highlights weight
+        MidtoneWeights[1] = smoothstep(MidtoneHighlightStart, MidtoneHighlightEnd, Luminance);
+        // Midtones weight
+        MidtoneWeights[2] = 1.0 - MidtoneWeights[0] - MidtoneWeights[1];
+
+        float3x3 MidtoneColorMatrix = float3x3
+        (
+            MidtoneShadowColor, MidtoneColor, MidtoneHightlightColor
+        );
+
+        Color *= mul(MidtoneWeights, MidtoneColorMatrix);
     }
 #endif
