@@ -107,6 +107,8 @@
                 return CColor_BlendDifference(B, S);
             case 11: // Exclusion
                 return CColor_BlendExclusion(B, S);
+            default:
+            	return CColor_BlendNormal(B, S);
         }
     }
 
@@ -349,22 +351,22 @@
 
     static const float3x3 CColor_OKLABfromRGB_M1 = float3x3
     (
-        float3(0.4122214708, +0.5363325363, +0.0514459929),
-        float3(0.2119034982, +0.6806995451, +0.1073969566),
-        float3(0.0883024619, +0.2817188376, +0.6299787005)
+        float3(+0.4122214708, +0.5363325363, +0.0514459929),
+        float3(+0.2119034982, +0.6806995451, +0.1073969566),
+        float3(+0.0883024619, +0.2817188376, +0.6299787005)
     );
 
     static const float3x3 CColor_OKLABfromRGB_M2 = float3x3
     (
-        float3(0.2104542553, +0.7936177850f, -0.0040720468),
-        float3(1.9779984951, -2.4285922050f, +0.4505937099),
-        float3(0.0259040371, +0.7827717662f, -0.8086757660)
+        float3(+0.2104542553, +0.7936177850f, -0.0040720468),
+        float3(+1.9779984951, -2.4285922050f, +0.4505937099),
+        float3(+0.0259040371, +0.7827717662f, -0.8086757660)
     );
 
     float3 CColor_GetOKLABfromRGB(float3 Color)
     {
         float3 LMS = mul(CColor_OKLABfromRGB_M1, Color);
-        LMS = pow(LMS, 1.0 / 3.0);
+        LMS = pow(abs(LMS), 1.0 / 3.0);
         LMS = mul(CColor_OKLABfromRGB_M2, LMS);
         return LMS;
     };
