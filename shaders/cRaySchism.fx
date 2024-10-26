@@ -48,7 +48,8 @@
         ui_step = 0.001;
         ui_min = 0.0;
         ui_max = 1.0;
-    > = float3(0.5, 0.5, 0.5);
+    > = 0.5;
+
 #endif
 
 // Exposure-specific settings
