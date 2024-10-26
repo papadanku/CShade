@@ -401,6 +401,8 @@ void ApplyColorGrading(inout float3 Color)
     float Contrast = (_GradeContrast / 100.0) + 1.0;
     float HueShift = (_GradeHueShift / 360.0) * CMath_GetPi();
     float Saturation = (_GradeSaturation / 100.0) + 1.0;
+    float GradeTemperature = _GradeTemperature / 100.0;
+    float GradeTint = _GradeTint / 100.0;
 
     // Apply post exposure
     Color *= PostExposure;
@@ -414,8 +416,17 @@ void ApplyColorGrading(inout float3 Color)
     // Apply color filter
     Color *= _GradeColorFilter;
 
-    // Convert RGB to OKLch
-    Color = CColor_GetOKLCHfromRGB(Color, false);
+    // Convert RGB to OKLab
+    Color = CColor_GetOKLABfromRGB(Color, false);
+
+    // Apply temperature shift
+    Color.y += GradeTemperature;
+
+    // Apply tint shift
+    Color.z += GradeTint;
+
+    // Convert OKLab to OKLch
+    Color = CColor_GetOKLCHfromOKLAB(Color, false);
 
     // Apply hue shift
     Color.z += HueShift;

@@ -6,6 +6,106 @@
 
     static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 
+    float3 CColor_BlendNormal(float3 B, float3 S)
+    {
+        return S;
+    }
+
+    float3 CColor_BlendMultiply(float3 B, float3 S)
+    {
+        return B * S;
+    }
+
+    float3 CColor_BlendScreen(float3 B, float3 S)
+    {
+        return B + S - (B * S);
+    }
+
+    float3 CColor_BlendHardLight(float3 B, float3 S)
+    {
+        float3 Blend = (S <= 0.5)
+        ? CColor_BlendMultiply(B, 2.0 * S)
+        : CColor_BlendScreen(B, 2.0 * S - 1.0);
+        return Blend;
+    }
+
+    float3 CColor_BlendOverlay(float3 B, float3 S)
+    {
+        return CColor_BlendHardLight(S, B);
+    }
+
+    float3 CColor_BlendDarken(float3 B, float3 S)
+    {
+        return min(B, S);
+    }
+
+    float3 CColor_BlendLighten(float3 B, float3 S)
+    {
+        return max(B, S);
+    }
+
+    float3 CColor_BlendColorDodge(float3 B, float3 S)
+    {
+        float3 Blend = (S < 1.0) ? min(1.0, B / (1.0 - S)) : 1.0;
+        return Blend;
+    }
+
+    float3 CColor_BlendColorBurn(float3 B, float3 S)
+    {
+        float3 Blend = (S == 0.0) ? 0.0 : 1.0 - min(1.0, (1.0 - B) / S);
+        return Blend;
+    }
+
+    float3 CColor_BlendSoftLight(float3 B, float3 S)
+    {
+        float3 D = (B <= 0.25) ? ((16.0 * B - 12.0) * B + 4.0) * B : sqrt(B);
+        float3 Blend = (S <= 0.5)
+        ? B - (1.0 - 2.0 * S) * B * (1.0 - B)
+        : B + (2.0 * S - 1.0) * (D - B);
+        return Blend;
+    }
+
+    float3 CColor_BlendDifference(float3 B, float3 S)
+    {
+        return abs(B - S);
+    }
+
+    float3 CColor_BlendExclusion(float3 B, float3 S)
+    {
+        return B + S - 2.0 * B * S;
+    }
+
+    float3 CColor_Blend(float3 B, float3 S)
+    {       
+        switch (Operator)
+        {
+            case 0: // Normal
+                return CColor_BlendNormal(B, S);
+            case 1: // Multiply
+                return CColor_BlendMultiply(B, S);d
+            case 2: // Screen
+                return CColor_BlendScreen(B, S);
+            case 3: // Overlay
+                return CColor_BlendOverlay(B, S);
+            case 4: // Darken
+                return CColor_BlendDarken(B, S);
+            case 5: // Lighten
+                return CColor_BlendLighten(B, S);
+            case 6: // Color Dodge
+                return CColor_BlendColorDodge(B, S);
+            case 7: // Color Burn
+                return CColor_BlendColorBurn(B, S);
+            case 8: // Hard Light
+                return CColor_BlendHardLight(B, S);
+            case 9: // Soft Light
+                return CColor_BlendSoftLight(B, S);
+            case 10: // Difference
+                return CColor_BlendDifference(B, S);
+            case 11: // Exclusion
+                return CColor_BlendExclusion(B, S);
+        }
+    }
+
     float3 CColor_GetSumChromaticity(float3 Color, int Method)
     {
         float Sum = 0.0;
@@ -389,8 +489,8 @@
 
     static const float3x3 CColor_YIQtoRGB = float3x3
     (
-        float3(1.0, 0.956, 0.621), 
-        float3(1.0, -0.272, -0.647), 
+        float3(1.0, 0.956, 0.621),
+        float3(1.0, -0.272, -0.647),
         float3(1.0, -1.105, 1.702)
     );
 
