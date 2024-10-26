@@ -100,21 +100,21 @@
 #endif
 
 uniform float _GradePostExposure <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | Color Adjustments";
     ui_label = "Post Exposure";
     ui_type = "drag";
 > = 0.0;
 
 uniform float _GradeContrast <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | Color Adjustments";
     ui_label = "Contrast";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float3 _GradeColorFilter <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | Color Adjustments";
     ui_label = "Color Filter";
     ui_type = "color";
     ui_min = 0.0;
@@ -122,7 +122,7 @@ uniform float3 _GradeColorFilter <
 > = 1.0;
 
 uniform float _GradeHueShift <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | Color Adjustments";
     ui_label = "Hue Shift";
     ui_type = "slider";
     ui_min = -180.0;
@@ -130,15 +130,15 @@ uniform float _GradeHueShift <
 > = 0.0;
 
 uniform float _GradeSaturation <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | Color Adjustments";
     ui_label = "Saturation";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
+    ui_min = -1.0;
+    ui_max = 1.0;
 > = 0.0;
 
 uniform float _GradeTemperature <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | White Balance";
     ui_label = "Temperature";
     ui_type = "slider";
     ui_min = -1.0;
@@ -146,12 +146,56 @@ uniform float _GradeTemperature <
 > = 0.0;
 
 uniform float _GradeTint <
-    ui_category = "Color Grading";
+    ui_category = "Color Grading | White Balance";
     ui_label = "Tint";
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
 > = 0.0;
+
+uniform float3 _GradeShadows <
+    ui_category = "Color Grading | Split Toning";
+    ui_label = "Shadows";
+    ui_type = "color";
+> = float3(0.5, 0.5, 0.5);
+
+uniform float3 _GradeHighLights <
+    ui_category = "Color Grading | Split Toning";
+    ui_label = "Highlights";
+    ui_type = "color";
+> = float3(0.5, 0.5, 0.5);
+
+uniform float _GradeBalance <
+    ui_category = "Color Grading | Split Toning";
+    ui_label = "Balance";
+    ui_type = "slider";
+    ui_min = -100.0;
+    ui_max = 100.0;
+> = 0.0;
+
+uniform float3 _GradeMixerRed <
+    ui_category = "Color Grading | Channel Mixer";
+    ui_label = "Red";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(1.0, 0.0, 0.0);
+
+uniform float3 _GradeMixerGreen <
+    ui_category = "Color Grading | Channel Mixer";
+    ui_label = "Green";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(0.0, 1.0, 0.0);
+
+uniform float3 _GradeMixerBlue <
+    ui_category = "Color Grading | Channel Mixer";
+    ui_label = "Blue";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(0.0, 0.0, 1.0);
 
 #include "shared/cShadeHDR.fxh"
 #if ENABLE_AUTOEXPOSURE
@@ -398,11 +442,21 @@ void ApplyColorGrading(inout float3 Color)
 
     // Convert user-friendly uniform settings
     float PostExposure = exp2(_GradePostExposure);
-    float Contrast = (_GradeContrast / 100.0) + 1.0;
+    float Contrast = _GradeContrast + 1.0;
     float HueShift = (_GradeHueShift / 360.0) * CMath_GetPi();
-    float Saturation = (_GradeSaturation / 100.0) + 1.0;
+    float Saturation = _GradeSaturation + 1.0;
+
     float GradeTemperature = _GradeTemperature / 100.0;
     float GradeTint = _GradeTint / 100.0;
+
+    float3 GradeShadows = _GradeShadows;
+    float3 GradeHighLights = _GradeHighLights;
+    float GradeBalance = (_GradeBalance / 1.0);
+
+    float3x3 GradeChannelMixer = float3x3
+    (
+        _GradeMixerRed, _GradeMixerGreen, _GradeMixerBlue
+    );
 
     // Apply post exposure
     Color *= PostExposure;
@@ -417,7 +471,7 @@ void ApplyColorGrading(inout float3 Color)
     Color *= _GradeColorFilter;
 
     // Convert RGB to OKLab
-    Color = CColor_GetOKLABfromRGB(Color, false);
+    Color = CColor_GetOKLABfromRGB(Color);
 
     // Apply temperature shift
     Color.y += GradeTemperature;
@@ -438,6 +492,18 @@ void ApplyColorGrading(inout float3 Color)
     Color = CColor_GetRGBfromOKLCH(Color);
 
     Color = max(Color, 0.0);
+
+    // Apply gamma-space split-toning
+    Color = pow(abs(Color), 1.0 / 2.2);
+    float T = saturate(CColor_GetLuma(Color, 0) + GradeBalance);
+    float3 Shadows = lerp(0.5, GradeShadows, 1.0 - T);
+    float3 Highlights = lerp(0.5, GradeHighLights, T);
+    Color = CColor_BlendSoftLight(Color, Shadows);
+    Color = CColor_BlendSoftLight(Color, Highlights);
+    Color = pow(abs(Color), 2.2);
+
+    // Apply channel mixer
+    Color = mul(GradeChannelMixer, Color);
 }
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0

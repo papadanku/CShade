@@ -6,6 +6,10 @@
 
     static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 
+    /*
+        https://printtechnologies.org/standards/files/pdf-reference-1.6-addendum-blend-modes.pdf
+    */
+
     float3 CColor_BlendNormal(float3 B, float3 S)
     {
         return S;
@@ -75,14 +79,14 @@
         return B + S - 2.0 * B * S;
     }
 
-    float3 CColor_Blend(float3 B, float3 S)
+    float3 CColor_Blend(float3 B, float3 S, int Blend)
     {       
-        switch (Operator)
+        switch (Blend)
         {
             case 0: // Normal
                 return CColor_BlendNormal(B, S);
             case 1: // Multiply
-                return CColor_BlendMultiply(B, S);d
+                return CColor_BlendMultiply(B, S);
             case 2: // Screen
                 return CColor_BlendScreen(B, S);
             case 3: // Overlay
