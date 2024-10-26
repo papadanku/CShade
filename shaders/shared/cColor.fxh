@@ -613,7 +613,9 @@
 
         float3x3 MidtoneColorMatrix = float3x3
         (
-            MidtoneShadowColor, MidtoneColor, MidtoneHightlightColor
+            MidtoneShadowColor,
+            MidtoneColor,
+            MidtoneHightlightColor
         );
 
         Color *= mul(MidtoneWeights, MidtoneColorMatrix);
