@@ -197,6 +197,62 @@ uniform float3 _GradeMixerBlue <
     ui_max = 1.0;
 > = float3(0.0, 0.0, 1.0);
 
+uniform float3 _GradeMidtoneShadowColor <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Shadows";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(1.0, 1.0, 1.0);
+
+uniform float3 _GradeMidtonesMidtones <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Midtones";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(1.0, 1.0, 1.0);
+
+uniform float3 _GradeMidtonesHighlights <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Highlights";
+    ui_type = "color";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = float3(1.0, 1.0, 1.0);
+
+uniform float _GradeMidtoneShadowColorStart <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Shadows Start";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.0;
+
+uniform float _GradeMidtoneShadowColorEnd <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Shadows End";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.3;
+
+uniform float _GradeMidtonesHighlightsStart <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Highlights Start";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.55;
+
+uniform float _GradeMidtonesHighlightsEnd <
+    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_label = "Highlights End";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
+
 #include "shared/cShadeHDR.fxh"
 #if ENABLE_AUTOEXPOSURE
     #include "shared/cCameraInput.fxh"
@@ -451,7 +507,16 @@ void ApplyColorGrading(inout float3 Color)
 
     float3 GradeShadows = _GradeShadows;
     float3 GradeHighLights = _GradeHighLights;
-    float GradeBalance = (_GradeBalance / 1.0);
+    float GradeBalance = _GradeBalance / 1.0;
+
+    float3 GradeMidtoneShadowColor = _GradeMidtoneShadowColor;
+    float3 GradeMidtoneColor = _GradeMidtonesMidtones;
+    float3 GradeMidtonesHightlightColor = _GradeMidtonesHighlights;
+
+    float GradeMidtoneShadowColorStart = _GradeMidtoneShadowColorStart;
+    float GradeMidtoneShadowColorEnd = _GradeMidtoneShadowColorEnd;
+    float GradeMidtonesHighlightsStart = _GradeMidtonesHighlightsStart;
+    float GradeMidtonesHighlightsEnd = _GradeMidtonesHighlightsEnd;
 
     float3x3 GradeChannelMixer = float3x3
     (
@@ -504,6 +569,23 @@ void ApplyColorGrading(inout float3 Color)
 
     // Apply channel mixer
     Color = mul(GradeChannelMixer, Color);
+
+    // Apply midtones
+    float Luminance = CColor_GetLuma(Color, 0);
+    float3 MidtoneWeights = 0.0;
+    // Shadow weight
+    MidtoneWeights[0] = 1.0 - smoothstep(GradeMidtoneShadowColorStart, GradeMidtoneShadowColorEnd, Luminance);
+    // Highlights weight
+    MidtoneWeights[1] = smoothstep(GradeMidtonesHighlightsStart, GradeMidtonesHighlightsEnd, Luminance);
+    // Midtones weight
+    MidtoneWeights[2] = 1.0 - MidtoneWeights[0] - MidtoneWeights[1];
+
+    float3x3 MidtoneColorMatrix = float3x3
+    (
+        GradeMidtoneShadowColor, GradeMidtoneColor, GradeMidtonesHightlightColor
+    );
+
+    Color *= mul(MidtoneWeights, MidtoneColorMatrix);
 }
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
