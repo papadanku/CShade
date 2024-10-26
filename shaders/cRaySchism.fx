@@ -198,7 +198,7 @@ uniform float3 _GradeMixBlue <
 > = float3(0.0, 0.0, 1.0);
 
 uniform float3 _GradeMidtoneShadowColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadow Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -206,7 +206,7 @@ uniform float3 _GradeMidtoneShadowColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float3 _GradeMidtoneColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Midtone Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -214,7 +214,7 @@ uniform float3 _GradeMidtoneColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float3 _GradeMidtoneHighlightColor <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlight Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -222,7 +222,7 @@ uniform float3 _GradeMidtoneHighlightColor <
 > = float3(1.0, 1.0, 1.0);
 
 uniform float _GradeMidtoneShadowStart <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadows Start";
     ui_type = "slider";
     ui_min = 0.0;
@@ -230,7 +230,7 @@ uniform float _GradeMidtoneShadowStart <
 > = 0.0;
 
 uniform float _GradeMidtoneShadowEnd <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Shadows End";
     ui_type = "slider";
     ui_min = 0.0;
@@ -238,7 +238,7 @@ uniform float _GradeMidtoneShadowEnd <
 > = 0.3;
 
 uniform float _GradeMidtoneHighlightStart <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlights Start";
     ui_type = "slider";
     ui_min = 0.0;
@@ -246,7 +246,7 @@ uniform float _GradeMidtoneHighlightStart <
 > = 0.55;
 
 uniform float _GradeMidtoneHighlightEnd <
-    ui_category = "Color Grading | Shadows Midtones Hightlights";
+    ui_category = "Color Grading | Shadows, Midtones, Hightlights";
     ui_label = "Highlights End";
     ui_type = "slider";
     ui_min = 0.0;
