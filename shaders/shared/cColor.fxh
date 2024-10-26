@@ -531,7 +531,7 @@
         float Temperature, // [-1.0, 1.0); default = 0.0
         float Tint, // [-1.0, 1.0); default = 0.0
         float3 Shadows, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
-        float3 HighLights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
+        float3 Highlights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
         float Balance, // [-1.0, 1.0); default = 0.0
         float3 MixRed, // [0.0, 1.0); default = float3(1.0, 0.0, 0.0)
         float3 MixGreen, // [0.0, 1.0); default = float3(0.0, 1.0, 0.0)
@@ -593,7 +593,7 @@
         Color = pow(abs(Color), 1.0 / 2.2);
         float T = saturate(CColor_GetLuma(Color, 0) + Balance);
         float3 SplitShadows = lerp(0.5, Shadows, 1.0 - T);
-        float3 SplitHighlights = lerp(0.5, HighLights, T);
+        float3 SplitHighlights = lerp(0.5, Highlights, T);
         Color = CColor_BlendSoftLight(Color, SplitShadows);
         Color = CColor_BlendSoftLight(Color, SplitHighlights);
         Color = pow(abs(Color), 2.2);
