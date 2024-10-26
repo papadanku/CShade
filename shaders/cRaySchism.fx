@@ -41,7 +41,7 @@
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float3 _BloomIntensity <
+    uniform float _BloomIntensity <
         ui_category = "Bloom";
         ui_label = "Intensity";
         ui_type = "slider";
@@ -49,6 +49,15 @@
         ui_min = 0.0;
         ui_max = 1.0;
     > = 0.5;
+
+    uniform float3 _BloomColorWeights <
+        ui_category = "Bloom";
+        ui_label = "Color";
+        ui_type = "color";
+        ui_step = 0.001;
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 1.0;
 
 #endif
 
@@ -487,7 +496,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     #if ENABLE_BLOOM
         float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
         BaseColor = (_BloomRenderMode == 0)
-        ? BaseColor + (BloomColor * _BloomIntensity)
+        ? BaseColor + (BloomColor * _BloomColorWeights * _BloomIntensity)
         : BloomColor;
     #endif
 
