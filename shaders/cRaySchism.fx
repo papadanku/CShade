@@ -41,22 +41,14 @@
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float _BloomIntensity <
+    uniform float3 _BloomIntensity <
         ui_category = "Bloom";
         ui_label = "Intensity";
         ui_type = "slider";
         ui_step = 0.001;
         ui_min = 0.0;
         ui_max = 1.0;
-    > = 0.5;
-
-    uniform float3 _BloomColorShift <
-        ui_category = "Bloom";
-        ui_label = "Color Shift (RGB)";
-        ui_type = "color";
-        ui_min = 0.0;
-        ui_max = 1.0;
-    > = 1.0;
+    > = float3(0.5, 0.5, 0.5);
 #endif
 
 // Exposure-specific settings
@@ -445,7 +437,7 @@ uniform float _GradeMidtoneHighlightEnd <
         // Combine and apply the brightness response curve
         Color = Color * max(ResponseCurve, Brightness - _BloomThreshold) / max(Brightness, 1e-10);
 
-        return float4(Color.rgb * _BloomColorShift, Luminance);
+        return float4(Color.rgb, Luminance);
     }
 
     #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
@@ -492,8 +484,10 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Bloom composition
     #if ENABLE_BLOOM
-        float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb * _BloomIntensity;
-        BaseColor = (_BloomRenderMode == 0) ? BaseColor + BloomColor : BloomColor;
+        float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+        BaseColor = (_BloomRenderMode == 0)
+        ? BaseColor + (BloomColor * _BloomIntensity)
+        : BloomColor;
     #endif
 
     // Apply color-grading
