@@ -532,7 +532,7 @@
         float Tint, // [-1.0, 1.0); default = 0.0
         float3 Shadows, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
         float3 HighLights, // [0.0, 1.0); default = float3(0.5, 0.5, 0.5)
-        float Balance, // [-100.0, 100.0); default = 0.0
+        float Balance, // [-1.0, 1.0); default = 0.0
         float3 MixRed, // [0.0, 1.0); default = float3(1.0, 0.0, 0.0)
         float3 MixGreen, // [0.0, 1.0); default = float3(0.0, 1.0, 0.0)
         float3 MixBlue, // [0.0, 1.0); default = float3(0.0, 0.0, 1.0)
