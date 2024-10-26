@@ -70,7 +70,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = CColor_GetYCOCGfromRGB(Gamma, true).yz + 0.5;
             break;
         case 14: // OKLab (AB)
-            Chromaticity.rg = CColor_GetOKLABfromRGB(Color).yz;
+            Chromaticity.rg = CColor_GetOKLABfromRGB(Color).yz + 0.5;
             break;
         case 15: // OKLch (CH)
             Chromaticity.rg = CColor_GetOKLCHfromRGB(Color, true).yz;
