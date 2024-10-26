@@ -173,7 +173,7 @@ uniform float _GradeBalance <
     ui_max = 100.0;
 > = 0.0;
 
-uniform float3 _GradeMixerRed <
+uniform float3 _GradeMixRed <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Red";
     ui_type = "slider";
@@ -181,7 +181,7 @@ uniform float3 _GradeMixerRed <
     ui_max = 1.0;
 > = float3(1.0, 0.0, 0.0);
 
-uniform float3 _GradeMixerGreen <
+uniform float3 _GradeMixGreen <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Green";
     ui_type = "slider";
@@ -189,7 +189,7 @@ uniform float3 _GradeMixerGreen <
     ui_max = 1.0;
 > = float3(0.0, 1.0, 0.0);
 
-uniform float3 _GradeMixerBlue <
+uniform float3 _GradeMixBlue <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Blue";
     ui_type = "slider";
@@ -199,29 +199,29 @@ uniform float3 _GradeMixerBlue <
 
 uniform float3 _GradeMidtoneShadowColor <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
-    ui_label = "Shadows";
+    ui_label = "Shadow Color";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-uniform float3 _GradeMidtonesMidtones <
+uniform float3 _GradeMidtoneColor <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
-    ui_label = "Midtones";
+    ui_label = "Midtone Color";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-uniform float3 _GradeMidtonesHighlights <
+uniform float3 _GradeMidtoneHighlightColor <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
-    ui_label = "Highlights";
+    ui_label = "Highlight Color";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-uniform float _GradeMidtoneShadowColorStart <
+uniform float _GradeMidtoneShadowStart <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
     ui_label = "Shadows Start";
     ui_type = "slider";
@@ -229,7 +229,7 @@ uniform float _GradeMidtoneShadowColorStart <
     ui_max = 1.0;
 > = 0.0;
 
-uniform float _GradeMidtoneShadowColorEnd <
+uniform float _GradeMidtoneShadowEnd <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
     ui_label = "Shadows End";
     ui_type = "slider";
@@ -237,7 +237,7 @@ uniform float _GradeMidtoneShadowColorEnd <
     ui_max = 1.0;
 > = 0.3;
 
-uniform float _GradeMidtonesHighlightsStart <
+uniform float _GradeMidtoneHighlightStart <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
     ui_label = "Highlights Start";
     ui_type = "slider";
@@ -245,7 +245,7 @@ uniform float _GradeMidtonesHighlightsStart <
     ui_max = 1.0;
 > = 0.55;
 
-uniform float _GradeMidtonesHighlightsEnd <
+uniform float _GradeMidtoneHighlightEnd <
     ui_category = "Color Grading | Shadows Midtones Hightlights";
     ui_label = "Highlights End";
     ui_type = "slider";
@@ -478,116 +478,6 @@ uniform float _GradeMidtonesHighlightsEnd <
     CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 #endif
 
-/*
-    Modification of Jasper's color grading tutorial
-    https://catlikecoding.com/unity/tutorials/custom-srp/color-grading/
-
-    MIT No Attribution (MIT-0)
-
-    Copyright 2021 Jasper Flick
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-void ApplyColorGrading(inout float3 Color)
-{
-    // Constants
-    const float ACEScc_MIDGRAY = 0.4135884;
-
-    // Convert user-friendly uniform settings
-    float PostExposure = exp2(_GradePostExposure);
-    float Contrast = _GradeContrast + 1.0;
-    float HueShift = (_GradeHueShift / 360.0) * CMath_GetPi();
-    float Saturation = _GradeSaturation + 1.0;
-
-    float GradeTemperature = _GradeTemperature / 10.0;
-    float GradeTint = _GradeTint / 10.0;
-
-    float3 GradeShadows = _GradeShadows;
-    float3 GradeHighLights = _GradeHighLights;
-    float GradeBalance = _GradeBalance / 1.0;
-
-    float3 GradeMidtoneShadowColor = _GradeMidtoneShadowColor;
-    float3 GradeMidtoneColor = _GradeMidtonesMidtones;
-    float3 GradeMidtonesHightlightColor = _GradeMidtonesHighlights;
-
-    float GradeMidtoneShadowColorStart = _GradeMidtoneShadowColorStart;
-    float GradeMidtoneShadowColorEnd = _GradeMidtoneShadowColorEnd;
-    float GradeMidtonesHighlightsStart = _GradeMidtonesHighlightsStart;
-    float GradeMidtonesHighlightsEnd = _GradeMidtonesHighlightsEnd;
-
-    float3x3 GradeChannelMixer = float3x3
-    (
-        _GradeMixerRed, _GradeMixerGreen, _GradeMixerBlue
-    );
-
-    // Apply post exposure
-    Color *= PostExposure;
-
-    // Apply contrast
-    Color = CColor_EncodeLogC(Color);
-    Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
-    Color = CColor_DecodeLogC(Color);
-    Color = max(Color, 0.0);
-
-    // Apply color filter
-    Color *= _GradeColorFilter;
-
-    // Convert RGB to OKLab
-    Color = CColor_GetOKLABfromRGB(Color);
-
-    // Apply temperature shift
-    Color.z += GradeTemperature;
-
-    // Apply tint shift
-    Color.y += GradeTint;
-
-    // Convert OKLab to OKLch
-    Color = CColor_GetOKLCHfromOKLAB(Color, false);
-
-    // Apply hue shift
-    Color.z += HueShift;
-
-    // Apply saturation
-    Color.y *= Saturation;
-
-    // Convert OKLch to RGB
-    Color = CColor_GetRGBfromOKLCH(Color);
-
-    Color = max(Color, 0.0);
-
-    // Apply gamma-space split-toning
-    Color = pow(abs(Color), 1.0 / 2.2);
-    float T = saturate(CColor_GetLuma(Color, 0) + GradeBalance);
-    float3 Shadows = lerp(0.5, GradeShadows, 1.0 - T);
-    float3 Highlights = lerp(0.5, GradeHighLights, T);
-    Color = CColor_BlendSoftLight(Color, Shadows);
-    Color = CColor_BlendSoftLight(Color, Highlights);
-    Color = pow(abs(Color), 2.2);
-
-    // Apply channel mixer
-    Color = mul(GradeChannelMixer, Color);
-
-    // Apply midtones
-    float Luminance = CColor_GetLuma(Color, 0);
-    float3 MidtoneWeights = 0.0;
-    // Shadow weight
-    MidtoneWeights[0] = 1.0 - smoothstep(GradeMidtoneShadowColorStart, GradeMidtoneShadowColorEnd, Luminance);
-    // Highlights weight
-    MidtoneWeights[1] = smoothstep(GradeMidtonesHighlightsStart, GradeMidtonesHighlightsEnd, Luminance);
-    // Midtones weight
-    MidtoneWeights[2] = 1.0 - MidtoneWeights[0] - MidtoneWeights[1];
-
-    float3x3 MidtoneColorMatrix = float3x3
-    (
-        GradeMidtoneShadowColor, GradeMidtoneColor, GradeMidtonesHightlightColor
-    );
-
-    Color *= mul(MidtoneWeights, MidtoneColorMatrix);
-}
-
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 BaseColor = CShade_BackBuffer2D(Input.Tex0).rgb;
@@ -606,7 +496,30 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         BaseColor = (_BloomRenderMode == 0) ? BaseColor + BloomColor : BloomColor;
     #endif
 
-    ApplyColorGrading(BaseColor);
+    // Apply color-grading
+    CColor_ApplyColorGrading(
+        BaseColor,
+        _GradePostExposure,
+        _GradeContrast,
+        _GradeColorFilter,
+        _GradeHueShift,
+        _GradeSaturation,
+        _GradeTemperature,
+        _GradeTint,
+        _GradeShadows,
+        _GradeHighLights,
+        _GradeBalance,
+        _GradeMixRed,
+        _GradeMixGreen,
+        _GradeMixBlue,
+        _GradeMidtoneShadowColor,
+        _GradeMidtoneColor,
+        _GradeMidtoneHighlightColor,
+        _GradeMidtoneShadowStart,
+        _GradeMidtoneShadowEnd,
+        _GradeMidtoneHighlightStart,
+        _GradeMidtoneHighlightEnd
+    );
 
     // Apply tonemapping
     BaseColor = CTonemap_ApplyOutputTonemap(BaseColor);
