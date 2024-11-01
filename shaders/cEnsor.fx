@@ -136,6 +136,8 @@ technique CShade_Censor < ui_tooltip = "Pixelates the screen based on features";
 {
     pass
     {
+        SRGBWriteEnable = WRITE_SRGB;
+
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
         RenderTarget = TempTex0_RGBA8_8;
