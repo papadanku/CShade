@@ -46,15 +46,21 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 ColorMapTex = Input.Tex0;
     float2 HashTex = Input.HPos.xy;
+    float4 ColorMap = 0.0;
 
     if (_Pixelate)
     {
         float2 Grid = floor(Input.Tex0 * _Resolution);
         float2 ColorMapTex = Grid / _Resolution;
         float2 HashTex = Grid;
+        ColorMap = tex2D(CShade_SampleGammaTex, ColorMapTex);
+    }
+    else
+    {
+        ColorMap = tex2D(CShade_SampleGammaTex, Input.Tex0);
     }
 
-    float4 ColorMap = tex2D(CShade_SampleGammaTex, ColorMapTex);
+
     float3 Dither = 0.0;
 
     switch (_DitherMethod)
