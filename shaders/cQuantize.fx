@@ -60,7 +60,6 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
         ColorMap = tex2D(CShade_SampleGammaTex, Input.Tex0);
     }
 
-
     float3 Dither = 0.0;
 
     switch (_DitherMethod)
