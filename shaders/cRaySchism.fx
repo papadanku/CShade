@@ -178,7 +178,7 @@ uniform float _GradeBalance <
 uniform float3 _GradeMixRed <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Red";
-    ui_type = "slider";
+    ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(1.0, 0.0, 0.0);
@@ -186,7 +186,7 @@ uniform float3 _GradeMixRed <
 uniform float3 _GradeMixGreen <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Green";
-    ui_type = "slider";
+    ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(0.0, 1.0, 0.0);
@@ -194,7 +194,7 @@ uniform float3 _GradeMixGreen <
 uniform float3 _GradeMixBlue <
     ui_category = "Color Grading | Channel Mixer";
     ui_label = "Blue";
-    ui_type = "slider";
+    ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(0.0, 0.0, 1.0);
