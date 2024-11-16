@@ -14,10 +14,10 @@ uniform int _Blockiness <
 > = 3;
 
 uniform int _DetectionMode <
-    ui_label = "Search Mode";
+    ui_label = "Search Algorithm";
     ui_type = "combo";
     ui_items = "Color\0\HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
-> = 0;
+> = 3;
 
 uniform int _Comparison <
     ui_label = "Search Operator";
@@ -42,7 +42,18 @@ uniform int _DisplayMode <
 #include "shared/cBlend.fxh"
 
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, POINT, MIRROR, MIRROR, MIRROR)
+
+sampler2D SampleTempTex0
+{
+    Texture = TempTex0_RGBA8_8;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = MIRROR;
+    AddressV = MIRROR;
+    AddressW = MIRROR;
+    SRGBTexture = READ_SRGB;
+};
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
