@@ -6,12 +6,13 @@
     [Shader Options]
 */
 
-uniform int _Blockiness <
+uniform float _Blockiness <
     ui_label = "Blockiness";
     ui_type = "slider";
-    ui_min = 0;
-    ui_max = 7;
-> = 3;
+    ui_min = 0.0;
+    ui_max = 7.0;
+    ui_step = 0.1;
+> = 3.0;
 
 uniform int _DetectionMode <
     ui_label = "Search Algorithm";
@@ -46,8 +47,8 @@ CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
 sampler2D SampleTempTex0
 {
     Texture = TempTex0_RGBA8_8;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
+    MagFilter = POINT;
+    MinFilter = POINT;
     MipFilter = LINEAR;
     AddressU = MIRROR;
     AddressV = MIRROR;
