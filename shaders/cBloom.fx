@@ -1,4 +1,4 @@
-#define CSHADE_RAYSCHISM
+#define CSHADE_BLOOM
 
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
@@ -549,7 +549,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_RaySchism < ui_tooltip = "CShade's Color Multi-tool."; >
+technique CShade_Bloom < ui_tooltip = "CShade's Color Multi-tool."; >
 {
     #if ENABLE_BLOOM
         // Prefilter
