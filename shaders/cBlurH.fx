@@ -1,6 +1,6 @@
-#define CSHADE_GAUSSIANBLURH
+#define CSHADE_HORIZONTALBLUR
 
-#include "cGaussianBlur.fxh"
+#include "cBlur.fxh"
 
 technique CShade_HorizontalBlur < ui_tooltip = "Horizonal Gaussian blur effect"; >
 {

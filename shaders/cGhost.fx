@@ -1,4 +1,4 @@
-#define CSHADE_FRAMEBLEND
+#define CSHADE_GHOSTING
 
 /*
     [Shader Options]
@@ -37,7 +37,7 @@ float4 PS_Display(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(tex2D(SampleBlendTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_FrameBlend < ui_tooltip = "Frame-blending effect"; >
+technique CShade_Ghosting < ui_tooltip = "A ghosting effect through frame-blending"; >
 {
     pass
     {
