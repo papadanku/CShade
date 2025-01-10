@@ -1,4 +1,4 @@
-#define CSHADE_BLOOM
+#define CSHADE_BLOOMANDAUTOEXPOSURE
 
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
@@ -549,7 +549,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_Bloom < ui_tooltip = "CShade's Color Multi-tool."; >
+technique CShade_BloomAndAutoExposure < ui_tooltip = "CShade's Color Multi-tool."; >
 {
     #if ENABLE_BLOOM
         // Prefilter
