@@ -1,4 +1,4 @@
-#define CSHADE_LIGHT
+#define CSHADE_AUTOEXPOSUREBLOOM
 
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
@@ -549,7 +549,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_Light < ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading."; >
+technique CShade_AutoExposureBloom < ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading."; >
 {
     #if ENABLE_BLOOM
         // Prefilter
