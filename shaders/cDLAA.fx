@@ -8,20 +8,6 @@
     Copyright (C) LucasArts 2010-2011
 */
 
-/*
-    PS_Prefilter() local contrast is from Jasper Flick's FXAA implementation:
-        - https://bitbucket.org/catlikecodingunitytutorials/custom-srp-17-fxaa/src
-        - https://catlikecoding.com/unity/tutorials/custom-srp/fxaa/
-
-    MIT No Attribution (MIT-0)
-
-    Copyright 2021 Jasper Flick
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 #include "shared/cColor.fxh"
 
 /*
@@ -75,18 +61,15 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     Neighborhood[2] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.xy, 0.0, 0.0)).rgb;
     Neighborhood[3] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.zw, 0.0, 0.0)).rgb;
 
-    float3 Sum = Neighborhood[0] + Neighborhood[1] + Neighborhood[2] + Neighborhood[3];
-    float3 MinN = min(Center, min(min(Neighborhood[0], Neighborhood[1]), min(Neighborhood[2], Neighborhood[3])));
-    float3 MaxN = max(Center, max(max(Neighborhood[0], Neighborhood[1]), max(Neighborhood[2], Neighborhood[3])));
-    float3 Range = MaxN - MinN;
+    // Compass edge detection on N/S/E/W
+    float3 Edges = 0.0;
+    Edges = max(Edges, abs(Center - Neighborhood[0]));
+    Edges = max(Edges, abs(Center - Neighborhood[1]));
+    Edges = max(Edges, abs(Center - Neighborhood[2]));
+    Edges = max(Edges, abs(Center - Neighborhood[3]));
 
-    // Edge detection, normalized by neighborhood range
-    float3 Edges = (Center * 4.0) - Sum;
-    Edges = saturate(abs(Edges) / Range);
-    Edges = smoothstep(0.0, 0.25, Edges);
-    float EdgeAlpha = GetIntensity(Edges);
-
-    return float4(Center, EdgeAlpha * EdgeAlpha);
+    // It costs more ALU, but we should do the multiplication in the sampling pass for precision reasons
+    return float4(Center, smoothstep(0.0, 0.25, GetIntensity(Edges)));
 }
 
 float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
