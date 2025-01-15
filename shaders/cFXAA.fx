@@ -171,8 +171,8 @@ Edge GetEdge(LumaNeighborhood LN, LumaDiagonals LD, float2 Delta)
 
 float GetEdgeBlendFactor(LumaNeighborhood LN, LumaDiagonals LD, Edge E, float2 Tex, float2 Delta)
 {
-    const int EdgeStepCount = 5;
-    const float EdgeSteps[EdgeStepCount] = { 1.0, 1.5, 2.0, 2.0, 4.0 };
+    const int EdgeStepCount = 7;
+    const float EdgeSteps[EdgeStepCount] = { 1.0, 1.5, 2.0, 2.0, 2.0, 2.0, 4.0 };
     const float LastStep = 12.0;
 
     float2 EdgeTex = Tex;
