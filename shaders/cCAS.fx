@@ -119,7 +119,7 @@ void FFX_CAS(
 
     /* Filter shape.
             w   |   w   | w w
-        w 1 w | w 1 w |  1
+          w 1 w | w 1 w |  1
             w   |   w   | w w
     */
     float4 Peak = -(1.0 / lerp(8.0, 5.0, Contrast));
