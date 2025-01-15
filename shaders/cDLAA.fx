@@ -65,8 +65,8 @@ float GetIntensity(float3 Color)
 float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0.xy);
-    float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-0.5, -0.5, +0.5, +0.5) * Delta.xyxy);
-    float4 EdgeTex1 = Input.Tex0.xyxy + (float4(-0.5, +0.5, +0.5, -0.5) * Delta.xyxy);
+    float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
+    float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
     float3 Neighborhood[4];
     float3 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
@@ -81,7 +81,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Range = MaxN - MinN;
 
     // Edge detection, normalized by neighborhood range
-    float3 Edges = Center - (Sum * 0.25);
+    float3 Edges = (Center * 4.0) - Sum;
     Edges = saturate(abs(Edges) / Range);
     Edges = smoothstep(0.0, 0.25, Edges);
     float EdgeAlpha = GetIntensity(Edges);
