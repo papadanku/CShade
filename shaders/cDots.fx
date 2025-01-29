@@ -1,6 +1,5 @@
 #define CSHADE_DOTS
 
-#include "shared/cMacros.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
@@ -11,8 +10,6 @@
 #ifndef ENABLE_MONO
     #define ENABLE_MONO 0
 #endif
-
-#define MAX_CIRCLES GET_MIN(BUFFER_WIDTH, BUFFER_HEIGHT) / 10
 
 #if !ENABLE_MONO
     uniform bool _InvertProcessing <
@@ -33,8 +30,8 @@ uniform int _CircleAmount <
     ui_label = "Number of Circles";
     ui_type = "slider";
     ui_min = 1;
-    ui_max = MAX_CIRCLES;
-> = MAX_CIRCLES / 2;
+    ui_max = 256;
+> = 128;
 
 uniform float _InputMultiplier <
     ui_category = "Input Color";
