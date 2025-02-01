@@ -42,9 +42,9 @@
         WarpTex = MainTex.xyxy;
 
         // Calculate warped texture coordinates
-        WarpTex.zw = (WarpTex.zw * 2.0) - 1.0; // Pull into [-1.0, 1.0) range
-        WarpTex.zw += SignedVectors; // Warp in [-1.0, 1.0) range
-        WarpTex.zw = saturate((WarpTex.zw * 0.5) + 0.5); // Push into [0.0, 1.0) range
+        WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
+        WarpTex.zw += SignedVectors; // Warp in [-0.5, 0.5) range
+        WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get gradient information
         float4 TexIx = ddx(WarpTex);
