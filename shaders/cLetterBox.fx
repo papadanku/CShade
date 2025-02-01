@@ -5,18 +5,25 @@
 */
 
 uniform float2 _Offset <
-    ui_label = "Letterbox Offset";
+    ui_label = "Offset";
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
 > = float2(0.0, 0.0);
 
 uniform float2 _Scale <
-    ui_label = "Letterbox Scale";
+    ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = float2(1.0, 0.8);
+> = float2(1.0, 1.0);
+
+uniform float2 _Cutoff <
+    ui_label = "Cutoff";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
@@ -29,8 +36,8 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Output a rectangle
     Input.Tex0 = (Input.Tex0 * 2.0) - 1.0;
-    Input.Tex0 += _Offset;
-    float2 Shaper = step(abs(Input.Tex0), _Scale);
+    Input.Tex0 = (Input.Tex0 * _Scale) + _Offset;
+    float2 Shaper = step(abs(Input.Tex0), _Cutoff);
     return CBlend_OutputChannels(float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor));
 }
 
