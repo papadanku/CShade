@@ -125,7 +125,6 @@
         return Tex;
     }
 
-
     float CMath_GetHalfMax()
     {
         // Get the Half format distribution of bits
@@ -155,6 +154,22 @@
     float2 CMath_NormToHalf(float2 Half2)
     {
         return Half2 * CMath_GetHalfMax();
+    }
+
+    /*
+        Functions from Graphics Gems from CryEngine 3
+        https://www.slideshare.net/slideshow/graphics-gems-from-cryengine-3-siggraph-2013/25052583
+    */
+
+    float2 CMath_EncodeVelocity(float2 Velocity)
+    {
+        return (sign(Velocity) * sqrt(abs(Velocity)) * 0.5) + 0.5;
+    }
+
+    float2 CMath_DecodeVelocity(float2 Velocity)
+    {
+        Velocity = (Velocity * 2.0) - 1.0;
+        return (Velocity * Velocity) * sign(Velocity);
     }
 
 #endif
