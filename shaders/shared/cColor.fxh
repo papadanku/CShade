@@ -7,6 +7,22 @@
     static const float3 CColor_Rec709_Coefficients = float3(0.2126, 0.7152, 0.0722);
 
     /*
+        https://microsoft.github.io/DirectX-Specs/
+    */
+
+    float4 CColor_SRGBToLinear(float4 Color)
+    {
+        Color = (Color <= 0.04045) ? Color / 12.92 : pow((Color + 0.055) / 1.055, 2.4);
+        return Color;
+    }
+
+    float4 CColor_LinearToSRGB(float4 Color)
+    {
+        Color = (Color <=  0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
+        return Color;
+    }
+
+    /*
         https://printtechnologies.org/standards/files/pdf-reference-1.6-addendum-blend-modes.pdf
     */
 
@@ -108,7 +124,7 @@
             case 11: // Exclusion
                 return CColor_BlendExclusion(B, S);
             default:
-            	return CColor_BlendNormal(B, S);
+                return CColor_BlendNormal(B, S);
         }
     }
 
