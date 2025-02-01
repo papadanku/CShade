@@ -227,8 +227,8 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     float3 Display = 1.0;
     Display.xy = (Magnitude > 0.0) ? Vectors / Magnitude : 0.0;
-    Display.rg = (Vectors * 0.5) + 0.5;
-    Display.b = 1.0 - dot(Display.rg, 0.5);
+    Display.xy = (Display.xy * 0.5) + 0.5;
+    Display.z = 1.0 - dot(Display.xy, 0.5);
 
     return float4(Display, 1.0);
 }
