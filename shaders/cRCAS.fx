@@ -108,7 +108,7 @@ void FFX_RCAS(
     // Luma times 2.
     float Luma[5];
     const float3 LumaWeight = float3(0.5, 1.0, 0.5);
-    Luma[0] = dot(Sample[0].rgb, );
+    Luma[0] = dot(Sample[0].rgb, LumaWeight);
     Luma[1] = dot(Sample[1].rgb, LumaWeight);
     Luma[2] = dot(Sample[2].rgb, LumaWeight);
     Luma[3] = dot(Sample[3].rgb, LumaWeight);
