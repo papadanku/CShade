@@ -223,7 +223,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 Vectors = CMath_DecodeVelocity(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     Vectors.y *= -1.0;
     Vectors.xy /= fwidth(Input.Tex0.xy);
-    float Magnitude = length(Vectors);
+    float Magnitude = length(float3(Vectors, 1.0));
 
     float3 Display = 1.0;
     Display.xy = (Magnitude > 0.0) ? Vectors / Magnitude : 0.0;
