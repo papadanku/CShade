@@ -158,7 +158,7 @@
 
     /*
         Functions from Graphics Gems from CryEngine 3
-        https://www.slideshare.net/slideshow/graphics-gems-from-cryengine-3-siggraph-2013/25052583
+        https://www.advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
     */
 
     float2 CMath_EncodeVelocity(float2 Velocity)
