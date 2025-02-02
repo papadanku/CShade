@@ -107,7 +107,6 @@ CAS GetBoxCAS(float2 Tex, float2 Delta)
     return O;
 }
 
-
 void FFX_CAS(
     inout float4 FilterShape,
     inout float4 FilterMask,
