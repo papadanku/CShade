@@ -211,7 +211,7 @@ float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
+    float2 Vectors = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     Vectors.xy /= fwidth(Input.Tex0.xy);
     Vectors.y *= -1.0;
     float Magnitude = length(float3(Vectors, 1.0));
