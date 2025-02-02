@@ -350,4 +350,25 @@
         );
     }
 
+    float4 CBlur_GetDilatedUpsample(sampler2D SampleSource, float2 Tex)
+    {
+        float2 Delta = fwidth(Tex);
+        float4 Sum = 0.0;
+        float Weight = 0.0;
+
+        [unroll]
+        for (int x = -6; x <= 6; x += 3)
+        {
+            [unroll]
+            for (int y = -6; y <= 6; y += 3)
+            {
+                float2 SampleTex = Tex + (float2(x, y) * Delta);
+                Sum += tex2D(SampleSource, SampleTex);
+                Weight += 1.0;
+            }
+        }
+
+        return Sum / Weight;
+    }
+
 #endif
