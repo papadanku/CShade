@@ -351,33 +351,41 @@
     }
 
     /*
-        This is a generic 5x5, dilated upsample kernel.
+        This is 9x9 dilated median upsampling.
     */
 
-    float4 CBlur_GetDilatedUpsample(sampler2D SampleSource, float2 Tex)
+    float4 CBlur_GetDilatedUpsample(sampler2D Source, float2 Tex)
     {
-        /*
-            We multiply by 3 because the source texture is half the resolution of the destination.
-            This means each pixel in the source texture covers 3x3 in the destination.
-        */
-        float2 Delta = fwidth(Tex) * 3.0;
+        float2 PixelSize = fwidth(Tex.xy) * 3.0;
 
-        float4 Sum = 0.0;
-        float Weight = 0.0;
+        float4 Offsets1 = float4(1.0, 1.0, -1.0, -1.0);
+        float4 Offsets2 = float4(-1.0, 1.0, 1.0, -1.0);
+        float4 Offsets3 = float4(0.0, 1.0, 0.0, -1.0);
+        float4 Offsets4 = float4(-1.0, 0.0, 1.0, 0.0);
+        float4 Tex1 = Tex.xyxy + (Offsets1 * PixelSize.xyxy);
+        float4 Tex2 = Tex.xyxy + (Offsets2 * PixelSize.xyxy);
+        float4 Tex3 = Tex.xyxy + (Offsets3 * PixelSize.xyxy);
+        float4 Tex4 = Tex.xyxy + (Offsets4 * PixelSize.xyxy);
 
-        [unroll]
-        for (int x = -3; x <= 3; x++)
-        {
-            [unroll]
-            for (int y = -3; y <= 3; y++)
-            {
-                float2 SampleTex = Tex + (float2(x, y) * Delta);
-                Sum += tex2D(SampleSource, SampleTex);
-                Weight += 1.0;
-            }
-        }
-
-        return Sum / Weight;
+        // Sample locations:
+        // [0].xy [1].xy [2].xy
+        // [0].xz [1].xz [2].xz
+        // [0].xw [1].xw [2].xw
+        float4 Sample[9];
+        Sample[0] = tex2D(Source, Tex1.xy);
+        Sample[1] = tex2D(Source, Tex1.zw);
+        Sample[2] = tex2D(Source, Tex2.xy);
+        Sample[3] = tex2D(Source, Tex2.zw);
+        Sample[4] = tex2D(Source, Tex);
+        Sample[5] = tex2D(Source, Tex3.xy);
+        Sample[6] = tex2D(Source, Tex3.zw);
+        Sample[7] = tex2D(Source, Tex4.xy);
+        Sample[8] = tex2D(Source, Tex4.zw);
+        return CMath_Float4_Med9(
+            Sample[0], Sample[1], Sample[2],
+            Sample[3], Sample[4], Sample[5],
+            Sample[6], Sample[7], Sample[8]
+        );
     }
 
 #endif
