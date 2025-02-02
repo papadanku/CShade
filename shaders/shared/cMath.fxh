@@ -125,35 +125,48 @@
         return Tex;
     }
 
-    float CMath_GetHalfMax()
+    // Get the Half format distribution of bits
+    // Sign Exponent Significand
+    // x    xxxxx    xxxxxxxxxx
+    float CMath_CalculateFP16(int Sign, int Exponent, int Significand)
     {
-        // Get the Half format distribution of bits
-        // Sign Exponent Significand
-        // 0    00000    000000000
-        const int SignBit = 0;
-        const int ExponentBits = 5;
-        const int SignificandBits = 10;
-
         const int Bias = -15;
-        const int Exponent = exp2(ExponentBits);
-        const int Significand = exp2(SignificandBits);
+        const int MaxExponent = (Exponent - exp2(1)) + Bias;
+        const int MaxSignificand = 1 + ((Significand - 1) / Significand);
 
-        const float MaxExponent = ((float)Exponent - (float)exp2(1)) + (float)Bias;
-        const float MaxSignificand = 1.0 + (((float)Significand - 1.0) / (float)Significand);
+        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
+    }
 
-        return (float)pow(-1, SignBit) * (float)exp2(MaxExponent) * MaxSignificand;
+    float CMath_GetFP16Min()
+    {
+        /*
+            Sign Exponent Significand
+            ---- -------- -----------
+            0    00001    000000000
+        */
+        return CMath_CalculateFP16(0, exp2(1) + 1, exp2(0));
+    }
+
+    float CMath_GetFP16Max()
+    {
+        /*
+            Sign Exponent Significand
+            ---- -------- -----------
+            0    11110    1111111111
+        */
+        return CMath_CalculateFP16(0, exp2(5), exp2(10));
     }
 
     // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_HalfToNorm(float2 Half2)
+    float2 CMath_FP16ToNorm(float2 Half2)
     {
-        return clamp(Half2 / CMath_GetHalfMax(), -1.0, 1.0);
+        return clamp(Half2 / CMath_GetFP16Max(), -1.0, 1.0);
     }
 
     // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_NormToHalf(float2 Half2)
+    float2 CMath_NormToFP16(float2 Half2)
     {
-        return Half2 * CMath_GetHalfMax();
+        return Half2 * CMath_GetFP16Max();
     }
 
     /*

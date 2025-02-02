@@ -6,20 +6,10 @@
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
 
-    // [-1.0, 1.0] -> [Width, Height]
-    float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
-    {
-        return Vectors / abs(ImageSize);
-    }
-
-    // [Width, Height] -> [-1.0, 1.0]
-    float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
-    {
-        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
-    }
-
     /*
-        Lucas-Kanade optical flow with bilinear fetches
+        Lucas-Kanade optical flow with bilinear fetches.
+        ---
+        The algorithm is motified to not output in pixels, but normalized displacements
         ---
         Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
         [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
@@ -49,8 +39,8 @@
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
 
-        // Convert motion vectors from Half -> [-0.5, 0.5) range
-        Vectors = CMath_HalfToNorm(Vectors);
+        // Decode from FP16
+        Vectors = CMath_FP16ToNorm(Vectors);
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
@@ -113,8 +103,8 @@
             Create a normalized SSD-based mask.
             https://www.cs.huji.ac.il/~peleg/papers/HUJI-CSE-LTR-2006-39-LK-Plus.pdf
         */
-
-        float M = (SSD / (IxIx + IyIy)) < 1.0;
+        float ISum = (IxIx + IyIy);
+        float M = (SSD > CMath_GetFP16Min()) && ((SSD / ISum) < 1.0);
         IxIx *= M;
         IyIy *= M;
         IxIy *= M;
@@ -135,8 +125,8 @@
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
-        // Pack motion vectors to Half format
-        return CMath_NormToHalf(Vectors);
+        // Encode motion vectors to FP16 format
+        return CMath_NormToFP16(Vectors);
     }
 
 #endif

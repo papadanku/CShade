@@ -39,8 +39,8 @@ uniform float _Scale <
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 8.0;
-> = 4.0;
+    ui_max = 4.0;
+> = 2.0;
 
 uniform float _TargetFrameRate <
     ui_category = "Shader | Motion Blur";
@@ -91,7 +91,7 @@ float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
     float2 Chroma = CColor_GetSphericalRG(Color).xy;
-    return CMath_NormToHalf((Chroma * 2.0) - 1.0);
+    return CMath_NormToFP16((Chroma * 2.0) - 1.0);
 }
 
 // Run Lucas-Kanade
@@ -145,7 +145,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float2 ScreenCoord = Input.Tex0.xy;
 
-    float2 Velocity = CMath_HalfToNorm(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 Velocity = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;

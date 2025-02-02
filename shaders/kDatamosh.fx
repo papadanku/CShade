@@ -145,7 +145,7 @@ float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
     float2 Chroma = CColor_GetSphericalRG(Color).xy;
-    return CMath_NormToHalf((Chroma * 2.0) - 1.0);
+    return CMath_NormToFP16((Chroma * 2.0) - 1.0);
 }
 
 // Run Lucas-Kanade
@@ -177,7 +177,7 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 // NOTE: We use MRT to immeduately copy the current blurred frame for the next frame
 float4 PS_PostfilterHBlur(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
-    Copy = tex2D(SampleTempTex2b, Input.Tex0.xy);
+    Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
     return float4(CBlur_GetPixelBlur(Input.Tex0, SampleOFlowTex, true).rg, 0.0, 1.0);
 }
 
@@ -187,6 +187,18 @@ float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 }
 
 // Datamosh
+
+// [-1.0, 1.0] -> [Width, Height]
+float2 UnnormalizeMV(float2 Vectors, float2 ImageSize)
+{
+    return Vectors / abs(ImageSize);
+}
+
+// [Width, Height] -> [-1.0, 1.0]
+float2 NormalizeUV(float2 Vectors, float2 ImageSize)
+{
+    return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
+}
 
 float RandUV(float2 Tex)
 {
@@ -205,7 +217,7 @@ float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
     Random.z = RandUV(Tex.yx - Time.xx);
 
     // Normalized screen space -> Pixel coordinates
-    MV = CMotionEstimation_UnnormalizeMV(MV * _Scale, TexSize);
+    MV = UnnormalizeMV(MV * _Scale, TexSize);
 
     // Small random displacement (diffusion)
     MV += (Random.xy - 0.5)  * _Diffusion;
@@ -220,7 +232,7 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMath_HalfToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -259,7 +271,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMath_HalfToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -268,7 +280,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     float RandomMotion = RandUV(Input.Tex0 + length(MV));
 
     // Pixel coordinates -> Normalized screen space
-    MV = CMotionEstimation_NormalizeMV(MV, TexSize);
+    MV = NormalizeUV(MV, TexSize);
 
     // Color from the original image
     float4 Source = CShade_BackBuffer2D(Input.Tex0);
