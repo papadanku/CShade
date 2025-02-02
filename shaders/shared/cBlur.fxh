@@ -350,4 +350,34 @@
         );
     }
 
+    /*
+        This is a generic 5x5, dilated upsample kernel.
+    */
+
+    float4 CBlur_GetDilatedUpsample(sampler2D SampleSource, float2 Tex)
+    {
+        /*
+            We multiply by 3 because the source texture is half the resolution of the destination.
+            This means each pixel in the source texture covers 3x3 in the destination.
+        */
+        float2 Delta = fwidth(Tex) * 3.0;
+
+        float4 Sum = 0.0;
+        float Weight = 0.0;
+
+        [unroll]
+        for (int x = -3; x <= 3; x++)
+        {
+            [unroll]
+            for (int y = -3; y <= 3; y++)
+            {
+                float2 SampleTex = Tex + (float2(x, y) * Delta);
+                Sum += tex2D(SampleSource, SampleTex);
+                Weight += 1.0;
+            }
+        }
+
+        return Sum / Weight;
+    }
+
 #endif
