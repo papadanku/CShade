@@ -44,7 +44,7 @@ uniform int _Kernel <
     ui_label = "Kernel Shape";
     ui_type = "combo";
     ui_items = "Diamond\0Box\0";
-> = 1;
+> = 0;
 
 uniform float _Contrast <
     ui_category = "Sharpening";
@@ -57,6 +57,57 @@ uniform float _Contrast <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+struct CAS
+{
+    float4 Sample[5];
+    float4 MinRGB;
+    float4 MaxRGB;
+};
+
+CAS GetDiamondCAS(float2 Tex, float2 Delta)
+{
+    CAS O;
+
+    float4 Tex0 = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
+    float4 Tex1 = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
+    O.Sample[0] = CShade_BackBuffer2D(Tex);
+    O.Sample[1] = CShade_BackBuffer2D(Tex0.xy);
+    O.Sample[2] = CShade_BackBuffer2D(Tex0.zw);
+    O.Sample[3] = CShade_BackBuffer2D(Tex1.xy);
+    O.Sample[4] = CShade_BackBuffer2D(Tex1.zw);
+
+    // Get polar min/max
+    O.MinRGB = min(O.Sample[0], min(min(O.Sample[1], O.Sample[2]), min(O.Sample[3], O.Sample[4])));
+    O.MaxRGB = max(O.Sample[0], max(max(O.Sample[1], O.Sample[2]), max(O.Sample[3], O.Sample[4])));
+
+    return O;
+}
+
+CAS GetBoxCAS(float2 Tex, float2 Delta)
+{
+    CAS O;
+    CAS I = GetDiamondCAS(Tex, Delta);
+
+    float4 BoxTex = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
+    float4 Sample5 = CShade_BackBuffer2D(BoxTex.xw);
+    float4 Sample6 = CShade_BackBuffer2D(BoxTex.zw);
+    float4 Sample7 = CShade_BackBuffer2D(BoxTex.xy);
+    float4 Sample8 = CShade_BackBuffer2D(BoxTex.zy);
+
+    // Get polar min/max
+    O.Sample[0] = I.Sample[0];
+    O.Sample[1] = I.Sample[1];
+    O.Sample[2] = I.Sample[2];
+    O.Sample[3] = I.Sample[3];
+    O.Sample[4] = I.Sample[4];
+
+    O.MinRGB = min(I.MinRGB, min(min(Sample5, Sample6), min(Sample7, Sample8)));
+    O.MaxRGB = max(I.MaxRGB, max(max(Sample5, Sample6), max(Sample7, Sample8)));
+
+    return O;
+}
+
+
 void FFX_CAS(
     inout float4 FilterShape,
     inout float4 FilterMask,
@@ -66,53 +117,24 @@ void FFX_CAS(
     in float Contrast
 )
 {
-    // Select kernel sample
-    float4 TexArray[3];
-    float4 Sample[9];
-    switch (Kernel)
+    // Get CAS data based on user input
+    CAS C;
+
+    switch(_Kernel)
     {
         case 0:
-            TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-            TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-            TexArray[2] = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-            Sample[0] = CShade_BackBuffer2D(Tex);
-            Sample[1] = CShade_BackBuffer2D(TexArray[0].xy);
-            Sample[2] = CShade_BackBuffer2D(TexArray[0].zw);
-            Sample[3] = CShade_BackBuffer2D(TexArray[1].xy);
-            Sample[4] = CShade_BackBuffer2D(TexArray[1].zw);
-            Sample[5] = CShade_BackBuffer2D(TexArray[2].xw);
-            Sample[6] = CShade_BackBuffer2D(TexArray[2].zw);
-            Sample[7] = CShade_BackBuffer2D(TexArray[2].xy);
-            Sample[8] = CShade_BackBuffer2D(TexArray[2].zy);
+            C = GetDiamondCAS(Tex, Delta);
             break;
         case 1:
-            TexArray[0] = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
-            TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-            Sample[0] = CShade_BackBuffer2D(Tex);
-            Sample[1] = CShade_BackBuffer2D(TexArray[0].xy);
-            Sample[2] = CShade_BackBuffer2D(TexArray[0].zw);
-            Sample[3] = CShade_BackBuffer2D(TexArray[1].xy);
-            Sample[4] = CShade_BackBuffer2D(TexArray[1].zw);
+            C = GetBoxCAS(Tex, Delta);
             break;
-        default:
-            break;
-    }
-
-    // Get polar min/max
-    float4 MinRGB = min(Sample[0], min(min(Sample[1], Sample[2]), min(Sample[3], Sample[4])));
-    float4 MaxRGB = max(Sample[0], max(max(Sample[1], Sample[2]), max(Sample[3], Sample[4])));
-
-    if (Kernel == 0)
-    {
-        MinRGB = min(MinRGB, min(min(Sample[5], Sample[6]), min(Sample[7], Sample[8])));
-        MaxRGB = max(MaxRGB, max(max(Sample[5], Sample[6]), max(Sample[7], Sample[8])));
     }
 
     // Get needed reciprocal
-    float4 ReciprocalMaxRGB = 1.0 / MaxRGB;
+    float4 ReciprocalMaxRGB = 1.0 / C.MaxRGB;
 
     // Amplify
-    float4 AmplifyRGB = saturate(min(MinRGB, 2.0 - MaxRGB) * ReciprocalMaxRGB);
+    float4 AmplifyRGB = saturate(min(C.MinRGB, 2.0 - C.MaxRGB) * ReciprocalMaxRGB);
 
     // Shaping amount of sharpening.
     AmplifyRGB *= rsqrt(AmplifyRGB);
@@ -126,11 +148,11 @@ void FFX_CAS(
     float4 Weight = AmplifyRGB * Peak;
     float4 ReciprocalWeight = 1.0 / (1.0 + (4.0 * Weight));
 
-    FilterShape = Sample[0];
-    FilterShape += Sample[1] * Weight;
-    FilterShape += Sample[2] * Weight;
-    FilterShape += Sample[3] * Weight;
-    FilterShape += Sample[4] * Weight;
+    FilterShape = C.Sample[0];
+    FilterShape += C.Sample[1] * Weight;
+    FilterShape += C.Sample[2] * Weight;
+    FilterShape += C.Sample[3] * Weight;
+    FilterShape += C.Sample[4] * Weight;
     FilterShape = saturate(FilterShape * ReciprocalWeight);
 
     FilterMask = AmplifyRGB;
