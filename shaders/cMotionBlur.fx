@@ -39,8 +39,8 @@ uniform float _Scale <
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 4.0;
-> = 2.0;
+    ui_max = 2.0;
+> = 1.0;
 
 uniform float _TargetFrameRate <
     ui_category = "Shader | Motion Blur";
@@ -63,24 +63,24 @@ uniform bool _FrameRateScaling <
     [Textures & Samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex1_RG16, BUFFER_SIZE_1, RG8, 3)
-CREATE_TEXTURE_POOLED(TempTex2a_RG16, BUFFER_SIZE_2, RG16, 1)
-CREATE_TEXTURE_POOLED(TempTex2b_RG16, BUFFER_SIZE_2, RG16, 8)
-CREATE_TEXTURE_POOLED(TempTex3_RG16, BUFFER_SIZE_3, RG16, 1)
-CREATE_TEXTURE_POOLED(TempTex4_RG16, BUFFER_SIZE_4, RG16, 1)
-CREATE_TEXTURE_POOLED(TempTex5_RG16, BUFFER_SIZE_5, RG16, 1)
+CREATE_TEXTURE_POOLED(TempTex1_RG16F, BUFFER_SIZE_1, RG16F, 3)
+CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 8)
+CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_3, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
 
-CREATE_SAMPLER(SampleTempTex1, TempTex1_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex1, TempTex1_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, MIRROR, MIRROR, MIRROR)
 
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16, 8)
+CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16F, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, MIRROR, MIRROR, MIRROR)
 
-CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16, 1)
+CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR, MIRROR, MIRROR)
 
 /*
@@ -90,7 +90,8 @@ CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, MIRROR, MIRROR, MIRROR)
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
-    return CColor_GetSphericalRG(Color).xy;
+    float2 Chroma = CColor_GetSphericalRG(Color).xy;
+    return CMath_NormToHalf((Chroma * 2.0) - 1.0);
 }
 
 float2 PS_PrefilterHBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -108,25 +109,25 @@ float2 PS_PrefilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b, true);
+    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
 }
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTempTex5, Input.Tex0).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b, false);
+    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTempTex4, Input.Tex0).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b, false);
+    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = tex2D(SampleTempTex3, Input.Tex0).xy;
-    return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b, false), 0.0, _BlendFactor);
+    return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex2b), 0.0, _BlendFactor);
 }
 
 // Postfilter blur
@@ -154,7 +155,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float2 ScreenCoord = Input.Tex0.xy;
 
-    float2 Velocity = CMath_DecodeVelocity(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 Velocity = CMath_HalfToNorm(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
@@ -189,16 +190,16 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_MotionBlur < ui_tooltip = "Motion blur effect"; >
 {
     // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG16)
+    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG16F)
 
     // Prefilter blur
-    CREATE_PASS(CShade_VS_Quad, PS_PrefilterHBlur, TempTex2a_RG16)
-    CREATE_PASS(CShade_VS_Quad, PS_PrefilterVBlur, TempTex2b_RG16)
+    CREATE_PASS(CShade_VS_Quad, PS_PrefilterHBlur, TempTex2a_RG16F)
+    CREATE_PASS(CShade_VS_Quad, PS_PrefilterVBlur, TempTex2b_RG16F)
 
     // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16)
+    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -218,14 +219,14 @@ technique CShade_MotionBlur < ui_tooltip = "Motion blur effect"; >
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_PostfilterHBlur;
         RenderTarget0 = Tex2c;
-        RenderTarget1 = TempTex2a_RG16;
+        RenderTarget1 = TempTex2a_RG16F;
     }
 
     pass
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_PostfilterVBlur;
-        RenderTarget0 = TempTex2b_RG16;
+        RenderTarget0 = TempTex2b_RG16F;
     }
 
     // Motion blur

@@ -6,6 +6,18 @@
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
 
+    // [-1.0, 1.0] -> [Width, Height]
+    float2 CMotionEstimation_UnnormalizeMV(float2 Vectors, float2 ImageSize)
+    {
+        return Vectors / abs(ImageSize);
+    }
+
+    // [Width, Height] -> [-1.0, 1.0]
+    float2 CMotionEstimation_NormalizeMV(float2 Vectors, float2 ImageSize)
+    {
+        return clamp(Vectors * abs(ImageSize), -1.0, 1.0);
+    }
+
     /*
         Lucas-Kanade optical flow with bilinear fetches
         ---
@@ -22,8 +34,7 @@
         float2 MainTex,
         float2 Vectors,
         sampler2D SampleI0,
-        sampler2D SampleI1,
-        bool IsCoarse
+        sampler2D SampleI1
     )
     {
         // Initialize variables
@@ -35,15 +46,15 @@
         float IyIt = 0.0;
         float SSD = 0.0;
 
-        // Decode vectors
-        float2 SignedVectors = IsCoarse ? 0.0 : CMath_DecodeVelocity(Vectors);
-
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
 
+        // Convert motion vectors from Half -> [-0.5, 0.5) range
+        Vectors = CMath_HalfToNorm(Vectors);
+
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex.zw += SignedVectors; // Warp in [-0.5, 0.5) range
+        WarpTex.zw += Vectors; // Warp in [-HalfMax, HalfMax) range
         WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get gradient information
@@ -119,13 +130,13 @@
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
 
         // Propagate normalized motion vectors in Norm Range
-        SignedVectors += (Flow * PixelSize);
+        Vectors += (Flow * PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
-        SignedVectors = clamp(SignedVectors, -1.0, 1.0);
+        Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Pack motion vectors to Half format
-        return CMath_EncodeVelocity(SignedVectors);
+        return CMath_NormToHalf(Vectors);
     }
 
 #endif
