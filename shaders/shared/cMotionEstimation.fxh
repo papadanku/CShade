@@ -51,7 +51,6 @@
         float4 TexIx = ddx(WarpTex);
         float4 TexIy = ddy(WarpTex);
         float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
-        float2x2 Rotation = CMath_GetRotationMatrix(45.0);
 
         // Get required data to calculate main window data
         const int WindowSize = 3;
@@ -60,7 +59,6 @@
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
             float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
-            AngleShift = mul(Rotation, AngleShift);
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
