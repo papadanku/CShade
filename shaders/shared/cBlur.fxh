@@ -351,12 +351,16 @@
     }
 
     /*
-        This is 9x9 dilated median upsampling.
+        9x9 dilated median upsampling.
     */
 
-    float4 CBlur_GetDilatedUpsample(sampler2D Source, float2 Tex)
+    float4 CBlur_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
     {
-        float2 PixelSize = fwidth(Tex.xy) * 3.0;
+        /*
+            Dilate by 4 texels.
+            Subsequent levels will apply median at smaller regions.
+        */
+        float2 PixelSize = fwidth(Tex.xy) * 4.0;
 
         float4 Offsets1 = float4(1.0, 1.0, -1.0, -1.0);
         float4 Offsets2 = float4(-1.0, 1.0, 1.0, -1.0);
