@@ -38,8 +38,8 @@ uniform float3 _DestFactor <
 CREATE_TEXTURE(SrcTex, BUFFER_SIZE_0, RGBA8, 1)
 
 // Inputs in cBlendBuffer
-CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, CLAMP, CLAMP, CLAMP)
-CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]

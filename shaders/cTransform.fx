@@ -34,7 +34,7 @@ uniform float2 _Scale <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)
+CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)
 
 /*
     [Vertex Shaders]

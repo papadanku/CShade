@@ -26,7 +26,7 @@ uniform float _BlendFactor <
 */
 
 CREATE_TEXTURE(PreviousFrame, BUFFER_SIZE_0, FORMAT, 1)
-CREATE_SAMPLER(SamplePreviousFrame, PreviousFrame, 1, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SamplePreviousFrame, PreviousFrame, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]

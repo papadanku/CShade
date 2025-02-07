@@ -62,25 +62,25 @@
             MipLevels = LEVELS; \
         };
 
-    #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+    #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
         { \
             Texture = TEXTURE; \
-            MagFilter = FILTER; \
-            MinFilter = FILTER; \
-            MipFilter = FILTER; \
+            MagFilter = MAGFILTER; \
+            MinFilter = MINFILTER; \
+            MipFilter = MIPFILTER; \
             AddressU = ADDRESSU; \
             AddressV = ADDRESSV; \
             AddressW = ADDRESSW; \
         };
 
-    #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, FILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+    #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
         { \
             Texture = TEXTURE; \
-            MagFilter = FILTER; \
-            MinFilter = FILTER; \
-            MipFilter = FILTER; \
+            MagFilter = MAGFILTER; \
+            MinFilter = MINFILTER; \
+            MipFilter = MIPFILTER; \
             AddressU = ADDRESSU; \
             AddressV = ADDRESSV; \
             AddressW = ADDRESSW; \
