@@ -64,8 +64,8 @@ uniform bool _FrameRateScaling <
 */
 
 CREATE_TEXTURE_POOLED(TempTex1_RG16F, BUFFER_SIZE_1, RG16F, 8)
-CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 1)
-CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 8)
+CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 8)
+CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_3, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
@@ -90,7 +90,7 @@ CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR,
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
-    float2 Chroma = CColor_GetSphericalRG(Color).xy;
+    float2 Chroma = CColor_GetRGBfromHSV(Color).xy;
     return CMath_NormToFP16((Chroma * 2.0) - 1.0);
 }
 
@@ -117,21 +117,34 @@ float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CBlur_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
-    return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1), 0.0, _BlendFactor);
+    float2 Flow = CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return float4(Flow, 0.0, _BlendFactor);
 }
 
-// Postfilter blur
+/*
+    Postfilter median
+*/
 
 // We use MRT to immeduately copy the current blurred frame for the next frame
-float4 PS_PostfilterHBlur(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
+float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_GetPixelBlur(Input.Tex0, SampleOFlowTex, true).rg, 0.0, 1.0);
+    return float4(tex2D(SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
 }
 
-float4 PS_PostfilterVBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetPixelBlur(Input.Tex0, SampleTempTex2a, false).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0).rg, 0.0, 1.0);
+}
+
+float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0).rg, 0.0, 1.0);
+}
+
+float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0).rg, 0.0, 1.0);
 }
 
 float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -145,7 +158,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float2 ScreenCoord = Input.Tex0.xy;
 
-    float2 Velocity = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2b, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 Velocity = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
@@ -200,19 +213,33 @@ technique CShade_MotionBlur < ui_tooltip = "Motion blur effect"; >
     }
 
     // Postfilter blur
-    pass MRT_CopyAndBlur
+    pass MRT_CopyAndMedian
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostfilterHBlur;
+        PixelShader = PS_PostMedian0;
         RenderTarget0 = Tex2c;
-        RenderTarget1 = TempTex2a_RG16F;
+        RenderTarget1 = TempTex2b_RG16F;
     }
 
     pass
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostfilterVBlur;
+        PixelShader = PS_PostMedian1;
+        RenderTarget0 = TempTex2a_RG16F;
+    }
+
+    pass
+    {
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_PostMedian2;
         RenderTarget0 = TempTex2b_RG16F;
+    }
+
+    pass
+    {
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_PostMedian3;
+        RenderTarget0 = TempTex2a_RG16F;
     }
 
     // Motion blur

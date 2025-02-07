@@ -334,15 +334,15 @@
         // [0].xz [1].xz [2].xz
         // [0].xw [1].xw [2].xw
         float4 Sample[9];
-        Sample[0] = tex2D(Source, Tex1.xy);
-        Sample[1] = tex2D(Source, Tex1.zw);
-        Sample[2] = tex2D(Source, Tex2.xy);
-        Sample[3] = tex2D(Source, Tex2.zw);
-        Sample[4] = tex2D(Source, Tex);
-        Sample[5] = tex2D(Source, Tex3.xy);
-        Sample[6] = tex2D(Source, Tex3.zw);
-        Sample[7] = tex2D(Source, Tex4.xy);
-        Sample[8] = tex2D(Source, Tex4.zw);
+        Sample[0] = tex2Dlod(Source, float4(Tex1.xy, 0.0, 0.0));
+        Sample[1] = tex2Dlod(Source, float4(Tex1.zw, 0.0, 0.0));
+        Sample[2] = tex2Dlod(Source, float4(Tex2.xy, 0.0, 0.0));
+        Sample[3] = tex2Dlod(Source, float4(Tex2.zw, 0.0, 0.0));
+        Sample[4] = tex2Dlod(Source, float4(Tex, 0.0, 0.0));
+        Sample[5] = tex2Dlod(Source, float4(Tex3.xy, 0.0, 0.0));
+        Sample[6] = tex2Dlod(Source, float4(Tex3.zw, 0.0, 0.0));
+        Sample[7] = tex2Dlod(Source, float4(Tex4.xy, 0.0, 0.0));
+        Sample[8] = tex2Dlod(Source, float4(Tex4.zw, 0.0, 0.0));
         return CMath_Float4_Med9(
             Sample[0], Sample[1], Sample[2],
             Sample[3], Sample[4], Sample[5],
