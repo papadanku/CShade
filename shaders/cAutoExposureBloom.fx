@@ -557,7 +557,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_AutoExposureBloom < ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.\n\nTo adjust this shader to act like certain shaders, see the Preprocessor definitions below.\n\n\cAutoExposure:\n- ENABLE_AUTOEXPOSURE 1\n- ENABLE_BLOOM 0\n- ENABLE_GRADING 0\n\n\cBloom:\n- ENABLE_AUTOEXPOSURE 0\n- ENABLE_BLOOM 1\n- ENABLE_GRADING 0"; >
+technique CShade_AutoExposureBloom < ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.\n\nTo adjust this shader to act like certain shaders, see the Preprocessor definitions below.\n\n\cAutoExposure:\n\n- ENABLE_AUTOEXPOSURE 1\n- ENABLE_BLOOM 0\n- ENABLE_GRADING 0\n\n\cBloom:\n\n- ENABLE_AUTOEXPOSURE 0\n- ENABLE_BLOOM 1\n- ENABLE_GRADING 0"; >
 {
     #if ENABLE_BLOOM
         // Prefilter
