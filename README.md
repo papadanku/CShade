@@ -45,7 +45,8 @@ CShade features real-time motion estimation and feature-matching shaders through
 
 - Adaptive autoexposure
 - Datamoshing
-- Motion blur approximation
+- Motion blur
+- Motion stabilization
 - Vector lines
 
 ### Post Processing
