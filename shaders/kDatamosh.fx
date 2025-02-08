@@ -110,14 +110,14 @@ uniform float _Diffusion <
     [Textures and samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex1_RG16F, BUFFER_SIZE_1, RG16F, 8)
+CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_3, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
 
-CREATE_SAMPLER(SampleTempTex1, TempTex1_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -125,7 +125,7 @@ CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, M
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2a_RG16F, FILTERING, FILTERING, FILTERING, MIRROR, MIRROR, MIRROR)
 
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG16F, 8)
+CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG8, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
@@ -144,8 +144,7 @@ CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRR
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
-    float2 Chroma = CColor_GetSphericalRG(Color).xy;
-    return CMath_NormToFP16((Chroma * 2.0) - 1.0);
+    return CColor_GetSphericalRG(Color).xy;
 }
 
 // Run Lucas-Kanade
@@ -337,7 +336,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoDatamosh < ui_tooltip = "Keijiro Takahashi | An image effect that simulates video compression artifacts"; >
 {
     // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG16F)
+    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)
 
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
