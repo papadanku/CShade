@@ -26,7 +26,7 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform float _BlendFactor <
-    ui_category = "Shader | Optical Flow";
+    ui_category = "Shader | Stabilization";
     ui_label = "Temporal Blending Strength";
     ui_type = "slider";
     ui_min = 0.0;
