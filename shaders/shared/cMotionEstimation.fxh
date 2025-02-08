@@ -55,10 +55,6 @@
         const int WindowSize = 3;
         const int WindowHalf = trunc(WindowSize / 2);
 
-        float TI = 0.0;
-        float TT = 0.0;
-        float II = 0.0;
-
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
             float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
@@ -89,11 +85,6 @@
             // IxIt = B1; IyIt = B2
             IxIt += dot(Ix, IT);
             IyIt += dot(Iy, IT);
-
-            // Sum NCC components
-            TI += dot(I0, I1);
-            TT += dot(I0, I0);
-            II += dot(I1, I1);
         }
 
         /*
@@ -110,10 +101,6 @@
 
         // Calculate A^T*B
         float2 Flow = (D > 0.0) ? mul(B, A) : 0.0;
-
-        // Weight against NCC
-        float NCC = TI / sqrt(TT * II);
-        Flow *= NCC;
 
         // Propagate normalized motion vectors in Norm Range
         Vectors += (Flow * PixelSize);
