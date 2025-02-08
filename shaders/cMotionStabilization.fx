@@ -36,8 +36,10 @@ uniform float _BlendFactor <
 uniform float _Stabilization <
     ui_category = "Shader | Stabilization";
     ui_label = "Stabilization Strengh";
-    ui_type = "drag";
-> = 32.0;
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 16.0;
+> = 8.0;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
