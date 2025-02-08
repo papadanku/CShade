@@ -204,22 +204,22 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_GetMedian(SampleOFlowTex, Input.Tex0, 3.0).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0

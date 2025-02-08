@@ -312,42 +312,125 @@
         return OutputColor0;
     }
 
+    /*
+        3x3 Median
+        Morgan McGuire and Kyle Whitson
+        http://graphics.cs.williams.edu
 
-    float4 CBlur_GetMedian(sampler Source, float2 Tex, float Scale)
+
+        Copyright (c) Morgan McGuire and Williams College, 2006
+        All rights reserved.
+
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions are
+        met:
+
+        Redistributions of source code must retain the above copyright notice,
+        this list of conditions and the following disclaimer.
+
+        Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+        "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+        LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+        A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+        HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+        SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+        LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+        DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+        THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+        (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    */
+
+    void S2(inout float4 A, inout float4 B)
     {
-        float2 PixelSize = fwidth(Tex.xy);
+        float4 Temp = A;
+        A = min(A, B);
+        B = max(Temp, B);
+    }
 
+    void MN3(inout float4 A, inout float4 B, inout float4 C)
+    {
+        S2(A, B);
+        S2(A, C);
+    }
+
+    void MX3(inout float4 A, inout float4 B, inout float4 C)
+    {
+        S2(B, C);
+        S2(A, C);
+    }
+
+    // 3 exchanges
+    void MNMX3(inout float4 A, inout float4 B, inout float4 C)
+    {
+        MX3(A, B, C);
+        S2(A, B);
+    }
+
+    // 4 exchanges
+    void MNMX4(inout float4 A, inout float4 B, inout float4 C, inout float4 D)
+    {
+        S2(A, B);
+        S2(C, D);
+        S2(A, C);
+        S2(B, D);
+    }
+
+    // 6 exchanges
+    void MNMX5(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E)
+    {
+        S2(A, B);
+        S2(C, D);
+        MN3(A, C, E);
+        MX3(B, D, E);
+    }
+
+    // 7 exchanges
+    void MNMX6(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E, inout float4 F)
+    {
+        S2(A, D);
+        S2(B, E);
+        S2(C, F);
+        MN3(A, B, C);
+        MX3(D, E, F);
+    }
+
+    float4 CBlur_GetMedian(sampler Source, float2 Tex, float Scale, bool DiamondKernel)
+    {
         float Angle = radians(45.0);
         float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
+        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
 
-        float4 Offsets1 = float4(mul(float2(1.0, 1.0), Rotation), mul(float2(-1.0, -1.0), Rotation));
-        float4 Offsets2 = float4(mul(float2(-1.0, 1.0), Rotation), mul(float2(1.0, -1.0), Rotation));
-        float4 Offsets3 = float4(mul(float2(0.0, 1.0), Rotation), mul(float2(0.0, -1.0), Rotation));
-        float4 Offsets4 = float4(mul(float2(-1.0, 0.0), Rotation), mul(float2(1.0, 0.0), Rotation));
-        float4 Tex1 = Tex.xyxy + (ldexp(Offsets1, Scale) * PixelSize.xyxy);
-        float4 Tex2 = Tex.xyxy + (ldexp(Offsets2, Scale) * PixelSize.xyxy);
-        float4 Tex3 = Tex.xyxy + (ldexp(Offsets3, Scale) * PixelSize.xyxy);
-        float4 Tex4 = Tex.xyxy + (ldexp(Offsets4, Scale) * PixelSize.xyxy);
+        // Add the pixels which make up our window to the pixel array.
+        float4 Array[9];
 
-        // Sample locations:
-        // [0].xy [1].xy [2].xy
-        // [0].xz [1].xz [2].xz
-        // [0].xw [1].xw [2].xw
-        float4 Sample[9];
-        Sample[0] = tex2Dlod(Source, float4(Tex1.xy, 0.0, 0.0));
-        Sample[1] = tex2Dlod(Source, float4(Tex1.zw, 0.0, 0.0));
-        Sample[2] = tex2Dlod(Source, float4(Tex2.xy, 0.0, 0.0));
-        Sample[3] = tex2Dlod(Source, float4(Tex2.zw, 0.0, 0.0));
-        Sample[4] = tex2Dlod(Source, float4(Tex, 0.0, 0.0));
-        Sample[5] = tex2Dlod(Source, float4(Tex3.xy, 0.0, 0.0));
-        Sample[6] = tex2Dlod(Source, float4(Tex3.zw, 0.0, 0.0));
-        Sample[7] = tex2Dlod(Source, float4(Tex4.xy, 0.0, 0.0));
-        Sample[8] = tex2Dlod(Source, float4(Tex4.zw, 0.0, 0.0));
-        return CMath_Float4_Med9(
-            Sample[0], Sample[1], Sample[2],
-            Sample[3], Sample[4], Sample[5],
-            Sample[6], Sample[7], Sample[8]
-        );
+        [unroll]
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            [unroll]
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                float2 Offset = float2(float(dx), float(dy));
+                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
+
+                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
+                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+                // bottom right pixel of the window at pixel[N-1].
+                Array[(dx + 1) * 3 + (dy + 1)] = tex2D(Source, Tex + (Offset * PixelSize));
+            }
+        }
+
+        // Starting with a subset of size 6, remove the min and max each time
+        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
+        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
+        MNMX4(Array[2], Array[3], Array[4], Array[7]);
+        MNMX3(Array[3], Array[4], Array[8]);
+
+        return Array[4];
     }
 
     /*
@@ -360,36 +443,7 @@
             Dilate by 4 texels.
             Subsequent levels will apply median at smaller regions.
         */
-        float2 PixelSize = fwidth(Tex.xy) * 4.0;
-
-        float4 Offsets1 = float4(1.0, 1.0, -1.0, -1.0);
-        float4 Offsets2 = float4(-1.0, 1.0, 1.0, -1.0);
-        float4 Offsets3 = float4(0.0, 1.0, 0.0, -1.0);
-        float4 Offsets4 = float4(-1.0, 0.0, 1.0, 0.0);
-        float4 Tex1 = Tex.xyxy + (Offsets1 * PixelSize.xyxy);
-        float4 Tex2 = Tex.xyxy + (Offsets2 * PixelSize.xyxy);
-        float4 Tex3 = Tex.xyxy + (Offsets3 * PixelSize.xyxy);
-        float4 Tex4 = Tex.xyxy + (Offsets4 * PixelSize.xyxy);
-
-        // Sample locations:
-        // [0].xy [1].xy [2].xy
-        // [0].xz [1].xz [2].xz
-        // [0].xw [1].xw [2].xw
-        float4 Sample[9];
-        Sample[0] = tex2D(Source, Tex1.xy);
-        Sample[1] = tex2D(Source, Tex1.zw);
-        Sample[2] = tex2D(Source, Tex2.xy);
-        Sample[3] = tex2D(Source, Tex2.zw);
-        Sample[4] = tex2D(Source, Tex);
-        Sample[5] = tex2D(Source, Tex3.xy);
-        Sample[6] = tex2D(Source, Tex3.zw);
-        Sample[7] = tex2D(Source, Tex4.xy);
-        Sample[8] = tex2D(Source, Tex4.zw);
-        return CMath_Float4_Med9(
-            Sample[0], Sample[1], Sample[2],
-            Sample[3], Sample[4], Sample[5],
-            Sample[6], Sample[7], Sample[8]
-        );
+        return CBlur_GetMedian(Source, Tex, 2.0, false);
     }
 
 #endif
