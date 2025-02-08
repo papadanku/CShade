@@ -25,14 +25,6 @@
 
 uniform float _FrameTime < source = "frametime"; > ;
 
-uniform float _MipBias <
-    ui_category = "Shader | Optical Flow";
-    ui_label = "Mipmap Bias";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 7.0;
-> = 4.5;
-
 uniform float _BlendFactor <
     ui_category = "Shader | Optical Flow";
     ui_label = "Temporal Blending Strength";
