@@ -31,6 +31,7 @@
 /*
     [Shader Options]
 */
+
 #ifndef RENDER_VELOCITY_STREAMS
     #define RENDER_VELOCITY_STREAMS 1
 #endif
