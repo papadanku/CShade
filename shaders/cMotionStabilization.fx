@@ -157,7 +157,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_MotionStabilization < ui_tooltip = "Motion blur effect"; >
+technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect"; >
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG16F)
