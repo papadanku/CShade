@@ -133,7 +133,7 @@ float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
-float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 MotionVectors = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(0.5, 0.0, 0.0, 99.0)).xy);
@@ -208,13 +208,12 @@ technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect
         RenderTarget0 = TempTex2a_RG16F;
     }
 
-    // Motion blur
-    pass
+    pass MotionStabilization
     {
         SRGBWriteEnable = WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_MotionBlur;
+        PixelShader = PS_MotionStabilization;
     }
 }
