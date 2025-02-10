@@ -33,7 +33,7 @@
 */
 
 #ifndef RENDER_VELOCITY_STREAMS
-    #define RENDER_VELOCITY_STREAMS 1
+    #define RENDER_VELOCITY_STREAMS 0
 #endif
 
 #if RENDER_VELOCITY_STREAMS
@@ -69,6 +69,10 @@ uniform float _BlendFactor <
 #include "shared/cShadeHDR.fxh"
 #if !RENDER_VELOCITY_STREAMS
     #include "shared/cBlend.fxh"
+
+    #ifndef RENDER_POINT_SAMPLED_FLOW
+        #define RENDER_POINT_SAMPLED_FLOW 0
+    #endif
 #endif
 
 /*
@@ -83,7 +87,26 @@ CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
 
 CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+
+CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG8, 8)
+CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+
+CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
+CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+#if !RENDER_VELOCITY_STREAMS
+    #if RENDER_POINT_SAMPLED_FLOW
+        #define FLOW_SAMPLER_FILTER POINT
+    #else
+        #define FLOW_SAMPLER_FILTER LINEAR
+    #endif
+
+    CREATE_SAMPLER(SampleFlow, TempTex2a_RG16F, LINEAR, FLOW_SAMPLER_FILTER, LINEAR, MIRROR, MIRROR, MIRROR)
+#endif
 
 struct VS2PS_Streaming
 {
@@ -146,18 +169,6 @@ float4 PS_Streaming(VS2PS_Streaming Input) : SV_TARGET0
     Display.b = 1.0 - dot(Display.rg, 0.5);
     return float4(Display, 1.0);
 }
-
-CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
-CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG8, 8)
-CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
-CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
-CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 /*
     [Pixel Shaders]
@@ -222,20 +233,22 @@ float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
-float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
-    Vectors.xy /= fwidth(Input.Tex0.xy);
-    Vectors.y *= -1.0;
-    float Magnitude = length(float3(Vectors, 1.0));
+#if !RENDER_VELOCITY_STREAMS
+    float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
+    {
+        float2 Vectors = CMath_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+        Vectors.xy /= fwidth(Input.Tex0.xy);
+        Vectors.y *= -1.0;
+        float Magnitude = length(float3(Vectors, 1.0));
 
-    float3 Display = 1.0;
-    Display.xy = (Magnitude > 0.0) ? Vectors / Magnitude : 0.0;
-    Display.xy = (Display.xy * 0.5) + 0.5;
-    Display.z = 1.0 - dot(Display.xy, 0.5);
+        float3 Display = 1.0;
+        Display.xy = (Magnitude > 0.0) ? Vectors / Magnitude : 0.0;
+        Display.xy = (Display.xy * 0.5) + 0.5;
+        Display.z = 1.0 - dot(Display.xy, 0.5);
 
-    return float4(Display, 1.0);
-}
+        return float4(Display, 1.0);
+    }
+#endif
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
     pass \
