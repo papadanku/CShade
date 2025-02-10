@@ -109,7 +109,7 @@
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Encode motion vectors to FP16 format
-        return  CMath_NormToFP16(Vectors);
+        return CMath_NormToFP16(Vectors);
     }
 
 #endif
