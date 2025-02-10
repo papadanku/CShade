@@ -146,7 +146,7 @@ float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
     }
 
     // Getting textures
-    float3 Base = CShade_BackBuffer2D(Input.Tex0.xy).rgb;
+    float3 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0.xy).rgb;
     float3 BackgroundColor = lerp(Base.rgb, _BackColor.rgb, _BackColor.a);
 
     if (_DisplayMode == 1)

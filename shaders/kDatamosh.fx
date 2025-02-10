@@ -35,14 +35,12 @@
     [Shader Options]
 */
 
-#ifndef LINEAR_SAMPLING
-    #define LINEAR_SAMPLING 0
+#ifndef SAMPLE_LINEAR_DISPLACEMENT
+    #define SAMPLE_LINEAR_DISPLACEMENT 0
 #endif
 
-#if LINEAR_SAMPLING == 1
-    #define FILTERING LINEAR
-#else
-    #define FILTERING POINT
+#ifndef WARP_TEXTURE_LINEAR
+    #define WARP_TEXTURE_LINEAR 0
 #endif
 
 uniform float _Time < source = "timer"; >;
@@ -110,6 +108,19 @@ uniform float _Diffusion <
     [Textures and samplers]
 */
 
+
+#if SAMPLE_LINEAR_DISPLACEMENT
+    #define DISPLACEMENT_FILTERING LINEAR
+#else
+    #define DISPLACEMENT_FILTERING POINT
+#endif
+
+#if WARP_TEXTURE_LINEAR
+    #define WARP_FILTERING LINEAR
+#else
+    #define WARP_FILTERING POINT
+#endif
+
 CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 1)
@@ -123,18 +134,18 @@ CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, LINEAR, LINEAR, MIRROR,
 CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2a_RG16F, FILTERING, FILTERING, FILTERING, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2a_RG16F, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, MIRROR, MIRROR, MIRROR)
 
 CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG8, 8)
-CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
 CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
-CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
 CREATE_TEXTURE(AccumTex, BUFFER_SIZE_0, R16F, 1)
-CREATE_SAMPLER(SampleAccumTex, AccumTex, FILTERING, FILTERING, FILTERING, MIRROR, MIRROR, MIRROR)
-
 CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
+
+CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SAMPLER(SampleAccumTex, AccumTex, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, MIRROR, MIRROR, MIRROR)
+
+CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, WARP_FILTERING, WARP_FILTERING, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 /*
@@ -143,7 +154,7 @@ CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRR
 
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     return CColor_GetSphericalRG(Color).xy;
 }
 
@@ -291,12 +302,12 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Pixel coordinates -> Normalized screen space
     MV = NormalizeUV(MV, TexSize);
 
-    // Color from the original image
-    float4 Source = CShade_BackBuffer2D(Input.Tex0);
-
     // Displacement vector
     float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
-    float4 Work = tex2D(SampleFeedbackTex, Input.Tex0 - MV);
+
+    // Color from the original image
+    float4 Source = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Work = CShadeHDR_Tex2D_InvTonemap(SampleFeedbackTex, Input.Tex0 - MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);

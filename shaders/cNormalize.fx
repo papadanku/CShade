@@ -31,15 +31,15 @@ float4 GetCensusTransform(float2 Tex)
 
     const int Neighbors = 8;
     float4 SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = CShade_BackBuffer2D(Tex0.xy);
-    SampleNeighbor[1] = CShade_BackBuffer2D(Tex1.xy);
-    SampleNeighbor[2] = CShade_BackBuffer2D(Tex2.xy);
-    SampleNeighbor[3] = CShade_BackBuffer2D(Tex0.xz);
-    SampleNeighbor[4] = CShade_BackBuffer2D(Tex2.xz);
-    SampleNeighbor[5] = CShade_BackBuffer2D(Tex0.xw);
-    SampleNeighbor[6] = CShade_BackBuffer2D(Tex1.xw);
-    SampleNeighbor[7] = CShade_BackBuffer2D(Tex2.xw);
-    float4 CenterSample = CShade_BackBuffer2D(Tex1.xz);
+    SampleNeighbor[0] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.xy);
+    SampleNeighbor[1] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xy);
+    SampleNeighbor[2] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xy);
+    SampleNeighbor[3] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.xz);
+    SampleNeighbor[4] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xz);
+    SampleNeighbor[5] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.xw);
+    SampleNeighbor[6] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xw);
+    SampleNeighbor[7] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xw);
+    float4 CenterSample = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xz);
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for(int i = 0; i < Neighbors; i++)
@@ -57,11 +57,11 @@ float4 GetLocalContrastNormalization(float2 Tex)
     float2 Delta = fwidth(Tex);
 
     float4 S[5];
-    S[0] = CShade_BackBuffer2D(Tex);
-    S[1] = CShade_BackBuffer2D(Tex + (float2(-1.5, 0.0) * Delta));
-    S[2] = CShade_BackBuffer2D(Tex + (float2(1.5, 0.0) * Delta));
-    S[3] = CShade_BackBuffer2D(Tex + (float2(0.0, -1.5) * Delta));
-    S[4] = CShade_BackBuffer2D(Tex + (float2(0.0, 1.5) * Delta));
+    S[0] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex);
+    S[1] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex + (float2(-1.5, 0.0) * Delta));
+    S[2] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex + (float2(1.5, 0.0) * Delta));
+    S[3] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex + (float2(0.0, -1.5) * Delta));
+    S[4] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex + (float2(0.0, 1.5) * Delta));
     float4 Mean = (S[0] + S[1] + S[2] + S[3] + S[4]) / 5.0;
 
     // Calculate standard deviation

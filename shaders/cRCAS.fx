@@ -99,11 +99,11 @@ void FFX_RCAS(
     TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
 
     float4 Sample[5];
-    Sample[0] = CShade_BackBuffer2D(Tex);
-    Sample[1] = CShade_BackBuffer2D(TexArray[0].xy);
-    Sample[2] = CShade_BackBuffer2D(TexArray[0].zw);
-    Sample[3] = CShade_BackBuffer2D(TexArray[1].xy);
-    Sample[4] = CShade_BackBuffer2D(TexArray[1].zw);
+    Sample[0] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex);
+    Sample[1] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, TexArray[0].xy);
+    Sample[2] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, TexArray[0].zw);
+    Sample[3] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, TexArray[1].xy);
+    Sample[4] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, TexArray[1].zw);
 
     // Luma times 2.
     float Luma[5];

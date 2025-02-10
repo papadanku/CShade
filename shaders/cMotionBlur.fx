@@ -89,7 +89,7 @@ CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR,
 
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     return CColor_GetSphericalRG(Color).xy;
 }
 
@@ -167,7 +167,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float Random = (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
         float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
-        float4 Color = CShade_BackBuffer2D(RandomTex);
+        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, RandomTex);
         if (_BlurMode == 1)
         {
             OutputColor = max(Color, OutputColor);

@@ -21,7 +21,7 @@ uniform int _Select <
 
 float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
     float4 Chromaticity = 0.0;
 

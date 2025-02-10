@@ -105,9 +105,9 @@ void FFX_Lens(
 
     // Run Lens
     Color = 1.0;
-    Color.r = CShade_BackBuffer2D(ChromaticAberrationTex.Red).r;
-    Color.g = CShade_BackBuffer2D(ChromaticAberrationTex.Green).g;
-    Color.b = CShade_BackBuffer2D(ChromaticAberrationTex.Blue).b;
+    Color.r = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
+    Color.g = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
+    Color.b = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
     FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
     FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
 }

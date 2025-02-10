@@ -397,7 +397,7 @@
             float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
         #else
             float2 Tex = (_ExposureMeter == 1) ? GetSpotMeterTex(Input.Tex0) : Input.Tex0;
-            float3 Color = CShade_BackBuffer2D(Tex).rgb;
+            float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex).rgb;
             float LogLuminance = CCamera_GetLogLuminance(Color);
         #endif
 
@@ -409,7 +409,7 @@
 #if ENABLE_BLOOM
     float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        float4 Color = CShade_BackBuffer2D(Input.Tex0);
+        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
         float Luminance = 1.0;
 
         // Apply auto-exposure to the backbuffer
@@ -417,7 +417,7 @@
             // Store log luminance in the alpha channel
             if (_ExposureMeter == 1)
             {
-                float3 ColorArea = CShade_BackBuffer2D(GetSpotMeterTex(Input.Tex0)).rgb;
+                float3 ColorArea = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, GetSpotMeterTex(Input.Tex0)).rgb;
                 Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
             }
             else
@@ -478,7 +478,7 @@
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 BaseColor = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
 
     // Apply auto-exposure to base-color

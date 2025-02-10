@@ -12,14 +12,14 @@
         ui_items = "None\0Inverse Reinhard\0Inverse Reinhard Squared\0Inverse Standard\0Inverse Exponential\0Inverse AMD Resolve\0";
     > = 0;
 
-    float4 CShade_BackBuffer2D(float2 Tex)
+    float4 CShadeHDR_Tex2D_InvTonemap(sampler Source, float2 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2D(CShade_SampleColorTex, Tex), _CShadeInputTonemapOperator);
+        return CTonemap_ApplyInverseTonemap(tex2D(Source, Tex), _CShadeInputTonemapOperator);
     }
 
-    float4 CShade_BackBuffer2Dlod(float4 Tex)
+    float4 CShadeHDR_Tex2Dlod_InvTonemap(sampler Source, float4 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2Dlod(CShade_SampleColorTex, Tex), _CShadeInputTonemapOperator);
+        return CTonemap_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShadeInputTonemapOperator);
     }
 
 #endif

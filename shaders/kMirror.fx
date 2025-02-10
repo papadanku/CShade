@@ -73,7 +73,7 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Reflection at the border of the screen.
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
-    return CBlend_OutputChannels(float4(CShade_BackBuffer2D(Input.Tex0).rgb, _CShadeAlphaFactor));
+    return CBlend_OutputChannels(float4(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_KinoMirror < ui_tooltip = "Keijiro Takahashi | Mirroring and kaleidoscope effect"; >

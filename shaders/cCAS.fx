@@ -70,11 +70,11 @@ CAS GetDiamondCAS(float2 Tex, float2 Delta)
 
     float4 Tex0 = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
     float4 Tex1 = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-    O.Sample[0] = CShade_BackBuffer2D(Tex);
-    O.Sample[1] = CShade_BackBuffer2D(Tex0.xy);
-    O.Sample[2] = CShade_BackBuffer2D(Tex0.zw);
-    O.Sample[3] = CShade_BackBuffer2D(Tex1.xy);
-    O.Sample[4] = CShade_BackBuffer2D(Tex1.zw);
+    O.Sample[0] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex);
+    O.Sample[1] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.xy);
+    O.Sample[2] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.zw);
+    O.Sample[3] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xy);
+    O.Sample[4] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.zw);
 
     // Get polar min/max
     O.MinRGB = min(O.Sample[0], min(min(O.Sample[1], O.Sample[2]), min(O.Sample[3], O.Sample[4])));
@@ -89,10 +89,10 @@ CAS GetBoxCAS(float2 Tex, float2 Delta)
     CAS I = GetDiamondCAS(Tex, Delta);
 
     float4 BoxTex = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-    float4 Sample5 = CShade_BackBuffer2D(BoxTex.xw);
-    float4 Sample6 = CShade_BackBuffer2D(BoxTex.zw);
-    float4 Sample7 = CShade_BackBuffer2D(BoxTex.xy);
-    float4 Sample8 = CShade_BackBuffer2D(BoxTex.zy);
+    float4 Sample5 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.xw);
+    float4 Sample6 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.zw);
+    float4 Sample7 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.xy);
+    float4 Sample8 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.zy);
 
     // Get polar min/max
     O.Sample[0] = I.Sample[0];

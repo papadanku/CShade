@@ -76,7 +76,7 @@ CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, STABILIZATION_FILTER, STAB
 
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     return CColor_GetSphericalRG(Color).xy;
 }
 
@@ -142,8 +142,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     StableTex += (MotionVectors * _Stabilization);
     StableTex += 0.5;
 
-    float4 Color = tex2D(SampleStableTex, StableTex);
-    Color = CTonemap_ApplyInverseTonemap(Color, _CShadeInputTonemapOperator);
+    float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
 
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
 }

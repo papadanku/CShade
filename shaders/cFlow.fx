@@ -176,7 +176,7 @@ float4 PS_Streaming(VS2PS_Streaming Input) : SV_TARGET0
 
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShade_BackBuffer2D(Input.Tex0).rgb;
+    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     return CColor_GetSphericalRG(Color).xy;
 }
 

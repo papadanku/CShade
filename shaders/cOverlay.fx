@@ -90,7 +90,7 @@ VS2PS VS_Overlay(CShade_APP2VS Input)
 
 float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 {
-    float4 Color = CTonemap_ApplyInverseTonemap(tex2D(SampleColorTex_Overlay, Input.Tex0.zw), _CShadeInputTonemapOperator);
+    float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleColorTex_Overlay, Input.Tex0.zw);
 
     // Output a rectangle
     float2 MaskCoord = (Input.Tex0.xy * 2.0) - 1.0;
