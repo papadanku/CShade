@@ -345,7 +345,7 @@
         OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
 
-    void S2(inout float4 A, inout float4 B)
+    void Swap2(inout float4 A, inout float4 B)
     {
         float4 Temp = A;
         A = min(A, B);
@@ -354,37 +354,37 @@
 
     void MN3(inout float4 A, inout float4 B, inout float4 C)
     {
-        S2(A, B);
-        S2(A, C);
+        Swap2(A, B);
+        Swap2(A, C);
     }
 
     void MX3(inout float4 A, inout float4 B, inout float4 C)
     {
-        S2(B, C);
-        S2(A, C);
+        Swap2(B, C);
+        Swap2(A, C);
     }
 
     // 3 exchanges
     void MNMX3(inout float4 A, inout float4 B, inout float4 C)
     {
         MX3(A, B, C);
-        S2(A, B);
+        Swap2(A, B);
     }
 
     // 4 exchanges
     void MNMX4(inout float4 A, inout float4 B, inout float4 C, inout float4 D)
     {
-        S2(A, B);
-        S2(C, D);
-        S2(A, C);
-        S2(B, D);
+        Swap2(A, B);
+        Swap2(C, D);
+        Swap2(A, C);
+        Swap2(B, D);
     }
 
     // 6 exchanges
     void MNMX5(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E)
     {
-        S2(A, B);
-        S2(C, D);
+        Swap2(A, B);
+        Swap2(C, D);
         MN3(A, C, E);
         MX3(B, D, E);
     }
@@ -392,9 +392,9 @@
     // 7 exchanges
     void MNMX6(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E, inout float4 F)
     {
-        S2(A, D);
-        S2(B, E);
-        S2(C, F);
+        Swap2(A, D);
+        Swap2(B, E);
+        Swap2(C, F);
         MN3(A, B, C);
         MX3(D, E, F);
     }
