@@ -57,17 +57,17 @@
 
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            float2 AngleShift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+            float2 Shift = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
 
             // Get temporal gradient
-            float4 TexIT = WarpTex.xyzw + (AngleShift.xyxy * PixelSize.xyxy);
+            float4 TexIT = WarpTex.xyzw + (Shift.xyxy * PixelSize.xyxy);
             float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
             float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
             float2 IT = I0 - I1;
 
             // Get spatial gradient
-            float4 OffsetNS = AngleShift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
-            float4 OffsetEW = AngleShift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
+            float4 OffsetNS = Shift.xyxy + float4(0.0, -1.0, 0.0, 1.0);
+            float4 OffsetEW = Shift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
             float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
             float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
             float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
