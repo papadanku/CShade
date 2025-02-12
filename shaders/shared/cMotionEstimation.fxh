@@ -47,9 +47,9 @@
         WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get gradient information
-        float2 TexIx = ddx(WarpTex.xy);
-        float2 TexIy = ddy(WarpTex.xy);
-        float2 PixelSize = abs(TexIx) + abs(TexIy);
+        float4 TexIx = ddx(WarpTex);
+        float4 TexIy = ddy(WarpTex);
+        float2 PixelSize = abs(TexIx.xy) + abs(TexIy.xy);
 
         // Get required data to calculate main window data
         const int WindowSize = 3;
@@ -61,8 +61,8 @@
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (Shift.xyxy * PixelSize.xyxy);
-            float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx, TexIy).rg;
-            float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx, TexIy).rg;
+            float2 I0 = tex2Dgrad(SampleI0, TexIT.xy, TexIx.xy, TexIy.xy).rg;
+            float2 I1 = tex2Dgrad(SampleI1, TexIT.zw, TexIx.zw, TexIy.zw).rg;
             float2 IT = I0 - I1;
 
             // Get spatial gradient
@@ -70,10 +70,10 @@
             float4 OffsetEW = Shift.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
             float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
             float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
-            float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx, TexIy).rg;
-            float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx, TexIy).rg;
-            float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx, TexIy).rg;
-            float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx, TexIy).rg;
+            float2 N = tex2Dgrad(SampleI0, NS.xy, TexIx.xy, TexIy.xy).rg;
+            float2 S = tex2Dgrad(SampleI0, NS.zw, TexIx.xy, TexIy.xy).rg;
+            float2 E = tex2Dgrad(SampleI0, EW.xy, TexIx.xy, TexIy.xy).rg;
+            float2 W = tex2Dgrad(SampleI0, EW.zw, TexIx.xy, TexIy.xy).rg;
             float2 Ix = E - W;
             float2 Iy = N - S;
 
@@ -104,9 +104,6 @@
 
         // Normalize motion vectors
         Flow *= PixelSize;
-
-        // Remove outliers
-        Flow = (abs(Flow) > 1.0) ? 0.0 : Flow;
 
         // Propagate normalized motion vectors in Norm Range
         Vectors += Flow;
