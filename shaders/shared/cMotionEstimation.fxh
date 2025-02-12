@@ -1,10 +1,23 @@
 
+#include "cBlur.fxh"
 #include "cShade.fxh"
 #include "cMath.fxh"
 #include "cProcedural.fxh"
 
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
+
+    /*
+        Dilate by up to 2^4 texels.
+        - Subsequent levels and the post-filter median will median the dilated regions.
+        - The post-filter median filters 2^4 pixels wide.
+        - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
+    */
+    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
+    {
+
+        return CBlur_GetMedian(Source, Tex, 3.0, false);
+    }
 
     /*
         Lucas-Kanade optical flow with bilinear fetches.

@@ -433,17 +433,4 @@
         return Array[4];
     }
 
-    /*
-        9x9 dilated median upsampling.
-    */
-
-    float4 CBlur_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
-    {
-        /*
-            Dilate by 4 texels.
-            Subsequent levels will apply median at smaller regions.
-        */
-        return CBlur_GetMedian(Source, Tex, 2.0, false);
-    }
-
 #endif

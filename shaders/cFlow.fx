@@ -80,11 +80,11 @@ uniform float _BlendFactor <
 */
 
 CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG8, 8)
-CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_2, RG16F, 8)
-CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_2, RG16F, 1)
-CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_3, RG16F, 1)
-CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_4, RG16F, 1)
-CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_5, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_3, RG16F, 8)
+CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_3, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_4, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_5, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_6, RG16F, 1)
 
 CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -93,10 +93,10 @@ CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, M
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_2, RG8, 8)
+CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RG8, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
-CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_2, RG16F, 1)
+CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_3, RG16F, 1)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 #if !RENDER_VELOCITY_STREAMS
     #if RENDER_POINT_SAMPLED_FLOW
@@ -190,19 +190,19 @@ float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_GetDilatedPyramidUpsample(SampleTempTex4, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex4, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
     float2 Flow = CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
     return float4(Flow, 0.0, _BlendFactor);
 }
