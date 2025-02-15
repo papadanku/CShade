@@ -1,56 +1,13 @@
 #define CSHADE_FLOW
 
-/*
-    MIT License
-
-    Copyright (c) 2016 Thomas Diewald
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
-*/
-
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
+#include "shared/cProcedural.fxh"
 
 /*
     [Shader Options]
 */
-
-#ifndef RENDER_VELOCITY_STREAMS
-    #define RENDER_VELOCITY_STREAMS 0
-#endif
-
-#if RENDER_VELOCITY_STREAMS
-    #ifndef VERTEX_SPACING
-        #define VERTEX_SPACING 16
-    #endif
-    #ifndef RENDER_OVER_BUFFER
-        #define RENDER_OVER_BUFFER 1
-    #endif
-
-    #define LINES_X uint(BUFFER_WIDTH / VERTEX_SPACING)
-    #define LINES_Y uint(BUFFER_HEIGHT / VERTEX_SPACING)
-    #define NUM_LINES (LINES_X * LINES_Y)
-    #define SPACE_X (BUFFER_WIDTH / LINES_X)
-    #define SPACE_Y (BUFFER_HEIGHT / LINES_Y)
-    #define VELOCITY_SCALE (SPACE_X + SPACE_Y) * 1
-#endif
 
 uniform float _MipBias <
     ui_label = "Mipmap Bias";
@@ -67,8 +24,7 @@ uniform float _BlendFactor <
 > = 0.45;
 
 #include "shared/cShadeHDR.fxh"
-#if !RENDER_VELOCITY_STREAMS
-    #include "shared/cBlend.fxh"
+#include "shared/cBlend.fxh"
 
     #ifndef RENDER_LINEAR_SAMPLED_FLOW
         #define RENDER_LINEAR_SAMPLED_FLOW 0
@@ -174,6 +130,11 @@ float4 PS_Streaming(VS2PS_Streaming Input) : SV_TARGET0
     [Pixel Shaders]
 */
 
+float PS_GenerateNoise(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    return CProcedural_GetHash1(Input.HPos.xy, 0.0);
+}
+
 float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
@@ -215,40 +176,68 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
-#if !RENDER_VELOCITY_STREAMS
-    float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    float2 PixelSize = fwidth(Input.Tex0.xy);
+    float2 Vectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float Minimal = max(PixelSize.x, PixelSize.y);
+
+    // Encode vectors
+    float3 VectorColors = normalize(float3(Vectors, Minimal));
+    VectorColors.xy = (VectorColors.xy * 0.5) + 0.5;
+    VectorColors.z = 1.0 - dot(VectorColors.xy, 0.5);
+    VectorColors /= max(max(VectorColors.x, VectorColors.y), VectorColors.z);
+
+    // Conditional output
+    float3 OutputColor = 0.0;
+
+    switch (_OutputMode)
     {
-        float2 Vectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
-        Vectors.xy /= fwidth(Input.Tex0.xy);
-        Vectors.y *= -1.0;
-        float Magnitude = length(float3(Vectors, 1.0));
+        case 0:
+            OutputColor = VectorColors;
+            break;
+        case 1:
+            // Line Integral Convolution (LIC)
+            float LIC = 0.0;
+            float WeightSum = 0.0;
 
-        float3 Display = 1.0;
-        Display.xy = (Magnitude > 0.0) ? Vectors / Magnitude : 0.0;
-        Display.xy = (Display.xy * 0.5) + 0.5;
-        Display.z = 1.0 - dot(Display.xy, 0.5);
+            [unroll]
+            for (float i = 0.0; i < 4.0; i += 0.5)
+            {
+                float2 Offset = Vectors * i;
+                LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
+                LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
+                WeightSum += 2.0;
+            }
 
-        return float4(Display, 1.0);
+            OutputColor = LIC / WeightSum;
+            OutputColor = _ColorLIC ? OutputColor * VectorColors : OutputColor;
+            break;
+        default:
+            OutputColor = 0.0;
+            break;
     }
-#endif
+
+    return float4(OutputColor, 1.0);
+}
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
     pass \
@@ -257,6 +246,20 @@ float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
         PixelShader = PIXEL_SHADER; \
         RenderTarget0 = RENDER_TARGET; \
     }
+
+technique GenerateNoise <
+    enabled = true;
+    timeout = 1;
+    hidden = true;
+>
+{
+    pass
+    {
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_GenerateNoise;
+        RenderTarget0 = NoiseTex;
+    }
+}
 
 technique CShade_Flow < ui_tooltip = "Lucas-Kanade optical flow"; >
 {
@@ -310,27 +313,12 @@ technique CShade_Flow < ui_tooltip = "Lucas-Kanade optical flow"; >
         RenderTarget0 = TempTex2a_RG16F;
     }
 
-    #if RENDER_VELOCITY_STREAMS
-        pass
-        {
-            PrimitiveTopology = LINELIST;
-            VertexCount = NUM_LINES * 2;
-            VertexShader = VS_Streaming;
-            PixelShader = PS_Streaming;
-            ClearRenderTargets = FALSE;
-            BlendEnable = TRUE;
-            BlendOp = ADD;
-            SrcBlend = ONE;
-            DestBlend = ZERO;
-        }
-    #else
-        pass
-        {
-            SRGBWriteEnable = WRITE_SRGB;
-            CBLEND_CREATE_STATES()
+    pass
+    {
+        SRGBWriteEnable = WRITE_SRGB;
+        CBLEND_CREATE_STATES()
 
-            VertexShader = CShade_VS_Quad;
-            PixelShader = PS_Shading;
-        }
-    #endif
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_Shading;
+    }
 }
