@@ -26,13 +26,8 @@ uniform float _BlendFactor <
 uniform int _OutputMode <
     ui_label = "Output Mode";
     ui_type = "combo";
-    ui_items = "Shading\0Line Integral Convolution\0";
-> = 1;
-
-uniform bool _ColorLIC <
-    ui_label = "Colored Line Integral Convolution";
-    ui_type = "radio";
-> = true;
+    ui_items = "Shading\0Line Integral Convolution\0Line Integral Convolution (Colored)\0";
+> = 2;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -159,31 +154,40 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Conditional output
     float3 OutputColor = 0.0;
 
-    switch (_OutputMode)
+    if (_OutputMode == 0)
     {
-        case 0:
-            OutputColor = VectorColors;
-            break;
-        case 1:
-            // Line Integral Convolution (LIC)
-            float LIC = 0.0;
-            float WeightSum = 0.0;
+        OutputColor = VectorColors;
+    }
+    else if (_OutputMode >= 1)
+    {
+        // Line Integral Convolution (LIC)
+        float LIC = 0.0;
+        float WeightSum = 0.0;
 
-            [unroll]
-            for (float i = 0.0; i < 4.0; i += 0.5)
-            {
-                float2 Offset = Vectors * i;
-                LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
-                LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
-                WeightSum += 2.0;
-            }
+        [unroll]
+        for (float i = 0.0; i < 4.0; i += 0.5)
+        {
+            float2 Offset = Vectors * i;
+            LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
+            LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
+            WeightSum += 2.0;
+        }
 
-            OutputColor = LIC / WeightSum;
-            OutputColor = _ColorLIC ? OutputColor * VectorColors : OutputColor;
-            break;
-        default:
-            OutputColor = 0.0;
-            break;
+        // Normalize LIC
+        LIC /= WeightSum;
+
+        if (_OutputMode == 2)
+        {
+            OutputColor = VectorColors * LIC;
+        }
+        else
+        {
+            OutputColor = LIC;
+        }
+    }
+    else
+    {
+        OutputColor = VectorColors;
     }
 
     return float4(OutputColor, 1.0);
