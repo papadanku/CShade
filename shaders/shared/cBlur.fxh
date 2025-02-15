@@ -420,7 +420,8 @@
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
-                Array[(dx + 1) * 3 + (dy + 1)] = tex2D(Source, Tex + (Offset * PixelSize));
+                int ID = (dx + 1) * 3 + (dy + 1);
+                Array[ID] = tex2D(Source, Tex + (Offset * PixelSize));
             }
         }
 
@@ -431,6 +432,64 @@
         MNMX3(Array[3], Array[4], Array[8]);
 
         return Array[4];
+    }
+
+    float4 CBlur_FilterMotionVectors(sampler Source, float2 Tex, float Scale, bool DiamondKernel)
+    {
+        float Angle = radians(45.0);
+        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
+        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
+
+        // Add the pixels which make up our window to the pixel array.
+        float4 Array[9];
+        Array[4] = CMath_Float4_FP16ToNorm(tex2D(Source, Tex));
+        float DotTT = dot(Array[4].xy, Array[4].xy);
+
+        [unroll]
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            [unroll]
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
+                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+                // bottom right pixel of the window at pixel[N-1].
+                int ID = (dx + 1) * 3 + (dy + 1);
+                if (ID == 4)
+                {
+                    continue;
+                }
+
+                // Compute sample
+                float2 Offset = float2(float(dx), float(dy));
+                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
+                float4 Pixel = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
+
+                // Compute weight
+                float Weight = exp2(-distance(Pixel.xy, Array[4].xy));
+
+                Array[ID] = Pixel * Weight;
+            }
+        }
+
+        // Starting with a subset of size 6, remove the min and max each time
+        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
+        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
+        MNMX4(Array[2], Array[3], Array[4], Array[7]);
+        MNMX3(Array[3], Array[4], Array[8]);
+
+        return CMath_Float4_NormToFP16(Array[4]);
+    }
+
+    /*
+        Dilate up to 2^3 pixels.
+        - Subsequent levels and the post-filter median will median the dilated regions.
+        - The post-filter median filter is 2^3 pixels wide.
+        - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
+    */
+    float2 CBlur_DilateUpsampleMotionVectors(sampler2D Source, float2 Tex)
+    {
+        return CBlur_FilterMotionVectors(Source, Tex, 3.0, true).xy;
     }
 
 #endif
