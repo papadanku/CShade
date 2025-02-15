@@ -168,19 +168,19 @@ float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_DilateUpsampleMotionVectors(SampleTempTex5, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_DilateUpsampleMotionVectors(SampleTempTex4, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex4, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CBlur_DilateUpsampleMotionVectors(SampleTempTex3, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
     return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1), 0.0, _BlendFactor);
 }
 
@@ -188,22 +188,22 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
 // Datamosh
@@ -252,7 +252,7 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -291,7 +291,7 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);

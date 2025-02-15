@@ -8,6 +8,18 @@
     #define INCLUDE_CMOTIONESTIMATION
 
     /*
+        Dilate up to 2^3 pixels.
+        - Subsequent levels and the post-filter median will median the dilated regions.
+        - The post-filter median filter is 2^3 pixels wide.
+        - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
+    */
+    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
+    {
+
+        return CBlur_GetMedian(Source, Tex, 3.0, false);
+    }
+
+    /*
         Lucas-Kanade optical flow with bilinear fetches.
         ---
         The algorithm is motified to not output in pixels, but normalized displacements
@@ -36,11 +48,11 @@
         float IxIt = 0.0;
         float IyIt = 0.0;
 
-        // Decode from FP16
-        Vectors = CMath_Float2_FP16ToNorm(Vectors);
-
         // Initiate main & warped texture coordinates
         WarpTex = MainTex.xyxy;
+
+        // Decode from FP16
+        Vectors = CMath_FP16ToNorm(Vectors);
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
@@ -113,7 +125,7 @@
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Encode motion vectors to FP16 format
-        return CMath_Float2_NormToFP16(Vectors);
+        return CMath_NormToFP16(Vectors);
     }
 
 #endif
