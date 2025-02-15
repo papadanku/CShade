@@ -52,7 +52,7 @@
         WarpTex = MainTex.xyxy;
 
         // Decode from FP16
-        Vectors = CMath_FP16ToNorm(Vectors);
+        Vectors = CMath_Float2_FP16ToNorm(Vectors);
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
@@ -125,7 +125,7 @@
         Vectors = clamp(Vectors, -1.0, 1.0);
 
         // Encode motion vectors to FP16 format
-        return CMath_NormToFP16(Vectors);
+        return CMath_Float2_NormToFP16(Vectors);
     }
 
 #endif
