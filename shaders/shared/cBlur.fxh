@@ -465,7 +465,8 @@
                 float4 Pixel = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
 
                 // Compute weight
-                float Weight = exp(-distance(Pixel.xy, Array[4].xy));
+                float2 Difference = Pixel.xy - Array[4].xy;
+                float Weight = 1.0 / (1.0 + dot(Difference, Difference));
 
                 Array[ID] = Pixel * Weight;
             }
