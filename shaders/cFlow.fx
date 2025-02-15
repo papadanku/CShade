@@ -26,7 +26,7 @@ uniform float _BlendFactor <
 uniform int _OutputMode <
     ui_label = "Output Mode";
     ui_type = "combo";
-    ui_items = "Shading\0Line Integral Convolution\0Line Integral Convolution (Colored)\0";
+    ui_items = "Shading (Normalized)\0 Shading (Renormalized)\0Line Integral Convolution\0Line Integral Convolution (Colored)\0";
 > = 0;
 
 #include "shared/cShadeHDR.fxh"
@@ -142,56 +142,53 @@ float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
+    float2 Vectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     float Minimal = max(PixelSize.x, PixelSize.y);
-
-    // Fetch, normalize, and adjust motion vectors
-    float2 Vectors = tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    Vectors = CMath_Float2_FP16ToNorm(Vectors);
-    Vectors.y = -Vectors.y;
 
     // Encode vectors
     float3 VectorColors = normalize(float3(Vectors, Minimal));
     VectorColors.xy = (VectorColors.xy * 0.5) + 0.5;
     VectorColors.z = 1.0 - dot(VectorColors.xy, 0.5);
-    VectorColors /= max(max(VectorColors.x, VectorColors.y), VectorColors.z);
+
+    // Renormalize motion vectors to take advantage of intensity
+    float3 RenormalizedVectorColors = VectorColors / max(max(VectorColors.x, VectorColors.y), VectorColors.z);
+
+    // Line Integral Convolution (LIC)
+    float LIC = 0.0;
+    float WeightSum = 0.0;
+
+    [unroll]
+    for (float i = 0.0; i < 4.0; i += 0.5)
+    {
+        float2 Offset = Vectors * i;
+        LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
+        LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
+        WeightSum += 2.0;
+    }
+
+    // Normalize LIC
+    LIC /= WeightSum;
 
     // Conditional output
     float3 OutputColor = 0.0;
 
-    if (_OutputMode == 0)
+    switch (_OutputMode)
     {
-        OutputColor = VectorColors;
-    }
-    else if (_OutputMode >= 1)
-    {
-        // Line Integral Convolution (LIC)
-        float LIC = 0.0;
-        float WeightSum = 0.0;
-
-        [unroll]
-        for (float i = 0.0; i < 4.0; i += 0.5)
-        {
-            float2 Offset = Vectors * i;
-            LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
-            LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
-            WeightSum += 2.0;
-        }
-
-        // Normalize LIC
-        LIC /= WeightSum;
-
-        if (_OutputMode == 2)
-        {
-            OutputColor = VectorColors * LIC;
-        }
-        else
-        {
+        case 0:
+            OutputColor = VectorColors;
+            break;
+        case 1:
+            OutputColor = RenormalizedVectorColors;
+            break;
+        case 2:
             OutputColor = LIC;
-        }
-    }
-    else
-    {
-        OutputColor = VectorColors;
+            break;
+        case 3:
+            OutputColor = LIC * RenormalizedVectorColors;
+            break;
+        default:
+            OutputColor = 0.0;
+            break;
     }
 
     return float4(OutputColor, 1.0);
