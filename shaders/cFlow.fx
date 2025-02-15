@@ -30,7 +30,6 @@ uniform int _OutputMode <
 > = 1;
 
 uniform bool _ColorLIC <
-    ui_category = "Exposure";
     ui_label = "Colored Line Integral Convolution";
     ui_type = "radio";
 > = true;
