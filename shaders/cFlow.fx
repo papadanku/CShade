@@ -23,12 +23,29 @@ uniform float _BlendFactor <
     ui_max = 0.9;
 > = 0.45;
 
+uniform int _OutputMode <
+    ui_label = "Output Mode";
+    ui_type = "combo";
+    ui_items = "Shading\0Line Integral Convolution\0";
+> = 1;
+
+uniform bool _ColorLIC <
+    ui_category = "Exposure";
+    ui_label = "Colored Line Integral Convolution";
+    ui_type = "radio";
+> = true;
+
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-    #ifndef RENDER_LINEAR_SAMPLED_FLOW
-        #define RENDER_LINEAR_SAMPLED_FLOW 0
-    #endif
+#ifndef RENDER_LINEAR_SAMPLED_FLOW
+    #define RENDER_LINEAR_SAMPLED_FLOW 1
+#endif
+
+#if RENDER_LINEAR_SAMPLED_FLOW
+    #define FLOW_SAMPLER_FILTER LINEAR
+#else
+    #define FLOW_SAMPLER_FILTER POINT
 #endif
 
 /*
@@ -54,77 +71,11 @@ CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRRO
 
 CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_3, RG16F, 1)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-#if !RENDER_VELOCITY_STREAMS
-    #if RENDER_LINEAR_SAMPLED_FLOW
-        #define FLOW_SAMPLER_FILTER LINEAR
-    #else
-        #define FLOW_SAMPLER_FILTER POINT
-    #endif
+CREATE_SAMPLER(SampleFlow, TempTex2a_RG16F, FLOW_SAMPLER_FILTER, FLOW_SAMPLER_FILTER, LINEAR, MIRROR, MIRROR, MIRROR)
 
-    CREATE_SAMPLER(SampleFlow, TempTex2a_RG16F, FLOW_SAMPLER_FILTER, FLOW_SAMPLER_FILTER, LINEAR, MIRROR, MIRROR, MIRROR)
-#endif
-
-struct VS2PS_Streaming
-{
-    float4 HPos : SV_POSITION;
-    float2 Velocity : TEXCOORD0;
-};
-
-#if RENDER_VELOCITY_STREAMS
-    VS2PS_Streaming VS_Streaming(CShade_APP2VS Input)
-    {
-        VS2PS_Streaming Output;
-
-        int LineID = Input.ID / 2; // Line Index
-        int VertexID = Input.ID % 2; // Vertex Index within the line (0 = start, 1 = end)
-
-        // Get Row (x) and Column (y) position
-        int Row = LineID / LINES_X;
-        int Column = LineID - LINES_X * Row;
-
-        // Compute origin (line-start)
-        const float2 Spacing = float2(SPACE_X, SPACE_Y);
-        float2 Offset = Spacing * 0.5;
-        float2 Origin = Offset + float2(Column, Row) * Spacing;
-
-        // Get velocity from texture at origin location
-        const float2 PixelSize = float2(BUFFER_RCP_WIDTH, BUFFER_RCP_HEIGHT);
-        float2 VelocityCoord;
-        VelocityCoord.x = Origin.x * PixelSize.x;
-        VelocityCoord.y = 1.0 - (Origin.y * PixelSize.y);
-        Output.Velocity = CMath_Float2_FP16ToNorm(tex2Dlod(SampleTempTex2b, float4(VelocityCoord, 0.0, _MipBias)).xy) / PixelSize;
-        Output.Velocity.y *= -1.0;
-
-        // Scale velocity
-        float2 Direction = Output.Velocity * VELOCITY_SCALE;
-        float Length = length(float3(Direction, 1.0));
-        Direction = Direction * rsqrt(Length * 1e-1);
-
-        // Color for fragmentshader
-        Output.Velocity = Direction;
-
-        // Compute current vertex position (based on VertexID)
-        float2 VertexPosition = 0.0;
-
-        // Lines: Velocity direction
-        VertexPosition = Origin + (Direction * VertexID);
-
-        // Finish vertex position
-        float2 VertexPositionNormal = (VertexPosition + 0.5) * PixelSize; // [0, 1]
-        Output.HPos = float4((VertexPositionNormal * 2.0) - 1.0, 0.0, 1.0); // ndc: [-1, +1]
-
-        return Output;
-    }
-#endif
-
-float4 PS_Streaming(VS2PS_Streaming Input) : SV_TARGET0
-{
-    float2 Velocity = Input.Velocity;
-    float3 Display = 0.0;
-    Display.rg = (Velocity * 0.5) + 0.5;
-    Display.b = 1.0 - dot(Display.rg, 0.5);
-    return float4(Display, 1.0);
-}
+// This is for LCI.
+CREATE_TEXTURE(NoiseTex, BUFFER_SIZE_0, R16, 0)
+CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 /*
     [Pixel Shaders]
