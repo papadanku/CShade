@@ -128,22 +128,22 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
 {
     Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_GetMedian(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_FilterMotionVectors(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
 float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -157,7 +157,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float2 ScreenCoord = Input.Tex0.xy;
 
-    float2 Velocity = CMath_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 Velocity = CMath_Float2_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
