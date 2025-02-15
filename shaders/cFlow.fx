@@ -27,7 +27,7 @@ uniform int _OutputMode <
     ui_label = "Output Mode";
     ui_type = "combo";
     ui_items = "Shading\0Line Integral Convolution\0Line Integral Convolution (Colored)\0";
-> = 2;
+> = 0;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
