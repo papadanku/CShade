@@ -441,8 +441,6 @@
 
         // Add the pixels which make up our window to the pixel array.
         float4 Array[9];
-        Array[4] = CMath_Float4_FP16ToNorm(tex2D(Source, Tex));
-        float DotTT = dot(Array[4].xy, Array[4].xy);
 
         [unroll]
         for (int dx = -1; dx <= 1; ++dx)
@@ -450,26 +448,26 @@
             [unroll]
             for (int dy = -1; dy <= 1; ++dy)
             {
+                float2 Offset = float2(float(dx), float(dy));
+                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
+
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
                 int ID = (dx + 1) * 3 + (dy + 1);
-                if (ID == 4)
-                {
-                    continue;
-                }
-
-                // Compute sample
-                float2 Offset = float2(float(dx), float(dy));
-                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
-                float4 Pixel = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
-
-                // Compute weight
-                float2 Difference = Pixel.xy - Array[4].xy;
-                float Weight = 1.0 / (1.0 + dot(Difference, Difference));
-
-                Array[ID] = Pixel * Weight;
+                Array[ID] = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
             }
+        }
+
+        // Store center pixel for reference
+        float4 Reference = Array[4];
+
+        [unroll]
+        for (int i = 0; i < 9; i++)
+        {
+            float2 Difference = Array[i].xy - Reference.xy;
+            float Weight = 1.0 / (1.0 + dot(Difference, Difference));
+            Array[i] *= Weight;
         }
 
         // Starting with a subset of size 6, remove the min and max each time
