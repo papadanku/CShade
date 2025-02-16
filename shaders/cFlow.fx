@@ -158,7 +158,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
     float WeightSum = 0.0;
 
     [unroll]
-    for (float i = 0.0; i < 4.0; i += 0.5)
+    for (float i = 1.0; i < 4.0; i += 0.5)
     {
         float2 Offset = Vectors * i;
         LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
