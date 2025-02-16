@@ -163,25 +163,25 @@ float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex4, Input.Tex0).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
-    return float4(CMotionEstimation_GetPixelPyLK(Input.Tex0, Vectors, SampleTex2c, SampleTempTex1), 0.0, _BlendFactor);
+    return float4(CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1), 0.0, _BlendFactor);
 }
 
 // We use MRT to immeduately copy the current blurred frame for the next frame
