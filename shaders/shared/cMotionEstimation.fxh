@@ -72,7 +72,8 @@
         // Get stochastic sampling in the form of 2x2 bilinear blocks that can shift the window up to [-3, 3)
         const float Pi2 = CMath_GetPi() * 2.0;
         float Grid = Pi2 * CProcedural_GetInterleavedGradientNoise(MainPos);
-        float2 Rotation = float2(sin(Grid), cos(Grid));
+        float2 Rotation = 0.0;
+        sincos(Grid, Rotation.y, Rotation.x);
         float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
