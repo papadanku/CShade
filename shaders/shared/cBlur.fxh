@@ -420,7 +420,8 @@
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
-                Array[(dx + 1) * 3 + (dy + 1)] = tex2D(Source, Tex + (Offset * PixelSize));
+                int ID = (dx + 1) * 3 + (dy + 1);
+                Array[ID] = tex2D(Source, Tex + (Offset * PixelSize));
             }
         }
 
@@ -466,7 +467,7 @@
         for (int i = 0; i < 9; i++)
         {
             float2 Difference = Array[i].xy - Reference.xy;
-            float Weight = 1.0 / (1.0 + dot(Difference, Difference));
+            float Weight = exp(-dot(Difference, Difference));
             Array[i] *= Weight;
         }
 
