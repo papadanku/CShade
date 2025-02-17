@@ -69,17 +69,23 @@
         const int WindowSize = 3;
         const int WindowHalf = trunc(WindowSize / 2);
 
-        // Get stochastic sampling in the form of 2x2 bilinear blocks that can shift the window up to [-3, 3)
+        // Get constantes for stochastic sampling
         const float Pi2 = CMath_GetPi() * 2.0;
+        const float KernelSize = 3.0;
+
+        // Get stochastic sampling
         float Grid = Pi2 * CProcedural_GetInterleavedGradientNoise(MainPos);
-        float2 Rotation = 0.0;
-        sincos(Grid, Rotation.y, Rotation.x);
-        float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+        float2 GridSinCos = 0.0;
+        sincos(Grid, GridSinCos.y, GridSinCos.x);
+        float2x2 RotationMatrix = float2x2(GridSinCos.x, GridSinCos.y, -GridSinCos.y, GridSinCos.x);
 
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
             float2 Kernel = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
-            Kernel = mul(Kernel, RotationMatrix);
+            Kernel = mul(Kernel * KernelSize, RotationMatrix);
+
+            // Weight the pixel based on how far it is from the center
+            float Weight = length(Kernel);
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (Kernel.xyxy * PixelSize.xyxy);
@@ -100,13 +106,13 @@
             float2 Iy = N - S;
 
             // IxIx = A11; IyIy = A22; IxIy = A12/A22
-            IxIx += dot(Ix, Ix);
-            IyIy += dot(Iy, Iy);
-            IxIy += dot(Ix, Iy);
+            IxIx += (dot(Ix, Ix) * Weight);
+            IyIy += (dot(Iy, Iy) * Weight);
+            IxIy += (dot(Ix, Iy) * Weight);
 
             // IxIt = B1; IyIt = B2
-            IxIt += dot(Ix, IT);
-            IyIt += dot(Iy, IT);
+            IxIt += (dot(Ix, IT) * Weight);
+            IyIt += (dot(Iy, IT) * Weight);
         }
 
         /*
