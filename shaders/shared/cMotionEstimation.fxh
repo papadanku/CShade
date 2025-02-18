@@ -13,10 +13,10 @@
         - The post-filter median filter is 2^3 pixels wide.
         - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
     */
-    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
+    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Pos, float2 Tex)
     {
 
-        return CBlur_FilterMotionVectors(Source, Tex, 3.0, false);
+        return CBlur_FilterMotionVectors(Source, Pos, Tex, 3.0);
     }
 
     /*
@@ -71,7 +71,7 @@
         const float Pi2 = CMath_GetPi() * 2.0;
 
         // Get stochastic sampling
-        float Grid = Pi2 * CProcedural_GetInterleavedGradientNoise(MainPos);
+        float Grid = Pi2 * CProcedural_GetHash1(MainPos, 0.0);
         float2 GridSinCos = 0.0;
         sincos(Grid, GridSinCos.y, GridSinCos.x);
         float2x2 RotationMatrix = float2x2(GridSinCos.x, GridSinCos.y, -GridSinCos.y, GridSinCos.x);
