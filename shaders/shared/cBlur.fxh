@@ -414,14 +414,14 @@
             [unroll]
             for (int dy = -1; dy <= 1; ++dy)
             {
-                float2 Kernel = float2(float(dx), float(dy));
-                Kernel = DiamondKernel ? mul(Kernel, Rotation) : Kernel;
+                float2 Offset = float2(float(dx), float(dy));
+                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
 
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
                 int ID = (dx + 1) * 3 + (dy + 1);
-                Array[ID] = tex2Dlod(Source, float4(Tex + (Kernel * PixelSize), 0.0, 0.0));
+                Array[ID] = tex2D(Source, Tex + (Offset * PixelSize));
             }
         }
 
@@ -434,16 +434,11 @@
         return Array[4];
     }
 
-    float4 CBlur_FilterMotionVectors(sampler Source, float2 Pos, float2 Tex, float Scale)
+    float4 CBlur_FilterMotionVectors(sampler Source, float2 Tex, float Scale, bool DiamondKernel)
     {
-        const float Pi2 = CMath_GetPi() * 2.0;
+        float Angle = radians(45.0);
+        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
         float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
-
-        // Get stochastic sampling
-        float Grid = Pi2 * CProcedural_GetHash1(Pos, 0.0);
-        float2 GridSinCos = 0.0;
-        sincos(Grid, GridSinCos.y, GridSinCos.x);
-        float2x2 RotationMatrix = float2x2(GridSinCos.x, GridSinCos.y, -GridSinCos.y, GridSinCos.x);
 
         // Add the pixels which make up our window to the pixel array.
         float4 Array[9];
@@ -454,15 +449,14 @@
             [unroll]
             for (int dy = -1; dy <= 1; ++dy)
             {
-                float2 Kernel = float2(float(dx), float(dy));
-                Kernel = mul(Kernel, RotationMatrix);
+                float2 Offset = float2(float(dx), float(dy));
+                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
 
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
                 int ID = (dx + 1) * 3 + (dy + 1);
-                float4 Sample = tex2Dlod(Source, float4(Tex + (Kernel * PixelSize), 0.0, 0.0));
-                Array[ID] = CMath_Float4_FP16ToNorm(Sample);
+                Array[ID] = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
             }
         }
 
