@@ -15,7 +15,6 @@
     */
     float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
     {
-
         return CBlur_FilterMotionVectors(Source, Tex, 3.0, false);
     }
 

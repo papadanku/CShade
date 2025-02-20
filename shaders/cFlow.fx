@@ -33,7 +33,7 @@ uniform int _OutputMode <
 #include "shared/cBlend.fxh"
 
 #ifndef RENDER_LINEAR_SAMPLED_FLOW
-    #define RENDER_LINEAR_SAMPLED_FLOW 1
+    #define RENDER_LINEAR_SAMPLED_FLOW 0
 #endif
 
 #if RENDER_LINEAR_SAMPLED_FLOW
