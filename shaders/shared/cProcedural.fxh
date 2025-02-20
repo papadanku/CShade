@@ -39,6 +39,19 @@
     }
 
     /*
+        http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
+    */
+
+    float CProcedural_GetGoldenHash(float2 Position)
+    {
+        float N = (1.0 / 3.0) * sqrt(23.0 / 3.0);
+        float W1 = (1.0 / 2.0) * (1.0 + N);
+        float W2 = (1.0 / 2.0) * (1.0 - N);
+        float PHI2 = pow(W1, 1.0 / 3.0) + pow(W2, 1.0 / 3.0);
+        return frac(dot(Position, 1.0 / float2(PHI2, PHI2 * PHI2)));
+    }
+
+    /*
         Interleaved Gradient Noise Dithering
         ---
         http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx

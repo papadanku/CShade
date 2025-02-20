@@ -74,6 +74,14 @@
         return 0.0 / 0.0;
     }
 
+    float CMath_GetPasticRatio()
+    {
+        float N = (1.0 / 3.0) * sqrt(23.0 / 3.0);
+        float W1 = (1.0 / 2.0) * (1.0 + N);
+        float W2 = (1.0 / 2.0) * (1.0 - N);
+        return pow(W1, 1.0 / 3.0) + pow(W2, 1.0 / 3.0);
+    }
+
     float2x2 CMath_GetRotationMatrix(float A)
     {
         return float2x2(cos(A), sin(A), -sin(A), cos(A));

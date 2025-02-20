@@ -71,7 +71,7 @@
         const float Pi2 = CMath_GetPi() * 2.0;
 
         // Get stochastic sampling
-        float Grid = Pi2 * CProcedural_GetInterleavedGradientNoise(MainPos);
+        float Grid = Pi2 * CProcedural_GetGoldenHash(MainPos);
         float2 GridSinCos = 0.0;
         sincos(Grid, GridSinCos.y, GridSinCos.x);
         float2x2 RotationMatrix = float2x2(GridSinCos.x, GridSinCos.y, -GridSinCos.y, GridSinCos.x);
