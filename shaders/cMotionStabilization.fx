@@ -53,14 +53,12 @@ CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_3, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_3, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_5, RG16F, 1)
-CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_6, RG16F, 1)
 
 CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RG8, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -82,15 +80,9 @@ float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 // Run Lucas-Kanade
 
-float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    float2 Vectors = 0.0;
-    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
-}
-
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
+    float2 Vectors = 0.0;
     return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
@@ -139,7 +131,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 MotionVectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleTempTex2a, float4(0.5, 0.0, 0.0, 99.0)).xy);
 
     float2 StableTex = Input.Tex0.xy - 0.5;
-    StableTex += (MotionVectors * _Stabilization);
+    StableTex -= (MotionVectors * _Stabilization);
     StableTex += 0.5;
 
     float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
@@ -161,7 +153,6 @@ technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect
     CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)
 
     // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
