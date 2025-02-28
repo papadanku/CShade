@@ -13,13 +13,36 @@
         - The post-filter median filter is 2^3 pixels wide.
         - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
     */
-    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D Source, float2 Tex)
+    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D SampleSource, float2 Tex)
     {
-        return CBlur_FilterMotionVectors(Source, Tex, 3.0, false);
+        // A0 B0 C0
+        // A1 B1 C1
+        // A2 B2 C2
+        float2 Delta = fwidth(Tex) * exp2(2.0);
+        float4 Tex0 = Tex.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
+        float4 Tex1 = Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * Delta.xyyy);
+        float4 Tex2 = Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
+
+        float4 Sum = 0.0;
+        float Weight = 1.0 / 9.0;
+        Sum += (tex2D(SampleSource, Tex0.xy) * Weight);
+        Sum += (tex2D(SampleSource, Tex0.xz) * Weight);
+        Sum += (tex2D(SampleSource, Tex0.xw) * Weight);
+        Sum += (tex2D(SampleSource, Tex1.xy) * Weight);
+        Sum += (tex2D(SampleSource, Tex1.xz) * Weight);
+        Sum += (tex2D(SampleSource, Tex1.xw) * Weight);
+        Sum += (tex2D(SampleSource, Tex2.xy) * Weight);
+        Sum += (tex2D(SampleSource, Tex2.xz) * Weight);
+        Sum += (tex2D(SampleSource, Tex2.xw) * Weight);
+
+        return Sum;
     }
 
     /*
         Lucas-Kanade optical flow with bilinear fetches.
+        ---
+        Gauss-Newton Steepest Descent Inverse Additive Algorithm
+        https://www.ri.cmu.edu/pub_files/pub3/baker_simon_2002_3/baker_simon_2002_3.pdf
         ---
         The algorithm is motified to not output in pixels, but normalized displacements
         ---
@@ -119,19 +142,24 @@
             Calculate Lucas-Kanade matrix
         */
 
-        // Calculate A^-1 and B
-        float D = determinant(float2x2(IxIx, IxIy, IxIy, IyIy));
-        float2x2 A = float2x2(IyIy, -IxIy, -IxIy, IxIx) / D;
+        // Construct matrices
+        float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
         float2 B = float2(IxIt, IyIt);
 
-        // Calculate A^T*B
-        float2 Flow = (D > 0.0) ? mul(A, B) : 0.0;
+        // Calculate C factor
+        float N = dot(B, B);
+        float2 DotBA = float2(dot(B, A[0]), dot(B, A[1]));
+        float D = dot(DotBA, B);
+        float C = N / D;
+
+        // Calculate -C*B
+        float2 Flow = (D > 0.0) ? -mul(C, B) : 0.0;
 
         // Normalize motion vectors
         Flow *= PixelSize;
 
         // Propagate normalized motion vectors in Norm Range
-        Vectors -= Flow;
+        Vectors += Flow;
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
