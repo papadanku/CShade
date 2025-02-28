@@ -79,7 +79,7 @@
 
         // Calculate warped texture coordinates
         WarpTex.zw -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex.zw += Vectors; // Warp in [-HalfMax, HalfMax) range
+        WarpTex.zw -= Vectors; // Inverse warp in the [-0.5, 0.5) range
         WarpTex.zw = saturate(WarpTex.zw + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get gradient information
