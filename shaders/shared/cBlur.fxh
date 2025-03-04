@@ -399,11 +399,9 @@
         MX3(D, E, F);
     }
 
-    float4 CBlur_GetMedian(sampler Source, float2 Tex, float Scale, bool DiamondKernel)
+    float4 CBlur_GetMedian(sampler Source, float2 Tex)
     {
-        float Angle = radians(45.0);
-        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
-        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
+        float2 PixelSize = fwidth(Tex.xy);
 
         // Add the pixels which make up our window to the pixel array.
         float4 Array[9];
@@ -415,7 +413,6 @@
             for (int dy = -1; dy <= 1; ++dy)
             {
                 float2 Offset = float2(float(dx), float(dy));
-                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
 
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
@@ -434,11 +431,9 @@
         return Array[4];
     }
 
-    float4 CBlur_FilterMotionVectors(sampler Source, float2 Tex, float Scale, bool DiamondKernel)
+    float4 CBlur_GetWeightedMedian(sampler Source, float2 Tex)
     {
-        float Angle = radians(45.0);
-        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
-        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
+       float2 PixelSize = fwidth(Tex.xy);
 
         // Add the pixels which make up our window to the pixel array.
         float4 Array[9];
@@ -450,7 +445,6 @@
             for (int dy = -1; dy <= 1; ++dy)
             {
                 float2 Offset = float2(float(dx), float(dy));
-                Offset = DiamondKernel ? mul(Offset, Rotation) : Offset;
 
                 // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the

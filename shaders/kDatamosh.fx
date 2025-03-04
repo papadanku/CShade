@@ -193,7 +193,7 @@ float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_GetWeightedMedian(SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample(CShade_VS2PS_Quad Input) : SV_TARGET0
