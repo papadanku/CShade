@@ -8,10 +8,9 @@
     #define INCLUDE_CMOTIONESTIMATION
 
     /*
-        Dilate up to 2^3 pixels.
-        - Subsequent levels and the post-filter median will median the dilated regions.
-        - The post-filter median filter is 2^3 pixels wide.
-        - This idea is based off depth-of-field undersampling and using a post-filter median on the undersampled regions.
+        Dilate up to 2^2 pixels.
+        - Subsequent levels and the post-filter upsampling will address the undersampled regions.
+        - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
     float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D SampleSource, float2 Tex)
     {
