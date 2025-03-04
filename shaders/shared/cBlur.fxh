@@ -11,10 +11,10 @@
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
-    float CBlur_GetGaussianWeight(float SampleIndex, float Sigma)
+    float CBlur_GetGaussianWeight(float X, float Sigma)
     {
         float Output = rsqrt(2.0 * CMath_GetPi() * (Sigma * Sigma));
-        return Output * exp(-(SampleIndex * SampleIndex) / (2.0 * Sigma * Sigma));
+        return Output * exp(-(X * X) / (2.0 * Sigma * Sigma));
     }
 
     float CBlur_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
@@ -478,6 +478,56 @@
         MNMX3(Array[3], Array[4], Array[8]);
 
         return CMath_Float4_NormToFP16(Array[4]);
+    }
+
+    float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex, float Scale)
+    {
+        float Angle = radians(45.0);
+        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
+        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
+
+        // Add the pixels which make up our window to the pixel array.
+        float2 OffsetArray[9];
+        float4 GuideArray[9];
+        float4 ImageArray[9];
+
+        [unroll]
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            [unroll]
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
+                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+                // bottom right pixel of the window at pixel[N-1].
+                int ID = (dx + 1) * 3 + (dy + 1);
+                
+                // Calculate offset
+                float2 Offset = float2(float(dx), float(dy));
+                OffsetArray[ID] = mul(Offset, Rotation);
+                float2 OffsetTex = Tex + (OffsetArray[ID] * PixelSize);
+                
+                // Calculate guide and image arrats
+                ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
+                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Guide, float4(OffsetTex, 0.0, 0.0)));
+            }
+        }
+
+        // Store center pixel for reference
+        float4 Reference = GuideArray[4];
+        float4 BilateralSum = 0.0;
+        float4 WeightSum = 0.0;
+
+        [unroll]
+        for (int i = 0; i < 9; i++)
+        {
+            float SpatialWeight = CBlur_GetGaussianWeight(distance(GuideArray[i].xy, Reference.xy), 1e-3);
+            float Weight = SpatialWeight + exp2(-16.0);
+            BilateralSum += (ImageArray[i] * Weight);
+            WeightSum += Weight;
+        }
+
+        return CMath_Float4_NormToFP16(BilateralSum / WeightSum);
     }
 
 #endif

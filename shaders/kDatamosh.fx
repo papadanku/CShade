@@ -121,16 +121,14 @@ uniform float _Diffusion <
     #define WARP_FILTERING POINT
 #endif
 
-CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG16F, 8)
-CREATE_TEXTURE_POOLED(TempTex2a_RG16F, BUFFER_SIZE_3, RG16F, 8)
-CREATE_TEXTURE_POOLED(TempTex2b_RG16F, BUFFER_SIZE_3, RG16F, 1)
+CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG8, 8)
+CREATE_TEXTURE_POOLED(TempTex2_RG16F, BUFFER_SIZE_3, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_5, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_6, RG16F, 1)
 
 CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CREATE_SAMPLER(SampleTempTex2a, TempTex2a_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CREATE_SAMPLER(SampleTempTex2b, TempTex2b_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex2, TempTex2_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
@@ -142,7 +140,7 @@ CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
 
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2a_RG16F, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2_RG16F, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleAccumTex, AccumTex, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, WARP_FILTERING, WARP_FILTERING, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -184,26 +182,23 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1), 0.0, _BlendFactor);
 }
 
-// We use MRT to immeduately copy the current blurred frame for the next frame
-float4 PS_PostMedian0(CShade_VS2PS_Quad Input, out float4 Copy : SV_TARGET0) : SV_TARGET1
+/*
+    Post-process filtering
+*/
+
+float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    Copy = tex2D(SampleTempTex1, Input.Tex0.xy);
-    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 3.0, true).rg, 0.0, 1.0);
+    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rg, 0.0, 1.0);
 }
 
-float4 PS_PostMedian1(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 2.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_FilterMotionVectors(SampleOFlowTex, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
 }
 
-float4 PS_PostMedian2(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Upsample(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2a, Input.Tex0, 1.0, true).rg, 0.0, 1.0);
-}
-
-float4 PS_PostMedian3(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    return float4(CBlur_FilterMotionVectors(SampleTempTex2b, Input.Tex0, 0.0, true).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleOFlowTex, Input.Tex0, 2.5).rg, 0.0, 1.0);
 }
 
 // Datamosh
@@ -366,34 +361,25 @@ technique CShade_KinoDatamosh < ui_tooltip = "Keijiro Takahashi | An image effec
         RenderTarget0 = OFlowTex;
     }
 
-    // Postfilter blur
-    pass MRT_CopyAndMedian
+    pass Copy
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostMedian0;
-        RenderTarget1 = TempTex2b_RG16F;
+        PixelShader = PS_Copy;
         RenderTarget0 = Tex2c;
     }
 
-    pass
+    pass Median
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostMedian1;
-        RenderTarget0 = TempTex2a_RG16F;
+        PixelShader = PS_Median;
+        RenderTarget0 = TempTex5_RG16F;
     }
 
-    pass
+    pass BilateralUpsample
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostMedian2;
-        RenderTarget0 = TempTex2b_RG16F;
-    }
-
-    pass
-    {
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_PostMedian3;
-        RenderTarget0 = TempTex2a_RG16F;
+        PixelShader = PS_Upsample;
+        RenderTarget0 = TempTex2_RG16F;
     }
 
     // Datamoshing
