@@ -11,18 +11,24 @@
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
-    float CBlur_GetGaussianWeight(float X, float Sigma)
+    float CBlur_GetGaussianWeight1D(float X, float S)
     {
-        float Output = rsqrt(2.0 * CMath_GetPi() * (Sigma * Sigma));
-        return Output * exp(-(X * X) / (2.0 * Sigma * Sigma));
+        float G = rsqrt(2.0 * CMath_GetPi() * S * S);
+        return G * exp(-(X * X) / (2.0 * S * S));
+    }
+
+    float CBlur_GetGaussianWeight2D(float2 X, float S)
+    {
+        float G = 1.0 / (2.0 * CMath_GetPi() * S * S);
+        return G * exp(-dot(X, X) / (2.0 * S * S));
     }
 
     float CBlur_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
     {
         float Offset1 = SampleIndex;
         float Offset2 = SampleIndex + 1.0;
-        float Weight1 = CBlur_GetGaussianWeight(Offset1, Sigma);
-        float Weight2 = CBlur_GetGaussianWeight(Offset2, Sigma);
+        float Weight1 = CBlur_GetGaussianWeight1D(Offset1, Sigma);
+        float Weight2 = CBlur_GetGaussianWeight1D(Offset2, Sigma);
         LinearWeight = Weight1 + Weight2;
         return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
@@ -64,40 +70,6 @@
         }
 
         // Normalize intensity to prevent altered output
-        return OutputColor / TotalWeight;
-    }
-
-    float4 PS_Bilateral(sampler Source, float2 Tex)
-    {
-        // Get constant
-        const float Pi2 = CMath_GetPi() * 2.0;
-
-        // Initialize variables we need to accumulate samples and calculate offsets
-        float4 OutputColor = 0.0;
-
-        // Offset and weighting attributes
-        float2 PixelSize = fwidth(Tex);
-
-        // Get bilateral filter
-        float4 TotalWeight = 0.0;
-        float4 Center = tex2D(Source, Tex);
-        [unroll]
-        for(int i = 1; i < 4; ++i)
-        {
-            [unroll]
-            for(int j = 0; j < 4 * i; ++j)
-            {
-                float2 Shift = (Pi2 / (4.0 * float(i))) * float(j);
-                sincos(Shift, Shift.x, Shift.y);
-                Shift *= float(i);
-
-                float4 Pixel = tex2D(Source, Tex + (Shift * PixelSize));
-                float4 Weight = abs(1.0 - abs(Pixel - Center));
-                OutputColor += (Pixel * Weight);
-                TotalWeight += Weight;
-            }
-        }
-
         return OutputColor / TotalWeight;
     }
 
@@ -515,7 +487,8 @@
         [unroll]
         for (int i = 0; i < 9; i++)
         {
-            float SpatialWeight = CBlur_GetGaussianWeight(distance(GuideArray[i].xy, Reference.xy), 1e-3);
+            float2 Difference = GuideArray[i].xy - Reference.xy;
+            float SpatialWeight = CBlur_GetGaussianWeight2D(Difference, 1e-3);
             float Weight = SpatialWeight + exp2(-16.0);
             BilateralSum += (ImageArray[i] * Weight);
             WeightSum += Weight;

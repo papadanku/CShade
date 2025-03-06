@@ -32,7 +32,7 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
     else
     {
         // Sample and weight center first to get even number sides
-        float TotalWeight = CBlur_GetGaussianWeight(0.0, _Sigma);
+        float TotalWeight = CBlur_GetGaussianWeight1D(0.0, _Sigma);
         float4 OutputColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex) * TotalWeight;
 
         for(float i = 1.0; i < KernelSize; i += 2.0)
