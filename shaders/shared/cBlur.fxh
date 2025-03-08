@@ -448,11 +448,7 @@
 
     float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
     {
-<<<<<<< HEAD
-        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
-=======
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
->>>>>>> dev
 
         // Add the pixels which make up our window to the pixel array.
         float4 GuideArray[9];
