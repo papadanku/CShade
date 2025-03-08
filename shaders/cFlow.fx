@@ -126,9 +126,19 @@ float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CBlur_GetWeightedMedian(SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
 }
 
-float4 PS_Upsample(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleOFlowTex, Input.Tex0, 2.5).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+}
+
+float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+}
+
+float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -247,7 +257,21 @@ technique CShade_Flow < ui_tooltip = "Lucas-Kanade optical flow"; >
     pass BilateralUpsample
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Upsample;
+        PixelShader = PS_Upsample1;
+        RenderTarget0 = TempTex4_RG16F;
+    }
+
+    pass BilateralUpsample
+    {
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_Upsample2;
+        RenderTarget0 = TempTex3_RG16F;
+    }
+
+    pass BilateralUpsample
+    {
+        VertexShader = CShade_VS_Quad;
+        PixelShader = PS_Upsample3;
         RenderTarget0 = TempTex2_RG16F;
     }
 
