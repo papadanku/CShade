@@ -446,12 +446,15 @@
         return CMath_Float4_NormToFP16(Array[4]);
     }
 
-    float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex, float Scale)
+    float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
     {
+<<<<<<< HEAD
         float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
+=======
+        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+>>>>>>> dev
 
         // Add the pixels which make up our window to the pixel array.
-        float2 OffsetArray[9];
         float4 GuideArray[9];
         float4 ImageArray[9];
 
@@ -467,9 +470,9 @@
                 int ID = (dx + 1) * 3 + (dy + 1);
 
                 // Calculate offset
-                OffsetArray[ID] = float2(float(dx), float(dy));
-                float2 OffsetTex = Tex + (OffsetArray[ID] * PixelSize);
-
+                float2 Offset = float2(float(dx), float(dy));
+                float2 OffsetTex = Tex + (Offset * PixelSize);
+                
                 // Calculate guide and image arrats
                 ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
                 GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Guide, float4(OffsetTex, 0.0, 0.0)));
