@@ -448,6 +448,8 @@
 
     float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
     {
+        const float WeightSigma = 1e-3;
+        const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
 
         // Add the pixels which make up our window to the pixel array.
@@ -468,7 +470,7 @@
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
                 float2 OffsetTex = Tex + (Offset * PixelSize);
-                
+
                 // Calculate guide and image arrats
                 ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
                 GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Guide, float4(OffsetTex, 0.0, 0.0)));
@@ -484,7 +486,7 @@
         for (int i = 0; i < 9; i++)
         {
             float2 Difference = GuideArray[i].xy - Reference.xy;
-            float SpatialWeight = CBlur_GetGaussianWeight2D(Difference, 1e-3);
+            float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
             float Weight = SpatialWeight + exp2(-16.0);
             BilateralSum += (ImageArray[i] * Weight);
             WeightSum += Weight;
