@@ -152,7 +152,7 @@
         float C = N / D;
 
         // Calculate -C*B
-        float2 Flow = (D > 0.0) ? -mul(C, B) : 0.0;
+        float2 Flow = (abs(D) > 0.0) ? -mul(C, B) : 0.0;
 
         // Normalize motion vectors
         Flow *= PixelSize;
