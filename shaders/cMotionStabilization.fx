@@ -52,7 +52,7 @@ uniform bool _LocalStabilization <
     ui_category = "Shader | Local Stabilization";
     ui_label = "Enable Local Stabilization";
     ui_type = "radio";
-> = false;
+> = true;
 
 uniform float _LocalStabilizationMipBias <
     ui_category = "Shader | Local Stabilization";
