@@ -468,7 +468,6 @@
                 
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
-                OffsetArray[ID] = mul(Offset, Rotation);
                 float2 OffsetTex = Tex + (OffsetArray[ID] * PixelSize);
                 
                 // Calculate guide and image arrats
