@@ -451,7 +451,6 @@
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
 
         // Add the pixels which make up our window to the pixel array.
-        float2 OffsetArray[9];
         float4 GuideArray[9];
         float4 ImageArray[9];
 
@@ -468,7 +467,7 @@
                 
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
-                float2 OffsetTex = Tex + (OffsetArray[ID] * PixelSize);
+                float2 OffsetTex = Tex + (Offset * PixelSize);
                 
                 // Calculate guide and image arrats
                 ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
