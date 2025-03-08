@@ -9,18 +9,19 @@
     [Shader Options]
 */
 
-#ifndef STABILIZATION_POINT_SAMPLING
-    #define STABILIZATION_POINT_SAMPLING 1
-#endif
-
+// Available options: CLAMP, MIRROR, WRAP/REPEAT, BORDER
 #ifndef STABILIZATION_ADDRESS
     #define STABILIZATION_ADDRESS BORDER
 #endif
 
-#if STABILIZATION_POINT_SAMPLING
-    #define STABILIZATION_FILTER POINT
-#else
-    #define STABILIZATION_FILTER LINEAR
+// Available options: POINT, LINEAR
+#ifndef STABILIZATION_GRID_SAMPLING
+    #define STABILIZATION_GRID_SAMPLING LINEAR
+#endif
+
+// Available options: POINT, LINEAR
+#ifndef STABILIZATION_WARP_SAMPLING
+    #define STABILIZATION_WARP_SAMPLING POINT
 #endif
 
 uniform float _FrameTime < source = "frametime"; > ;
@@ -33,13 +34,33 @@ uniform float _BlendFactor <
     ui_max = 1.0;
 > = 0.5;
 
-uniform float _Stabilization <
+uniform float _WarpStrength <
     ui_category = "Shader | Stabilization";
-    ui_label = "Stabilization Strengh";
+    ui_label = "Warping Strength";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 16.0;
 > = 8.0;
+
+uniform bool _InvertWarp <
+    ui_category = "Shader | Stabilization";
+    ui_label = "Invert Warping";
+    ui_type = "radio";
+> = false;
+
+uniform bool _LocalStabilization <
+    ui_category = "Shader | Local Stabilization";
+    ui_label = "Enable Local Stabilization";
+    ui_type = "radio";
+> = false;
+
+uniform float _LocalStabilizationMipBias <
+    ui_category = "Shader | Local Stabilization";
+    ui_label = "Level of Detail Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 3.5;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -66,7 +87,8 @@ CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_3, RG16F, 1)
 CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, STABILIZATION_FILTER, STABILIZATION_FILTER, STABILIZATION_FILTER, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS)
+CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
+CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS)
 
 /*
     [Pixel Shaders]
@@ -137,10 +159,13 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 MotionVectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleTempTex2, float4(0.5, 0.0, 0.0, 99.0)).xy);
+    float2 StabilizationTex = _LocalStabilization ? Input.Tex0 : 0.5;
+    float StabilizationLOD = _LocalStabilization ? _LocalStabilizationMipBias : 99.0;
+    float2 MotionVectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
+    MotionVectors = _InvertWarp ? -MotionVectors : MotionVectors;
 
     float2 StableTex = Input.Tex0.xy - 0.5;
-    StableTex -= (MotionVectors * _Stabilization);
+    StableTex -= (MotionVectors * _WarpStrength);
     StableTex += 0.5;
 
     float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
@@ -156,7 +181,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect.\n\nStabilization Address Options:\n\n- CLAMP\n- MIRROR\n- WRAP or REPEAT\n- BORDER"; >
+technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect.\n\n[ Preprocessor Definitions ]\n\nSTABILIZATION_ADDRESS: How the shader will render pixels outside the texture's boundaries.\n\t-> Available Options: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSTABILIZATION_GRID_SAMPLING: How the shader will filter the motion vectors used for stabilization.\n\t-> Available Options: LINEAR, POINT"; >
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)
