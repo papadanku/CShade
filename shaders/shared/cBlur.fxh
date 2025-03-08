@@ -448,13 +448,7 @@
 
     float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
     {
-<<<<<<< Updated upstream
-        float Angle = radians(45.0);
-        float2x2 Rotation = float2x2(cos(Angle), -sin(Angle), sin(Angle), cos(Angle));
-        float2 PixelSize = ldexp(fwidth(Tex.xy), Scale);
-=======
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
->>>>>>> Stashed changes
 
         // Add the pixels which make up our window to the pixel array.
         float2 OffsetArray[9];
