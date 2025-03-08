@@ -405,7 +405,7 @@
 
     float4 CBlur_GetWeightedMedian(sampler Source, float2 Tex)
     {
-       float2 PixelSize = fwidth(Tex.xy);
+        float2 PixelSize = fwidth(Tex.xy);
 
         // Add the pixels which make up our window to the pixel array.
         float4 Array[9];
