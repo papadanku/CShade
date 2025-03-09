@@ -473,7 +473,7 @@
 
                 // Calculate guide and image arrats
                 ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
-                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Guide, float4(OffsetTex, 0.0, 0.0)));
+                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2D(Guide, OffsetTex));
             }
         }
 
