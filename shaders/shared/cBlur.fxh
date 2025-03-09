@@ -448,7 +448,7 @@
 
     float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
     {
-        const float WeightSigma = 1e-3;
+        const float WeightSigma = 4e-4;
         const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
 
@@ -487,7 +487,7 @@
         {
             float2 Difference = GuideArray[i].xy - Reference.xy;
             float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-            float Weight = SpatialWeight + exp2(-16.0);
+            float Weight = SpatialWeight + exp(-10.0);
             BilateralSum += (ImageArray[i] * Weight);
             WeightSum += Weight;
         }
