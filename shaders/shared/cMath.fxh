@@ -168,12 +168,12 @@
     // [-HalfMax, HalfMax) -> [-1.0, 1.0)
     float2 CMath_Float2_FP16ToNorm(float2 Half2)
     {
-        return clamp(Half2 / CMath_GetFP16Max(), -1.0, 1.0);
+        return Half2 / CMath_GetFP16Max();
     }
 
     float4 CMath_Float4_FP16ToNorm(float4 Half4)
     {
-        return clamp(Half4 / CMath_GetFP16Max(), -1.0, 1.0);
+        return Half4 / CMath_GetFP16Max();
     }
 
     // [-1.0, 1.0) -> [-HalfMax, HalfMax)

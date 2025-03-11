@@ -503,7 +503,9 @@
             WeightSum += Weight;
         }
 
-        return CMath_Float4_NormToFP16(BilateralSum / WeightSum);
+        BilateralSum = clamp(BilateralSum / WeightSum, -1.0, 1.0);
+
+        return CMath_Float4_NormToFP16(BilateralSum);
     }
 
 #endif
