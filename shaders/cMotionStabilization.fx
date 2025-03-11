@@ -84,11 +84,33 @@ CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CL
 CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RG8, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CREATE_TEXTURE(OFlowTex, BUFFER_SIZE_3, RG16F, 8)
-CREATE_SAMPLER(SampleOFlowTex, OFlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-
 CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
 CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS)
+
+CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
+
+sampler2D SampleGuideHigh
+{
+    Texture = FlowTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    AddressW = CLAMP;
+};
+
+sampler2D SampleGuideLow
+{
+    Texture = FlowTex;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    AddressW = CLAMP;
+    MipLODBias = 1.0;
+};
 
 /*
     [Pixel Shaders]
@@ -138,22 +160,22 @@ float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetWeightedMedian(SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_GetWeightedMedian(SampleGuideHigh, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleOFlowTex, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -200,7 +222,7 @@ technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_LucasKanade1;
-        RenderTarget0 = OFlowTex;
+        RenderTarget0 = FlowTex;
     }
 
     pass Copy

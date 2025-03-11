@@ -446,7 +446,18 @@
         return CMath_Float4_NormToFP16(Array[4]);
     }
 
-    float4 CBlur_UpsampleMotionVectors(sampler Image, sampler Guide, float2 Tex)
+    /*
+        This is a function used for Joint Bilateral Upsampling implemented in HLSL.
+        ---
+        Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R. P. (2009, January). Multistep joint bilateral depth upsampling. In Visual communications and image processing 2009 (Vol. 7257, pp. 192-203). SPIE.
+    */
+
+    float4 CBlur_UpsampleMotionVectors(
+        sampler Image, // This should be 1/2 the size as GuideHigh
+        sampler GuideHigh, // This should be 2/1 the size as Image and GuideLow
+        sampler GuideLow, // This should be 1/2 the size as GuideHigh (MipLODBias = 1.0)
+        float2 Tex
+    )
     {
         const float WeightSigma = 4e-4;
         const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
@@ -473,12 +484,12 @@
 
                 // Calculate guide and image arrats
                 ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
-                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2D(Guide, OffsetTex));
+                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2D(GuideLow, OffsetTex));
             }
         }
 
         // Store center pixel for reference
-        float4 Reference = GuideArray[4];
+        float4 Reference = CMath_Float4_FP16ToNorm(tex2D(GuideHigh, Tex));
         float4 BilateralSum = 0.0;
         float4 WeightSum = 0.0;
 
