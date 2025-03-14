@@ -86,23 +86,40 @@ CAS GetDiamondCAS(float2 Tex, float2 Delta)
 CAS GetBoxCAS(float2 Tex, float2 Delta)
 {
     CAS O;
-    CAS I = GetDiamondCAS(Tex, Delta);
 
-    float4 BoxTex = Tex.xyxy + (Delta.xyxy * float4(-1.0, -1.0, 1.0, 1.0));
-    float4 Sample5 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.xw);
-    float4 Sample6 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.zw);
-    float4 Sample7 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.xy);
-    float4 Sample8 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, BoxTex.zy);
+    float4 Tex1 = Tex.xyyy + (Delta.xyyy * float4(-1.0, -1.0, 0.0, 1.0));
+    float4 Tex2 = Tex.xyyy + (Delta.xyyy * float4(0.0, -1.0, 0.0, 1.0));
+    float4 Tex3 = Tex.xyyy + (Delta.xyyy * float4(1.0, -1.0, 0.0, 1.0));
+
+    /*
+        1 2 3
+        4 5 6
+        7 8 9
+    */
+    float4 Sample1 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xy);
+    float4 Sample2 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xz);
+    float4 Sample3 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xw);
+    float4 Sample4 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xy);
+    float4 Sample5 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xz);
+    float4 Sample6 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xw);
+    float4 Sample7 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xy);
+    float4 Sample8 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xz);
+    float4 Sample9 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xw);
 
     // Get polar min/max
-    O.Sample[0] = I.Sample[0];
-    O.Sample[1] = I.Sample[1];
-    O.Sample[2] = I.Sample[2];
-    O.Sample[3] = I.Sample[3];
-    O.Sample[4] = I.Sample[4];
+    float4 Min1 = min(Sample5, min(min(Sample2, Sample4), min(Sample6, Sample8)));
+    float4 Min2 = min(Min1, min(min(Sample1, Sample3), min(Sample7, Sample9)));
+    float4 Max1 = max(Sample5, max(max(Sample2, Sample4), max(Sample6, Sample8)));
+    float4 Max2 = max(Max1, max(max(Sample1, Sample3), max(Sample7, Sample9)));
 
-    O.MinRGB = min(I.MinRGB, min(min(Sample5, Sample6), min(Sample7, Sample8)));
-    O.MaxRGB = max(I.MaxRGB, max(max(Sample5, Sample6), max(Sample7, Sample8)));
+    O.Sample[0] = Sample5;
+    O.Sample[1] = Sample2;
+    O.Sample[2] = Sample4;
+    O.Sample[3] = Sample6;
+    O.Sample[4] = Sample8;
+
+    O.MinRGB = Min1 + Min2;
+    O.MaxRGB = Max1 + Max2;
 
     return O;
 }
@@ -119,7 +136,7 @@ void FFX_CAS(
     // Get CAS data based on user input
     CAS C;
 
-    switch(_Kernel)
+    switch(Kernel)
     {
         case 0:
             C = GetDiamondCAS(Tex, Delta);
@@ -129,14 +146,12 @@ void FFX_CAS(
             break;
     }
 
-    // Get needed reciprocal
+    // Smooth minimum distance to signal limit divided by smooth max.
     float4 ReciprocalMaxRGB = 1.0 / C.MaxRGB;
-
-    // Amplify
     float4 AmplifyRGB = saturate(min(C.MinRGB, 2.0 - C.MaxRGB) * ReciprocalMaxRGB);
 
     // Shaping amount of sharpening.
-    AmplifyRGB *= rsqrt(AmplifyRGB);
+    AmplifyRGB = sqrt(AmplifyRGB);
 
     /* Filter shape.
             w   |   w   | w w
