@@ -403,48 +403,6 @@
         return Array[4];
     }
 
-    float4 CBlur_GetWeightedMedian(sampler Source, float2 Tex)
-    {
-        float2 PixelSize = fwidth(Tex.xy);
-
-        // Add the pixels which make up our window to the pixel array.
-        float4 Array[9];
-
-        [unroll]
-        for (int dx = -1; dx <= 1; ++dx)
-        {
-            [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
-            {
-                float2 Offset = float2(float(dx), float(dy));
-
-                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
-                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
-                // bottom right pixel of the window at pixel[N-1].
-                int ID = (dx + 1) * 3 + (dy + 1);
-                Array[ID] = CMath_Float4_FP16ToNorm(tex2D(Source, Tex + (Offset * PixelSize)));
-            }
-        }
-
-        // Store center pixel for reference
-        float4 Reference = Array[4];
-
-        [unroll]
-        for (int i = 0; i < 9; i++)
-        {
-            float2 Difference = Array[i].xy - Reference.xy;
-            float Weight = exp(-dot(Difference, Difference));
-            Array[i] *= Weight;
-        }
-
-        // Starting with a subset of size 6, remove the min and max each time
-        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
-        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
-        MNMX4(Array[2], Array[3], Array[4], Array[7]);
-        MNMX3(Array[3], Array[4], Array[8]);
-
-        return CMath_Float4_NormToFP16(Array[4]);
-    }
 
     /*
         This is a function used for Joint Bilateral Upsampling implemented in HLSL.
@@ -483,29 +441,30 @@
                 float2 OffsetTex = Tex + (Offset * PixelSize);
 
                 // Calculate guide and image arrats
-                ImageArray[ID] = CMath_Float4_FP16ToNorm(tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0)));
-                GuideArray[ID] = CMath_Float4_FP16ToNorm(tex2D(GuideLow, OffsetTex));
+                ImageArray[ID] = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                GuideArray[ID] = tex2D(GuideLow, OffsetTex);
             }
         }
 
         // Store center pixel for reference
-        float4 Reference = CMath_Float4_FP16ToNorm(tex2D(GuideHigh, Tex));
+        float4 Reference = tex2D(GuideHigh, Tex);
         float4 BilateralSum = 0.0;
         float4 WeightSum = 0.0;
 
         [unroll]
         for (int i = 0; i < 9; i++)
         {
-            float2 Difference = GuideArray[i].xy - Reference.xy;
+            // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
+            // We normalize the difference to avoid precision loss at the higher numbers
+            float2 Difference = CMath_Float2_FP16ToNorm(GuideArray[i].xy - Reference.xy);
             float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
             float Weight = SpatialWeight + exp(-10.0);
+
             BilateralSum += (ImageArray[i] * Weight);
             WeightSum += Weight;
         }
 
-        BilateralSum = clamp(BilateralSum / WeightSum, -1.0, 1.0);
-
-        return CMath_Float4_NormToFP16(BilateralSum);
+        return BilateralSum / WeightSum;
     }
 
 #endif
