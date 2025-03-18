@@ -421,9 +421,10 @@
         const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
 
-        // Add the pixels which make up our window to the pixel array.
-        float4 GuideArray[9];
-        float4 ImageArray[9];
+        // Store center pixel for reference
+        float4 Reference = tex2D(GuideHigh, Tex);
+        float4 BilateralSum = 0.0;
+        float4 WeightSum = 0.0;
 
         [unroll]
         for (int dx = -1; dx <= 1; ++dx)
@@ -431,37 +432,23 @@
             [unroll]
             for (int dy = -1; dy <= 1; ++dy)
             {
-                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
-                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
-                // bottom right pixel of the window at pixel[N-1].
-                int ID = (dx + 1) * 3 + (dy + 1);
-
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
                 float2 OffsetTex = Tex + (Offset * PixelSize);
 
                 // Calculate guide and image arrats
-                ImageArray[ID] = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-                GuideArray[ID] = tex2D(GuideLow, OffsetTex);
+                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                float4 GuideSample = tex2D(GuideLow, OffsetTex);
+
+                // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
+                // We normalize the difference to avoid precision loss at the higher numbers
+                float2 Difference = CMath_Float2_FP16ToNorm(GuideSample.xy - Reference.xy);
+                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
+                float Weight = SpatialWeight + exp(-10.0);
+
+                BilateralSum += (ImageSample * Weight);
+                WeightSum += Weight;
             }
-        }
-
-        // Store center pixel for reference
-        float4 Reference = tex2D(GuideHigh, Tex);
-        float4 BilateralSum = 0.0;
-        float4 WeightSum = 0.0;
-
-        [unroll]
-        for (int i = 0; i < 9; i++)
-        {
-            // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
-            // We normalize the difference to avoid precision loss at the higher numbers
-            float2 Difference = CMath_Float2_FP16ToNorm(GuideArray[i].xy - Reference.xy);
-            float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-            float Weight = SpatialWeight + exp(-10.0);
-
-            BilateralSum += (ImageArray[i] * Weight);
-            WeightSum += Weight;
         }
 
         return BilateralSum / WeightSum;
