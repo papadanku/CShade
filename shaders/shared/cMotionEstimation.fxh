@@ -88,7 +88,7 @@
 
         // Get required data to calculate Lucas-Kanade
         const int WindowSize = 3;
-        const int WindowHalf = trunc(WindowSize / 2);
+        const int WindowHalf = WindowSize / 2;
         const float Pi2 = CMath_GetPi() * 2.0;
 
         // Get stochastic sampling
@@ -99,7 +99,7 @@
 
         [loop] for (int i = 0; i < (WindowSize * WindowSize); i++)
         {
-            float2 Kernel = -WindowHalf + float2(i % WindowSize, trunc(i / WindowSize));
+            float2 Kernel = float2(i % WindowSize, i / WindowSize) - WindowHalf;
             Kernel = mul(Kernel, RotationMatrix);
 
             // Get temporal gradient
