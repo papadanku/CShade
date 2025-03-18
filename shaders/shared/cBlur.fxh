@@ -289,7 +289,6 @@
         Morgan McGuire and Kyle Whitson
         http://graphics.cs.williams.edu
 
-
         Copyright (c) Morgan McGuire and Williams College, 2006
         All rights reserved.
 
@@ -402,7 +401,6 @@
 
         return Array[4];
     }
-
 
     /*
         This is a function used for Joint Bilateral Upsampling implemented in HLSL.

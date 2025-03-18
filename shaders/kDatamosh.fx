@@ -108,7 +108,6 @@ uniform float _Diffusion <
     [Textures and samplers]
 */
 
-
 #if SAMPLE_LINEAR_DISPLACEMENT
     #define DISPLACEMENT_FILTERING LINEAR
 #else
