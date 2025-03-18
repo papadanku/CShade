@@ -139,7 +139,7 @@
 
     /*
         Frei-Chen edge detection
-        ---
+
         https://www.rastergrid.com/blog/2011/01/frei-chen-edge-detector/
     */
 

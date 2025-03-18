@@ -53,7 +53,7 @@
 
     /*
         Interleaved Gradient Noise Dithering
-        ---
+
         http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
     */
 

@@ -6,7 +6,7 @@
 
     /*
         [Macros and macro accessories]
-        ---
+
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 

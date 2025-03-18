@@ -7,7 +7,7 @@
 
     /*
         Linear Gaussian blur
-        ---
+
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
@@ -75,7 +75,7 @@
 
     /*
         Wojciech Sterna's shadow sampling code as a screen-space convolution (http://maxest.gct-game.net/content/chss.pdf)
-        ---
+
         Vogel disk sampling: http://blog.marmakoide.org/?p=1
         Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
     */
@@ -403,9 +403,13 @@
     }
 
     /*
-        This is a function used for Joint Bilateral Upsampling implemented in HLSL.
+        This is a function used for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
+
         ---
-        Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R. P. (2009, January). Multistep joint bilateral depth upsampling. In Visual communications and image processing 2009 (Vol. 7257, pp. 192-203). SPIE.
+
+        Riemens, B., Gangwal, O.P., Barenbrug, B., & Berretty, R. (2009). Multistep joint bilateral depth upsampling. Electronic imaging.
+
+        https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
     */
 
     float4 CBlur_UpsampleMotionVectors(

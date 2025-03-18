@@ -38,19 +38,15 @@
     }
 
     /*
-        Lucas-Kanade optical flow with bilinear fetches.
+        Lucas-Kanade optical flow with bilinear fetches. The algorithm is motified to not output in pixels, but normalized displacements.
+
         ---
+
         Gauss-Newton Steepest Descent Inverse Additive Algorithm
-        https://www.ri.cmu.edu/pub_files/pub3/baker_simon_2002_3/baker_simon_2002_3.pdf
-        ---
-        The algorithm is motified to not output in pixels, but normalized displacements
-        ---
-        Calculate Lucas-Kanade optical flow by solving (A^-1 * B)
-        [A11 A12]^-1 [-B1] -> [ A11/D -A12/D] [-B1]
-        [A21 A22]^-1 [-B2] -> [-A21/D  A22/D] [-B2]
-        ---
-        [ Ix^2/D -IxIy/D] [-IxIt]
-        [-IxIy/D  Iy^2/D] [-IyIt]
+
+        Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
+
+        https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation
     */
 
     float2 CMotionEstimation_GetPixelPyLK
@@ -129,13 +125,6 @@
             IxIt += dot(Ix, IT);
             IyIt += dot(Iy, IT);
         }
-
-        /*
-            Calculate Lucas-Kanade matrix
-            ---
-            [ Ix^2/D -IxIy/D] [-IxIt]
-            [-IxIy/D  Iy^2/D] [-IyIt]
-        */
 
         /*
             Calculate Lucas-Kanade matrix
