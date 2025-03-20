@@ -110,7 +110,7 @@ sampler2D SampleGuideLow
 float4 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = sqrt(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb);
-    return float4(CColor_GetYCOCGRfromRGB(Color, true), 1.0);
+    return float4(CColor_GetYCOCGRfromSRGB(Color, true), 1.0);
 }
 
 // Run Lucas-Kanade

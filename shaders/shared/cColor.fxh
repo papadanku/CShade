@@ -190,24 +190,24 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
-    float3 CColor_GetYCOCGRfromRGB(float3 RGB, bool NormalizeOutput)
+    float3 CColor_GetYCOCGRfromSRGB(float3 SRGB, bool NormalizeOutput)
     {
         float3 YCoCgR;
-        YCoCgR.x = dot(float3(1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0), RGB);
-        YCoCgR.y = dot(float3(1.0, 0.0, -1.0), RGB);
-        YCoCgR.z = dot(float3(-1.0 / 2.0, 1.0, -1.0 / 2.0), RGB);
+        YCoCgR.x = dot(float3(1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0), SRGB);
+        YCoCgR.y = dot(float3(1.0, 0.0, -1.0), SRGB);
+        YCoCgR.z = dot(float3(-1.0 / 2.0, 1.0, -1.0 / 2.0), SRGB);
         YCoCgR = NormalizeOutput ? (YCoCgR * 0.5) + 0.5 : YCoCgR;
         return YCoCgR;
     }
 
-    float3 CColor_GetRGBfromYCOCGR(float3 YCoCgR, bool NormalizedInput)
+    float3 CColor_GetSRGBfromYCOCGR(float3 YCoCgR, bool NormalizedInput)
     {
-        float3 RGB;
+        float3 SRGB;
         YCoCgR = NormalizedInput ? (YCoCgR * 2.0) - 1.0 : YCoCgR;
-        RGB.r = dot(float3(1.0, 1.0, -1.0), YCoCgR);
-        RGB.g = dot(float3(1.0, 0.0, 1.0), YCoCgR);
-        RGB.b = dot(float3(1.0, -1.0, -1.0), YCoCgR);
-        return RGB;
+        SRGB.r = dot(float3(1.0, 1.0, -1.0), YCoCgR);
+        SRGB.g = dot(float3(1.0, 0.0, 1.0), YCoCgR);
+        SRGB.b = dot(float3(1.0, -1.0, -1.0), YCoCgR);
+        return SRGB;
     }
 
     float3 CColor_GetHSVfromRGB(float3 Color)
