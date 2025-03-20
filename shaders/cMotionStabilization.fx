@@ -138,7 +138,7 @@ float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_GetMedian(SampleGuideHigh, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_GetMedian(SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
