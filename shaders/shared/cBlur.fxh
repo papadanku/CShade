@@ -414,8 +414,7 @@
 
     float4 CBlur_UpsampleMotionVectors(
         sampler Image, // This should be 1/2 the size as GuideHigh
-        sampler GuideHigh, // This should be 2/1 the size as Image and GuideLow
-        sampler GuideLow, // This should be 1/2 the size as GuideHigh (MipLODBias = 1.0)
+        sampler Guide, // This should be 2/1 the size as Image and GuideLow
         float2 Tex
     )
     {
@@ -424,7 +423,7 @@
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
 
         // Store center pixel for reference
-        float4 Reference = tex2D(GuideHigh, Tex);
+        float4 Reference = tex2D(Guide, Tex);
         float4 BilateralSum = 0.0;
         float4 WeightSum = 0.0;
 

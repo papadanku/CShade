@@ -140,32 +140,10 @@ CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleFilteredFlowTex, TempTex2_RG16F, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleAccumTex, AccumTex, DISPLACEMENT_FILTERING, DISPLACEMENT_FILTERING, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, WARP_FILTERING, WARP_FILTERING, LINEAR, MIRROR, MIRROR, MIRROR)
 CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
-
-sampler2D SampleGuideHigh
-{
-    Texture = FlowTex;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-    AddressW = CLAMP;
-};
-
-sampler2D SampleGuideLow
-{
-    Texture = FlowTex;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-    AddressW = CLAMP;
-    MipLODBias = 1.0;
-};
 
 /*
     [Pixel Shaders]
@@ -219,17 +197,17 @@ float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 // Datamosh

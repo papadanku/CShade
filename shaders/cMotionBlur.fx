@@ -79,29 +79,7 @@ CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RGB10A2, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
-
-sampler2D SampleGuideHigh
-{
-    Texture = FlowTex;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-    AddressW = CLAMP;
-};
-
-sampler2D SampleGuideLow
-{
-    Texture = FlowTex;
-    MagFilter = LINEAR;
-    MinFilter = LINEAR;
-    MipFilter = LINEAR;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-    AddressW = CLAMP;
-    MipLODBias = 1.0;
-};
+CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]
@@ -157,17 +135,17 @@ float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuideHigh, SampleGuideLow, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
