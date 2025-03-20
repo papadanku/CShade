@@ -28,31 +28,31 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = CColor_GetSumChromaticity(Color, 0).rg;
+            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 0).rgb;
+            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = CColor_GetSumChromaticity(Color, 1).rg;
+            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 1).rgb;
+            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = CColor_GetSumChromaticity(Color, 2).rg;
+            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 2).rgb;
+            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 2).rgb;
             break;
         case 6: // Max (XY)
-            Chromaticity.rg = CColor_GetSumChromaticity(Color, 3).rg;
+            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Chromaticity.rgb = CColor_GetSumChromaticity(Color, 3).rgb;
+            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Chromaticity.rg = CColor_GetRatioRG(Color);
+            Chromaticity.rg = CColor_GetChromaticityRGfromRGB(Color);
             break;
         case 9: // Spherical (XY)
             Chromaticity.rg = CColor_GetSphericalRG(Color);
@@ -67,7 +67,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = CColor_GetHSVfromRGB(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = CColor_GetYCOCGfromRGB(Gamma, true).yz;
+            Chromaticity.rg = CColor_GetYCOCGRfromRGB(Gamma, true).yz;
             break;
         case 14: // OKLab (AB)
             Chromaticity.rg = CColor_GetOKLABfromRGB(Color).yz;

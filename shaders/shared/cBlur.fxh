@@ -403,7 +403,7 @@
     }
 
     /*
-        This is a function used for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
+        This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
 
         ---
 
@@ -438,13 +438,10 @@
                 float2 Offset = float2(float(dx), float(dy));
                 float2 OffsetTex = Tex + (Offset * PixelSize);
 
-                // Calculate guide and image arrats
-                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-                float4 GuideSample = tex2D(GuideLow, OffsetTex);
-
                 // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
                 // We normalize the difference to avoid precision loss at the higher numbers
-                float2 Difference = CMath_Float2_FP16ToNorm(GuideSample.xy - Reference.xy);
+                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                float2 Difference = CMath_Float2_FP16ToNorm(ImageSample.xy - Reference.xy);
                 float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
                 float Weight = SpatialWeight + exp(-10.0);
 

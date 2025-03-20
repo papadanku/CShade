@@ -120,19 +120,19 @@ uniform float _Diffusion <
     #define WARP_FILTERING POINT
 #endif
 
-CREATE_TEXTURE_POOLED(TempTex1_RG8, BUFFER_SIZE_1, RG8, 8)
+CREATE_TEXTURE_POOLED(TempTex1_RGB10A2, BUFFER_SIZE_1, RGB10A2, 8)
 CREATE_TEXTURE_POOLED(TempTex2_RG16F, BUFFER_SIZE_3, RG16F, 8)
 CREATE_TEXTURE_POOLED(TempTex3_RG16F, BUFFER_SIZE_4, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex4_RG16F, BUFFER_SIZE_5, RG16F, 1)
 CREATE_TEXTURE_POOLED(TempTex5_RG16F, BUFFER_SIZE_6, RG16F, 1)
 
-CREATE_SAMPLER(SampleTempTex1, TempTex1_RG8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex1, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex2, TempTex2_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RG8, 8)
+CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RGB10A2, 8)
 CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
 CREATE_TEXTURE(AccumTex, BUFFER_SIZE_0, R16F, 1)
 CREATE_TEXTURE(FeedbackTex, BUFFER_SIZE_0, RGBA8, 1)
@@ -171,10 +171,10 @@ sampler2D SampleGuideLow
     [Pixel Shaders]
 */
 
-float2 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
-    return CColor_GetSphericalRG(Color).xy;
+    float3 Color = sqrt(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb);
+    return float4(CColor_GetYCOCGRfromRGB(Color, true), 1.0);
 }
 
 // Run Lucas-Kanade
@@ -209,7 +209,7 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rg, 0.0, 1.0);
+    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rgb, 1.0);
 }
 
 float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -373,7 +373,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoDatamosh < ui_tooltip = "Keijiro Takahashi | An image effect that simulates video compression artifacts"; >
 {
     // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RG8)
+    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RGB10A2)
 
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)

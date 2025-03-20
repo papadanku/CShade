@@ -100,21 +100,21 @@
 
             // Get temporal gradient
             float4 TexIT = WarpTex.xyzw + (Kernel.xyxy * PixelSize.xyxy);
-            float2 T = tex2Dgrad(SampleT, TexIT.xy, TexIx.xy, TexIy.xy).rg;
-            float2 I = tex2Dgrad(SampleI, TexIT.zw, TexIx.zw, TexIy.zw).rg;
-            float2 IT = I - T;
+            float3 T = tex2Dgrad(SampleT, TexIT.xy, TexIx.xy, TexIy.xy).xyz;
+            float3 I = tex2Dgrad(SampleI, TexIT.zw, TexIx.zw, TexIy.zw).xyz;
+            float3 IT = I - T;
 
             // Get spatial gradient
             float4 OffsetNS = Kernel.xyxy + float4(0.0, -1.0, 0.0, 1.0);
             float4 OffsetEW = Kernel.xyxy + float4(-1.0, 0.0, 1.0, 0.0);
             float4 NS = WarpTex.xyxy + (OffsetNS * PixelSize.xyxy);
             float4 EW = WarpTex.xyxy + (OffsetEW * PixelSize.xyxy);
-            float2 N = tex2Dgrad(SampleT, NS.xy, TexIx.xy, TexIy.xy).rg;
-            float2 S = tex2Dgrad(SampleT, NS.zw, TexIx.xy, TexIy.xy).rg;
-            float2 E = tex2Dgrad(SampleT, EW.xy, TexIx.xy, TexIy.xy).rg;
-            float2 W = tex2Dgrad(SampleT, EW.zw, TexIx.xy, TexIy.xy).rg;
-            float2 Ix = E - W;
-            float2 Iy = N - S;
+            float3 N = tex2Dgrad(SampleT, NS.xy, TexIx.xy, TexIy.xy).xyz;
+            float3 S = tex2Dgrad(SampleT, NS.zw, TexIx.xy, TexIy.xy).xyz;
+            float3 E = tex2Dgrad(SampleT, EW.xy, TexIx.xy, TexIy.xy).xyz;
+            float3 W = tex2Dgrad(SampleT, EW.zw, TexIx.xy, TexIy.xy).xyz;
+            float3 Ix = E - W;
+            float3 Iy = N - S;
 
             // IxIx = A11; IyIy = A22; IxIy = A12/A22
             IxIx += dot(Ix, Ix);

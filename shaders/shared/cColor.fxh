@@ -128,7 +128,7 @@
         }
     }
 
-    float3 CColor_GetSumChromaticity(float3 Color, int Method)
+    float3 CColor_GetChromaticityRGBfromRGB(float3 Color, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
@@ -161,7 +161,7 @@
         Ratio-based chromaticity
     */
 
-    float2 CColor_GetRatioRG(float3 Color)
+    float2 CColor_GetChromaticityRGfromRGB(float3 Color)
     {
         float2 Ratio = (Color.z == 0.0) ? 1.0 : Color.xy / Color.zz;
         // x / (x + 1.0) normalizes to [0, 1] range
@@ -190,29 +190,24 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
-    float3 CColor_GetYCOCGfromRGB(float3 RGB, bool Normalize)
+    float3 CColor_GetYCOCGRfromRGB(float3 RGB, bool NormalizeOutput)
     {
-        float3x3 M = float3x3
-        (
-            1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0,
-            1.0 / 2.0, 0.0, -1.0 / 2.0,
-            -1.0 / 4.0, 1.0 / 2.0, -1.0 / 4.0
-        );
-
-        RGB = (Normalize) ? mul(M, RGB) + 0.5 : mul(M, RGB);
-        return RGB;
+        float3 YCoCgR;
+        YCoCgR.x = dot(float3(1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0), RGB);
+        YCoCgR.y = dot(float3(1.0, 0.0, -1.0), RGB);
+        YCoCgR.z = dot(float3(-1.0 / 2.0, 1.0, -1.0 / 2.0), RGB);
+        YCoCgR = NormalizeOutput ? (YCoCgR * 0.5) + 0.5 : YCoCgR;
+        return YCoCgR;
     }
 
-    float3 CColor_GetRGBfromYCOCG(float3 YCoCg)
+    float3 CColor_GetRGBfromYCOCGR(float3 YCoCgR, bool NormalizedInput)
     {
-        float3x3 M = float3x3
-        (
-            1.0, 1.0, -1.0,
-            1.0, 0.0, 1.0,
-            1.0, -1.0, -1.0
-        );
-
-        return mul(M, YCoCg);
+        float3 RGB;
+        YCoCgR = NormalizedInput ? (YCoCgR * 2.0) - 1.0 : YCoCgR;
+        RGB.r = dot(float3(1.0, 1.0, -1.0), YCoCgR);
+        RGB.g = dot(float3(1.0, 0.0, 1.0), YCoCgR);
+        RGB.b = dot(float3(1.0, -1.0, -1.0), YCoCgR);
+        return RGB;
     }
 
     float3 CColor_GetHSVfromRGB(float3 Color)
@@ -294,7 +289,8 @@
         Title: "Robust optical flow from photometric invariants"
         Year: 2004
         DOI: 10.1109/ICIP.2004.1421433
-        Link: https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
+
+        https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
     float2 CColor_GetSphericalRG(float3 Color)
