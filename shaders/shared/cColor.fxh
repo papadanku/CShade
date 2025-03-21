@@ -190,23 +190,37 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
+    /*
+        Malvar, H., & Sullivan, G. (2003). YCoCg-R: A color space with RGB reversibility and low dynamic range. ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q, 6.
+
+        https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/?msockid=304d3b086ecf61db06e32ea86fb06088
+    */
+
     float3 CColor_GetYCOCGRfromSRGB(float3 SRGB, bool NormalizeOutput)
     {
         float3 YCoCgR;
-        YCoCgR.x = dot(float3(1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0), SRGB);
-        YCoCgR.y = dot(float3(1.0, 0.0, -1.0), SRGB);
-        YCoCgR.z = dot(float3(-1.0 / 2.0, 1.0, -1.0 / 2.0), SRGB);
-        YCoCgR = NormalizeOutput ? (YCoCgR * 0.5) + 0.5 : YCoCgR;
+        float Temp;
+
+        YCoCgR.y = SRGB.r - SRGB.b;
+        Temp = SRGB.b + (YCoCgR.y * 0.5);
+        YCoCgR.z = SRGB.g - Temp;
+        YCoCgR.x = Temp + (YCoCgR.z * 0.5);
+        YCoCgR.yz = NormalizeOutput ? (YCoCgR.yz * 0.5) + 0.5 : YCoCgR.yz;
+
         return YCoCgR;
     }
 
     float3 CColor_GetSRGBfromYCOCGR(float3 YCoCgR, bool NormalizedInput)
     {
         float3 SRGB;
-        YCoCgR = NormalizedInput ? (YCoCgR * 2.0) - 1.0 : YCoCgR;
-        SRGB.r = dot(float3(1.0, 1.0, -1.0), YCoCgR);
-        SRGB.g = dot(float3(1.0, 0.0, 1.0), YCoCgR);
-        SRGB.b = dot(float3(1.0, -1.0, -1.0), YCoCgR);
+        float Temp;
+
+        YCoCgR.yz = NormalizedInput ? (YCoCgR.yz * 2.0) - 1.0 : YCoCgR.yz;
+        Temp = YCoCgR.x - (YCoCgR.z * 0.5);
+        SRGB.g = YCoCgR.z + Temp;
+        SRGB.b = Temp - (YCoCgR.y * 0.5);
+        SRGB.r = SRGB.b + YCoCgR.y;
+
         return SRGB;
     }
 
