@@ -18,7 +18,7 @@
 
     float4 CColor_LinearToSRGB(float4 Color)
     {
-        Color = (Color <=  0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
+        Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
         return Color;
     }
 
@@ -128,7 +128,7 @@
         }
     }
 
-    float3 CColor_GetChromaticityRGBfromRGB(float3 Color, int Method)
+    float3 CColor_RGBtoChromaticityRGB(float3 Color, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
@@ -161,7 +161,7 @@
         Ratio-based chromaticity
     */
 
-    float2 CColor_GetChromaticityRGfromRGB(float3 Color)
+    float2 CColor_RGBtoChromaticityRG(float3 Color)
     {
         float2 Ratio = (Color.z == 0.0) ? 1.0 : Color.xy / Color.zz;
         // x / (x + 1.0) normalizes to [0, 1] range
@@ -196,7 +196,7 @@
         https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/?msockid=304d3b086ecf61db06e32ea86fb06088
     */
 
-    float3 CColor_GetYCOCGRfromSRGB(float3 SRGB, bool NormalizeOutput)
+    float3 CColor_SRGBtoYCOCGR(float3 SRGB, bool NormalizeOutput)
     {
         float3 YCoCgR;
         float Temp;
@@ -210,7 +210,7 @@
         return YCoCgR;
     }
 
-    float3 CColor_GetSRGBfromYCOCGR(float3 YCoCgR, bool NormalizedInput)
+    float3 CColor_YCOCGRtoSRGB(float3 YCoCgR, bool NormalizedInput)
     {
         float3 SRGB;
         float Temp;
@@ -224,7 +224,7 @@
         return SRGB;
     }
 
-    float3 CColor_GetHSVfromRGB(float3 Color)
+    float3 CColor_RGBtoHSV(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
@@ -249,7 +249,7 @@
         return Output;
     }
 
-    float3 CColor_GetRGBfromHSV(float3 HSV)
+    float3 CColor_HSVtoRGB(float3 HSV)
     {
         float H = HSV.x * 6.0;
         float S = HSV.y;
@@ -270,7 +270,7 @@
         return O;
     }
 
-    float3 CColor_GetHSLfromRGB(float3 Color)
+    float3 CColor_RGBtoHSL(float3 Color)
     {
         float MinRGB = min(min(Color.r, Color.g), Color.b);
         float MaxRGB = max(max(Color.r, Color.g), Color.b);
@@ -307,7 +307,7 @@
         https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float2 CColor_GetSphericalRG(float3 Color)
+    float2 CColor_RGBtoSphericalRG(float3 Color)
     {
         const float HalfPi = 1.0 / acos(0.0);
 
@@ -322,7 +322,7 @@
         return saturate(asin(abs(Angles)) * HalfPi);
     }
 
-    float3 CColor_GetHSIfromRGB(float3 Color)
+    float3 CColor_RGBtoHSI(float3 Color)
     {
         float3 O = Color.rrr;
         O += (Color.ggg * float3(-1.0, 1.0, 1.0));
@@ -393,7 +393,7 @@
         float3(+0.0259040371, +0.7827717662f, -0.8086757660)
     );
 
-    float3 CColor_GetOKLABfromRGB(float3 Color)
+    float3 CColor_RGBtoOKLAB(float3 Color)
     {
         float3 LMS = mul(CColor_OKLABfromRGB_M1, Color);
         LMS = pow(abs(LMS), 1.0 / 3.0);
@@ -415,7 +415,7 @@
         float3(-0.0041960863, -0.7034186147, +1.7076147010)
     );
 
-    float3 CColor_GetRGBfromOKLAB(float3 OKLab)
+    float3 CColor_OKLABtoRGB(float3 OKLab)
     {
         float3 LMS = OKLab.xxx + mul(CColor_RGBfromOKLAB_M1, OKLab.yz);
         LMS = LMS * LMS * LMS;
@@ -423,7 +423,7 @@
         return LMS;
     }
 
-    float3 CColor_GetOKLCHfromOKLAB(float3 OKLab)
+    float3 CColor_OKLABtoOKLCH(float3 OKLab)
     {
         float3 OKLch = 0.0;
         OKLch.x = OKLab.x;
@@ -432,7 +432,7 @@
         return OKLch;
     }
 
-    float3 CColor_GetOKLABfromOKLCH(float3 OKLch)
+    float3 CColor_OKLCHtoOKLAB(float3 OKLch)
     {
         float3 OKLab = 0.0;
         OKLab.x = OKLch.x;
@@ -441,14 +441,14 @@
         return OKLab;
     }
 
-    float3 CColor_GetOKLCHfromRGB(float3 Color)
+    float3 CColor_RGBtoOKLCH(float3 Color)
     {
-        return CColor_GetOKLCHfromOKLAB(CColor_GetOKLABfromRGB(Color));
+        return CColor_OKLABtoOKLCH(CColor_RGBtoOKLAB(Color));
     }
 
-    float3 CColor_GetRGBfromOKLCH(float3 OKLch)
+    float3 CColor_OKLCHtoRGB(float3 OKLch)
     {
-        return CColor_GetRGBfromOKLAB(CColor_GetOKLABfromOKLCH(OKLch));
+        return CColor_OKLABtoRGB(CColor_OKLCHtoOKLAB(OKLch));
     }
 
     /*
@@ -528,12 +528,12 @@
         float3(1.0, -1.105, 1.702)
     );
 
-    float3 CColor_GetYIQfromRGB(float3 Color)
+    float3 CColor_RGBtoYIQ(float3 Color)
     {
         return mul(CColor_RGBtoYIQ, Color);
     }
 
-    float3 CColor_GetRGBfromYIQ(float3 Color)
+    float3 CColor_YIQtoRGB(float3 Color)
     {
         return mul(CColor_YIQtoRGB, Color);
     }
@@ -588,7 +588,7 @@
         Tint /= 10.0;
 
         // Convert RGB to OKLab
-        Color = CColor_GetOKLABfromRGB(Color);
+        Color = CColor_RGBtoOKLAB(Color);
 
         // Apply temperature shift
         Color.z += Temperature;
@@ -597,7 +597,7 @@
         Color.y += Tint;
 
         // Convert OKLab to OKLch
-        Color = CColor_GetOKLCHfromOKLAB(Color);
+        Color = CColor_OKLABtoOKLCH(Color);
 
         // Apply lightness
         Color.x *= Lightness;
@@ -609,7 +609,7 @@
         Color.z += HueShift;
 
         // Convert OKLch to RGB
-        Color = CColor_GetRGBfromOKLCH(Color);
+        Color = CColor_OKLCHtoRGB(Color);
 
         // Apply color filter
         Color *= ColorFilter;

@@ -28,54 +28,54 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 0).rg;
+            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 0).rgb;
+            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 1).rg;
+            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 1).rgb;
+            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 2).rg;
+            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 2).rgb;
+            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 2).rgb;
             break;
         case 6: // Max (XY)
-            Chromaticity.rg = CColor_GetChromaticityRGBfromRGB(Color, 3).rg;
+            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Chromaticity.rgb = CColor_GetChromaticityRGBfromRGB(Color, 3).rgb;
+            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Chromaticity.rg = CColor_GetChromaticityRGfromRGB(Color);
+            Chromaticity.rg = CColor_RGBtoChromaticityRG(Color);
             break;
         case 9: // Spherical (XY)
-            Chromaticity.rg = CColor_GetSphericalRG(Color);
+            Chromaticity.rg = CColor_RGBtoSphericalRG(Color);
             break;
         case 10: // Hue-Saturation (HSI)
-            Chromaticity.rg = CColor_GetHSIfromRGB(Color).rg;
+            Chromaticity.rg = CColor_RGBtoHSI(Color).rg;
             break;
         case 11: // Hue-Saturation (HSL)
-            Chromaticity.rg = CColor_GetHSLfromRGB(Color).rg;
+            Chromaticity.rg = CColor_RGBtoHSL(Color).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Chromaticity.rg = CColor_GetHSVfromRGB(Color).rg;
+            Chromaticity.rg = CColor_RGBtoHSV(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = CColor_GetYCOCGRfromSRGB(Gamma, true).yz;
+            Chromaticity.rg = CColor_SRGBtoYCOCGR(Gamma, true).yz;
             break;
         case 14: // OKLab (AB)
-            Chromaticity.rg = CColor_GetOKLABfromRGB(Color).yz;
+            Chromaticity.rg = CColor_RGBtoOKLAB(Color).yz;
             Chromaticity.rg = (Chromaticity.rg + 0.4) / 0.8;
             break;
         case 15: // OKLch (CH)
             const float Pi2 = CMath_GetPi() * 2.0;
-            Chromaticity.rg = CColor_GetOKLCHfromRGB(Color).yz;
+            Chromaticity.rg = CColor_RGBtoOKLCH(Color).yz;
             Chromaticity.r /= length(float2(0.4, 0.4));
             Chromaticity.g /= Pi2;
             break;

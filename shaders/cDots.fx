@@ -231,31 +231,31 @@ float GetTileCircleLength(Tile Input)
         switch(_Select)
         {
             case 0:
-                Color.a = CColor_GetHSVfromRGB(Color.rgb).r;
+                Color.a = CColor_RGBtoHSV(Color.rgb).r;
                 break;
             case 1:
-                Color.a = CColor_GetHSVfromRGB(Color.rgb).g;
+                Color.a = CColor_RGBtoHSV(Color.rgb).g;
                 break;
             case 2:
-                Color.a = CColor_GetHSVfromRGB(Color.rgb).b;
+                Color.a = CColor_RGBtoHSV(Color.rgb).b;
                 break;
             case 3:
-                Color.a = CColor_GetHSLfromRGB(Color.rgb).r;
+                Color.a = CColor_RGBtoHSL(Color.rgb).r;
                 break;
             case 4:
-                Color.a = CColor_GetHSLfromRGB(Color.rgb).g;
+                Color.a = CColor_RGBtoHSL(Color.rgb).g;
                 break;
             case 5:
-                Color.a = CColor_GetHSLfromRGB(Color.rgb).b;
+                Color.a = CColor_RGBtoHSL(Color.rgb).b;
                 break;
             case 6:
-                Color.a = CColor_GetHSIfromRGB(Color.rgb).r;
+                Color.a = CColor_RGBtoHSI(Color.rgb).r;
                 break;
             case 7:
-                Color.a = CColor_GetHSIfromRGB(Color.rgb).g;
+                Color.a = CColor_RGBtoHSI(Color.rgb).g;
                 break;
             case 8:
-                Color.a = CColor_GetHSIfromRGB(Color.rgb).b;
+                Color.a = CColor_RGBtoHSI(Color.rgb).b;
                 break;
             default:
                 Color.a = 1.0;
