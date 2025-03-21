@@ -25,7 +25,7 @@ uniform float2 _MaskScale <
     ui_type = "drag";
     ui_min = 0.0;
     ui_max = 1.0;
-> = float2(0.5, 0.25);
+> = float2(0.5, 0.5);
 
 uniform float2 _MaskOffset <
     ui_label = "Mask Offset";
