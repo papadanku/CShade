@@ -74,10 +74,10 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = (Chromaticity.rg + 0.4) / 0.8;
             break;
         case 15: // OKLch (CH)
-            const float Pi2 = CMath_GetPi() * 2.0;
+            const float Pi2 = 1.0 / CMath_GetPi();
             Chromaticity.rg = CColor_RGBtoOKLCH(Color).yz;
-            Chromaticity.r /= length(float2(0.4, 0.4));
-            Chromaticity.g /= Pi2;
+            Chromaticity.g *= Pi2;
+            Chromaticity.g = (Chromaticity.g * 0.5) + 0.5;
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;
