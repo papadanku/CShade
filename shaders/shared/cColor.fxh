@@ -10,13 +10,13 @@
         https://microsoft.github.io/DirectX-Specs/
     */
 
-    float4 CColor_SRGBToLinear(float4 Color)
+    float4 CColor_SRGBtoRGB(float4 Color)
     {
         Color = (Color <= 0.04045) ? Color / 12.92 : pow((Color + 0.055) / 1.055, 2.4);
         return Color;
     }
 
-    float4 CColor_LinearToSRGB(float4 Color)
+    float4 CColor_RGBtoSRGB(float4 Color)
     {
         Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
         return Color;
@@ -189,6 +189,24 @@
 
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
+
+    /*
+        "Recommendation T.832 (06/2019)". p. 185 Table D.6 – Pseudocode for function FwdColorFmtConvert1().
+
+        https://www.itu.int/rec/T-REC-T.832
+    */
+
+    float3 CColor_SRGBtoYUV444(float3 SRGB, bool Normalize)
+    {
+        float3 YUV;
+
+        YUV.z = SRGB.b - SRGB.r;
+        YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
+        YUV.x = SRGB.g - (YUV.y * 0.5);
+        YUV.yz = Normalize ? (YUV.yz * 0.5) + 0.5 : YUV.yz;
+
+        return YUV;
+    }
 
     /*
         Malvar, H., & Sullivan, G. (2003). YCoCg-R: A color space with RGB reversibility and low dynamic range. ISO/IEC JTC1/SC29/WG11 and ITU-T SG16 Q, 6.

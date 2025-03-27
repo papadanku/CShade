@@ -36,7 +36,7 @@ CREATE_SAMPLER(SamplePreviousFrame, PreviousFrame, LINEAR, LINEAR, LINEAR, CLAMP
 float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 CurrentFrame = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 PreviousFrame = CColor_SRGBToLinear(tex2D(SamplePreviousFrame, Input.Tex0));
+    float4 PreviousFrame = CColor_SRGBtoRGB(tex2D(SamplePreviousFrame, Input.Tex0));
     float3 BlendColor = lerp(CurrentFrame.rgb, PreviousFrame.rgb, _BlendFactor);
 
     return CBlend_OutputChannels(float4(BlendColor, _CShadeAlphaFactor));

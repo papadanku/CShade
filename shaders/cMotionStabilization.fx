@@ -94,10 +94,10 @@ CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP
     [Pixel Shaders]
 */
 
-float4 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = sqrt(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb);
-    return float4(CColor_SRGBtoYCOCGR(Color, true), 1.0);
+    float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
+    return float4(CColor_SRGBtoYUV444(Color, true), 1.0);
 }
 
 // Run Lucas-Kanade
@@ -184,7 +184,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect.\n\n[ Preprocessor Definitions ]\n\nSTABILIZATION_ADDRESS:\n\n\tHow the shader renders pixels outside the texture's boundaries.\n\n\tAvailable Options: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSTABILIZATION_GRID_SAMPLING:\n\n\tHow the shader filters the motion vectors used for stabilization.\n\n\tAvailable Options: LINEAR, POINT\n\nSTABILIZATION_WARP_SAMPLING\n\n\tHow the shader filters warped pixels.\n\n\tAvailable Options: LINEAR, POINT"; >
 {
     // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RGB10A2)
+    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)

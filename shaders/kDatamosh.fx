@@ -149,10 +149,10 @@ CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRR
     [Pixel Shaders]
 */
 
-float4 PS_Normalize(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float3 Color = sqrt(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb);
-    return float4(CColor_SRGBtoYCOCGR(Color, true), 1.0);
+    float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
+    return float4(CColor_SRGBtoYUV444(Color, true), 1.0);
 }
 
 // Run Lucas-Kanade
@@ -351,7 +351,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoDatamosh < ui_tooltip = "Keijiro Takahashi | An image effect that simulates video compression artifacts"; >
 {
     // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Normalize, TempTex1_RGB10A2)
+    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
     // Bilinear Lucas-Kanade Optical Flow
     CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
