@@ -76,7 +76,11 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_KinoMirror < ui_tooltip = "Keijiro Takahashi | Mirroring and kaleidoscope effect"; >
+technique CShade_KinoMirror
+<
+    ui_label = "CShade · KinoMirror";
+    ui_tooltip = "Keijiro Takahashi's mirroring and kaleidoscope effect";
+>
 {
     pass
     {

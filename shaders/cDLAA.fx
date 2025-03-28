@@ -214,7 +214,11 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_DLAA < ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA)"; >
+technique CShade_DLAA
+<
+    ui_label = "CShade · Directionally Localized Anti-Aliasing";
+    ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA)";
+>
 {
     pass PreFilter
     {

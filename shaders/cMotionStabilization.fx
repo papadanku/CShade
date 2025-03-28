@@ -181,7 +181,11 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_MotionStabilization < ui_tooltip = "Motion stabilization effect.\n\n[ Preprocessor Definitions ]\n\nSTABILIZATION_ADDRESS:\n\n\tHow the shader renders pixels outside the texture's boundaries.\n\n\tAvailable Options: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSTABILIZATION_GRID_SAMPLING:\n\n\tHow the shader filters the motion vectors used for stabilization.\n\n\tAvailable Options: LINEAR, POINT\n\nSTABILIZATION_WARP_SAMPLING\n\n\tHow the shader filters warped pixels.\n\n\tAvailable Options: LINEAR, POINT"; >
+technique CShade_MotionStabilization
+<
+    ui_label = "CShade · Motion Stabilization";
+    ui_tooltip = "Motion stabilization effect.\n\n[ Preprocessor Definitions ]\n\nSTABILIZATION_ADDRESS:\n\n\tHow the shader renders pixels outside the texture's boundaries.\n\n\tAvailable Options:\n\t· CLAMP\n\t· MIRROR\n\t· WRAP/REPEAT\n\t· BORDER\n\nSTABILIZATION_GRID_SAMPLING:\n\n\tHow the shader filters the motion vectors used for stabilization.\n\n\tAvailable Options:\n\t· LINEAR\n\t· POINT\n\nSTABILIZATION_WARP_SAMPLING\n\n\tHow the shader filters warped pixels.\n\n\tAvailable Options:\n\t· LINEAR\n\t· POINT";
+>
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)

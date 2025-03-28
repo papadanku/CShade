@@ -348,7 +348,11 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique CShade_KinoDatamosh < ui_tooltip = "Keijiro Takahashi | An image effect that simulates video compression artifacts"; >
+technique CShade_KinoDatamosh
+<
+    ui_label = "CShade · KinoDatamosh";
+    ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts";
+>
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)

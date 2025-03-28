@@ -193,7 +193,11 @@ float4 PS_CAS(CShade_VS2PS_Quad Input): SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_CAS < ui_tooltip = "AMD FidelityFX | Contrast Adaptive Sharpening (CAS)"; >
+technique CShade_CAS
+<
+    ui_label = "CShade · AMD FidelityFX · Contrast Adaptive Sharpening";
+    ui_tooltip = "AMD FidelityFX Contrast Adaptive Sharpening (CAS)";
+>
 {
     pass
     {

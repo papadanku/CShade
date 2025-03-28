@@ -121,7 +121,11 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(OutputColor.rgb / Weight, _CShadeAlphaFactor));
 }
 
-technique CShade_NoiseBlur < ui_tooltip = "Adjustable noise blur effect"; >
+technique CShade_NoiseBlur
+<
+    ui_label = "CShade · Noise Blur";
+    ui_tooltip = "Adjustable noise blur effect";
+>
 {
     pass
     {

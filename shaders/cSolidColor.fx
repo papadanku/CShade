@@ -22,7 +22,11 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(_Color, _CShadeAlphaFactor));
 }
 
-technique CShade_SolidColor < ui_tooltip = "Output a solid color (use \"Preprocessor Definitions\" for blending)"; >
+technique CShade_SolidColor
+<
+    ui_label = "CShade · Solid Color";
+    ui_tooltip = "Output a solid color (use \"Preprocessor Definitions\" for blending)";
+>
 {
     pass
     {

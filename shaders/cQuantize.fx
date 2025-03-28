@@ -84,7 +84,11 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(ColorMap.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Quantize < ui_tooltip = "Artificial quantization effect"; >
+technique CShade_Quantize
+<
+    ui_label = "CShade · Quantize";
+    ui_tooltip = "Artificial quantization effect";
+>
 {
     pass
     {

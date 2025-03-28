@@ -293,7 +293,11 @@ float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
 }
 
-technique CShade_FXAA < ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)"; >
+technique CShade_FXAA
+<
+    ui_label = "CShade · Fast Approximate Anti-Aliasing";
+    ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA)";
+>
 {
     pass FXAA
     {

@@ -218,7 +218,11 @@ technique GenerateNoise <
     }
 }
 
-technique CShade_Flow < ui_tooltip = "Lucas-Kanade optical flow"; >
+technique CShade_Flow
+<
+    ui_label = "CShade · Optical Flow";
+    ui_tooltip = "Lucas-Kanade optical flow";
+>
 {
     // Normalize current frame
     CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)

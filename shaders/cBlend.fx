@@ -67,7 +67,11 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(ColorBlend, AlphaBlend);
 }
 
-technique CShade_CopyBuffer < ui_tooltip = "Create CBlend's copy texture"; >
+technique CShade_CopyBuffer
+<
+    ui_label = "CShade · Copy Buffer";
+    ui_tooltip = "Create CBlend's copy texture";
+>
 {
     pass
     {
@@ -79,7 +83,11 @@ technique CShade_CopyBuffer < ui_tooltip = "Create CBlend's copy texture"; >
     }
 }
 
-technique CShade_BlendBuffer < ui_tooltip = "Blend with CBlend's copy texture"; >
+technique CShade_BlendBuffer
+<
+    ui_label = "CShade · Blend Buffer";
+    ui_tooltip = "Blend with CBlend's copy texture";
+>
 {
     pass
     {

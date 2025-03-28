@@ -48,7 +48,11 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(saturate(Color.rgb * _Intensity), _CShadeAlphaFactor));
 }
 
-technique CShade_Threshold < ui_tooltip = "Threshold the image (use \"Preprocessor Definitions\" for blending)"; >
+technique CShade_Threshold
+<
+    ui_label = "CShade · Threshold";
+    ui_tooltip = "Threshold the image (use \"Preprocessor Definitions\" for blending)";
+>
 {
     pass
     {

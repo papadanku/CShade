@@ -87,7 +87,11 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
     return CBlend_OutputChannels(float4(Chromaticity.rgb, _CShadeAlphaFactor));
 }
 
-technique CShade_Chromaticity < ui_tooltip = "Adjustable chromaticity effect"; >
+technique CShade_Chromaticity
+<
+    ui_label = "CShade · Chromaticity";
+    ui_tooltip = "Adjustable chromaticity effect";
+>
 {
     pass
     {
