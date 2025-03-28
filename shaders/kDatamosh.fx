@@ -350,7 +350,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_KinoDatamosh
 <
-    ui_label = "CShade · KinoDatamosh";
+    ui_label = "CShade · Keijiro Takahashi · KinoDatamosh";
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts";
 >
 {
