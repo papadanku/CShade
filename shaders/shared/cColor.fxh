@@ -443,10 +443,11 @@
 
     float3 CColor_OKLABtoOKLCH(float3 OKLab)
     {
+        const float Pi = CMath_GetPi();
         float3 OKLch = 0.0;
         OKLch.x = OKLab.x;
         OKLch.y = length(OKLab.yz);
-        OKLch.z = atan2(OKLab.z, OKLab.y);
+        OKLch.z = clamp(atan2(OKLab.z, OKLab.y), -Pi, Pi);
         return OKLch;
     }
 
