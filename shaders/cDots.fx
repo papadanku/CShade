@@ -86,7 +86,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannelCrop <
-        ui_category = "Crop | Left, Right, Top, Bottom";
+        ui_category = "Crop · Left, Right, Top, Bottom";
         ui_label = "Red Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -94,7 +94,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _GreenChannelCrop <
-        ui_category = "Crop | Left, Right, Top, Bottom";
+        ui_category = "Crop · Left, Right, Top, Bottom";
         ui_label = "Green Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -102,7 +102,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _BlueChannelCrop <
-        ui_category = "Crop | Left, Right, Top, Bottom";
+        ui_category = "Crop · Left, Right, Top, Bottom";
         ui_label = "Blue Channel";
         ui_type = "slider";
         ui_min = 0;

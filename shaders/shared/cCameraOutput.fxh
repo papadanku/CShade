@@ -5,7 +5,7 @@
     #define INCLUDE_CCAMERA_OUTPUT
 
     uniform float _CShadeExposureBias <
-        ui_category = "[ Pipeline | Output | AutoExposure ]";
+        ui_category = "Pipeline · Output · AutoExposure";
         ui_label = "Compensation Bias";
         ui_type = "slider";
         ui_step = 0.001;
@@ -14,7 +14,7 @@
     > = 1.0;
 
     uniform float _CShadeExposureRange <
-        ui_category = "[ Pipeline | Output | AutoExposure ]";
+        ui_category = "Pipeline · Output · AutoExposure";
         ui_label = "Compensation Range";
         ui_type = "slider";
         ui_step = 0.001;

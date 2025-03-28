@@ -65,29 +65,25 @@ CShade features shaders that filter images for aesthetics.
 
 ### UI
 
-- In `ui_category`/`ui_label`, use `|` to separate between subcategories, if needed
+In `ui_category`/`ui_label`, use `·` to separate between subcategories, if needed
 
-  ```md
-  uniform float _Level1Weight <
-      ui_category = "Bloom | Level Weights";
-      ui_label = "Level 1";
-      ui_type = "slider";
-      ui_min = 0.0;
-      ui_max = 1.0;
-  > = 1.0;
-  ```
+```md
+uniform float _Level1Weight <
+    ui_category = "Bloom · Level Weights";
+    ui_label = "Level 1";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 1.0;
 
-- In uniforms stored in `.fxh` header files, wrap `[ ]` around `ui_category`
-
-  ```md
-  uniform float _CShadeExposureSmoothingSpeed <
-      ui_category = "[ Pipeline | Output | AutoExposure ]";
-      ui_label = "Smoothing Speed";
-      ui_type = "slider";
-      ui_min = 0.1;
-      ui_max = 1.0;
-  > = 0.25;
-  ```
+uniform float _CShadeExposureSmoothingSpeed <
+    ui_category = "Pipeline · Output · AutoExposure";
+    ui_label = "Smoothing Speed";
+    ui_type = "slider";
+    ui_min = 0.1;
+    ui_max = 1.0;
+> = 0.25;
+```
 
 ### Functions and Variables
 

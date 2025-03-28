@@ -68,7 +68,7 @@
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
     uniform int _CShadeOutputMode <
-        ui_category = "[ Pipeline | Output | Blending ]";
+        ui_category = "Pipeline · Output · Blending";
         ui_label = "Debug Output";
         ui_tooltip = "Reset this option once you are done debugging.";
         ui_type = "combo";
@@ -76,7 +76,7 @@
     > = 0;
 
     uniform float _CShadeAlphaFactor <
-        ui_category = "[ Pipeline | Output | Blending ]";
+        ui_category = "Pipeline · Output · Blending";
         ui_label = "Alpha Factor";
         ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";

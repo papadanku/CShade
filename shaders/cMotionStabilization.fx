@@ -27,7 +27,7 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform float _BlendFactor <
-    ui_category = "Shader | Stabilization";
+    ui_category = "Shader · Stabilization";
     ui_label = "Temporal Blending Strength";
     ui_type = "slider";
     ui_min = 0.0;
@@ -35,7 +35,7 @@ uniform float _BlendFactor <
 > = 0.5;
 
 uniform float _WarpStrength <
-    ui_category = "Shader | Stabilization";
+    ui_category = "Shader · Stabilization";
     ui_label = "Warping Strength";
     ui_type = "slider";
     ui_min = 0.0;
@@ -43,19 +43,19 @@ uniform float _WarpStrength <
 > = 8.0;
 
 uniform bool _InvertWarp <
-    ui_category = "Shader | Stabilization";
+    ui_category = "Shader · Stabilization";
     ui_label = "Invert Warping";
     ui_type = "radio";
 > = false;
 
 uniform bool _LocalStabilization <
-    ui_category = "Shader | Local Stabilization";
+    ui_category = "Shader · Local Stabilization";
     ui_label = "Enable Local Stabilization";
     ui_type = "radio";
 > = true;
 
 uniform float _LocalStabilizationMipBias <
-    ui_category = "Shader | Local Stabilization";
+    ui_category = "Shader · Local Stabilization";
     ui_label = "Level of Detail Bias";
     ui_type = "slider";
     ui_min = 0.0;

@@ -7,13 +7,13 @@
 */
 
 uniform bool _Pixelate <
-    ui_category = "Shader | Pixelation";
+    ui_category = "Shader · Pixelation";
     ui_label = "Enable";
     ui_type = "radio";
 > = false;
 
 uniform int2 _Resolution <
-    ui_category = "Shader | Pixelation";
+    ui_category = "Shader · Pixelation";
     ui_label = "Resolution";
     ui_type = "slider";
     ui_min = 16;
@@ -21,7 +21,7 @@ uniform int2 _Resolution <
 > = int2(128, 128);
 
 uniform int3 _Range <
-    ui_category = "Shader | Color Banding";
+    ui_category = "Shader · Color Banding";
     ui_label = "Color Band Range";
     ui_type = "slider";
     ui_min = 1.0;
@@ -29,7 +29,7 @@ uniform int3 _Range <
 > = 8;
 
 uniform int _DitherMethod <
-    ui_category = "Shader | Color Banding";
+    ui_category = "Shader · Color Banding";
     ui_label = "Dither Method";
     ui_type = "combo";
     ui_items = "None\0Hash\0Interleaved Gradient Noise\0";
