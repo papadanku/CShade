@@ -217,7 +217,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_DLAA
 <
     ui_label = "CShade · Directionally Localized Anti-Aliasing";
-    ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA)";
+    ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA).";
 >
 {
     pass PreFilter

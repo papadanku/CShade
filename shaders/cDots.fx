@@ -356,7 +356,7 @@ float GetTileCircleLength(Tile Input)
 technique CShade_Dots
 <
     ui_label = "CShade · Dots";
-    ui_tooltip = "Creates circles based on image features";
+    ui_tooltip = "Creates circles based on image features.";
 >
 {
     pass

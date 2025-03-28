@@ -49,7 +49,7 @@ float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_CheckerBoard
 <
     ui_label = "CShade · Checkerboard";
-    ui_tooltip = "Adjustable checkerboard effect";
+    ui_tooltip = "Adjustable checkerboard effect.";
 >
 {
     pass

@@ -29,7 +29,7 @@ float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Grayscale
 <
     ui_label = "CShade · Grayscale";
-    ui_tooltip = "Adjustable grayscale effect";
+    ui_tooltip = "Adjustable grayscale effect.";
 >
 {
     pass

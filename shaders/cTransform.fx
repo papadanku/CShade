@@ -64,7 +64,7 @@ float4 PS_Matrix(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Transform
 <
     ui_label = "CShade · Transform";
-    ui_tooltip = "Translate, scale, and/or rotate the backbuffer";
+    ui_tooltip = "Translate, scale, and/or rotate the backbuffer.";
 >
 {
     pass

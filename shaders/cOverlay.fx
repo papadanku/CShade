@@ -103,7 +103,7 @@ float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 technique CShade_Overlay
 <
     ui_label = "CShade · Overlay";
-    ui_tooltip = "Applies a zoomed copy of the backbuffer";
+    ui_tooltip = "Applies a zoomed copy of the backbuffer.";
 >
 {
     pass

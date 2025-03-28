@@ -69,7 +69,7 @@ float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_LetterBox
 <
     ui_label = "CShade · Letterbox";
-    ui_tooltip = "Adjustable letterboxing effect";
+    ui_tooltip = "Adjustable letterboxing effect.";
 >
 {
     pass

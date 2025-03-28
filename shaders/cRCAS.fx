@@ -176,7 +176,7 @@ float4 PS_RCAS(CShade_VS2PS_Quad Input): SV_TARGET0
 technique CShade_RCAS
 <
     ui_label = "CShade · AMD FidelityFX · Robust Contrast Adaptive Sharpening";
-    ui_tooltip = "AMD FidelityFX Robust Contrast Adaptive Sharpening (RCAS)";
+    ui_tooltip = "AMD FidelityFX Robust Contrast Adaptive Sharpening (RCAS).";
 >
 {
     pass

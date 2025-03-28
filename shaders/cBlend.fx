@@ -70,7 +70,7 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_CopyBuffer
 <
     ui_label = "CShade · Copy Buffer";
-    ui_tooltip = "Create CBlend's copy texture";
+    ui_tooltip = "Create CBlend's copy texture.";
 >
 {
     pass
@@ -86,7 +86,7 @@ technique CShade_CopyBuffer
 technique CShade_BlendBuffer
 <
     ui_label = "CShade · Blend Buffer";
-    ui_tooltip = "Blend with CBlend's copy texture";
+    ui_tooltip = "Blend with CBlend's copy texture.";
 >
 {
     pass

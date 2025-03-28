@@ -90,7 +90,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Chromaticity
 <
     ui_label = "CShade · Chromaticity";
-    ui_tooltip = "Adjustable chromaticity effect";
+    ui_tooltip = "Adjustable chromaticity effect.";
 >
 {
     pass

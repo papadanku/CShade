@@ -147,7 +147,7 @@ float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Censor
 <
     ui_label = "CShade · Censor";
-    ui_tooltip = "Pixelates the screen based on features";
+    ui_tooltip = "Pixelates the screen based on features.";
 >
 {
     pass

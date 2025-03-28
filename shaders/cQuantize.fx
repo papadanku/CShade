@@ -87,7 +87,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Quantize
 <
     ui_label = "CShade · Quantize";
-    ui_tooltip = "Artificial quantization effect";
+    ui_tooltip = "Artificial quantization effect.";
 >
 {
     pass

@@ -163,7 +163,7 @@ float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoContour
 <
     ui_label = "CShade · Keijiro Takahashi · KinoContour";
-    ui_tooltip = "Keijiro Takahashi's contour line filter";
+    ui_tooltip = "Keijiro Takahashi's contour line filter.";
 >
 {
     pass

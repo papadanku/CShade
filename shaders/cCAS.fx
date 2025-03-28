@@ -196,7 +196,7 @@ float4 PS_CAS(CShade_VS2PS_Quad Input): SV_TARGET0
 technique CShade_CAS
 <
     ui_label = "CShade · AMD FidelityFX · Contrast Adaptive Sharpening";
-    ui_tooltip = "AMD FidelityFX Contrast Adaptive Sharpening (CAS)";
+    ui_tooltip = "AMD FidelityFX Contrast Adaptive Sharpening (CAS).";
 >
 {
     pass

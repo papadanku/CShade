@@ -194,7 +194,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_MotionBlur
 <
     ui_label = "CShade · Motion Blur";
-    ui_tooltip = "Motion blur effect";
+    ui_tooltip = "Motion blur effect.";
 >
 {
     // Normalize current frame

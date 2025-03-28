@@ -5,7 +5,7 @@
 technique CShade_HorizontalBlur
 <
     ui_label = "CShade · Horizontal Blur";
-    ui_tooltip = "Horizonal Gaussian blur effect";
+    ui_tooltip = "Horizonal Gaussian blur effect.";
 >
 {
     pass

@@ -79,7 +79,7 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoMirror
 <
     ui_label = "CShade · Keijiro Takahashi · KinoMirror";
-    ui_tooltip = "Keijiro Takahashi's mirroring and kaleidoscope effect";
+    ui_tooltip = "Keijiro Takahashi's mirroring and kaleidoscope effect.";
 >
 {
     pass

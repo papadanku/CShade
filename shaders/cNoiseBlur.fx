@@ -124,7 +124,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_NoiseBlur
 <
     ui_label = "CShade · Noise Blur";
-    ui_tooltip = "Adjustable noise blur effect";
+    ui_tooltip = "Adjustable noise blur effect.";
 >
 {
     pass

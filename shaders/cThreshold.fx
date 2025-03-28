@@ -51,7 +51,7 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_Threshold
 <
     ui_label = "CShade · Threshold";
-    ui_tooltip = "Threshold the image (use \"Preprocessor Definitions\" for blending)";
+    ui_tooltip = "Threshold the image (use \"Preprocessor Definitions\" for blending).";
 >
 {
     pass

@@ -133,7 +133,7 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
 technique CShade_Lens
 <
     ui_label = "CShade · AMD FidelityFX · Lens";
-    ui_tooltip = "AMD FidelityFX Lens";
+    ui_tooltip = "AMD FidelityFX Lens.";
 >
 {
     pass
