@@ -412,7 +412,7 @@
         https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
     */
 
-    float4 CBlur_UpsampleMotionVectors(
+    float4 CBlur_BilateralUpsampleXY(
         sampler Image, // This should be 1/2 the size as GuideHigh
         sampler Guide, // This should be 2/1 the size as Image and GuideLow
         float2 Tex
@@ -443,6 +443,49 @@
                 float2 Difference = CMath_Float2_FP16ToNorm(ImageSample.xy - Reference.xy);
                 float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
                 float Weight = SpatialWeight + exp(-10.0);
+
+                BilateralSum += (ImageSample * Weight);
+                WeightSum += Weight;
+            }
+        }
+
+        return BilateralSum / WeightSum;
+    }
+
+    float4 CBlur_JointBilateralUpsample(
+        sampler Image, // This should be 1/2 the size as GuideHigh
+        sampler GuideLow, // This should be 1/2 the size as GuideHigh
+        sampler GuideHigh, // This should be 2/1 the size as Image and GuideLow
+        float2 Tex
+    )
+    {
+        float WeightSigma = 2e-2;
+        float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
+        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+
+        // Store center pixel for reference
+        float4 GuideHighSample = tex2D(GuideHigh, Tex);
+        float4 BilateralSum = 0.0;
+        float4 WeightSum = 0.0;
+
+        [unroll]
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            [unroll]
+            for (int dy = -1; dy <= 1; ++dy)
+            {
+                // Calculate offset
+                float2 Offset = float2(float(dx), float(dy));
+                float2 OffsetTex = Tex + (Offset * PixelSize);
+
+                // Sample image and guide
+                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
+
+                // Calculate weight
+                float3 Difference = GuideLowSample.xyz - GuideHighSample.xyz;
+                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
+                float Weight = SpatialWeight + exp2(-10.0);
 
                 BilateralSum += (ImageSample * Weight);
                 WeightSum += Weight;

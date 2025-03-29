@@ -128,17 +128,17 @@ float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_BilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_BilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_UpsampleMotionVectors(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_BilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0

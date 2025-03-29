@@ -325,7 +325,7 @@
         https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float2 CColor_RGBtoSphericalRG(float3 Color)
+    float3 CColor_RGBtoSphericalRGB(float3 Color)
     {
         const float HalfPi = 1.0 / acos(0.0);
 
@@ -337,7 +337,7 @@
         Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
         Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
 
-        return saturate(asin(abs(Angles)) * HalfPi);
+        return float3(L2 / sqrt(3.0), saturate(asin(abs(Angles)) * HalfPi));
     }
 
     float3 CColor_RGBtoHSI(float3 Color)

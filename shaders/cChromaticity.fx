@@ -55,7 +55,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             Chromaticity.rg = CColor_RGBtoChromaticityRG(Color);
             break;
         case 9: // Spherical (XY)
-            Chromaticity.rg = CColor_RGBtoSphericalRG(Color);
+            Chromaticity.rg = CColor_RGBtoSphericalRGB(Color).yz;
             break;
         case 10: // Hue-Saturation (HSI)
             Chromaticity.rg = CColor_RGBtoHSI(Color).rg;
