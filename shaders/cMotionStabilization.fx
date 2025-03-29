@@ -97,7 +97,7 @@ CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP
 float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
-    return float4(CColor_SRGBtoYUV444(Color, true), 1.0);
+    return float4(CColor_RGBtoSphericalRGB(Color), 1.0);
 }
 
 // Run Lucas-Kanade

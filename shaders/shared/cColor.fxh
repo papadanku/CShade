@@ -10,16 +10,16 @@
         https://microsoft.github.io/DirectX-Specs/
     */
 
-    float4 CColor_SRGBtoRGB(float4 Color)
+    float4 CColor_SRGBtoRGB(float4 RGB)
     {
-        Color = (Color <= 0.04045) ? Color / 12.92 : pow((Color + 0.055) / 1.055, 2.4);
-        return Color;
+        RGB = (RGB <= 0.04045) ? RGB / 12.92 : pow((RGB + 0.055) / 1.055, 2.4);
+        return RGB;
     }
 
-    float4 CColor_RGBtoSRGB(float4 Color)
+    float4 CColor_RGBtoSRGB(float4 RGB)
     {
-        Color = (Color <= 0.0031308) ? 12.92 * Color : 1.055 * pow(Color, 1.0 / 2.4) - 0.055;
-        return Color;
+        RGB = (RGB <= 0.0031308) ? 12.92 * RGB : 1.055 * pow(RGB, 1.0 / 2.4) - 0.055;
+        return RGB;
     }
 
     /*
@@ -128,7 +128,7 @@
         }
     }
 
-    float3 CColor_RGBtoChromaticityRGB(float3 Color, int Method)
+    float3 CColor_RGBtoChromaticityRGB(float3 RGB, int Method)
     {
         float Sum = 0.0;
         float White = 0.0;
@@ -136,24 +136,24 @@
         switch(Method)
         {
             case 0: // Length
-                Sum = length(Color);
+                Sum = length(RGB);
                 White = 1.0 / sqrt(3.0);
                 break;
             case 1: // Dot3 Average
-                Sum = dot(Color, 1.0 / 3.0);
+                Sum = dot(RGB, 1.0 / 3.0);
                 White = 1.0;
                 break;
             case 2: // Dot3 Sum
-                Sum = dot(Color, 1.0);
+                Sum = dot(RGB, 1.0);
                 White = 1.0 / 3.0;
                 break;
             case 3: // Max
-                Sum = max(max(Color.r, Color.g), Color.b);
+                Sum = max(max(RGB.r, RGB.g), RGB.b);
                 White = 1.0;
                 break;
         }
 
-        float3 Chromaticity = (Sum == 0.0) ? White : Color / Sum;
+        float3 Chromaticity = (Sum == 0.0) ? White : RGB / Sum;
         return Chromaticity;
     }
 
@@ -161,9 +161,9 @@
         Ratio-based chromaticity
     */
 
-    float2 CColor_RGBtoChromaticityRG(float3 Color)
+    float2 CColor_RGBtoChromaticityRG(float3 RGB)
     {
-        float2 Ratio = (Color.z == 0.0) ? 1.0 : Color.xy / Color.zz;
+        float2 Ratio = (RGB.z == 0.0) ? 1.0 : RGB.xy / RGB.zz;
         // x / (x + 1.0) normalizes to [0, 1] range
         return Ratio / (Ratio + 1.0);
     }
@@ -242,19 +242,19 @@
         return SRGB;
     }
 
-    float3 CColor_RGBtoHSV(float3 Color)
+    float3 CColor_RGBtoHSV(float3 RGB)
     {
-        float MinRGB = min(min(Color.r, Color.g), Color.b);
-        float MaxRGB = max(max(Color.r, Color.g), Color.b);
+        float MinRGB = min(min(RGB.r, RGB.g), RGB.b);
+        float MaxRGB = max(max(RGB.r, RGB.g), RGB.b);
 
         // Calculate Value (V)
         float Delta = MaxRGB - MinRGB;
 
         // Calculate Hue (H)
-        float3 DeltaRGB = (((MaxRGB - Color.rgb) / 6.0) + (Delta / 2.0)) / Delta;
+        float3 DeltaRGB = (((MaxRGB - RGB.rgb) / 6.0) + (Delta / 2.0)) / Delta;
         float Hue = DeltaRGB.b - DeltaRGB.g;
-        Hue = (MaxRGB == Color.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
-        Hue = (MaxRGB == Color.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
+        Hue = (MaxRGB == RGB.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
+        Hue = (MaxRGB == RGB.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
         Hue = (Hue < 0.0) ? Hue + 1.0 : (Hue > 1.0) ? Hue - 1.0 : Hue;
 
         // Calcuate Saturation (S)
@@ -288,10 +288,10 @@
         return O;
     }
 
-    float3 CColor_RGBtoHSL(float3 Color)
+    float3 CColor_RGBtoHSL(float3 RGB)
     {
-        float MinRGB = min(min(Color.r, Color.g), Color.b);
-        float MaxRGB = max(max(Color.r, Color.g), Color.b);
+        float MinRGB = min(min(RGB.r, RGB.g), RGB.b);
+        float MaxRGB = max(max(RGB.r, RGB.g), RGB.b);
         float DeltaAdd = MaxRGB + MinRGB;
         float DeltaSub = MaxRGB - MinRGB;
 
@@ -302,10 +302,10 @@
         float Saturation = (Lightness < 0.5) ?  DeltaSub / DeltaAdd : DeltaSub / (2.0 - DeltaSub);
 
         // Calculate Hue (H)
-        float3 DeltaRGB = (((MaxRGB - Color.rgb) / 6.0) + (DeltaSub / 2.0)) / DeltaSub;
+        float3 DeltaRGB = (((MaxRGB - RGB.rgb) / 6.0) + (DeltaSub / 2.0)) / DeltaSub;
         float Hue = DeltaRGB.b - DeltaRGB.g;
-        Hue = (MaxRGB == Color.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
-        Hue = (MaxRGB == Color.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
+        Hue = (MaxRGB == RGB.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
+        Hue = (MaxRGB == RGB.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
         Hue = (Hue < 0.0) ? Hue + 1.0 : (Hue > 1.0) ? Hue - 1.0 : Hue;
 
         float3 Output = 0.0;
@@ -325,26 +325,34 @@
         https://www.researchgate.net/publication/4138051_Robust_optical_flow_from_photometric_invariants
     */
 
-    float3 CColor_RGBtoSphericalRGB(float3 Color)
+    float3 CColor_RGBtoSphericalRGB(float3 RGB)
     {
-        const float HalfPi = 1.0 / acos(0.0);
+        const float InvPi = 1.0 / acos(-1.0);
 
         // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
-        float L1 = length(Color.rg);
-        float L2 = length(Color.rgb);
+        float L1 = length(RGB.xyz);
+        float L2 = length(RGB.xy);
 
-        float2 Angles = 0.0;
-        Angles[0] = (L1 == 0.0) ? 1.0 / sqrt(2.0) : Color.g / L1;
-        Angles[1] = (L2 == 0.0) ? 1.0 / sqrt(3.0) : L1 / L2;
+        // .x = radius; .y = inclination; .z = azimuth
+        float3 RIA;
+        RIA.x = L1 / sqrt(3.0);
+        RIA.y = (L1 == 0.0) ? 1.0 / sqrt(3.0) : saturate(RGB.z / L1);
+        RIA.z = (L2 == 0.0) ? 1.0 / sqrt(2.0) : saturate(RGB.x / L2);
 
-        return float3(L2 / sqrt(3.0), saturate(asin(abs(Angles)) * HalfPi));
+        // Scale the angles to [-1.0, 1.0) range
+        RIA.yz = (RIA.yz * 2.0) - 1.0;
+
+        // Calculate inclination and azimuth and normalize to [0.0, 1.0)
+        RIA.yz = acos(RIA.yz) * InvPi;
+
+        return RIA;
     }
 
-    float3 CColor_RGBtoHSI(float3 Color)
+    float3 CColor_RGBtoHSI(float3 RGB)
     {
-        float3 O = Color.rrr;
-        O += (Color.ggg * float3(-1.0, 1.0, 1.0));
-        O += (Color.bbb * float3(0.0, -2.0, 1.0));
+        float3 O = RGB.rrr;
+        O += (RGB.ggg * float3(-1.0, 1.0, 1.0));
+        O += (RGB.bbb * float3(0.0, -2.0, 1.0));
         O *= rsqrt(float3(2.0, 6.0, 3.0));
 
         float H = atan(O.x/O.y) / acos(0.0);
@@ -358,28 +366,28 @@
     /*
         Luminance methods
     */
-    float CColor_GetLuma(float3 Color, int Method)
+    float CColor_RGBtoLuma(float3 RGB, int Method)
     {
         switch(Method)
         {
             case 0:
                 // Average
-                return dot(Color.rgb, 1.0 / 3.0);
+                return dot(RGB.rgb, 1.0 / 3.0);
             case 1:
                 // Min
-                return min(Color.r, min(Color.g, Color.b));
+                return min(RGB.r, min(RGB.g, RGB.b));
             case 2:
                 // Median
-                return max(min(Color.r, Color.g), min(max(Color.r, Color.g), Color.b));
+                return max(min(RGB.r, RGB.g), min(max(RGB.r, RGB.g), RGB.b));
             case 3:
                 // Max
-                return max(Color.r, max(Color.g, Color.b));
+                return max(RGB.r, max(RGB.g, RGB.b));
             case 4:
                 // Length
-                return length(Color.rgb) * rsqrt(3.0);
+                return length(RGB.rgb) * rsqrt(3.0);
             case 5:
                 // Min+Max
-                return lerp(min(Color.r, min(Color.g, Color.b)), max(Color.r, max(Color.g, Color.b)), 0.5);
+                return lerp(min(RGB.r, min(RGB.g, RGB.b)), max(RGB.r, max(RGB.g, RGB.b)), 0.5);
             default:
                 return 0.5;
         }
@@ -411,9 +419,9 @@
         float3(+0.0259040371, +0.7827717662f, -0.8086757660)
     );
 
-    float3 CColor_RGBtoOKLAB(float3 Color)
+    float3 CColor_RGBtoOKLAB(float3 RGB)
     {
-        float3 LMS = mul(CColor_OKLABfromRGB_M1, Color);
+        float3 LMS = mul(CColor_OKLABfromRGB_M1, RGB);
         LMS = pow(abs(LMS), 1.0 / 3.0);
         LMS = mul(CColor_OKLABfromRGB_M2, LMS);
         return LMS;
@@ -460,9 +468,9 @@
         return OKLab;
     }
 
-    float3 CColor_RGBtoOKLCH(float3 Color)
+    float3 CColor_RGBtoOKLCH(float3 RGB)
     {
-        return CColor_OKLABtoOKLCH(CColor_RGBtoOKLAB(Color));
+        return CColor_OKLABtoOKLCH(CColor_RGBtoOKLAB(RGB));
     }
 
     float3 CColor_OKLCHtoRGB(float3 OKLch)
@@ -497,23 +505,23 @@
     }
 
     // LogC4 Curve Encoding Function
-    float3 CColor_EncodeLogC(float3 Color)
+    float3 CColor_EncodeLogC(float3 RGB)
     {
         CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
-        float3 A = (Color - LogC.T) / LogC.S;
-        float3 B = (log2(LogC.A * Color + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
-        return lerp(B, A, Color < LogC.T);
+        float3 A = (RGB - LogC.T) / LogC.S;
+        float3 B = (log2(LogC.A * RGB + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
+        return lerp(B, A, RGB < LogC.T);
     }
 
     // LogC4 Curve Decoding Function
-    float3 CColor_DecodeLogC(float3 Color)
+    float3 CColor_DecodeLogC(float3 RGB)
     {
         CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
-        float3 A = Color * LogC.S + LogC.T;
-        float3 P = 14.0 * (Color - LogC.C) / LogC.B + 6.0;
+        float3 A = RGB * LogC.S + LogC.T;
+        float3 P = 14.0 * (RGB - LogC.C) / LogC.B + 6.0;
         float3 B = (exp2(P) - 64.0) / LogC.A;
 
-        return lerp(B, A, Color < 0.0);
+        return lerp(B, A, RGB < 0.0);
     }
 
     /*
@@ -547,14 +555,14 @@
         float3(1.0, -1.105, 1.702)
     );
 
-    float3 CColor_RGBtoYIQ(float3 Color)
+    float3 CColor_RGBtoYIQ(float3 RGB)
     {
-        return mul(CColor_RGBtoYIQ, Color);
+        return mul(CColor_RGBtoYIQ, RGB);
     }
 
-    float3 CColor_YIQtoRGB(float3 Color)
+    float3 CColor_YIQtoRGB(float3 RGB)
     {
-        return mul(CColor_YIQtoRGB, Color);
+        return mul(CColor_YIQtoRGB, RGB);
     }
 
     /*
@@ -641,7 +649,7 @@
 
         // Apply gamma-space split-toning
         Color = pow(abs(Color), 1.0 / 2.2);
-        float T = saturate(CColor_GetLuma(Color, 0) + Balance);
+        float T = saturate(CColor_RGBtoLuma(Color, 0) + Balance);
         float3 SplitShadows = lerp(0.5, Shadows, 1.0 - T);
         float3 SplitHighlights = lerp(0.5, Highlights, T);
         Color = CColor_BlendSoftLight(Color, SplitShadows);
@@ -652,7 +660,7 @@
         Color = mul(ChannelMixMat, Color);
 
         // Apply midtones
-        float Luminance = CColor_GetLuma(Color, 0);
+        float Luminance = CColor_RGBtoLuma(Color, 0);
         float3 MidtoneWeights = 0.0;
         // Shadow weight
         MidtoneWeights[0] = 1.0 - smoothstep(MidtoneShadowStart, MidtoneShadowEnd, Luminance);

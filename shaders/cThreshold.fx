@@ -39,7 +39,7 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
 
     // Under-threshold
-    float Brightness = CColor_GetLuma(Color.rgb, 3);
+    float Brightness = CColor_RGBtoLuma(Color.rgb, 3);
     float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
     ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 

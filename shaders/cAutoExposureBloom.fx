@@ -436,7 +436,7 @@
         const float3 Curve = float3(_BloomThreshold - Knee, Knee * 2.0, 0.25 / Knee);
 
         // Under-threshold
-        float Brightness = CColor_GetLuma(Color.rgb, 3);
+        float Brightness = CColor_RGBtoLuma(Color.rgb, 3);
         float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
         ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 

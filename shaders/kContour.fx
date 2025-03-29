@@ -100,7 +100,7 @@ float3 GetColorFromGradient(CEdge_Gradient Input)
     }
     else
     {
-        return CColor_GetLuma(Color, 3);
+        return CColor_RGBtoLuma(Color, 3);
     }
 }
 
@@ -112,7 +112,7 @@ float3 GetColor(float4 Input)
     }
     else
     {
-        return CColor_GetLuma(Input.rgb, 3);
+        return CColor_RGBtoLuma(Input.rgb, 3);
     }
 }
 
