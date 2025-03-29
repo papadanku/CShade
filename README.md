@@ -30,12 +30,13 @@ CShade features shaders that deal with getting information about an image.
   - [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
 - Color conversions
   - Chromaticity spaces
+  - Cylindrical color spaces
   - Polar color spaces
   - Grayscale
 - Convolutions
   - Gaussian blur
   - Edge detection
-  - Bilateral Upsampling
+  - Hierarchical (joint) bilateral upsampling
 - Local normalization
   - Census transform
   - Local contrast normalization
