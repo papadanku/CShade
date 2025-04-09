@@ -418,12 +418,9 @@
         float2 Tex
     )
     {
-        const float WeightSigma = 4e-4;
-        const float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
+        // Initialize variables
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-
-        // Store center pixel for reference
-        float4 Reference = tex2D(Guide, Tex);
+        float4 GuideHighSample = tex2D(Guide, Tex);
         float4 BilateralSum = 0.0;
         float4 WeightSum = 0.0;
 
@@ -440,9 +437,11 @@
                 // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
                 // We normalize the difference to avoid precision loss at the higher numbers
                 float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
-                float2 Difference = CMath_Float2_FP16ToNorm(ImageSample.xy - Reference.xy);
-                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-                float Weight = SpatialWeight + exp(-10.0);
+
+                // Calculate weight
+                float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
+                float Weight = 1.0 / dot(Delta, Delta);
+                Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
                 BilateralSum += (ImageSample * Weight);
                 WeightSum += Weight;
@@ -459,11 +458,8 @@
         float2 Tex
     )
     {
-        float WeightSigma = 2e-2;
-        float WeightDemoninator = 1.0 / (2.0 * WeightSigma * WeightSigma);
+        // Initialize variables
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-
-        // Store center pixel for reference
         float4 GuideHighSample = tex2D(GuideHigh, Tex);
         float4 BilateralSum = 0.0;
         float4 WeightSum = 0.0;
@@ -483,9 +479,9 @@
                 float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
 
                 // Calculate weight
-                float3 Difference = GuideLowSample.xyz - GuideHighSample.xyz;
-                float SpatialWeight = exp(-dot(Difference, Difference) * WeightDemoninator);
-                float Weight = SpatialWeight + exp2(-10.0);
+                float3 Delta = GuideLowSample.xyz - GuideHighSample.xyz;
+                float Weight = 1.0 / dot(Delta, Delta);
+                Weight = (Weight > 0.0) ? Weight + exp(-10.0) : 1.0;
 
                 BilateralSum += (ImageSample * Weight);
                 WeightSum += Weight;
