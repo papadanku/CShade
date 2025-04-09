@@ -70,41 +70,6 @@
     }
 
     /*
-        This is the new tone operator. It resembles ACES in many ways, but it is simpler to evaluate with ALU. One advantage it has over Reinhard-Squared is that the shoulder goes to white more quickly and gives more overall brightness and contrast to the image.
-    */
-
-    float3 CTonemap_ApplyStandard(float3 HDR)
-    {
-        return CTonemap_ApplyReinhard(HDR * sqrt(HDR), sqrt(4.0 / 27.0));
-    }
-
-    float3 CTonemap_ApplyInverseStandard(float3 SDR)
-    {
-        return pow(CTonemap_ApplyInverseReinhard(SDR, sqrt(4.0 / 27.0)), 2.0 / 3.0);
-    }
-
-    /*
-        Standard (Old)
-
-        This is the old tone operator first used in HemiEngine and then MiniEngine. It's simplistic, efficient,
-        invertible, and gives nice results, but it has no toe, and the shoulder goes to white fairly quickly.
-
-        Note that I removed the distinction between tone mapping RGB and tone mapping Luma. Philosophically, I
-        agree with the idea of trying to remap brightness to displayable values while preserving hue. But you
-        run into problems where one or more color channels end up brighter than 1.0 and get clipped.
-    */
-
-    float3 CTonemap_ApplyExponential(float3 HDR)
-    {
-        return 1.0 - exp2(-HDR);
-    }
-
-    float3 CTonemap_ApplyInverseExponential(float3 SDR)
-    {
-        return -log2(max(1e-6, 1.0 - SDR));
-    }
-
-    /*
         https://gpuopen.com/learn/optimized-reversible-tonemapper-for-resolve/
     */
 
@@ -139,10 +104,6 @@
             case 2:
                 return CTonemap_ApplyReinhardSquared(HDR, 0.25);
             case 3:
-                return CTonemap_ApplyStandard(HDR);
-            case 4:
-                return CTonemap_ApplyExponential(HDR);
-            case 5:
                 return CTonemap_ApplyAMDTonemap(HDR);
             default:
                 return HDR;
@@ -163,12 +124,6 @@
                 SDR.rgb = CTonemap_ApplyInverseReinhardSquared(SDR.rgb, 0.25);
                 break;
             case 3:
-                SDR.rgb = CTonemap_ApplyInverseStandard(SDR.rgb);
-                break;
-            case 4:
-                SDR.rgb = CTonemap_ApplyInverseExponential(SDR.rgb);
-                break;
-            case 5:
                 SDR.rgb = CTonemap_ApplyInverseAMDTonemap(SDR.rgb);
                 break;
             default:
