@@ -12,7 +12,7 @@
 uniform int _OutputMode <
     ui_label = "Output Mode";
     ui_type = "combo";
-    ui_items = "Shading (Normalized)\0Shading (Renormalized)\0Line Integral Convolution\0Line Integral Convolution (Colored)\0";
+    ui_items = "Shading · Normalized\0Shading · Renormalized\0Line Integral Convolution\0Line Integral Convolution · Colored\0";
 > = 0;
 
 uniform float _MipBias <
