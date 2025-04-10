@@ -19,12 +19,12 @@ uniform int _AlphaBlend <
 > = 0;
 
 uniform float3 _SrcFactor <
-    ui_label = "Source Factor (RGB)";
+    ui_label = "Source Factor · RGB";
     ui_type = "drag";
 > = 1.0;
 
 uniform float3 _DestFactor <
-    ui_label = "Destination Factor (RGB)";
+    ui_label = "Destination Factor · RGB";
     ui_type = "drag";
 > = 1.0;
 

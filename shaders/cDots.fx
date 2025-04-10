@@ -51,7 +51,7 @@ uniform float _InputBias <
 
 #if ENABLE_MONO
     uniform float2 _Offset <
-        ui_category = "Shaping";
+        ui_category = "Offset · [ Horizontal, Vertical ]";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
@@ -59,8 +59,8 @@ uniform float _InputBias <
     > = 0.0;
 #else
     uniform float2 _RedChannelOffset <
-        ui_category = "Shaping";
-        ui_label = "Red Channel Offset";
+        ui_category = "Offset · [ Horizontal, Vertical ]";
+        ui_label = "Red Channel";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -68,8 +68,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _GreenChannelOffset <
-        ui_category = "Shaping";
-        ui_label = "Green Channel Offset";
+        ui_category = "Offset · [ Horizontal, Vertical ]";
+        ui_label = "Green Channel";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -77,8 +77,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _BlueChannelOffset <
-        ui_category = "Shaping";
-        ui_label = "Blue Channel Offset";
+        ui_category = "Offset · [ Horizontal, Vertical ]";
+        ui_label = "Blue Channel";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -86,7 +86,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannelCrop <
-        ui_category = "Crop · Left, Right, Top, Bottom";
+        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
         ui_label = "Red Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -94,7 +94,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _GreenChannelCrop <
-        ui_category = "Crop · Left, Right, Top, Bottom";
+        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
         ui_label = "Green Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -102,7 +102,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _BlueChannelCrop <
-        ui_category = "Crop · Left, Right, Top, Bottom";
+        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
         ui_label = "Blue Channel";
         ui_type = "slider";
         ui_min = 0;
@@ -129,7 +129,7 @@ uniform float3 _BackColor <
 #if ENABLE_MONO
     uniform int4 _Crop <
         ui_category = "Composition";
-        ui_label = "Crop (Left, Right, Top, Bottom)";
+        ui_label = "Crop · [ Left, Right, Top, Bottom ]";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;

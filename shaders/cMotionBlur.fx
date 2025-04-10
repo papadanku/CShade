@@ -12,30 +12,30 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform float _MipBias <
-    ui_category = "Shader · Optical Flow";
-    ui_label = "Mipmap Bias";
+    ui_category = "Optical Flow";
+    ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Shader · Optical Flow";
-    ui_label = "Temporal Blending Factor";
+    ui_category = "Optical Flow";
+    ui_label = "Temporal Blending";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
 > = 0.25;
 
 uniform int _BlurMode <
-    ui_category = "Shader · Motion Blur";
+    ui_category = "Motion Blur";
     ui_label = "Blur Mode";
     ui_type = "combo";
     ui_items = "Average\0Max\0";
 > = 0;
 
 uniform float _Scale <
-    ui_category = "Shader · Motion Blur";
+    ui_category = "Motion Blur";
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -43,7 +43,7 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _TargetFrameRate <
-    ui_category = "Shader · Motion Blur";
+    ui_category = "Motion Blur";
     ui_label = "Target Frame-Rate";
     ui_type = "slider";
     ui_min = 0.0;
@@ -51,7 +51,7 @@ uniform float _TargetFrameRate <
 > = 60.0;
 
 uniform bool _FrameRateScaling <
-    ui_category = "Shader · Motion Blur";
+    ui_category = "Motion Blur";
     ui_label = "Frame-Rate Scaling";
     ui_type = "radio";
 > = false;

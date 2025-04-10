@@ -47,7 +47,7 @@ uniform float _Time < source = "timer"; >;
 
 uniform float _MipBias <
     ui_category = "Optical Flow";
-    ui_label = "Mipmap Bias";
+    ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
@@ -55,7 +55,7 @@ uniform float _MipBias <
 
 uniform float _BlendFactor <
     ui_category = "Optical Flow";
-    ui_label = "Temporal Blending Factor";
+    ui_label = "Temporal Blending";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
@@ -95,7 +95,7 @@ uniform float _Scale <
 
 uniform float _Diffusion <
     ui_category = "Datamosh";
-    ui_label = "Amount of Random Displacement";
+    ui_label = "Random Displacement";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;

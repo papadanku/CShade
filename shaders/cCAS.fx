@@ -40,14 +40,12 @@ uniform int _RenderMode <
 > = 0;
 
 uniform int _Kernel <
-    ui_category = "Sharpening";
     ui_label = "Kernel Shape";
     ui_type = "combo";
     ui_items = "Diamond\0Box\0";
 > = 0;
 
 uniform float _Contrast <
-    ui_category = "Sharpening";
     ui_label = "Contrast";
     ui_type = "slider";
     ui_min = 0.0;

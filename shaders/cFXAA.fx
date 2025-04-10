@@ -23,7 +23,6 @@ uniform int _RenderMode <
 > = 0;
 
 uniform int _RelativeThreshold <
-    ui_category = "Fast Approximate Anti-Aliasing";
     ui_label = "Relative Threshold";
     ui_tooltip = "Trims the algorithm from processing darks.";
     ui_type = "combo";
@@ -36,7 +35,6 @@ static const float RelativeThresholds[3] =
 };
 
 uniform int _ContrastThreshold <
-    ui_category = "Fast Approximate Anti-Aliasing";
     ui_label = "Contrast Threshold";
     ui_tooltip = "The minimum amount of local contrast required to apply algorithm.";
     ui_type = "combo";
@@ -49,7 +47,6 @@ static const float ContrastThresholds[5] =
 };
 
 uniform int _SubpixelBlending <
-    ui_category = "Fast Approximate Anti-Aliasing";
     ui_label = "Subpixel Blending";
     ui_tooltip = "Choose the amount of sub-pixel aliasing removal.";
     ui_type = "combo";
