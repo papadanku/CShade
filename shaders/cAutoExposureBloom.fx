@@ -9,10 +9,6 @@
     [ Shader Options ]
 */
 
-#ifndef ENABLE_BLOOM
-    #define ENABLE_BLOOM 1
-#endif
-
 #ifndef ENABLE_AUTOEXPOSURE
     #define ENABLE_AUTOEXPOSURE 1
 #endif
@@ -22,38 +18,36 @@
 #endif
 
 // Bloom-specific settings
-#if ENABLE_BLOOM
-    uniform int _BloomRenderMode <
-        ui_label = "Bloom";
-        ui_type = "combo";
-        ui_items = "Base + Bloom\0Bloom\0";
-    > = 0;
+uniform int _BloomRenderMode <
+    ui_label = "Bloom";
+    ui_type = "combo";
+    ui_items = "Base + Bloom\0Bloom\0";
+> = 0;
 
-    uniform float _BloomThreshold <
-        ui_category = "Bloom";
-        ui_label = "Threshold";
-        ui_type = "slider";
-        ui_min = 0.0;
-        ui_max = 1.0;
-    > = 0.8;
+uniform float _BloomThreshold <
+    ui_category = "Bloom";
+    ui_label = "Threshold";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.8;
 
-    uniform float _BloomSmoothing <
-        ui_category = "Bloom";
-        ui_label = "Smoothing";
-        ui_type = "slider";
-        ui_min = 0.0;
-        ui_max = 1.0;
-    > = 0.5;
+uniform float _BloomSmoothing <
+    ui_category = "Bloom";
+    ui_label = "Smoothing";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.5;
 
-    uniform float _BloomIntensity <
-        ui_category = "Bloom";
-        ui_label = "Intensity";
-        ui_type = "slider";
-        ui_step = 0.001;
-        ui_min = 0.0;
-        ui_max = 1.0;
-    > = 0.5;
-#endif
+uniform float _BloomIntensity <
+    ui_category = "Bloom";
+    ui_label = "Intensity";
+    ui_type = "slider";
+    ui_step = 0.001;
+    ui_min = 0.0;
+    ui_max = 1.0;
+> = 0.5;
 
 // Exposure-specific settings
 #if ENABLE_AUTOEXPOSURE
@@ -264,34 +258,28 @@
 */
 
 // Bloom-specific textures and samplers
-#if ENABLE_BLOOM
-    CREATE_TEXTURE_POOLED(TempTex0_RGBA16F, BUFFER_SIZE_0, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex1_RGBA16F, BUFFER_SIZE_1, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex2_RGBA16F, BUFFER_SIZE_2, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex3_RGBA16F, BUFFER_SIZE_3, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex4_RGBA16F, BUFFER_SIZE_4, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex5_RGBA16F, BUFFER_SIZE_5, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex6_RGBA16F, BUFFER_SIZE_6, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex7_RGBA16F, BUFFER_SIZE_7, RGBA16F, 1)
-    CREATE_TEXTURE_POOLED(TempTex8_RGBA16F, BUFFER_SIZE_8, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex0_RGBA16F, BUFFER_SIZE_0, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex1_RGBA16F, BUFFER_SIZE_1, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex2_RGBA16F, BUFFER_SIZE_2, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex3_RGBA16F, BUFFER_SIZE_3, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex4_RGBA16F, BUFFER_SIZE_4, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex5_RGBA16F, BUFFER_SIZE_5, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex6_RGBA16F, BUFFER_SIZE_6, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex7_RGBA16F, BUFFER_SIZE_7, RGBA16F, 1)
+CREATE_TEXTURE_POOLED(TempTex8_RGBA16F, BUFFER_SIZE_8, RGBA16F, 1)
 
-    CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex2, TempTex2_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex3, TempTex3_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex4, TempTex4_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex5, TempTex5_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex2, TempTex2_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex3, TempTex3_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex4, TempTex4_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex5, TempTex5_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-    #if ENABLE_AUTOEXPOSURE
-        CREATE_TEXTURE(ExposureTex, int2(1, 1), R16F, 0)
-        CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    #endif
-// Exposure-specific textures and samplers
-#elif ENABLE_AUTOEXPOSURE
-    CREATE_TEXTURE(ExposureTex, int2(256, 256), R16F, 9)
+#if ENABLE_AUTOEXPOSURE
+    CREATE_TEXTURE(ExposureTex, int2(1, 1), R16F, 0)
     CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
@@ -308,20 +296,9 @@
     {
         // For spot-metering, we fill the target square texture with the region only
         float2 SpotMeterTex = (Tex * 2.0) - 1.0;
-
-        // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
-        #if !ENABLE_BLOOM
-            #if BUFFER_WIDTH > BUFFER_HEIGHT
-                SpotMeterTex.x /= ASPECT_RATIO;
-            #else
-                SpotMeterTex.y /= ASPECT_RATIO;
-            #endif
-        #endif
-
         SpotMeterTex *= _ExposureScale;
         SpotMeterTex += float2(_ExposureOffset.x, -_ExposureOffset.y);
         SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
-
         return SpotMeterTex;
     }
 
@@ -336,15 +313,6 @@
         OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
         OverlayPos /= _ExposureScale;
         float2 DotPos = OverlayPos;
-
-        // Shrink the UV so [-1, 1] fills a square
-        #if !ENABLE_BLOOM
-            #if BUFFER_WIDTH > BUFFER_HEIGHT
-                OverlayPos.x *= ASPECT_RATIO;
-            #else
-                OverlayPos.y *= ASPECT_RATIO;
-            #endif
-        #endif
 
         // Create the needed mask; output 1 if the texcoord is within square range
         float SquareMask = all(abs(OverlayPos) <= 1.0);
@@ -393,88 +361,79 @@
 
     float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
-        #if ENABLE_BLOOM
-            float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
-        #else
-            float2 Tex = (_ExposureMeter == 1) ? GetSpotMeterTex(Input.Tex0) : Input.Tex0;
-            float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex).rgb;
-            float LogLuminance = CCamera_GetLogLuminance(Color);
-        #endif
-
+        float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
         return CCamera_CreateExposureTex(LogLuminance, _Frametime);
     }
 #endif
 
 // Bloom-specific functions
-#if ENABLE_BLOOM
-    float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
-    {
-        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
-        float Luminance = 1.0;
+float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float Luminance = 1.0;
 
-        // Apply auto-exposure to the backbuffer
-        #if ENABLE_AUTOEXPOSURE
-            // Store log luminance in the alpha channel
-            if (_ExposureMeter == 1)
-            {
-                float3 ColorArea = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, GetSpotMeterTex(Input.Tex0)).rgb;
-                Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
-            }
-            else
-            {
-                Luminance = CCamera_GetLogLuminance(Color.rgb);
-            }
+    // Apply auto-exposure to the backbuffer
+    #if ENABLE_AUTOEXPOSURE
+        // Store log luminance in the alpha channel
+        if (_ExposureMeter == 1)
+        {
+            float3 ColorArea = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, GetSpotMeterTex(Input.Tex0)).rgb;
+            Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
+        }
+        else
+        {
+            Luminance = CCamera_GetLogLuminance(Color.rgb);
+        }
 
-            // Apply auto-exposure to input
-            float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
-            Exposure ExposureData = CCamera_GetExposureData(Luma);
-            Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
-        #endif
+        // Apply auto-exposure to input
+        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
+    #endif
 
-        // Thresholding phase
-        const float Knee = mad(_BloomThreshold, _BloomSmoothing, 1e-5);
-        const float3 Curve = float3(_BloomThreshold - Knee, Knee * 2.0, 0.25 / Knee);
+    // Thresholding phase
+    const float Knee = mad(_BloomThreshold, _BloomSmoothing, 1e-5);
+    const float3 Curve = float3(_BloomThreshold - Knee, Knee * 2.0, 0.25 / Knee);
 
-        // Under-threshold
-        float Brightness = CColor_RGBtoLuma(Color.rgb, 3);
-        float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
-        ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
+    // Under-threshold
+    float Brightness = CColor_RGBtoLuma(Color.rgb, 3);
+    float ResponseCurve = clamp(Brightness - Curve.x, 0.0, Curve.y);
+    ResponseCurve = Curve.z * ResponseCurve * ResponseCurve;
 
-        // Combine and apply the brightness response curve
-        Color = Color * max(ResponseCurve, Brightness - _BloomThreshold) / max(Brightness, 1e-10);
+    // Combine and apply the brightness response curve
+    Color = Color * max(ResponseCurve, Brightness - _BloomThreshold) / max(Brightness, 1e-10);
 
-        return float4(Color.rgb, Luminance);
+    return float4(Color.rgb, Luminance);
+}
+
+#define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
+    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
+    { \
+        return CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
     }
 
-    #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
-        float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
-        { \
-            return CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
-        }
+CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
+CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1, false)
+CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2, false)
+CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3, false)
+CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTempTex4, false)
+CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
+CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
+CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
-    CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
-    CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTempTex4, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
-    CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
+#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
+    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
+    { \
+        return float4(CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb, 1.0); \
+    }
 
-    #define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
-        float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
-        { \
-            return float4(CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb, 1.0); \
-        }
-
-    CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
-    CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
-    CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
-    CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
-    CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
-    CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
-    CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
-#endif
+CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
+CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
+CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
+CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
+CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
+CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
+CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
 float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
@@ -489,12 +448,10 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     #endif
 
     // Bloom composition
-    #if ENABLE_BLOOM
-        float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
-        BaseColor = (_BloomRenderMode == 0)
-        ? BaseColor + (BloomColor * _BloomIntensity)
-        : BloomColor;
-    #endif
+    float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+    BaseColor = (_BloomRenderMode == 0)
+    ? BaseColor + (BloomColor * _BloomIntensity)
+    : BloomColor;
 
     #if ENABLE_GRADING
         // Apply color-grading
@@ -559,49 +516,34 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade · Auto-Exposure Bloom";
-    ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.\n\nTo adjust this shader to act like certain shaders, see the Preprocessor definitions below.\n\n\cAutoExposure:\n\n\t· ENABLE_AUTOEXPOSURE 1\n\t· ENABLE_BLOOM 0\n\t· ENABLE_GRADING 0\n\n\cBloom:\n\n\t· ENABLE_AUTOEXPOSURE 0\n\t· ENABLE_BLOOM 1\n\t· ENABLE_GRADING 0";
+    ui_label = "CShade · Auto-Exposure & Bloom";
+    ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.\n\nTo adjust this shader to act like certain shaders, see the Preprocessor definitions below.\n\n\cBloom:\n\n\t· ENABLE_AUTOEXPOSURE 0\n\t· ENABLE_BLOOM 1\n\t· ENABLE_GRADING 0";
 >
 {
-    #if ENABLE_BLOOM
-        // Prefilter
-        CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
+    // Prefilter
+    CREATE_PASS(CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
 
-        // Iteratively downsample the image (RGB) and its log luminance (A) into a pyramid.
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
-        CREATE_PASS(CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+    // Iteratively downsample the image (RGB) and its log luminance (A) into a pyramid.
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
+    CREATE_PASS(CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
-        /*
-            Additive iterative upsampling.
-            Formula: Upsample(Level[N+1]) + Level[N]
-        */
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
-        CREATE_PASS(CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
-    #elif ENABLE_AUTOEXPOSURE
-        pass CCamera_CreateExposureTex
-        {
-            ClearRenderTargets = FALSE;
-            BlendEnable = TRUE;
-            BlendOp = ADD;
-            SrcBlend = SRCALPHA;
-            DestBlend = INVSRCALPHA;
-
-            VertexShader = CShade_VS_Quad;
-            PixelShader = PS_GetExposure;
-            RenderTarget0 = ExposureTex;
-        }
-    #endif
+    /*
+        Additive iterative upsampling.
+        Formula: Upsample(Level[N+1]) + Level[N]
+    */
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
+    CREATE_PASS(CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
 
     pass Composition
     {
@@ -617,7 +559,7 @@ technique CShade_AutoExposureBloom
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
         We store the coarsest level here to synchronize the auto-exposure Luma texture in the PS_Prefilter and PS_Composite passes.
     */
-    #if ENABLE_BLOOM && ENABLE_AUTOEXPOSURE
+    #if ENABLE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
         {
             ClearRenderTargets = FALSE;
