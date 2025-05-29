@@ -360,7 +360,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Apply overlays
     float2 UnormTex = (Input.Tex0 * 2.0) - 1.0;
 
-    if (_ExposureSpotMeterOverlay)
+    if ((_ExposureMeter == 1) && _ExposureSpotMeterOverlay)
     {
         ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
     }
