@@ -60,17 +60,33 @@ uniform float _BloomIntensity <
         ui_items = "Average Metering\0Spot Metering\0";
     > = 0;
 
-    uniform float _ExposureScale <
+    uniform float _AverageExposureScale <
         ui_category = "Exposure";
-        ui_label = "Spot Scale";
+        ui_label = "Average Metering · Scale";
+        ui_type = "slider";
+        ui_min = 1e-3;
+        ui_max = 1.0;
+    > = 1.0;
+
+    uniform float2 _AverageExposureOffset <
+        ui_category = "Exposure";
+        ui_label = "Average Metering · Offset";
+        ui_type = "slider";
+        ui_min = -1.0;
+        ui_max = 1.0;
+    > = float2(0.0, -0.5);
+
+    uniform float _SpotExposureScale <
+        ui_category = "Exposure";
+        ui_label = "Spot Metering · Scale";
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float2 _ExposureOffset <
+    uniform float2 _SpotExposureOffset <
         ui_category = "Exposure";
-        ui_label = "Spot Offset";
+        ui_label = "Spot Metering · Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -296,8 +312,8 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
     {
         // For spot-metering, we fill the target square texture with the region only
         float2 SpotMeterTex = (Tex * 2.0) - 1.0;
-        SpotMeterTex *= _ExposureScale;
-        SpotMeterTex += float2(_ExposureOffset.x, -_ExposureOffset.y);
+        SpotMeterTex *= _SpotExposureScale;
+        SpotMeterTex += float2(_SpotExposureOffset.x, -_SpotExposureOffset.y);
         SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
         return SpotMeterTex;
     }
@@ -310,8 +326,8 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
                 Height conversion | [0, 1] -> [-N, N]
         */
         float2 OverlayPos = UnormTex;
-        OverlayPos -= float2(_ExposureOffset.x, -_ExposureOffset.y);
-        OverlayPos /= _ExposureScale;
+        OverlayPos -= float2(_SpotExposureOffset.x, -_SpotExposureOffset.y);
+        OverlayPos /= _SpotExposureScale;
         float2 DotPos = OverlayPos;
 
         // Create the needed mask; output 1 if the texcoord is within square range
@@ -333,8 +349,9 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 
     void ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
     {
-        // The offset goes from [-0.5, 0.5), hence the -0.5 subtraction.
-        float2 OverlayPos = UnormTex + float2(0.0, 0.5);
+        float2 OverlayPos = UnormTex;
+        OverlayPos -= float2(_AverageExposureOffset.x, -_AverageExposureOffset.y);
+        OverlayPos /= _AverageExposureScale;
 
         // Shrink the UV so [-1, 1] fills a square
         #if BUFFER_WIDTH > BUFFER_HEIGHT
