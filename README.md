@@ -78,7 +78,7 @@ uniform float _Level1Weight <
 > = 1.0;
 
 uniform float _CShadeExposureSmoothingSpeed <
-    ui_category = "Pipeline · Output · AutoExposure";
+    ui_category = "Pipeline · Output · Auto Exposure";
     ui_label = "Smoothing Speed";
     ui_type = "slider";
     ui_min = 0.1;
