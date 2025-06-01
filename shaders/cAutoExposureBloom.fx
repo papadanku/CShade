@@ -66,7 +66,7 @@ uniform float _BloomIntensity <
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
-    > = 0.5;
+    > = 0.75;
 
     uniform float2 _AverageExposureOffset <
         ui_category = "Exposure";
