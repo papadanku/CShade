@@ -45,7 +45,7 @@ uniform bool _ExposureLumaOverlay <
 
 uniform bool _ExposureSpotMeterOverlay <
     ui_category = "Exposure";
-    ui_label = "Display Spot Metering";
+    ui_label = "Display Metering Area (Spot Metering Only)";
     ui_type = "radio";
 > = false;
 

@@ -57,7 +57,7 @@ uniform float _BloomIntensity <
         ui_category = "Exposure";
         ui_label = "Method";
         ui_type = "combo";
-        ui_items = "Average\0Spot\0";
+        ui_items = "Average Metering\0Spot Metering\0";
     > = 0;
 
     uniform float _ExposureScale <
@@ -84,7 +84,7 @@ uniform float _BloomIntensity <
 
     uniform bool _ExposureSpotMeterOverlay <
         ui_category = "Exposure";
-        ui_label = "Display Spot Metering";
+        ui_label = "Display Metering Area (Spot Metering Only)";
         ui_type = "radio";
     > = false;
 #endif
@@ -487,7 +487,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     #if ENABLE_AUTOEXPOSURE
         float2 UnormTex = (Input.Tex0 * 2.0) - 1.0;
 
-        if (_ExposureSpotMeterOverlay)
+        if ((_ExposureMeter == 1) && _ExposureSpotMeterOverlay)
         {
             ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
         }
@@ -516,8 +516,8 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade · Auto-Exposure & Bloom";
-    ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.\n\nTo adjust this shader to act like certain shaders, see the Preprocessor definitions below.\n\n\cBloom:\n\n\t· ENABLE_AUTOEXPOSURE 0\n\t· ENABLE_BLOOM 1\n\t· ENABLE_GRADING 0";
+    ui_label = "CShade · Auto-Exposure Bloom";
+    ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.";
 >
 {
     // Prefilter
