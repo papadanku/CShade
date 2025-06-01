@@ -516,7 +516,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade · Auto-Exposure Bloom";
+    ui_label = "CShade · Auto Exposure & Bloom";
     ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.";
 >
 {
