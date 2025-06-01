@@ -16,52 +16,52 @@ uniform float _Frametime < source = "frametime"; >;
 
 uniform int _ExposureMeter <
     ui_category = "Exposure";
-    ui_label = "Method";
+    ui_label = "Adaptation";
     ui_type = "combo";
-    ui_items = "Average\0Spot\0";
+    ui_items = "Average Metering\0Spot Metering\0";
 > = 0;
 
 uniform float _AverageExposureScale <
-    ui_category = "Exposure";
-    ui_label = "Average Metering · Scale";
+    ui_category = "Exposure · Luminance Meter";
+    ui_label = "Scale";
     ui_type = "slider";
     ui_min = 1e-3;
     ui_max = 1.0;
 > = 0.75;
 
 uniform float2 _AverageExposureOffset <
-    ui_category = "Exposure";
-    ui_label = "Average Metering · Offset";
+    ui_category = "Exposure · Luminance Meter";
+    ui_label = "Offset";
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
 > = float2(0.0, -0.25);
 
+uniform bool _ExposureLumaOverlay <
+    ui_category = "Exposure · Luminance Meter";
+    ui_label = "Enable Luminance Meter";
+    ui_type = "radio";
+> = false;
+
 uniform float _SpotExposureScale <
-    ui_category = "Exposure";
-    ui_label = "Spot Metering · Scale";
+    ui_category = "Exposure · Spot Meter";
+    ui_label = "Scale";
     ui_type = "slider";
     ui_min = 1e-3;
     ui_max = 1.0;
 > = 0.5;
 
 uniform float2 _SpotExposureOffset <
-    ui_category = "Exposure";
-    ui_label = "Spot Metering · Offset";
+    ui_category = "Exposure · Spot Meter";
+    ui_label = "Offset";
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
 > = 0.0;
 
-uniform bool _ExposureLumaOverlay <
-    ui_category = "Exposure";
-    ui_label = "Display Average Luminance";
-    ui_type = "radio";
-> = false;
-
 uniform bool _ExposureSpotMeterOverlay <
-    ui_category = "Exposure";
-    ui_label = "Display Metering Area (Spot Metering Only)";
+    ui_category = "Exposure · Spot Meter";
+    ui_label = "Show Area";
     ui_type = "radio";
 > = false;
 

@@ -55,52 +55,52 @@ uniform float _BloomIntensity <
 
     uniform int _ExposureMeter <
         ui_category = "Exposure";
-        ui_label = "Method";
+        ui_label = "Adaptation";
         ui_type = "combo";
         ui_items = "Average Metering\0Spot Metering\0";
     > = 0;
 
     uniform float _AverageExposureScale <
-        ui_category = "Exposure";
-        ui_label = "Average Metering · Scale";
+        ui_category = "Exposure · Luminance Meter";
+        ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.75;
 
     uniform float2 _AverageExposureOffset <
-        ui_category = "Exposure";
-        ui_label = "Average Metering · Offset";
+        ui_category = "Exposure · Luminance Meter";
+        ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
     > = float2(0.0, -0.25);
 
+    uniform bool _ExposureLumaOverlay <
+        ui_category = "Exposure · Luminance Meter";
+        ui_label = "Enable Luminance Meter";
+        ui_type = "radio";
+    > = false;
+
     uniform float _SpotExposureScale <
-        ui_category = "Exposure";
-        ui_label = "Spot Metering · Scale";
+        ui_category = "Exposure · Spot Meter";
+        ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.5;
 
     uniform float2 _SpotExposureOffset <
-        ui_category = "Exposure";
-        ui_label = "Spot Metering · Offset";
+        ui_category = "Exposure · Spot Meter";
+        ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
     > = 0.0;
 
-    uniform bool _ExposureLumaOverlay <
-        ui_category = "Exposure";
-        ui_label = "Display Average Luminance";
-        ui_type = "radio";
-    > = false;
-
     uniform bool _ExposureSpotMeterOverlay <
-        ui_category = "Exposure";
-        ui_label = "Display Metering Area (Spot Metering Only)";
+        ui_category = "Exposure · Spot Meter";
+        ui_label = "Show Luminance Area";
         ui_type = "radio";
     > = false;
 #endif
@@ -352,9 +352,11 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
         /*
             Maps texture coordinates less-than/equal to the brightness.
 
-            We use [-1,-1] texture coordinates and bias them by 0.5 to
-            have 0.0 be at the
+            We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
         */
+        UnormTex /= _AverageExposureScale;
+        UnormTex += float2(-_AverageExposureOffset.x, _AverageExposureOffset.y);
+
         float AETex = UnormTex.x + 0.5;
         float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
 
