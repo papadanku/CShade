@@ -27,7 +27,7 @@ uniform float _AverageExposureScale <
     ui_type = "slider";
     ui_min = 1e-3;
     ui_max = 1.0;
-> = 1.0;
+> = 0.5;
 
 uniform float2 _AverageExposureOffset <
     ui_category = "Exposure";
@@ -35,7 +35,7 @@ uniform float2 _AverageExposureOffset <
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
-> = float2(0.0, -0.5);
+> = float2(0.0, -0.25);
 
 uniform float _SpotExposureScale <
     ui_category = "Exposure";
@@ -299,31 +299,24 @@ void ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 Non
 
 void ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
 {
-    float2 OverlayPos = UnormTex;
-    OverlayPos -= float2(_AverageExposureOffset.x, -_AverageExposureOffset.y);
-    OverlayPos /= _AverageExposureScale;
+    /*
+        Maps texture coordinates less-than/equal to the brightness.
 
-    // Shrink the UV so [-1, 1] fills a square
-    #if BUFFER_WIDTH > BUFFER_HEIGHT
-        OverlayPos.x *= ASPECT_RATIO;
-    #else
-        OverlayPos.y *= ASPECT_RATIO;
-    #endif
+        We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
+    */
+    UnormTex /= _AverageExposureScale;
+    UnormTex += float2(-_AverageExposureOffset.x, _AverageExposureOffset.y);
 
-    // Create luma masks
-    float OverlayPosLength = length(OverlayPos);
-    float OverlayPosMask = CProcedural_GetAntiAliasShape(OverlayPosLength, 0.05);
-    float ShadowMask = smoothstep(0.1, 0.0, OverlayPosLength);
+    float AETex = UnormTex.x + 0.5;
+    float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
 
-    // Create Overlay through alpha compositing
-    float4 Overlay = 0.0;
-    float4 Shadow = float4(0.0, 0.0, 0.0, 1.0);
-    float4 ExpLuma = float4((float3)E.ExpLuma, 1.0);
+    // Mask between Auto Exposure bar color
+    float2 CropTex = UnormTex + float2(0.0, -0.5);
+    float2 Crop = step(abs(CropTex), float2(0.5, 0.01));
+    float CropMask = Crop.x * Crop.y;
 
-    // Composite Overlay into Output
-    Overlay = lerp(Overlay, Shadow, ShadowMask);
-    Overlay = lerp(ExpLuma, Overlay, OverlayPosMask);
-    Color = lerp(Color, Overlay.rgb, Overlay.a);
+    // Composite
+    Color = lerp(Color, AEMask, CropMask);
 }
 
 float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
