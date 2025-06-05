@@ -23,7 +23,7 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_label = "Temporal Blending";
+    ui_label = "Temporal Blending Weight";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;

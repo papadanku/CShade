@@ -26,41 +26,41 @@
 
 uniform float _FrameTime < source = "frametime"; > ;
 
+uniform float _LocalStabilizationMipBias <
+    ui_label = "Mipmap Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+> = 3.5;
+
+uniform float2 _WarpStrength <
+    ui_label = "Warping Strength";
+    ui_type = "slider";
+    ui_min = -100.0;
+    ui_max = 100.0;
+> = 10.0;
+
 uniform float _BlendFactor <
-    ui_category = "Stabilization";
-    ui_label = "Temporal Blending Strength";
+    ui_label = "Temporal Blending Weight";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.5;
 
-uniform float _WarpStrength <
-    ui_category = "Stabilization";
-    ui_label = "Warping Strength";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 16.0;
-> = 8.0;
-
-uniform bool _InvertWarp <
-    ui_category = "Stabilization";
-    ui_label = "Invert Warping";
+uniform bool _InvertWarpX <
+    ui_label = "Invert X Axis";
     ui_type = "radio";
 > = false;
 
-uniform bool _LocalStabilization <
-    ui_category = "Local Stabilization";
-    ui_label = "Enable Local Stabilization";
+uniform bool _InvertWarpY <
+    ui_label = "Invert Y Axis";
     ui_type = "radio";
-> = true;
+> = false;
 
-uniform float _LocalStabilizationMipBias <
-    ui_category = "Local Stabilization";
-    ui_label = "Level of Detail Bias";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 7.0;
-> = 3.5;
+uniform bool _GlobalStabilization <
+    ui_label = "Enable Global Stabilization";
+    ui_type = "radio";
+> = false;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -159,10 +159,13 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 StabilizationTex = _LocalStabilization ? Input.Tex0 : 0.5;
-    float StabilizationLOD = _LocalStabilization ? _LocalStabilizationMipBias : 99.0;
+    float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
+    float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
+
+    // Get motion vectors
     float2 MotionVectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
-    MotionVectors = _InvertWarp ? -MotionVectors : MotionVectors;
+    MotionVectors.x = _InvertWarpX ? -MotionVectors.x : MotionVectors.x;
+    MotionVectors.y = _InvertWarpY ? -MotionVectors.y : MotionVectors.y;
 
     float2 StableTex = Input.Tex0.xy - 0.5;
     StableTex -= (MotionVectors * _WarpStrength);
