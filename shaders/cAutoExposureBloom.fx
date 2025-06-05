@@ -295,8 +295,8 @@ CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 #if ENABLE_AUTOEXPOSURE
-    CREATE_TEXTURE(ExposureTex, int2(1, 1), R16F, 0)
-    CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CREATE_TEXTURE(BloomExposureTex, int2(1, 1), R16F, 0)
+    CREATE_SAMPLER(SampleBloomExposureTex, BloomExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
 /*
@@ -396,7 +396,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
         }
 
         // Apply auto-exposure to input
-        float Luma = tex2D(SampleExposureTex, Input.Tex0).r;
+        float Luma = tex2D(SampleBloomExposureTex, Input.Tex0).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
     #endif
@@ -452,7 +452,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Apply auto-exposure to base-color
     #if ENABLE_AUTOEXPOSURE
-        float Luma = tex2Dlod(SampleExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
+        float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
     #endif
@@ -580,7 +580,7 @@ technique CShade_AutoExposureBloom
 
             VertexShader = CShade_VS_Quad;
             PixelShader = PS_GetExposure;
-            RenderTarget0 = ExposureTex;
+            RenderTarget0 = BloomExposureTex;
         }
     #endif
 }
