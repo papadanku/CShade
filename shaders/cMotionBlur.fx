@@ -39,8 +39,8 @@ uniform float _Scale <
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 2.0;
-> = 1.0;
+    ui_max = 1.0;
+> = 0.5;
 
 uniform float _TargetFrameRate <
     ui_category = "Motion Blur";
@@ -151,32 +151,29 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 OutputColor = 0.0;
-    const int Samples = 16;
+    int Samples = 16;
 
     float FrameRate = 1e+3 / _FrameTime;
     float FrameTimeRatio = _TargetFrameRate / FrameRate;
-
-    float2 ScreenSize = float2(BUFFER_WIDTH, BUFFER_HEIGHT);
     float2 ScreenCoord = Input.Tex0.xy;
 
     float2 Velocity = CMath_Float2_FP16ToNorm(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
-
     float2 ScaledVelocity = Velocity * _Scale;
     ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
 
     [unroll]
     for (int k = 0; k < Samples; ++k)
     {
-        float Random = (CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k) * 2.0) - 1.0;
-        float2 RandomTex = Input.Tex0.xy + (ScaledVelocity * Random);
-        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, RandomTex);
+        float Random = CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k);
+        ScreenCoord -= (ScaledVelocity * Random);
+        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, ScreenCoord);
         if (_BlurMode == 1)
         {
             OutputColor = max(Color, OutputColor);
         }
         else
         {
-            OutputColor += Color / Samples;
+            OutputColor += (Color / Samples);
         }
     }
 
