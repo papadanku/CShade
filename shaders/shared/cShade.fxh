@@ -27,7 +27,11 @@
     #define BUFFER_SIZE_7 int2(BUFFER_SIZE_0 >> 7)
     #define BUFFER_SIZE_8 int2(BUFFER_SIZE_0 >> 8)
 
-    #if BUFFER_COLOR_BIT_DEPTH == 8
+    #ifndef CSHADE_SRGB_RENDERING
+        #define CSHADE_SRGB_RENDERING TRUE
+    #endif
+
+    #if defined(CSHADE_SRGB_RENDERING) && (BUFFER_COLOR_BIT_DEPTH == 8)
         #define READ_SRGB TRUE
         #define WRITE_SRGB TRUE
     #else
