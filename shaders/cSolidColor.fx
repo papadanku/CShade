@@ -4,11 +4,17 @@
     [Shader Options]
 */
 
-uniform float3 _Color <
+uniform float4 _Color <
     ui_label = "Color";
     ui_type = "color";
     ui_min = 0.0;
 > = 1.0;
+
+uniform bool _BlendWithAlpha <
+    ui_label = "Blend With Alpha Channel";
+    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
+    ui_type = "radio";
+> = false;
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
@@ -19,7 +25,13 @@ uniform float3 _Color <
 
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return CBlend_OutputChannels(float4(_Color, _CShadeAlphaFactor));
+    #if CBLEND_BLENDENABLE
+        float Alpha = _BlendWithAlpha ? _Color.a * _CShadeAlphaFactor : _CShadeAlphaFactor;
+    #else
+        float Alpha = _Color.a;
+    #endif
+
+    return CBlend_OutputChannels(float4(_Color.rgb, Alpha));
 }
 
 technique CShade_SolidColor
