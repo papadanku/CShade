@@ -24,14 +24,15 @@ uniform float4 _Addition <
     ui_max = 2.0;
 > = 0.0;
 
+#include "shared/cShadeHDR.fxh"
+#include "shared/cBlend.fxh"
+
 uniform bool _BlendWithAlpha <
+    ui_category = "Pipeline · Output · Blending";
     ui_label = "Blend With Alpha Channel";
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";
 > = false;
-
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
