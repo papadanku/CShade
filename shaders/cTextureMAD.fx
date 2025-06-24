@@ -10,19 +10,25 @@ uniform int _Order <
     ui_items = "Multiply & Add\0Add & Multiply\0";
 > = 0;
 
-uniform float3 _Multiply <
+uniform float4 _Multiply <
     ui_label = "Multiplication";
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;
 > = 1.0;
 
-uniform float3 _Addition <
+uniform float4 _Addition <
     ui_label = "Addition";
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;
 > = 0.0;
+
+uniform bool _BlendWithAlpha <
+    ui_label = "Blend With Alpha Channel";
+    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
+    ui_type = "radio";
+> = false;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -38,16 +44,22 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
     switch (_Order)
     {
         case 0:
-            Texture.rgb *= _Multiply;
-            Texture.rgb += _Addition;
+            Texture *= _Multiply;
+            Texture += _Addition;
             break;
         case 1:
-            Texture.rgb += _Addition;
-            Texture.rgb *= _Multiply;
+            Texture += _Addition;
+            Texture *= _Multiply;
             break;
     }
 
-    return CBlend_OutputChannels(float4(Texture.rgb, _CShadeAlphaFactor));
+    #if CBLEND_BLENDENABLE
+        float Alpha = _BlendWithAlpha ? Texture.a * _CShadeAlphaFactor : _CShadeAlphaFactor;
+    #else
+        float Alpha = Texture.a;
+    #endif
+
+    return CBlend_OutputChannels(float4(Texture.rgb, Alpha));
 }
 
 technique CShade_SolidColor

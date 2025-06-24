@@ -77,7 +77,7 @@
 
     uniform float _CShadeAlphaFactor <
         ui_category = "Pipeline · Output · Blending";
-        ui_label = "Alpha Factor";
+        ui_label = "Alpha Blend Factor";
         ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";
         ui_min = 0.0;
