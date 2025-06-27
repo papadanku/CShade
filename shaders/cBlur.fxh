@@ -25,9 +25,9 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
     float2 PixelSize = (1.0 / float2(BUFFER_WIDTH, BUFFER_HEIGHT)) * Direction;
     float KernelSize = _Sigma * 3.0;
 
-    if(_Sigma == 0.0)
+    if (_Sigma == 0.0)
     {
-        return CShadeHDR_Tex2Dlod_InvTonemap(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
+        return CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
     }
     else
     {
@@ -35,14 +35,14 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
         float TotalWeight = CBlur_GetGaussianWeight1D(0.0, _Sigma);
         float4 OutputColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex) * TotalWeight;
 
-        for(float i = 1.0; i < KernelSize; i += 2.0)
+        for (float i = 1.0; i < KernelSize; i += 2.0)
         {
             float LinearWeight = 0.0;
             float LinearOffset = CBlur_GetGaussianOffset(i, _Sigma, LinearWeight);
             float4 TexA = float4(Tex - LinearOffset * PixelSize, 0.0, 0.0);
             float4 TexB = float4(Tex + LinearOffset * PixelSize, 0.0, 0.0);
-            OutputColor += CShadeHDR_Tex2Dlod_InvTonemap(CShade_SampleColorTex, TexA) * LinearWeight;
-            OutputColor += CShadeHDR_Tex2Dlod_InvTonemap(CShade_SampleColorTex, TexB) * LinearWeight;
+            OutputColor += CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, TexA) * LinearWeight;
+            OutputColor += CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, TexB) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;
         }
 

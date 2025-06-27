@@ -40,7 +40,7 @@ uniform bool _BlendWithAlpha <
 
 float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Texture = CShadeHDR_Tex2Dlod_InvTonemap(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
 
     switch (_Order)
     {

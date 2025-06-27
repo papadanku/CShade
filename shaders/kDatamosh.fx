@@ -275,7 +275,7 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Reset if the amount of motion is larger than the block size.
     [branch]
-    if(MVLength > _BlockSize)
+    if (MVLength > _BlockSize)
     {
         OutputColor = float4((float3)ResetAcc, 0.0);
     }

@@ -101,9 +101,9 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
     float Weight = 0.0;
-    [unroll] for(int i = 1; i < 4; ++i)
+    [unroll] for (int i = 1; i < 4; ++i)
     {
-        [unroll] for(int j = 0; j < 4 * i; ++j)
+        [unroll] for (int j = 0; j < 4 * i; ++j)
         {
             float Shift = (Pi2 / (4.0 * float(i))) * float(j);
             float2 AngleShift = 0.0;

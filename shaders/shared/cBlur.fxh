@@ -60,7 +60,7 @@
         OutputColor = tex2D(SampleSource, Tex + (Offsets[0] * PSize.xy)) * Weights[0];
 
         // Sample neighboring pixels
-        for(int i = 1; i < KernelSize; i++)
+        for (int i = 1; i < KernelSize; i++)
         {
             const float4 Offset = (Horizontal) ? Offsets[i] * HShift: Offsets[i] * VShift;
             float4 Tex = Tex.xyxy + (Offset * PSize);

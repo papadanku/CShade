@@ -17,7 +17,7 @@
         return CTonemap_ApplyInverseTonemap(tex2D(Source, Tex), _CShadeInputTonemapOperator);
     }
 
-    float4 CShadeHDR_Tex2Dlod_InvTonemap(sampler Source, float4 Tex)
+    float4 CShadeHDR_Tex2Dlod_TonemapToRGB(sampler Source, float4 Tex)
     {
         return CTonemap_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShadeInputTonemapOperator);
     }
