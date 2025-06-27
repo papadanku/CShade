@@ -42,7 +42,7 @@ float4 GetCensusTransform(float2 Tex)
     float4 CenterSample = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xz);
 
     // Generate 8-bit integer from the 8-pixel neighborhood
-    for(int i = 0; i < Neighbors; i++)
+    for (int i = 0; i < Neighbors; i++)
     {
         float4 Comparison = step(SampleNeighbor[i], CenterSample);
         Transform += ldexp(Comparison, i);
