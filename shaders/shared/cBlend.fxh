@@ -68,35 +68,35 @@
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
     uniform int _CShadeSwizzleRed <
-        ui_category = "Pipeline · Output · RGBA Output";
+        ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Red [R]";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 0;
 
     uniform int _CShadeSwizzleGreen <
-        ui_category = "Pipeline · Output · RGBA Output";
+        ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Green [G]";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 1;
 
     uniform int _CShadeSwizzleBlue <
-        ui_category = "Pipeline · Output · RGBA Output";
+        ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Blue [B]";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 2;
 
     uniform int _CShadeSwizzleAlpha <
-        ui_category = "Pipeline · Output · RGBA Output";
+        ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Alpha [A]";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 3;
 
     uniform int _CShadeOutputMode <
-        ui_category = "Pipeline · Output · RGBA Output";
+        ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Debugging · Show Channel";
         ui_tooltip = "Reset this option once you are done debugging.";
         ui_type = "combo";
