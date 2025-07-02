@@ -108,8 +108,8 @@
             [unroll] for (int x1 = 2; x1 >= -2; x1--)
             {
                 bool OutOfBounds = (abs(x1) == 2) && (abs(y1) == 2);
-                float2 Tex = MainTex + (float2(x1, y1) * PixelSize;
-                TemplateCache[TemplateCacheIndex] = OutOfBounds ? 0.0 : tex2D(SampleT, Tex)).xyz;
+                float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
+                TemplateCache[TemplateCacheIndex] = OutOfBounds ? 0.0 : tex2D(SampleT, Tex).xyz;
                 TemplateCacheIndex += 1;
             }
         }
