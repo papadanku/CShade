@@ -123,9 +123,9 @@
             int2(3, 1), int2(3, 2), int2(3, 3),
         };
 
-        [unroll] for (int y2 = 1; y2 >= -1; --y2)
+        [unroll] for (int y2 = 1; y2 >= -1; y2--)
         {
-            [unroll] for (int x2 = 1; x2 >= -1; --x2)
+            [unroll] for (int x2 = 1; x2 >= -1; x2--)
             {
                 int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
 
