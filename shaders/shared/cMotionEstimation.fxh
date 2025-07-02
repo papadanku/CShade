@@ -130,11 +130,11 @@
                 int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
 
                 float3 I = tex2D(SampleI, WarpTex + (float2(x2, y2) * PixelSize)).xyz;
-                float3 T = TemplateCache[Get1DIndexFrom2D(GridPos, TemplateGridSize)];
-                float3 N = TemplateCache[Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
-                float3 S = TemplateCache[Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
-                float3 E = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
-                float3 W = TemplateCache[Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
+                float3 T = TemplateCache[CMath_Get1DIndexFrom2D(GridPos, TemplateGridSize)];
+                float3 N = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
+                float3 S = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
+                float3 E = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
+                float3 W = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
 
                 // Calculate gradients
                 float3 Ix = E - W;
