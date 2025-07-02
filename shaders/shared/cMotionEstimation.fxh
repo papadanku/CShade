@@ -137,8 +137,8 @@
                 float3 W = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
 
                 // Calculate gradients
-                float3 Ix = W - E;
-                float3 Iy = N - S;
+                float3 Ix = (W - E) / 2.0;
+                float3 Iy = (N - S) / 2.0;
                 float3 It = I - T;
 
                 // IxIx = A11; IyIy = A22; IxIy = A12/A22
