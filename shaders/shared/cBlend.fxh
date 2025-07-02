@@ -67,12 +67,40 @@
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
+    uniform int _CShadeSwizzleRed <
+        ui_category = "Pipeline · Output · RGBA Output";
+        ui_label = "Red [R]";
+        ui_type = "combo";
+        ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+    > = 0;
+
+    uniform int _CShadeSwizzleGreen <
+        ui_category = "Pipeline · Output · RGBA Output";
+        ui_label = "Green [G]";
+        ui_type = "combo";
+        ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+    > = 1;
+
+    uniform int _CShadeSwizzleBlue <
+        ui_category = "Pipeline · Output · RGBA Output";
+        ui_label = "Blue [B]";
+        ui_type = "combo";
+        ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+    > = 2;
+
+    uniform int _CShadeSwizzleAlpha <
+        ui_category = "Pipeline · Output · RGBA Output";
+        ui_label = "Alpha [A]";
+        ui_type = "combo";
+        ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+    > = 3;
+
     uniform int _CShadeOutputMode <
-        ui_category = "Pipeline · Output · Blending";
-        ui_label = "Debug Output";
+        ui_category = "Pipeline · Output · RGBA Output";
+        ui_label = "Debugging · Show Channel";
         ui_tooltip = "Reset this option once you are done debugging.";
         ui_type = "combo";
-        ui_items = "No Debug\0Display Alpha\0";
+        ui_items = "\0Red\0Green\0Blue\0Alpha\0";
     > = 0;
 
     uniform float _CShadeAlphaFactor <
@@ -84,17 +112,59 @@
         ui_max = 1.0;
     > = 1.0;
 
-    float4 CBlend_OutputChannels(float4 Color)
+    void CBlend_SwapChannel(in float4 Cache, inout float Color, in int Parameter)
     {
-        switch(_CShadeOutputMode)
+        switch (Parameter)
         {
             case 0:
-                return Color;
+                Color = Cache.r;
+                break;
             case 1:
-                return Color.a;
+                Color = Cache.g;
+                break;
+            case 2:
+                Color = Cache.b;
+                break;
+            case 3:
+                Color = Cache.a;
+                break;
             default:
-                return Color;
+                Color = 0.0;
+                break;
         }
+    }
+
+    float4 CBlend_OutputChannels(float4 Channels)
+    {
+        // Swizzling
+        float4 Cache = Channels;
+        CBlend_SwapChannel(Cache, Channels.r, _CShadeSwizzleRed);
+        CBlend_SwapChannel(Cache, Channels.g, _CShadeSwizzleGreen);
+        CBlend_SwapChannel(Cache, Channels.b, _CShadeSwizzleBlue);
+        CBlend_SwapChannel(Cache, Channels.a, _CShadeSwizzleAlpha);
+
+        // Process OutputColor
+        float4 OutputColor = 0.0;
+        switch (_CShadeOutputMode)
+        {
+            case 1:
+                OutputColor.r = Channels.r;
+                break;
+            case 2:
+                OutputColor.g = Channels.g;
+                break;
+            case 3:
+                OutputColor.b = Channels.b;
+                break;
+            case 4: // Write to all channels for alpha, so people can see it
+                OutputColor = Channels.a;
+                break;
+            default: // No Debug
+                OutputColor = Channels;
+                break;
+        }
+
+       return OutputColor;
     }
 
 #endif
