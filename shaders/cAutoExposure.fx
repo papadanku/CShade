@@ -296,25 +296,6 @@ void ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 Non
     Color = lerp(1.0, Color, DotMask);
 }
 
-void ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
-{
-    // Maps texture coordinates less-than/equal to the brightness.
-    // We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
-    UnormTex /= _AverageExposureScale;
-    UnormTex += float2(-_AverageExposureOffset.x, _AverageExposureOffset.y);
-
-    float AETex = UnormTex.x + 0.5;
-    float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
-
-    // Mask between auto exposure bar color
-    float2 CropTex = UnormTex + float2(0.0, -0.5);
-    float2 Crop = step(abs(CropTex), float2(0.5, 0.01));
-    float CropMask = Crop.x * Crop.y;
-
-    // Composite
-    Color = lerp(Color, AEMask, CropMask);
-}
-
 float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Tex = (_ExposureMeter == 1) ? GetSpotMeterTex(Input.Tex0) : Input.Tex0;
@@ -373,7 +354,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_ExposureLumaOverlay)
     {
-        ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
+        CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData, _AverageExposureOffset);
     }
 
     return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));

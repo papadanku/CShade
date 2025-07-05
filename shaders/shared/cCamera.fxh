@@ -66,4 +66,23 @@
         return Color * Input.Value;
     }
 
+    void CCamera_ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E, in float2 ExposureOffset)
+    {
+        // Maps texture coordinates less-than/equal to the brightness.
+        // We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
+        UnormTex /= _AverageExposureScale;
+        UnormTex += float2(-ExposureOffset.x, ExposureOffset.y);
+
+        float AETex = UnormTex.x + 0.5;
+        float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
+
+        // Mask between auto exposure bar color
+        float2 CropTex = UnormTex + float2(0.0, -0.5);
+        float2 Crop = step(abs(CropTex), float2(0.5, 0.01));
+        float CropMask = Crop.x * Crop.y;
+
+        // Composite
+        Color = lerp(Color, AEMask, CropMask);
+    }
+
 #endif
