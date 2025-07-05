@@ -25,7 +25,7 @@ uniform int _ShortEdgesScale <
     ui_tooltip = "How much to scale short edges.";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 3.0;
+    ui_max = 4.0;
 > = 3.0;
 
 uniform int _ShortEdgesContrastThreshold <
