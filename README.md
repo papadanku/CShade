@@ -371,6 +371,8 @@ VK_OEM_CLEAR | 0xFE | Clear key
 
 ## Acknowledgments
 
+### Groups
+
 - [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
 
   Major knowledge-base and inspiration.
@@ -390,3 +392,35 @@ VK_OEM_CLEAR | 0xFE | Clear key
 - Family, friends, and acquaintances
 
   You know who you are.
+
+### Individuals
+
+The Shadersphere.
+
+- BeTa/Alea
+- BlueSkyDefender
+- Pfoiffee
+- Certain individuals in #code-chat/#shader-programming
+
+GitHub Contributors
+
+- Overall
+
+  - 0CCULTIST
+
+- Reported Bugs
+
+  - Jakey757
+  - simonedibilio
+  - WardedPredator
+
+- Submitted Ideas
+
+  - mrjoshisattvablack
+  - liuxd17thu
+  - Maximus961
+
+- Asked Questions
+
+  - R0nBurgandy
+  - lapsio
