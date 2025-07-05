@@ -40,7 +40,7 @@ uniform int _LongEdgesContrastThreshold <
     ui_tooltip = "The minimum amount of noise required to detect long edges.";
     ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
-> = 4;
+> = 3;
 
 uniform bool _PreserveFrequencies <
     ui_label = "Preserve High Frequencies";
@@ -167,8 +167,15 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskH = saturate((LongBlurH.a * 2.0) - 1.0);
     float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
 
+    // Put the criteria into a variable.
+    bool IsLongEdge = abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[_LongEdgesContrastThreshold];
+
+    // This is for the "Long Edge Mask" Render Mode.
+    float LongEdgeMaskDebugH = LongEdgeMaskH * IsLongEdge;
+    float LongEdgeMaskDebugV = LongEdgeMaskV * IsLongEdge;
+
     [branch]
-    if (abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[_LongEdgesContrastThreshold])
+    if (IsLongEdge)
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
@@ -219,7 +226,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
             Color = float4(EdgeMaskH, EdgeMaskV, 0.0, 0.0);
             break;
         case 2:
-            Color = float4(LongEdgeMaskH, LongEdgeMaskV, 0.0, 0.0);
+            Color = float4(LongEdgeMaskDebugH, LongEdgeMaskDebugV, 0.0, 0.0);
             break;
     }
 
