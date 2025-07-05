@@ -20,21 +20,36 @@ uniform int _RenderMode <
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
 > = 0;
 
-uniform int _ContrastThreshold <
-    ui_label = "Long Edge Threshold";
+uniform int _ShortEdgesScale <
+    ui_label = "Short Edges · Scaling";
+    ui_tooltip = "How much to scale short edges.";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 3.0;
+> = 3.0;
+
+uniform int _ShortEdgesContrastThreshold <
+    ui_label = "Short Edges · Threshold";
+    ui_tooltip = "The minimum amount of noise required to detect short edges.";
+    ui_type = "combo";
+    ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
+> = 2;
+
+uniform int _LongEdgesContrastThreshold <
+    ui_label = "Long Edges · Threshold";
     ui_tooltip = "The minimum amount of noise required to detect long edges.";
     ui_type = "combo";
-    ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
-> = 1;
+    ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
+> = 4;
 
 uniform bool _PreserveFrequencies <
     ui_label = "Preserve High Frequencies";
     ui_type = "radio";
 > = true;
 
-static const float ContrastThresholds[5] =
+static const float ContrastThresholds[6] =
 {
-    1.0 / 3.0, 1.0 / 4.0, 1.0 / 6.0, 1.0 / 8.0, 1.0 / 16.0
+    0.0, 1.0 / 16.0, 1.0 / 8.0, 1.0 / 6.0, 1.0 / 4.0, 1.0 / 3.0
 };
 
 #include "shared/cShade.fxh"
@@ -75,9 +90,6 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Delta = fwidth(Input.Tex0);
-
-    const float Lambda = 3.0;
-    const float Epsilon = 0.1;
 
     float4 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
 
@@ -137,8 +149,8 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float BlurLumaV = GetIntensity(BlurV.rgb);
 
     // Edge masks
-    float EdgeMaskH = saturate((Lambda * EdgeLumaH - Epsilon) / BlurLumaV);
-    float EdgeMaskV = saturate((Lambda * EdgeLumaV - Epsilon) / BlurLumaH);
+    float EdgeMaskH = saturate((_ShortEdgesScale * EdgeLumaH - ContrastThresholds[_ShortEdgesContrastThreshold]) / BlurLumaV);
+    float EdgeMaskV = saturate((_ShortEdgesScale * EdgeLumaV - ContrastThresholds[_ShortEdgesContrastThreshold]) / BlurLumaH);
 
     float4 Color = Center;
     Color = lerp(Color, BlurH, EdgeMaskV);
@@ -156,7 +168,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
 
     [branch]
-    if (abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[_ContrastThreshold])
+    if (abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[_LongEdgesContrastThreshold])
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
