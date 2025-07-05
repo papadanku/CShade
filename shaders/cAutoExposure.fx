@@ -222,8 +222,7 @@ uniform bool _ExposureSpotMeterOverlay <
 #endif
 
 #include "shared/cShadeHDR.fxh"
-#include "shared/cCameraInput.fxh"
-#include "shared/cCameraOutput.fxh"
+#include "shared/cCamera.fxh"
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
 
@@ -299,18 +298,15 @@ void ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 Non
 
 void ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
 {
-    /*
-        Maps texture coordinates less-than/equal to the brightness.
-
-        We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
-    */
+    // Maps texture coordinates less-than/equal to the brightness.
+    // We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
     UnormTex /= _AverageExposureScale;
     UnormTex += float2(-_AverageExposureOffset.x, _AverageExposureOffset.y);
 
     float AETex = UnormTex.x + 0.5;
     float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
 
-    // Mask between Auto Exposure bar color
+    // Mask between auto exposure bar color
     float2 CropTex = UnormTex + float2(0.0, -0.5);
     float2 Crop = step(abs(CropTex), float2(0.5, 0.01));
     float CropMask = Crop.x * Crop.y;
@@ -332,7 +328,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
 
-    // Apply auto-exposure to base-color
+    // Apply auto exposure to base-color
     float Luma = tex2Dlod(SampleExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
     Exposure ExposureData = CCamera_GetExposureData(Luma);
     BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
@@ -399,7 +395,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposure
 <
     ui_label = "CShade · Auto Exposure";
-    ui_tooltip = "Adjustable, lightweight auto-exposure with optional color-grading.";
+    ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.";
 >
 {
     pass CCamera_CreateExposureTex

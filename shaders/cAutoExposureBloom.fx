@@ -263,8 +263,7 @@ uniform float _BloomIntensity <
 
 #include "shared/cShadeHDR.fxh"
 #if ENABLE_AUTOEXPOSURE
-    #include "shared/cCameraInput.fxh"
-    #include "shared/cCameraOutput.fxh"
+    #include "shared/cCamera.fxh"
 #endif
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
@@ -349,18 +348,15 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 
     void ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
     {
-        /*
-            Maps texture coordinates less-than/equal to the brightness.
-
-            We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
-        */
+        // Maps texture coordinates less-than/equal to the brightness.
+        // We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
         UnormTex /= _AverageExposureScale;
         UnormTex += float2(-_AverageExposureOffset.x, _AverageExposureOffset.y);
 
         float AETex = UnormTex.x + 0.5;
         float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
 
-        // Mask between Auto Exposure bar color
+        // Mask between auto exposure bar color
         float2 CropTex = UnormTex + float2(0.0, -0.5);
         float2 Crop = step(abs(CropTex), float2(0.5, 0.01));
         float CropMask = Crop.x * Crop.y;
@@ -382,7 +378,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
     float Luminance = 1.0;
 
-    // Apply auto-exposure to the backbuffer
+    // Apply auto exposure to the backbuffer
     #if ENABLE_AUTOEXPOSURE
         // Store log luminance in the alpha channel
         if (_ExposureMeter == 1)
@@ -395,7 +391,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
             Luminance = CCamera_GetLogLuminance(Color.rgb);
         }
 
-        // Apply auto-exposure to input
+        // Apply auto exposure to input
         float Luma = tex2D(SampleBloomExposureTex, Input.Tex0).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
@@ -450,7 +446,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
 
-    // Apply auto-exposure to base-color
+    // Apply auto exposure to base-color
     #if ENABLE_AUTOEXPOSURE
         float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
@@ -527,7 +523,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposureBloom
 <
     ui_label = "CShade · Auto Exposure & Bloom";
-    ui_tooltip = "Adjustable bloom, auto-exposure, and color-grading.";
+    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.";
 >
 {
     // Prefilter
@@ -567,7 +563,7 @@ technique CShade_AutoExposureBloom
 
     /*
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
-        We store the coarsest level here to synchronize the auto-exposure Luma texture in the PS_Prefilter and PS_Composite passes.
+        We store the coarsest level here to synchronize the auto exposure Luma texture in the PS_Prefilter and PS_Composite passes.
     */
     #if ENABLE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
