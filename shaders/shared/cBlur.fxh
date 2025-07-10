@@ -403,13 +403,15 @@
     }
 
     /*
-        This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL. Inspired by Riemens et al. (2009).
+        This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
+
+        Inspired by Kopf et al. (2007) and Riemens et al. (2009).
 
         ---
 
-        Riemens, B., Gangwal, O.P., Barenbrug, B., & Berretty, R. (2009). Multistep joint bilateral depth upsampling. Electronic imaging.
+        Kopf, J., Cohen, M. F., Lischinski, D., & Uyttendaele, M. (2007). Joint bilateral upsampling. ACM SIGGRAPH 2007 Papers, 96. https://doi.org/10.1145/1275808.1276497
 
-        https://www.semanticscholar.org/paper/Multistep-joint-bilateral-depth-upsampling-Riemens-Gangwal/1ddf9ad017faf63b04778c1ddfc2330d64445da8
+        Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
     */
 
     float4 CBlur_BilateralUpsampleXY(
