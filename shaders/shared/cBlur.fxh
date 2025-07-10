@@ -427,10 +427,10 @@
         float4 WeightSum = 0.0;
 
         [unroll]
-        for (int dx = -1; dx <= 1; ++dx)
+        for (int dx = -1; dx <= 1; dx++)
         {
             [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
+            for (int dy = -1; dy <= 1; dy++)
             {
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
@@ -467,10 +467,10 @@
         float4 WeightSum = 0.0;
 
         [unroll]
-        for (int dx = -1; dx <= 1; ++dx)
+        for (int dx = -1; dx <= 1; dx++)
         {
             [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
+            for (int dy = -1; dy <= 1; dy++)
             {
                 // Calculate offset
                 float2 Offset = float2(float(dx), float(dy));
