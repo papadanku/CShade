@@ -132,6 +132,12 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
         Short edges
     */
 
+    float CenterLuma = GetIntensity(Center.rgb);
+    float LeftLuma = GetIntensity(Left.rgb);
+    float RightLuma = GetIntensity(Right.rgb);
+    float TopLuma = GetIntensity(Top.rgb);
+    float BottomLuma = GetIntensity(Bottom.rgb);
+
     // 3-pixel wide high-pass
     float4 EdgeH = abs((Left + Right) - (2.0 * Center)) / 2.0;
     float4 EdgeV = abs((Top + Bottom) - (2.0 * Center)) / 2.0;
@@ -145,12 +151,21 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Get respective intensities
     float EdgeLumaH = GetIntensity(EdgeH.rgb);
     float EdgeLumaV = GetIntensity(EdgeV.rgb);
+
+    float MaxLumaH = max(CenterLuma, max(LeftLuma, RightLuma));
+    float MinLumaH = min(CenterLuma, min(LeftLuma, RightLuma));
+    float RangeLumaH = MaxLumaH - MinLumaH;
+
+    float MaxLumaV = max(CenterLuma, max(TopLuma, BottomLuma));
+    float MinLumaV = min(CenterLuma, min(TopLuma, BottomLuma));
+    float RangeLumaV = MaxLumaV - MinLumaV;
+
     float BlurLumaH = GetIntensity(BlurH.rgb);
     float BlurLumaV = GetIntensity(BlurV.rgb);
 
     // Edge masks
-    float EdgeMaskH = saturate((_ShortEdgesScale * EdgeLumaH - ContrastThresholds[_ShortEdgesContrastThreshold]) / BlurLumaV);
-    float EdgeMaskV = saturate((_ShortEdgesScale * EdgeLumaV - ContrastThresholds[_ShortEdgesContrastThreshold]) / BlurLumaH);
+    float EdgeMaskH = saturate((_ShortEdgesScale * EdgeLumaH - ContrastThresholds[_ShortEdgesContrastThreshold]) / RangeLumaV);
+    float EdgeMaskV = saturate((_ShortEdgesScale * EdgeLumaV - ContrastThresholds[_ShortEdgesContrastThreshold]) / RangeLumaH);
 
     float4 Color = Center;
     Color = lerp(Color, BlurH, EdgeMaskV);
@@ -174,17 +189,10 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskDebugH = LongEdgeMaskH * IsLongEdge;
     float LongEdgeMaskDebugV = LongEdgeMaskV * IsLongEdge;
 
-    [branch]
     if (IsLongEdge)
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
         float LongBlurLumaV = GetIntensity(LongBlurV.rgb);
-
-        float CenterLuma = GetIntensity(Center.rgb);
-        float LeftLuma = GetIntensity(Left.rgb);
-        float RightLuma = GetIntensity(Right.rgb);
-        float TopLuma = GetIntensity(Top.rgb);
-        float BottomLuma = GetIntensity(Bottom.rgb);
 
         float4 ColorH = Center;
         float4 ColorV = Center;
