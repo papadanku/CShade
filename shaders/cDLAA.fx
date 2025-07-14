@@ -189,7 +189,6 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float LongEdgeMaskDebugH = LongEdgeMaskH * IsLongEdge;
     float LongEdgeMaskDebugV = LongEdgeMaskV * IsLongEdge;
 
-    [branch]
     if (IsLongEdge)
     {
         float LongBlurLumaH = GetIntensity(LongBlurH.rgb);
