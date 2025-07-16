@@ -46,8 +46,8 @@ uniform float _Scale <
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 10.0;
-> = 3.0;
+    ui_max = 4.0;
+> = 1.0;
 
 uniform float _TargetFrameRate <
     ui_category = "Motion Blur";
