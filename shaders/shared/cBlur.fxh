@@ -414,7 +414,7 @@
         Riemens, A. K., Gangwal, O. P., Barenbrug, B., & Berretty, R.-P. M. (2009). Multistep joint bilateral depth upsampling. In M. Rabbani & R. L. Stevenson (Eds.), SPIE Proceedings (Vol. 7257, p. 72570M). SPIE. https://doi.org/10.1117/12.805640
     */
 
-    float4 CBlur_BilateralUpsampleXY(
+    float2 CBlur_SelfBilateralUpsampleXY(
         sampler Image, // This should be 1/2 the size as GuideHigh
         sampler Guide, // This should be 2/1 the size as Image and GuideLow
         float2 Tex
@@ -422,9 +422,14 @@
     {
         // Initialize variables
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-        float4 GuideHighSample = tex2D(Guide, Tex);
-        float4 BilateralSum = 0.0;
-        float4 WeightSum = 0.0;
+
+        // Constants for Array textures
+        const int ArrayCount = 9;
+        int ImageIndex = 0;
+
+        // Variables for Array textures
+        float4 ImageArray[ArrayCount];
+        float4 ImageCenter;
 
         [unroll]
         for (int dx = -1; dx <= 1; dx++)
@@ -432,22 +437,37 @@
             [unroll]
             for (int dy = -1; dy <= 1; dy++)
             {
-                // Calculate offset
+                // Fetch pixel
                 float2 Offset = float2(float(dx), float(dy));
-                float2 OffsetTex = Tex + (Offset * PixelSize);
+                ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize));
 
-                // Calculate the difference and normalize it from FP16 range to [-1.0, 1.0) range
-                // We normalize the difference to avoid precision loss at the higher numbers
-                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                // Store the center pixel elsewhere too
+                if ((dx == 0) && (dy == 0))
+                {
+                    ImageCenter = ImageArray[ImageIndex];
+                }
 
-                // Calculate weight
-                float2 Delta = CMath_Float2_FP16ToNorm(ImageSample.xy - GuideHighSample.xy);
-                float DotDD = dot(Delta, Delta);
-                float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
-
-                BilateralSum += (ImageSample * Weight);
-                WeightSum += Weight;
+                ImageIndex += 1;
             }
+        }
+
+        // Store ImageCenter reference
+        float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter.xy);
+
+        // Initialize variables to compute
+        float2 BilateralSum = 0.0;
+        float WeightSum = 0.0;
+
+        [unroll]
+        for (int i1 = 0; i1 < ArrayCount; i1++)
+        {
+            // Calculate weight
+            float4 Delta = CMath_Float4_FP16ToNorm(ImageArray[i1].xyxy - Reference);
+            float DotDD = max(dot(Delta.xy, Delta.xy), dot(Delta.zw, Delta.zw));
+            float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
+
+            BilateralSum += (ImageArray[i1].xy * Weight);
+            WeightSum += Weight;
         }
 
         return BilateralSum / WeightSum;
