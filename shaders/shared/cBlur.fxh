@@ -463,7 +463,7 @@
         {
             // Calculate weight
             float4 Delta = CMath_Float4_FP16ToNorm(ImageArray[i1].xyxy - Reference);
-            float DotDD = max(dot(Delta.xy, Delta.xy), dot(Delta.zw, Delta.zw));
+            float DotDD = dot(Delta.xy, Delta.xy) * dot(Delta.zw, Delta.zw);
             float Weight = (DotDD > 0.0) ? 1.0 / DotDD : 1.0;
 
             BilateralSum += (ImageArray[i1].xy * Weight);
