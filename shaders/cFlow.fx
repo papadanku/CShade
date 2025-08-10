@@ -94,19 +94,19 @@ float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex5, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(SampleTempTex5, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex4, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(SampleTempTex4, Input.Tex0).xy;
     return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Vectors = CMotionEstimation_GetDilatedPyramidUpsample(SampleTempTex3, Input.Tex0).xy;
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(SampleTempTex3, Input.Tex0).xy;
     float2 Flow = CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
     return float4(Flow, 0.0, _BlendFactor);
 }
@@ -128,17 +128,17 @@ float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_SelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_SelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return float4(CBlur_SelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0

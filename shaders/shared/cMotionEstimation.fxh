@@ -11,7 +11,7 @@
         - Subsequent levels and the post-filter upsampling will address the undersampled regions.
         - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
-    float4 CMotionEstimation_GetDilatedPyramidUpsample(sampler2D SampleSource, float2 Tex)
+    float4 CMotionEstimation_GetSparsePyramidUpsample(sampler2D SampleSource, float2 Tex)
     {
         // A0 B0 C0
         // A1 B1 C1
