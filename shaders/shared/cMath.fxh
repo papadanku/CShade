@@ -97,12 +97,12 @@
         return O;
     }
 
-    float2 CMath_GeometricTransformer(
-        float2 Tex, // [-1, 1]
-        int Order,
-        float Angle,
-        float2 Translate,
-        float2 Scale
+    void CMath_ApplyGeometricTransform(
+        inout float2 Tex, // [0, 1)
+        in int Order,
+        in float Angle,
+        in float2 Translate,
+        in float2 Scale
     )
     {
         /*
@@ -110,9 +110,8 @@
             0 = Scale, 1 = Rotate, 2 = Translate
             The index of this array is driven by the _GeometricTransformOrder uniform.
             To get the correct permutation, you would access this array like:
-            int3 order = TransformPermutations[_GeometricTransformOrder];
+            int3 Order = TransformPermutations[_GeometricTransformOrder];
         */
-
         const int3 TransformPermutations[6] =
         {
             int3(0, 1, 2),  // Scale > Rotate > Translate
@@ -123,9 +122,8 @@
             int3(2, 1, 0)   // Translate > Rotate > Scale
         };
 
-        int3 Transforms = TransformPermutations[Order];
         float Pi2 = CMath_GetPi() * 2.0;
-
+        int3 Transforms = TransformPermutations[Order];
 
         // Rotations matrix
         float2x2 RotationMatrix = CMath_GetRotationMatrix(Angle * Pi2);
@@ -149,6 +147,7 @@
         Tex = (Tex * 2.0) - 1.0;
 
         // Do transformations here
+        [unroll]
         for (int i = 0; i < 3; i++)
         {
             Tex = (Transforms[i] == 0) ? mul(Tex, RotationMatrix) : Tex;
@@ -158,8 +157,6 @@
 
         // Scale TexCoord from [-1,1) to [0,1)
         Tex = (Tex * 0.5) + 0.5;
-
-        return Tex;
     }
 
     // Get the Half format distribution of bits

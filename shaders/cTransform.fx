@@ -83,10 +83,11 @@ CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR,
 CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
 {
     // Calculate the shader's HPos and Tex0
-    // We modify the Tex0's output afterward
-    const float Pi2 = CMath_GetPi() * 2.0;
     CShade_VS2PS_Quad Output = CShade_VS_Quad(Input);
-    Output.Tex0 = CMath_GeometricTransformer(Output.Tex0, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
+
+    // Apply Geometric Transform
+    const float Pi2 = CMath_GetPi() * 2.0;
+    CMath_ApplyGeometricTransform(Output.Tex0, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
 
     return Output;
 }
@@ -95,21 +96,38 @@ CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
     [Pixel Shaders]
 */
 
+void ApplyColorTransform(inout float4 Texture)
+{
+    /*
+        The array containing the permutations of the geometric transforms.
+        0 = Multiply, 1 = Add
+        The index of this array is driven by the _ColorformOrder uniform.
+        To get the correct permutation, you would access this array like:
+        int2 Order = TransformPermutations[_ColorformOrder];
+    */
+    int2 TransformPermutations[2] =
+    {
+        int2(0, 1), // Multiply > Add
+        int2(1, 0)  // Add > Multiply
+    };
+
+    int2 Order = TransformPermutations[_ColorOperationsOrder];
+
+    // Apply transformations
+    [unroll]
+    for (int i = 0; i < 2; i++)
+    {
+        Texture = (Order[i] == 0) ? Texture * _Multiply : Texture;
+        Texture = (Order[i] == 1) ? Texture + _Addition : Texture;
+    }
+}
+
 float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
 
-    switch (_ColorOperationsOrder)
-    {
-        case 0:
-            Texture *= _Multiply;
-            Texture += _Addition;
-            break;
-        case 1:
-            Texture += _Addition;
-            Texture *= _Multiply;
-            break;
-    }
+    // Apply the color transform
+    ApplyColorTransform(Texture);
 
     #if CBLEND_BLENDENABLE
         float Alpha = _BlendWithAlpha ? Texture.a * _CShadeAlphaFactor : _CShadeAlphaFactor;
