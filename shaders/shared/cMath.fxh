@@ -97,15 +97,40 @@
         return O;
     }
 
-    float2 CMath_Transform2D(
+    float2 CMath_GeometricTransformer(
         float2 Tex, // [-1, 1]
+        int Order,
         float Angle,
         float2 Translate,
         float2 Scale
     )
     {
-        float2x2 RotationMatrix = CMath_GetRotationMatrix(Angle);
+        /*
+            The array containing the permutations of the geometric transforms.
+            0 = Scale, 1 = Rotate, 2 = Translate
+            The index of this array is driven by the _GeometricTransformOrder uniform.
+            To get the correct permutation, you would access this array like:
+            int3 order = TransformPermutations[_GeometricTransformOrder];
+        */
 
+        const int3 TransformPermutations[6] =
+        {
+            int3(0, 1, 2),  // Scale > Rotate > Translate
+            int3(0, 2, 1),  // Scale > Translate > Rotate
+            int3(1, 0, 2),  // Rotate > Scale > Translate
+            int3(1, 2, 0),  // Rotate > Translate > Scale
+            int3(2, 0, 1),  // Translate > Scale > Rotate
+            int3(2, 1, 0)   // Translate > Rotate > Scale
+        };
+
+        int3 Transforms = TransformPermutations[Order];
+        float Pi2 = CMath_GetPi() * 2.0;
+
+
+        // Rotations matrix
+        float2x2 RotationMatrix = CMath_GetRotationMatrix(Angle * Pi2);
+
+        // Translation matrix
         float3x3 TranslationMatrix = float3x3
         (
             1.0, 0.0, 0.0, // Row 1
@@ -113,21 +138,25 @@
             Translate.x, Translate.y, 1.0 // Row 3
         );
 
+        // Scaling matrix
         float2x2 ScalingMatrix = float2x2
         (
             Scale.x, 0.0, // Row 1
             0.0, Scale.y // Row 2
         );
 
-        // Scale TexCoord from [0,1] to [-1,1]
+        // Scale TexCoord from [0,1) to [-1,1)
         Tex = (Tex * 2.0) - 1.0;
 
         // Do transformations here
-        Tex = mul(Tex, RotationMatrix);
-        Tex = mul(float3(Tex, 1.0), TranslationMatrix).xy;
-        Tex = mul(Tex, ScalingMatrix);
+        for (int i = 0; i < 3; i++)
+        {
+            Tex = (Transforms[i] == 0) ? mul(Tex, RotationMatrix) : Tex;
+            Tex = (Transforms[i] == 1) ? mul(float3(Tex, 1.0), TranslationMatrix).xy : Tex;
+            Tex = (Transforms[i] == 2) ? mul(Tex, ScalingMatrix) : Tex;
+        }
 
-        // Scale TexCoord from [-1,1] to [0,1]
+        // Scale TexCoord from [-1,1) to [0,1)
         Tex = (Tex * 0.5) + 0.5;
 
         return Tex;

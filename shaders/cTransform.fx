@@ -16,6 +16,13 @@
     #define BACKBUFFER_ADDRESSW BORDER
 #endif
 
+uniform int _GeometricTransformOrder <
+    ui_category = "Geometric Transform";
+    ui_label = "Order of Operations";
+    ui_type = "combo";
+    ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+> = 0;
+
 uniform float _Angle <
     ui_category = "Geometric Transform";
     ui_label = "Rotation";
@@ -34,11 +41,11 @@ uniform float2 _Scale <
     ui_type = "drag";
 > = 1.0;
 
-uniform int _Order <
+uniform int _ColorOperationsOrder <
     ui_category = "Color Transform";
     ui_label = "Order of Operations";
     ui_type = "combo";
-    ui_items = "Multiply & Add\0Add & Multiply\0";
+    ui_items = "Multiply > Add\0Add > Multiply\0";
 > = 0;
 
 uniform float4 _Multiply <
@@ -77,9 +84,9 @@ CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
 {
     // Calculate the shader's HPos and Tex0
     // We modify the Tex0's output afterward
+    const float Pi2 = CMath_GetPi() * 2.0;
     CShade_VS2PS_Quad Output = CShade_VS_Quad(Input);
-    float Pi2 = CMath_GetPi() * 2.0;
-    Output.Tex0 = CMath_Transform2D(Output.Tex0, _Angle * Pi2, _Translate, _Scale);
+    Output.Tex0 = CMath_GeometricTransformer(Output.Tex0, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
 
     return Output;
 }
@@ -92,7 +99,7 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
 
-    switch (_Order)
+    switch (_ColorOperationsOrder)
     {
         case 0:
             Texture *= _Multiply;
