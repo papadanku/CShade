@@ -172,8 +172,8 @@
         float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
         float2 B = float2(IxIt, IyIt);
         float2x2 N = float2x2(IxItIxIt, IxItIyIt, IxItIyIt, IyItIyIt);
-        float D = 1.0 / dot(mul(-B, A), -B);
-        float2x2 C = N * D;
+        float D = dot(mul(-B, A), -B);
+        float2x2 C = N / D;
 
         // Calculate -C*B
         float2 Flow = (abs(D) > 0.0) ? -mul(C, B) : 0.0;
