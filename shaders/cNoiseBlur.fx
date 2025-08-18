@@ -84,8 +84,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
 
-    float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
-                                      -Rotation.y, Rotation.x);
+    float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
     float Height = saturate(1.0 - saturate(pow(abs(Input.Tex0.y), 1.0)));
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
@@ -105,8 +104,8 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         [unroll] for (int j = 0; j < 4 * i; ++j)
         {
-            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
             float2 AngleShift = 0.0;
+            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
             sincos(Shift, AngleShift.x, AngleShift.y);
             AngleShift *= float(i);
 

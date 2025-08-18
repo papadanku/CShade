@@ -2,6 +2,7 @@
 #include "cBlur.fxh"
 #include "cShade.fxh"
 #include "cMath.fxh"
+#include "cProcedural.fxh"
 
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
@@ -11,29 +12,34 @@
         - Subsequent levels and the post-filter upsampling will address the undersampled regions.
         - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
-    float4 CMotionEstimation_GetSparsePyramidUpsample(sampler2D SampleSource, float2 Tex)
+    float4 CMotionEstimation_GetSparsePyramidUpsample(float2 Pos, float2 Tex, sampler2D SampleSource)
     {
-        // A0 B0 C0
-        // A1 B1 C1
-        // A2 B2 C2
+        float Pi2 = CMath_GetPi() * 2.0;
         float2 Delta = fwidth(Tex) * exp2(2.0);
-        float4 Tex0 = Tex.xyyy + (float4(-2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
-        float4 Tex1 = Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * Delta.xyyy);
-        float4 Tex2 = Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
+        float Random = Pi2 * CProcedural_GetGoldenHash(Pos);
+
+        float2 Rotation = 0.0;
+        sincos(Random, Rotation.y, Rotation.x);
+        float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
         float4 Sum = 0.0;
-        float Weight = 1.0 / 9.0;
-        Sum += (tex2D(SampleSource, Tex0.xy) * Weight);
-        Sum += (tex2D(SampleSource, Tex0.xz) * Weight);
-        Sum += (tex2D(SampleSource, Tex0.xw) * Weight);
-        Sum += (tex2D(SampleSource, Tex1.xy) * Weight);
-        Sum += (tex2D(SampleSource, Tex1.xz) * Weight);
-        Sum += (tex2D(SampleSource, Tex1.xw) * Weight);
-        Sum += (tex2D(SampleSource, Tex2.xy) * Weight);
-        Sum += (tex2D(SampleSource, Tex2.xz) * Weight);
-        Sum += (tex2D(SampleSource, Tex2.xw) * Weight);
+        float Weight = 0.0;
+        [unroll] for (int i = 1; i < 4; ++i)
+        {
+            [unroll] for (int j = 0; j < 4 * i; ++j)
+            {
+                float2 AngleShift = 0.0;
+                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+                sincos(Shift, AngleShift.x, AngleShift.y);
+                AngleShift *= float(i);
 
-        return Sum;
+                float2 FetchTex = Tex + (mul(AngleShift, RotationMatrix) * Delta);
+                Sum += tex2D(SampleSource, FetchTex);
+                Weight += 1.0;
+            }
+        }
+
+        return Sum / Weight;
     }
 
     /*
