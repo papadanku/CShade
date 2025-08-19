@@ -131,7 +131,7 @@ CREATE_SAMPLER(SampleAccumTex, AccumTex, SHADER_DISPLACEMENT_SAMPLING, SHADER_DI
 CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
-CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
 /*
     [Pixel Shaders]
@@ -339,7 +339,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoDatamosh
 <
     ui_label = "CShade · Keijiro Takahashi · KinoDatamosh";
-    ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
+    ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.\n\n* Preprocessor Definitions *\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT";
 >
 {
     // Normalize current frame
