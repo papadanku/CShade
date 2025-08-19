@@ -33,8 +33,6 @@ uniform float _BlendFactor <
 #include "shared/cBlend.fxh"
 
 #ifndef SHADER_OPTICAL_FLOW_SAMPLING
-    #define SHADER_OPTICAL_FLOW_SAMPLING LINEAR
-#else
     #define SHADER_OPTICAL_FLOW_SAMPLING POINT
 #endif
 
