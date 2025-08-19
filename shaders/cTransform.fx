@@ -15,6 +15,10 @@
 #ifndef BACKBUFFER_ADDRESSW
     #define BACKBUFFER_ADDRESSW BORDER
 #endif
+// Available options: POINT, LINEAR
+#ifndef OUTPUT_SAMPLING
+    #define OUTPUT_SAMPLING POINT
+#endif
 
 uniform int _GeometricTransformOrder <
     ui_category = "Geometric Transform";
@@ -74,7 +78,7 @@ uniform bool _BlendWithAlpha <
     ui_type = "radio";
 > = false;
 
-CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)
+CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, OUTPUT_SAMPLING, OUTPUT_SAMPLING, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)
 
 /*
     [Vertex Shaders]

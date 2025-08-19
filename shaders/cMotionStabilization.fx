@@ -27,6 +27,7 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform float _LocalStabilizationMipBias <
+    ui_category = "Motion Stabilization";
     ui_label = "Mipmap Bias";
     ui_type = "slider";
     ui_min = 0.0;
@@ -34,6 +35,7 @@ uniform float _LocalStabilizationMipBias <
 > = 3.5;
 
 uniform float2 _WarpStrength <
+    ui_category = "Motion Stabilization";
     ui_label = "Warping Strength";
     ui_type = "slider";
     ui_min = -100.0;
@@ -41,6 +43,7 @@ uniform float2 _WarpStrength <
 > = 10.0;
 
 uniform float _BlendFactor <
+    ui_category = "Motion Stabilization";
     ui_label = "Temporal Blending Weight";
     ui_type = "slider";
     ui_min = 0.0;
@@ -48,19 +51,47 @@ uniform float _BlendFactor <
 > = 0.5;
 
 uniform bool _InvertWarpX <
+    ui_category = "Motion Stabilization";
     ui_label = "Invert X Axis";
     ui_type = "radio";
 > = false;
 
 uniform bool _InvertWarpY <
+    ui_category = "Motion Stabilization";
     ui_label = "Invert Y Axis";
     ui_type = "radio";
 > = false;
 
 uniform bool _GlobalStabilization <
+    ui_category = "Motion Stabilization";
     ui_label = "Enable Global Stabilization";
     ui_type = "radio";
 > = false;
+
+uniform int _GeometricTransformOrder <
+    ui_category = "Geometric Transform";
+    ui_label = "Order of Operations";
+    ui_type = "combo";
+    ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+> = 0;
+
+uniform float _Angle <
+    ui_category = "Geometric Transform";
+    ui_label = "Rotation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _Translate <
+    ui_category = "Geometric Transform";
+    ui_label = "Translation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _Scale <
+    ui_category = "Geometric Transform";
+    ui_label = "Scaling";
+    ui_type = "drag";
+> = 1.0;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -170,6 +201,10 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 StableTex = Input.Tex0.xy - 0.5;
     StableTex -= (MotionVectors * _WarpStrength);
     StableTex += 0.5;
+
+    // Apply Geometric Transform
+    const float Pi2 = CMath_GetPi() * 2.0;
+    CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
 
     float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
 
