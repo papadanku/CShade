@@ -7,18 +7,18 @@
     [Shader Options]
 */
 
-#ifndef ENABLE_MONO
-    #define ENABLE_MONO 0
+#ifndef SHADER_TOGGLE_MONO
+    #define SHADER_TOGGLE_MONO FALSE
 #endif
 
-#if !ENABLE_MONO
+#if !SHADER_TOGGLE_MONO
     uniform bool _InvertProcessing <
         ui_label = "Invert Processing";
         ui_type = "radio";
     > = false;
 #endif
 
-#if ENABLE_MONO
+#if SHADER_TOGGLE_MONO
     uniform int _Select <
         ui_label = "Search Feature";
         ui_type = "combo";
@@ -49,7 +49,7 @@ uniform float _InputBias <
     ui_max = 1.0;
 > = 0.0;
 
-#if ENABLE_MONO
+#if SHADER_TOGGLE_MONO
     uniform float2 _Offset <
         ui_category = "Offset · [ Horizontal, Vertical ]";
         ui_label = "Offset";
@@ -126,7 +126,7 @@ uniform float3 _BackColor <
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
 
-#if ENABLE_MONO
+#if SHADER_TOGGLE_MONO
     uniform int4 _Crop <
         ui_category = "Composition";
         ui_label = "Crop · [ Left, Right, Top, Bottom ]";
@@ -208,7 +208,7 @@ float GetTileCircleLength(Tile Input)
     return length(CircleTiles);
 }
 
-#if !ENABLE_MONO
+#if !SHADER_TOGGLE_MONO
     void CropChannel(inout float Channel, in int BackComponent, in Tile ChannelTiles, in float4 CropArgs)
     {
         // Crop the image
@@ -224,7 +224,7 @@ float GetTileCircleLength(Tile Input)
     [Pixel Shaders]
 */
 
-#if ENABLE_MONO
+#if SHADER_TOGGLE_MONO
     float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
@@ -356,7 +356,7 @@ float GetTileCircleLength(Tile Input)
 technique CShade_Dots
 <
     ui_label = "CShade · Dots";
-    ui_tooltip = "Creates circles based on image features.";
+    ui_tooltip = "Creates circles based on image features.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: FALSE, TRUE";
 >
 {
     pass

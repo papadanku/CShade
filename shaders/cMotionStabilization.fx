@@ -10,18 +10,18 @@
 */
 
 // Available options: CLAMP, MIRROR, WRAP/REPEAT, BORDER
-#ifndef STABILIZATION_ADDRESS
-    #define STABILIZATION_ADDRESS BORDER
+#ifndef SHADER_STABILIZATION_ADDRESS
+    #define SHADER_STABILIZATION_ADDRESS BORDER
 #endif
 
 // Available options: POINT, LINEAR
-#ifndef STABILIZATION_GRID_SAMPLING
-    #define STABILIZATION_GRID_SAMPLING LINEAR
+#ifndef SHADER_STABILIZATION_GRID_SAMPLING
+    #define SHADER_STABILIZATION_GRID_SAMPLING LINEAR
 #endif
 
 // Available options: POINT, LINEAR
-#ifndef STABILIZATION_WARP_SAMPLING
-    #define STABILIZATION_WARP_SAMPLING POINT
+#ifndef SHADER_STABILIZATION_WARP_SAMPLING
+    #define SHADER_STABILIZATION_WARP_SAMPLING POINT
 #endif
 
 uniform float _FrameTime < source = "frametime"; > ;
@@ -115,8 +115,8 @@ CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CL
 CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RGB10A2, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
-CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_WARP_SAMPLING, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS, STABILIZATION_ADDRESS)
+CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
+CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS)
 
 CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
 CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
@@ -222,7 +222,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_MotionStabilization
 <
     ui_label = "CShade · Motion Stabilization";
-    ui_tooltip = "Motion stabilization effect.\n\n[ Preprocessor Definitions ]\n\nSTABILIZATION_ADDRESS:\n\n\tHow the shader renders pixels outside the texture's boundaries.\n\n\tAvailable Options:\n\t· CLAMP\n\t· MIRROR\n\t· WRAP/REPEAT\n\t· BORDER\n\nSTABILIZATION_GRID_SAMPLING:\n\n\tHow the shader filters the motion vectors used for stabilization.\n\n\tAvailable Options:\n\t· LINEAR\n\t· POINT\n\nSTABILIZATION_WARP_SAMPLING\n\n\tHow the shader filters warped pixels.\n\n\tAvailable Options:\n\t· LINEAR\n\t· POINT";
+    ui_tooltip = "Motion stabilization effect.\n\n* Preprocessor Definitions *\n\nSHADER_STABILIZATION_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_STABILIZATION_GRID_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_STABILIZATION_WARP_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT";
 >
 {
     // Normalize current frame

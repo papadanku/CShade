@@ -7,8 +7,8 @@
     [ Shader Options ]
 */
 
-#ifndef ENABLE_GRADING
-    #define ENABLE_GRADING 0
+#ifndef SHADER_TOGGLE_GRADING
+    #define SHADER_TOGGLE_GRADING FALSE
 #endif
 
 // Exposure-specific settings
@@ -65,7 +65,7 @@ uniform bool _ExposureSpotMeterOverlay <
     ui_type = "radio";
 > = false;
 
-#if ENABLE_GRADING
+#if SHADER_TOGGLE_GRADING
     uniform float _GradeLightness <
         ui_category = "Color Grading · Color Adjustments";
         ui_label = "Lightness";
@@ -314,7 +314,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     Exposure ExposureData = CCamera_GetExposureData(Luma);
     BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
 
-    #if ENABLE_GRADING
+    #if SHADER_TOGGLE_GRADING
         // Apply color-grading
         CColor_ApplyColorGrading(
             BaseColor,
@@ -376,7 +376,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposure
 <
     ui_label = "CShade · Auto Exposure";
-    ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.";
+    ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\t Options: FALSE, TRUE";
 >
 {
     pass CCamera_CreateExposureTex

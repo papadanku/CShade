@@ -32,14 +32,10 @@ uniform float _BlendFactor <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-#ifndef RENDER_LINEAR_SAMPLED_FLOW
-    #define RENDER_LINEAR_SAMPLED_FLOW 0
-#endif
-
-#if RENDER_LINEAR_SAMPLED_FLOW
-    #define FLOW_SAMPLER_FILTER LINEAR
+#ifndef SHADER_OPTICAL_FLOW_SAMPLING
+    #define SHADER_OPTICAL_FLOW_SAMPLING LINEAR
 #else
-    #define FLOW_SAMPLER_FILTER POINT
+    #define SHADER_OPTICAL_FLOW_SAMPLING POINT
 #endif
 
 /*
@@ -66,7 +62,7 @@ CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RGB10A2, 8)
 CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
-CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, FLOW_SAMPLER_FILTER, FLOW_SAMPLER_FILTER, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
@@ -221,7 +217,7 @@ technique GenerateNoise <
 technique CShade_Flow
 <
     ui_label = "CShade · Optical Flow";
-    ui_tooltip = "Lucas-Kanade optical flow.";
+    ui_tooltip = "Lucas-Kanade optical flow.\n\n* Preprocessor Definitions *\n\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT";
 >
 {
     // Normalize current frame

@@ -9,12 +9,12 @@
     [ Shader Options ]
 */
 
-#ifndef ENABLE_AUTOEXPOSURE
-    #define ENABLE_AUTOEXPOSURE 1
+#ifndef SHADER_TOGGLE_AUTOEXPOSURE
+    #define SHADER_TOGGLE_AUTOEXPOSURE TRUE
 #endif
 
-#ifndef ENABLE_GRADING
-    #define ENABLE_GRADING 1
+#ifndef SHADER_TOGGLE_GRADING
+    #define SHADER_TOGGLE_GRADING TRUE
 #endif
 
 // Bloom-specific settings
@@ -50,7 +50,7 @@ uniform float _BloomIntensity <
 > = 0.5;
 
 // Exposure-specific settings
-#if ENABLE_AUTOEXPOSURE
+#if SHADER_TOGGLE_AUTOEXPOSURE
     uniform float _Frametime < source = "frametime"; >;
 
     uniform int _ExposureMeter <
@@ -105,7 +105,7 @@ uniform float _BloomIntensity <
     > = false;
 #endif
 
-#if ENABLE_GRADING
+#if SHADER_TOGGLE_GRADING
     uniform float _GradeLightness <
         ui_category = "Color Grading · Color Adjustments";
         ui_label = "Lightness";
@@ -262,7 +262,7 @@ uniform float _BloomIntensity <
 #endif
 
 #include "shared/cShadeHDR.fxh"
-#if ENABLE_AUTOEXPOSURE
+#if SHADER_TOGGLE_AUTOEXPOSURE
     #include "shared/cCamera.fxh"
 #endif
 #include "shared/cTonemapOutput.fxh"
@@ -293,7 +293,7 @@ CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-#if ENABLE_AUTOEXPOSURE
+#if SHADER_TOGGLE_AUTOEXPOSURE
     CREATE_TEXTURE(BloomExposureTex, int2(1, 1), R16F, 0)
     CREATE_SAMPLER(SampleBloomExposureTex, BloomExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
@@ -306,7 +306,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 */
 
 // Exposure-specific functions
-#if ENABLE_AUTOEXPOSURE
+#if SHADER_TOGGLE_AUTOEXPOSURE
     float2 GetSpotMeterTex(float2 Tex)
     {
         // For spot-metering, we fill the target square texture with the region only
@@ -360,7 +360,7 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     float Luminance = 1.0;
 
     // Apply auto exposure to the backbuffer
-    #if ENABLE_AUTOEXPOSURE
+    #if SHADER_TOGGLE_AUTOEXPOSURE
         // Store log luminance in the alpha channel
         if (_ExposureMeter == 1)
         {
@@ -428,7 +428,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color
-    #if ENABLE_AUTOEXPOSURE
+    #if SHADER_TOGGLE_AUTOEXPOSURE
         float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
@@ -440,7 +440,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     ? BaseColor + (BloomColor * _BloomIntensity)
     : BloomColor;
 
-    #if ENABLE_GRADING
+    #if SHADER_TOGGLE_GRADING
         // Apply color-grading
         CColor_ApplyColorGrading(
             BaseColor,
@@ -471,7 +471,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     BaseColor = CTonemap_ApplyOutputTonemap(BaseColor);
 
     // Apply overlays
-    #if ENABLE_AUTOEXPOSURE
+    #if SHADER_TOGGLE_AUTOEXPOSURE
         float2 UnormTex = (Input.Tex0 * 2.0) - 1.0;
 
         if ((_ExposureMeter == 1) && _ExposureSpotMeterOverlay)
@@ -504,7 +504,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposureBloom
 <
     ui_label = "CShade · Auto Exposure & Bloom";
-    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.";
+    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\t Options: FALSE, TRUE\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\t Options: FALSE, TRUE";
 >
 {
     // Prefilter
@@ -546,7 +546,7 @@ technique CShade_AutoExposureBloom
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
         We store the coarsest level here to synchronize the auto exposure Luma texture in the PS_Prefilter and PS_Composite passes.
     */
-    #if ENABLE_AUTOEXPOSURE
+    #if SHADER_TOGGLE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex
         {
             ClearRenderTargets = FALSE;

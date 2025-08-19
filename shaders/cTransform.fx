@@ -6,18 +6,17 @@
 
 #include "shared/cMath.fxh"
 
-#ifndef BACKBUFFER_ADDRESSU
-    #define BACKBUFFER_ADDRESSU BORDER
+#ifndef SHADER_BACKBUFFER_ADDRESSU
+    #define SHADER_BACKBUFFER_ADDRESSU BORDER
 #endif
-#ifndef BACKBUFFER_ADDRESSV
-    #define BACKBUFFER_ADDRESSV BORDER
+#ifndef SHADER_BACKBUFFER_ADDRESSV
+    #define SHADER_BACKBUFFER_ADDRESSV BORDER
 #endif
-#ifndef BACKBUFFER_ADDRESSW
-    #define BACKBUFFER_ADDRESSW BORDER
+#ifndef SHADER_BACKBUFFER_ADDRESSW
+    #define SHADER_BACKBUFFER_ADDRESSW BORDER
 #endif
-// Available options: POINT, LINEAR
-#ifndef OUTPUT_SAMPLING
-    #define OUTPUT_SAMPLING POINT
+#ifndef SHADER_BACKBUFFER_SAMPLING
+    #define SHADER_BACKBUFFER_SAMPLING POINT
 #endif
 
 uniform int _GeometricTransformOrder <
@@ -78,7 +77,7 @@ uniform bool _BlendWithAlpha <
     ui_type = "radio";
 > = false;
 
-CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, OUTPUT_SAMPLING, OUTPUT_SAMPLING, LINEAR, BACKBUFFER_ADDRESSU, BACKBUFFER_ADDRESSV, BACKBUFFER_ADDRESSW)
+CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, SHADER_BACKBUFFER_SAMPLING, SHADER_BACKBUFFER_SAMPLING, LINEAR, SHADER_BACKBUFFER_ADDRESSU, SHADER_BACKBUFFER_ADDRESSV, SHADER_BACKBUFFER_ADDRESSW)
 
 /*
     [Vertex Shaders]
@@ -145,7 +144,7 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_SolidColor
 <
     ui_label = "CShade · Geometric & Color Transform";
-    ui_tooltip = "Translate, scale, and/or rotate the backbuffer.\nApply a multiply and add to the color (use \"Preprocessor Definitions\" for blending).";
+    ui_tooltip = "Translate, scale, and/or rotate the backbuffer.\n\n* Preprocessor Definitions *\n\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR";
 >
 {
     pass

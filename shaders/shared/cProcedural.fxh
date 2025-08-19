@@ -44,11 +44,11 @@
 
     float CProcedural_GetGoldenHash(float2 Position)
     {
-        float N = (1.0 / 3.0) * sqrt(23.0 / 3.0);
-        float W1 = (1.0 / 2.0) * (1.0 + N);
-        float W2 = (1.0 / 2.0) * (1.0 - N);
-        float PHI2 = pow(W1, 1.0 / 3.0) + pow(W2, 1.0 / 3.0);
-        return frac(dot(Position, 1.0 / float2(PHI2, PHI2 * PHI2)));
+        float W = sqrt(23.0 / 3.0) / 3.0;
+        float W1 = (1.0 + W) * 0.5;
+        float W2 = (1.0 - W) * 0.5;
+        float P = pow(W1, 1.0 / 3.0) + pow(W2, 1.0 / 3.0);
+        return frac(dot(Position, 1.0 / float2(P, P * P)));
     }
 
     /*
