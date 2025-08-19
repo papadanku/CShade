@@ -32,7 +32,7 @@ uniform int _DitherMethod <
     ui_category = "Color Banding";
     ui_label = "Dither Method";
     ui_type = "combo";
-    ui_items = "None\0Hash\0Interleaved Gradient Noise\0";
+    ui_items = "None\0Golden Ratio\0Hash\0Interleaved Gradient Noise\0";
 > = 0;
 
 #include "shared/cShade.fxh"
@@ -45,7 +45,7 @@ uniform int _DitherMethod <
 float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 ColorMapTex = Input.Tex0;
-    float2 HashTex = Input.HPos.xy;
+    float2 HashPos = Input.HPos.xy;
     float2 Grid = floor(Input.Tex0 * _Resolution);
 
     float4 ColorMap = 0.0;
@@ -53,7 +53,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_Pixelate)
     {
-        HashTex = Grid;
+        HashPos = Grid;
         ColorMap = tex2D(CShade_SampleGammaTex, Grid / _Resolution);
     }
     else
@@ -67,10 +67,13 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
             Dither = 0.0;
             break;
         case 1:
-            Dither = CProcedural_GetHash1(HashTex, 0.0) / _Range;
+            Dither = CProcedural_GetGoldenHash(HashPos) / _Range;
             break;
         case 2:
-            Dither = CProcedural_GetInterleavedGradientNoise(HashTex) / _Range;
+            Dither = CProcedural_GetHash1(HashPos, 0.0) / _Range;
+            break;
+        case 3:
+            Dither = CProcedural_GetInterleavedGradientNoise(HashPos) / _Range;
             break;
         default:
             Dither = 0.0;
