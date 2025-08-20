@@ -1,6 +1,6 @@
 #define CSHADE_QUANTIZE
 
-#include "shared/cProcedural.fxh"
+#include "shared/cMath.fxh"
 
 /*
     [Shader Options]
@@ -67,13 +67,13 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
         switch (_DitherMethod)
         {
             case 0:
-                Dither = CProcedural_GetGoldenHash(HashPos) / _Range;
+                Dither = CMath_GetGoldenHash(HashPos) / _Range;
                 break;
             case 1:
-                Dither = CProcedural_GetHash1(HashPos, 0.0) / _Range;
+                Dither = CMath_GetHash1(HashPos, 0.0) / _Range;
                 break;
             case 2:
-                Dither = CProcedural_GetInterleavedGradientNoise(HashPos) / _Range;
+                Dither = CMath_GetInterleavedGradientNoise(HashPos) / _Range;
                 break;
             default:
                 Dither = 0.0;

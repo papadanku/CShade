@@ -3,7 +3,6 @@
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
-#include "shared/cProcedural.fxh"
 
 /*
     [Shader Options]
@@ -170,7 +169,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     [unroll]
     for (int k = 0; k < Samples; ++k)
     {
-        float Random = CProcedural_GetInterleavedGradientNoise(Input.HPos.xy + k);
+        float Random = CMath_GetInterleavedGradientNoise(Input.HPos.xy + k);
         Random = (_BlurDirection == 1) ? (Random * 2.0) - 1.0 : Random;
         float2 MotionTex = Input.Tex0 - (ScaledVelocity * Random);
         float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, MotionTex);

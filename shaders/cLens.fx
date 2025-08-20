@@ -29,7 +29,6 @@
 */
 
 #include "shared/cMath.fxh"
-#include "shared/cProcedural.fxh"
 #include "shared/cLens.fxh"
 
 /*

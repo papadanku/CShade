@@ -1,7 +1,6 @@
 #define CSHADE_AUTOEXPOSURE
 
 #include "shared/cColor.fxh"
-#include "shared/cProcedural.fxh"
 
 /*
     [ Shader Options ]
@@ -288,7 +287,7 @@ void ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 Non
     #else
         DotPos.y *= ASPECT_RATIO;
     #endif
-    float DotMask = CProcedural_GetAntiAliasShape(length(DotPos), 0.1);
+    float DotMask = CMath_GetAntiAliasShape(length(DotPos), 0.1);
 
     // Apply square mask to output
     Color = lerp(Color, NonExposedColor.rgb, SquareMask);

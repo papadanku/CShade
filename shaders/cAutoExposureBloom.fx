@@ -3,7 +3,6 @@
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
-#include "shared/cProcedural.fxh"
 
 /*
     [ Shader Options ]
@@ -338,7 +337,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
         #else
             DotPos.y *= ASPECT_RATIO;
         #endif
-        float DotMask = CProcedural_GetAntiAliasShape(length(DotPos), 0.1);
+        float DotMask = CMath_GetAntiAliasShape(length(DotPos), 0.1);
 
         // Apply square mask to output
         Color = lerp(Color, NonExposedColor.rgb, SquareMask);

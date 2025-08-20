@@ -24,7 +24,6 @@
 */
 
 #include "shared/cLens.fxh"
-#include "shared/cProcedural.fxh"
 #include "shared/cMath.fxh"
 
 /*
@@ -78,7 +77,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
 
-    float Noise = Pi2 * CProcedural_GetGoldenHash(Input.HPos.xy);
+    float Noise = Pi2 * CMath_GetGoldenHash(Input.HPos.xy);
     float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     float2 Rotation = 0.0;

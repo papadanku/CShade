@@ -2,7 +2,6 @@
 #include "cBlur.fxh"
 #include "cShade.fxh"
 #include "cMath.fxh"
-#include "cProcedural.fxh"
 
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
@@ -16,7 +15,7 @@
     {
         float Pi2 = CMath_GetPi() * 2.0;
         float2 Delta = fwidth(Tex) * exp2(2.0);
-        float Random = Pi2 * CProcedural_GetGoldenHash(Pos);
+        float Random = Pi2 * CMath_GetInterleavedGradientNoise(Pos);
 
         float2 Rotation = 0.0;
         sincos(Random, Rotation.y, Rotation.x);

@@ -28,7 +28,6 @@
 */
 
 #include "shared/cMath.fxh"
-#include "shared/cProcedural.fxh"
 
 #if !defined(INCLUDE_FIDELITYFX_LENS)
     #define INCLUDE_FIDELITYFX_LENS
@@ -106,7 +105,7 @@
         in float GrainSeedValue // Seed value for the grain noise, for example, to change how the noise functions effect the grain frame to frame.
     )
     {
-        float2 RandomNumberFine = CProcedural_GetHash2(Pos, GrainSeedValue);
+        float2 RandomNumberFine = CMath_GetHash2(Pos, GrainSeedValue);
         float2 GradientN = FFX_Lens_Simplex((Pos / GrainScaleValue) + RandomNumberFine);
 
         const float GrainShape = 3.0;

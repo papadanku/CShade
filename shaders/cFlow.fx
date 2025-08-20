@@ -3,7 +3,6 @@
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
-#include "shared/cProcedural.fxh"
 
 /*
     [Shader Options]
@@ -69,7 +68,7 @@ CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP
 
 float PS_GenerateNoise(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return CProcedural_GetHash1(Input.HPos.xy, 0.0);
+    return CMath_GetHash1(Input.HPos.xy, 0.0);
 }
 
 float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
