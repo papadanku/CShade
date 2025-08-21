@@ -26,6 +26,12 @@ uniform float _BlendFactor <
     ui_max = 0.9;
 > = 0.25;
 
+uniform bool _FrameRateScaling <
+    ui_category = "Motion Blur";
+    ui_label = "Enable Frame Rate Scaling";
+    ui_type = "radio";
+> = false;
+
 uniform int _BlurAccumuation <
     ui_category = "Motion Blur";
     ui_label = "Blur Accumuation";
@@ -55,12 +61,6 @@ uniform float _TargetFrameRate <
     ui_min = 0.0;
     ui_max = 144.0;
 > = 60.0;
-
-uniform bool _FrameRateScaling <
-    ui_category = "Motion Blur";
-    ui_label = "Enable Frame Rate Scaling";
-    ui_type = "radio";
-> = false;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -156,23 +156,24 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    const int Samples = 16;
+    const int Samples = 8;
     float4 OutputColor = 0.0;
 
     float FrameRate = 1e+3 / _FrameTime;
     float FrameTimeRatio = _TargetFrameRate / FrameRate;
+    float Noise = CMath_GetGoldenRatioNoise(Input.HPos.xy);
 
-    float2 Velocity = tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    float2 ScaledVelocity = CMath_Float2_FP16ToNorm(Velocity) * _Scale;
-    ScaledVelocity = (_FrameRateScaling) ? ScaledVelocity / FrameTimeRatio : ScaledVelocity;
+    float2 MotionVectors = tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
+    float2 ScaledMotionVectors = CMath_Float2_FP16ToNorm(MotionVectors) * _Scale;
+    ScaledMotionVectors = (_FrameRateScaling) ? ScaledMotionVectors / FrameTimeRatio : ScaledMotionVectors;
 
     [unroll]
-    for (int k = 0; k < Samples; ++k)
+    for (int i = 0; i < Samples; ++i)
     {
-        float Random = CMath_GetInterleavedGradientNoise(Input.HPos.xy + k);
-        Random = (_BlurDirection == 1) ? (Random * 2.0) - 1.0 : Random;
-        float2 MotionTex = Input.Tex0 - (ScaledVelocity * Random);
-        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, MotionTex);
+        float Random = (_BlurDirection == 1) ? (Noise * 2.0) - 1.0 : Noise;
+        float MotionMultiplier = (float(i) + Random) / float(Samples - 1);
+        float2 LocalTex = Input.Tex0 - (ScaledMotionVectors * MotionMultiplier);
+        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, LocalTex);
         if (_BlurAccumuation == 1)
         {
             OutputColor = max(Color, OutputColor);
