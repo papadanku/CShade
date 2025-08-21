@@ -19,7 +19,7 @@ uniform bool _Dithering <
 uniform int _DitherMethod <
     ui_label = "Dither Algorithm";
     ui_type = "combo";
-    ui_items = "Golden Ratio\0Hash\0Interleaved Gradient Noise\0";
+    ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
 > = 0;
 
 uniform int2 _Resolution <
@@ -70,10 +70,10 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
                 Dither = CMath_GetGoldenRatioNoise(HashPos) / _Range;
                 break;
             case 1:
-                Dither = CMath_GetHash1(HashPos, 0.0) / _Range;
+                Dither = CMath_GetInterleavedGradientNoise(HashPos) / _Range;
                 break;
             case 2:
-                Dither = CMath_GetInterleavedGradientNoise(HashPos) / _Range;
+                Dither = CMath_GetHash1(HashPos, 0.0) / _Range;
                 break;
             default:
                 Dither = 0.0;
