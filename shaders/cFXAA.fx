@@ -16,7 +16,7 @@
 
 #include "shared/cColor.fxh"
 
-uniform int _RenderMode <
+uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Directions\0";
@@ -281,7 +281,7 @@ float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
         FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
     }
 
-    if (_RenderMode == 1)
+    if (_DisplayMode == 1)
     {
         FXAA = float3(Input.Tex0 - BlendTex, 0.0);
         FXAA.xy = (normalize(FXAA.xy) * 0.5) + 0.5;

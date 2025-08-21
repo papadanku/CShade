@@ -33,7 +33,7 @@
     [Shader Options]
 */
 
-uniform int _RenderMode <
+uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Mask\0";
@@ -183,7 +183,7 @@ float4 PS_CAS(CShade_VS2PS_Quad Input): SV_TARGET0
         _Contrast
     );
 
-    if (_RenderMode == 1)
+    if (_DisplayMode == 1)
     {
         OutputColor = OutputMask;
     }

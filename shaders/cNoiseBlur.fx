@@ -30,6 +30,16 @@
     [Shader Options]
 */
 
+uniform bool _EnableFalloff <
+    ui_label = "Enable Radius Falloff";
+    ui_type = "radio";
+> = true;
+
+uniform bool _InvertFalloff <
+    ui_label = "Invert Radius Falloff";
+    ui_type = "radio";
+> = false;
+
 uniform float _Radius <
     ui_label = "Radius";
     ui_type = "slider";
@@ -52,16 +62,6 @@ uniform float2 _FalloffOffset <
     ui_max = 1.0;
 > = float2(0.0, 0.0);
 
-uniform bool _EnableFalloff <
-    ui_label = "Enable Radius Falloff";
-    ui_type = "radio";
-> = true;
-
-uniform bool _InvertFalloff <
-    ui_label = "Invert Radius Falloff";
-    ui_type = "radio";
-> = false;
-
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
@@ -77,7 +77,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
 
-    float Noise = Pi2 * CMath_GetGoldenHash(Input.HPos.xy);
+    float Noise = Pi2 * CMath_GetGoldenRatioNoise(Input.HPos.xy);
     float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
 
     float2 Rotation = 0.0;

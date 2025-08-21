@@ -8,7 +8,7 @@
 */
 
 #ifndef SHADER_TOGGLE_MONO
-    #define SHADER_TOGGLE_MONO FALSE
+    #define SHADER_TOGGLE_MONO 0
 #endif
 
 #if !SHADER_TOGGLE_MONO
@@ -356,7 +356,7 @@ float GetTileCircleLength(Tile Input)
 technique CShade_Dots
 <
     ui_label = "CShade · Dots";
-    ui_tooltip = "Creates circles based on image features.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: FALSE, TRUE";
+    ui_tooltip = "Creates circles based on image features.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: 0 (disabled), 1 (enabled)";
 >
 {
     pass

@@ -22,6 +22,24 @@
 
 uniform float _FrameTime < source = "frametime"; > ;
 
+uniform bool _InvertWarpX <
+    ui_category = "Motion Stabilization";
+    ui_label = "Invert X Axis";
+    ui_type = "radio";
+> = false;
+
+uniform bool _InvertWarpY <
+    ui_category = "Motion Stabilization";
+    ui_label = "Invert Y Axis";
+    ui_type = "radio";
+> = false;
+
+uniform bool _GlobalStabilization <
+    ui_category = "Motion Stabilization";
+    ui_label = "Enable Global Stabilization";
+    ui_type = "radio";
+> = false;
+
 uniform float _LocalStabilizationMipBias <
     ui_category = "Motion Stabilization";
     ui_label = "Mipmap Bias";
@@ -45,24 +63,6 @@ uniform float _BlendFactor <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.5;
-
-uniform bool _InvertWarpX <
-    ui_category = "Motion Stabilization";
-    ui_label = "Invert X Axis";
-    ui_type = "radio";
-> = false;
-
-uniform bool _InvertWarpY <
-    ui_category = "Motion Stabilization";
-    ui_label = "Invert Y Axis";
-    ui_type = "radio";
-> = false;
-
-uniform bool _GlobalStabilization <
-    ui_category = "Motion Stabilization";
-    ui_label = "Enable Global Stabilization";
-    ui_type = "radio";
-> = false;
 
 uniform int _GeometricTransformOrder <
     ui_category = "Geometric Transform";

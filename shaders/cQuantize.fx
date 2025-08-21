@@ -67,7 +67,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
         switch (_DitherMethod)
         {
             case 0:
-                Dither = CMath_GetGoldenHash(HashPos) / _Range;
+                Dither = CMath_GetGoldenRatioNoise(HashPos) / _Range;
                 break;
             case 1:
                 Dither = CMath_GetHash1(HashPos, 0.0) / _Range;

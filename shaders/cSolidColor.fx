@@ -11,7 +11,6 @@ uniform float4 _Color <
 > = 1.0;
 
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 uniform bool _BlendWithAlpha <
     ui_category = "Pipeline · Output · Blending";
@@ -19,6 +18,8 @@ uniform bool _BlendWithAlpha <
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";
 > = false;
+
+#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]

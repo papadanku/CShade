@@ -6,6 +6,12 @@
     [Shader Options]
 */
 
+uniform int _DisplayMode <
+    ui_label = "Display Mode";
+    ui_type = "radio";
+    ui_items = "Output\0Mask\0";
+> = 0;
+
 uniform float _Blockiness <
     ui_label = "Blockiness";
     ui_type = "slider";
@@ -32,12 +38,6 @@ uniform float _Threshold <
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.1;
-
-uniform int _DisplayMode <
-    ui_label = "Display Mode";
-    ui_type = "radio";
-    ui_items = "Output\0Mask\0";
-> = 0;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"

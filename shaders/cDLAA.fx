@@ -14,7 +14,13 @@
     [Shader Options]
 */
 
-uniform int _RenderMode <
+
+uniform bool _PreserveFrequencies <
+    ui_label = "Preserve High Frequencies";
+    ui_type = "radio";
+> = true;
+
+uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
@@ -41,11 +47,6 @@ uniform int _LongEdgesContrastThreshold <
     ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
 > = 3;
-
-uniform bool _PreserveFrequencies <
-    ui_label = "Preserve High Frequencies";
-    ui_type = "radio";
-> = true;
 
 static const float ContrastThresholds[6] =
 {
@@ -228,7 +229,7 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
         Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));
     }
 
-    switch (_RenderMode)
+    switch (_DisplayMode)
     {
         case 1:
             Color = float4(EdgeMaskH, EdgeMaskV, 0.0, 0.0);

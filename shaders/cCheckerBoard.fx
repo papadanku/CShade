@@ -6,6 +6,11 @@
     [Shader Options]
 */
 
+uniform bool _InvertCheckerboard <
+    ui_label = "Invert Checkerboard Pattern";
+    ui_type = "radio";
+> = false;
+
 uniform int _Width <
     ui_label = "Checkerboard Width";
     ui_type = "slider";
@@ -24,11 +29,6 @@ uniform float3 _Color2 <
     ui_type = "color";
     ui_min = 0.0;
 > = 0.0;
-
-uniform bool _InvertCheckerboard <
-    ui_label = "Invert Checkerboard Pattern";
-    ui_type = "radio";
-> = false;
 
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"

@@ -67,6 +67,15 @@
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
+    uniform float _CShadeAlphaFactor <
+        ui_category = "Pipeline · Output · Blending";
+        ui_label = "Alpha Blend Factor";
+        ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
+        ui_type = "slider";
+        ui_min = 0.0;
+        ui_max = 1.0;
+    > = 1.0;
+
     uniform int _CShadeSwizzleRed <
         ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Red [R]";
@@ -102,15 +111,6 @@
         ui_type = "combo";
         ui_items = "\0Red\0Green\0Blue\0Alpha\0";
     > = 0;
-
-    uniform float _CShadeAlphaFactor <
-        ui_category = "Pipeline · Output · Blending";
-        ui_label = "Alpha Blend Factor";
-        ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
-        ui_type = "slider";
-        ui_min = 0.0;
-        ui_max = 1.0;
-    > = 1.0;
 
     void CBlend_SwapChannel(in float4 Cache, inout float Color, in int Parameter)
     {

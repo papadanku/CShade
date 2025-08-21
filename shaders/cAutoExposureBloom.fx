@@ -9,11 +9,11 @@
 */
 
 #ifndef SHADER_TOGGLE_AUTOEXPOSURE
-    #define SHADER_TOGGLE_AUTOEXPOSURE TRUE
+    #define SHADER_TOGGLE_AUTOEXPOSURE 1
 #endif
 
 #ifndef SHADER_TOGGLE_GRADING
-    #define SHADER_TOGGLE_GRADING TRUE
+    #define SHADER_TOGGLE_GRADING 1
 #endif
 
 // Bloom-specific settings
@@ -59,6 +59,12 @@ uniform float _BloomIntensity <
         ui_items = "Average Metering\0Spot Metering\0";
     > = 0;
 
+    uniform bool _ExposureLumaOverlay <
+        ui_category = "Exposure · Luminance Meter";
+        ui_label = "Enable Luminance Meter";
+        ui_type = "radio";
+    > = false;
+
     uniform float _AverageExposureScale <
         ui_category = "Exposure · Luminance Meter";
         ui_label = "Scale";
@@ -75,9 +81,9 @@ uniform float _BloomIntensity <
         ui_max = 1.0;
     > = float2(0.0, -0.25);
 
-    uniform bool _ExposureLumaOverlay <
-        ui_category = "Exposure · Luminance Meter";
-        ui_label = "Enable Luminance Meter";
+    uniform bool _ExposureSpotMeterOverlay <
+        ui_category = "Exposure · Spot Meter";
+        ui_label = "Show Luminance Area";
         ui_type = "radio";
     > = false;
 
@@ -97,11 +103,8 @@ uniform float _BloomIntensity <
         ui_max = 1.0;
     > = 0.0;
 
-    uniform bool _ExposureSpotMeterOverlay <
-        ui_category = "Exposure · Spot Meter";
-        ui_label = "Show Luminance Area";
-        ui_type = "radio";
-    > = false;
+#else
+
 #endif
 
 #if SHADER_TOGGLE_GRADING
@@ -503,7 +506,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposureBloom
 <
     ui_label = "CShade · Auto Exposure & Bloom";
-    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\t Options: FALSE, TRUE\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\t Options: FALSE, TRUE";
+    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)";
 >
 {
     // Prefilter

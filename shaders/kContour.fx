@@ -29,6 +29,12 @@
     [Shader Options]
 */
 
+uniform int _DisplayMode <
+    ui_label = "Display Mode";
+    ui_type = "radio";
+    ui_items = "Output\0Mask\0";
+> = 0;
+
 uniform int _Method <
     ui_label = "Edge Detection Kernel";
     ui_type = "combo";
@@ -75,12 +81,6 @@ uniform float4 _BackColor <
     ui_min = 0.0;
     ui_max = 1.0;
 > = float4(0.0, 0.0, 0.0, 0.0);
-
-uniform int _DisplayMode <
-    ui_label = "Display Mode";
-    ui_type = "radio";
-    ui_items = "Output\0Mask\0";
-> = 0;
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"

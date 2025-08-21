@@ -8,7 +8,7 @@
     [Shader Options]
 */
 
-uniform int _OutputMode <
+uniform int _DisplayMode <
     ui_label = "Output Mode";
     ui_type = "combo";
     ui_items = "Shading · Normalized\0Shading · Renormalized\0Line Integral Convolution\0Line Integral Convolution · Colored\0";
@@ -167,7 +167,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Conditional output
     float3 OutputColor = 0.0;
 
-    switch (_OutputMode)
+    switch (_DisplayMode)
     {
         case 0:
             OutputColor = VectorColors;
