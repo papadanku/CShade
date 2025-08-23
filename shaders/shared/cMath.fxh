@@ -269,15 +269,19 @@
 
     /*
         http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
+        https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
     */
 
     float CMath_GetPhi(int D)
     {
         float X = 2.0;
-        [unroll] for (int i = 0; i < 10; i++)
+
+        [unroll]
+        for (int i = 0; i < 10; i++)
         {
             X = pow(1.0 + X, 1.0 / (D + 1.0));
         }
+
         return X;
     }
 
@@ -285,6 +289,36 @@
     {
         float P2 = CMath_GetPhi(2);
         return frac(dot(Position, 1.0 / float2(P2, P2 * P2)));
+    }
+
+    float2 CMath_MapUVtoConcentricDisk(
+        float2 UV // UV [-1, 1)
+    )
+    {
+        float Pi = CMath_GetPi();
+
+        // Handle the special case for the origin
+        if (UV.x == 0.0 && UV.y == 0.0)
+        {
+            return float2(0.0, 0.0);
+        }
+
+        // Check if the coordinates are in the first or second half of the square
+        float R;
+        float Theta;
+        if ((UV.x * UV.x) > (UV.y * UV.y))
+        {
+            R = UV.x;
+            Theta = (Pi / 4.0) * (UV.y / UV.x);
+        }
+        else
+        {
+            R = UV.y;
+            Theta = (Pi / 2.0) - (Pi / 4.0) * (UV.x / UV.y);
+        }
+
+        // Convert from polar to Cartesian coordinates
+        return R * float2(cos(Theta), sin(Theta));
     }
 
     /*

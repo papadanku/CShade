@@ -7,32 +7,29 @@
     #define INCLUDE_CMOTIONESTIMATION
 
     /*
-        Dilate up to 2^2 pixels.
+        Dilate up to 2^3 pixels.
         - Subsequent levels and the post-filter upsampling will address the undersampled regions.
         - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
     float4 CMotionEstimation_GetSparsePyramidUpsample(float2 Pos, float2 Tex, sampler2D SampleSource)
     {
+        float SparseFactor = 3.0;
         float Pi2 = CMath_GetPi() * 2.0;
-        float2 Delta = fwidth(Tex) * exp2(2.0);
-        float Random = Pi2 * CMath_GetInterleavedGradientNoise(Pos);
-
-        float2 Rotation = 0.0;
-        sincos(Random, Rotation.y, Rotation.x);
-        float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+        float2 Delta = ldexp(fwidth(Tex), SparseFactor);
 
         float4 Sum = 0.0;
         float Weight = 0.0;
-        [unroll] for (int i = 1; i < 4; ++i)
-        {
-            [unroll] for (int j = 0; j < 4 * i; ++j)
-            {
-                float2 AngleShift = 0.0;
-                float Shift = (Pi2 / (4.0 * float(i))) * float(j);
-                sincos(Shift, AngleShift.x, AngleShift.y);
-                AngleShift *= float(i);
 
-                float2 FetchTex = Tex + (mul(AngleShift, RotationMatrix) * Delta);
+        [unroll]
+        for (float x = -0.75; x <= 0.75; x += 0.5)
+        {
+            [unroll]
+            for (float y = -0.75; y <= 0.75; y += 0.5)
+            {
+                float2 Shift = float2(float(x), float(y));
+                float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
+
+                float2 FetchTex = Tex + (DiskShift * Delta);
                 Sum += tex2D(SampleSource, FetchTex);
                 Weight += 1.0;
             }
@@ -108,9 +105,11 @@
 
         // Create TemplateCache
         int TemplateCacheIndex = 0;
-        [unroll] for (int y1 = 2; y1 >= -2; y1--)
+        [unroll]
+        for (int y1 = 2; y1 >= -2; y1--)
         {
-            [unroll] for (int x1 = 2; x1 >= -2; x1--)
+            [unroll]
+            for (int x1 = 2; x1 >= -2; x1--)
             {
                 bool OutOfBounds = (abs(x1) == 2) && (abs(y1) == 2);
                 float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
@@ -128,9 +127,11 @@
             int2(3, 1), int2(3, 2), int2(3, 3),
         };
 
-        [unroll] for (int y2 = 1; y2 >= -1; y2--)
+        [unroll]
+        for (int y2 = 1; y2 >= -1; y2--)
         {
-            [unroll] for (int x2 = 1; x2 >= -1; x2--)
+            [unroll]
+            for (int x2 = 1; x2 >= -1; x2--)
             {
                 int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
 
@@ -164,8 +165,8 @@
         /*
             Calculate Lucas-Kanade matrix
             ---
-            [ Ix^2/D -IxIy/D] [-IxIt]
-            [-IxIy/D  Iy^2/D] [-IyIt]
+            [ Ix^2/D -IxIy/D] = [-IxIt]
+            [-IxIy/D  Iy^2/D]   [-IyIt]
         */
 
         float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);

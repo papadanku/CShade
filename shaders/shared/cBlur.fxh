@@ -436,14 +436,16 @@
             [unroll]
             for (int y = -1; y <= 1; y++)
             {
-                // Fetch pixel
-                float2 Offset = float2(float(x), float(y));
-                ImageArray[ImageIndex] = tex2D(Image, Tex + (Offset * PixelSize)).xy;
-
-                // Store the center pixel elsewhere too
                 if ((x == 0) && (y == 0))
                 {
+                    ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
                     ImageCenter = ImageArray[ImageIndex];
+                }
+                else
+                {
+                    float2 Shift = float2(float(x), float(y));
+                    float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
+                    ImageArray[ImageIndex] = tex2D(Image, Tex + (DiskShift * PixelSize)).xy;
                 }
 
                 ImageIndex += 1;

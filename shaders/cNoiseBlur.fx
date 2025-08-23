@@ -82,7 +82,6 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
-
     float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
 
     float Height = saturate(1.0 - saturate(pow(abs(Input.Tex0.y), 1.0)));
@@ -99,20 +98,22 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
 
     float Weight = 0.0;
-    [unroll] for (int i = 1; i < 4; ++i)
-    {
-        [unroll] for (int j = 0; j < 4 * i; ++j)
-        {
-            float2 AngleShift = 0.0;
-            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
-            sincos(Shift, AngleShift.x, AngleShift.y);
-            AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
-            SampleOffset *= _Radius;
-            SampleOffset.x *= AspectRatio;
-            OutputColor += CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
-            Weight++;
+    [unroll]
+    for (float x = -0.75; x <= 0.75; x += 0.5)
+    {
+        [unroll]
+        for (float y = -0.75; y <= 0.75; y += 0.5)
+        {
+            float2 Shift = float2(float(x), float(y));
+            // Shift = mul(Shift, RotationMatrix);
+            float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * 2.0;
+            DiskShift *= _Radius;
+            DiskShift.x *= AspectRatio;
+
+            float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
+            OutputColor += tex2D(CShade_SampleColorTex, FetchTex);
+            Weight += 1.0;
         }
     }
 
