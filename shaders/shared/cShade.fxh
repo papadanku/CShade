@@ -78,6 +78,19 @@
             AddressW = ADDRESSW; \
         };
 
+    #define CREATE_SAMPLER_LODBIAS(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW, BIAS) \
+        sampler2D SAMPLER_NAME \
+        { \
+            Texture = TEXTURE; \
+            MagFilter = MAGFILTER; \
+            MinFilter = MINFILTER; \
+            MipFilter = MIPFILTER; \
+            AddressU = ADDRESSU; \
+            AddressV = ADDRESSV; \
+            AddressW = ADDRESSW; \
+            MipLODBias = BIAS; \
+        };
+
     #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
         { \

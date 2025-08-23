@@ -108,14 +108,16 @@ CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CL
 CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CREATE_TEXTURE(Tex2c, BUFFER_SIZE_3, RGB10A2, 8)
-CREATE_SAMPLER(SampleTex2c, Tex2c, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CREATE_TEXTURE(PreviousFrameTex, BUFFER_SIZE_1, RGB10A2, 8)
+CREATE_SAMPLER_LODBIAS(SamplePreviousFrameTex, PreviousFrameTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+
+CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
+CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
 
 CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
 CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS)
 
-CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
-CREATE_SAMPLER(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]
@@ -132,25 +134,25 @@ float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
 float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
 float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex5).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
 float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex4).xy;
-    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    return CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
 float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
-    float2 Flow = CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SampleTex2c, SampleTempTex1);
+    float2 Flow = CMotionEstimation_GetPixelPyLK(Input.HPos.xy, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
     return float4(Flow, 0.0, saturate(0.9 * lerp(1.0, 1.1, _BlendFactor)));
 }
 
@@ -245,7 +247,7 @@ technique CShade_MotionStabilization
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
-        RenderTarget0 = Tex2c;
+        RenderTarget0 = PreviousFrameTex;
     }
 
     pass Median
