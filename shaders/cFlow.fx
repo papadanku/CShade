@@ -139,12 +139,12 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 Vectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
-    float Minimal = max(PixelSize.x, PixelSize.y);
 
     // Encode vectors
-    float3 VectorColors = normalize(float3(Vectors, Minimal));
+    float3 VectorColors = normalize(float3(Vectors, 1e-3));
     VectorColors.xy = (VectorColors.xy * 0.5) + 0.5;
-    VectorColors.z = 1.0 - dot(VectorColors.xy, 0.5);
+    VectorColors.z = sqrt(1.0 - saturate(dot(VectorColors.xy, VectorColors.xy)));
+    VectorColors = normalize(VectorColors);
 
     // Renormalize motion vectors to take advantage of intensity
     float3 RenormalizedVectorColors = VectorColors / max(max(VectorColors.x, VectorColors.y), VectorColors.z);

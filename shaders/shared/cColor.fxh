@@ -246,19 +246,30 @@
     {
         float MinRGB = min(min(RGB.r, RGB.g), RGB.b);
         float MaxRGB = max(max(RGB.r, RGB.g), RGB.b);
-
-        // Calculate Value (V)
-        float Delta = MaxRGB - MinRGB;
-
-        // Calculate Hue (H)
-        float3 DeltaRGB = (((MaxRGB - RGB.rgb) / 6.0) + (Delta / 2.0)) / Delta;
-        float Hue = DeltaRGB.b - DeltaRGB.g;
-        Hue = (MaxRGB == RGB.g) ? (1.0 / 3.0) + DeltaRGB.r - DeltaRGB.b : Hue;
-        Hue = (MaxRGB == RGB.b) ? (2.0 / 3.0) + DeltaRGB.g - DeltaRGB.r : Hue;
-        Hue = (Hue < 0.0) ? Hue + 1.0 : (Hue > 1.0) ? Hue - 1.0 : Hue;
+        float Chroma = MaxRGB - MinRGB;
 
         // Calcuate Saturation (S)
-        float Saturation = Delta / MaxRGB;
+        float Saturation = Chroma / MaxRGB;
+
+        // Calculate Hue (H)
+        float Hue;
+
+        if (Chroma == 0)
+        {
+            Hue = 0.0;
+        }
+        else if (MaxRGB == RGB.r)
+        {
+            Hue = 60.0 * CMath_Float1_GetModulus((RGB.g - RGB.b) / Chroma, 6.0);
+        }
+        else if (MaxRGB == RGB.g)
+        {
+            Hue = 60.0 * ((RGB.b - RGB.r) / Chroma + 2.0);
+        }
+        else if (MaxRGB == RGB.b)
+        {
+            Hue = 60.0 * ((RGB.r - RGB.g) / Chroma + 4.0);
+        }
 
         float3 Output = 0.0;
         Output.x = Hue;
@@ -267,25 +278,45 @@
         return Output;
     }
 
-    float3 CColor_HSVtoRGB(float3 HSV)
+    float3 CColor_HSVtoRGB(
+        float3 HSV // H: [0, 360), S: [0, 1), V: [0, 1)
+    )
     {
-        float H = HSV.x * 6.0;
-        float S = HSV.y;
-        float V = HSV.z;
+        float Chroma = HSV.y * HSV.z;
+        float HPrime = CMath_Float1_GetModulus(HSV.x / 60.0, 6.0);
+        float XValue = Chroma * (1.0 - abs(CMath_Float1_GetModulus(HPrime, 2.0) - 1.0));
+        float MValue = HSV.z - Chroma;
 
-        float I = floor(H);
-        float J = V * (1.0 - S);
-        float K = V * (1.0 - S * (H - I));
-        float L = V * (1.0 - S * (1.0 - (H - I)));
-        float4 P = float4(V, J, K, L);
+        float3 RGB;
+        float3 CX = float3(Chroma, XValue, 0.0);
+        int Section = (int)floor(HPrime);
 
-        float3 O = P.xwy;
-        O = (I >= 1) ? P.zxy : O;
-        O = (I >= 2) ? P.yxw : O;
-        O = (I >= 3) ? P.yzx : O;
-        O = (I >= 4) ? P.wyx : O;
-        O = (I >= 5) ? P.xyz : O;
-        return O;
+        switch (Section)
+        {
+            case 0:
+                RGB = CX.xyz;
+                break;
+            case 1:
+                RGB = CX.yxz;
+                break;
+            case 2:
+                RGB = CX.zxy;
+                break;
+            case 3:
+                RGB = CX.zyx;
+                break;
+            case 4:
+                RGB = CX.yzx;
+                break;
+            case 5:
+                RGB = CX.xzy;
+                break;
+            default:
+                RGB = CX.zzz;
+                break;
+        }
+
+        return RGB + MValue;
     }
 
     float3 CColor_RGBtoHSL(float3 RGB)
@@ -414,9 +445,9 @@
 
     static const float3x3 CColor_OKLABfromRGB_M2 = float3x3
     (
-        float3(+0.2104542553, +0.7936177850f, -0.0040720468),
-        float3(+1.9779984951, -2.4285922050f, +0.4505937099),
-        float3(+0.0259040371, +0.7827717662f, -0.8086757660)
+        float3(+0.2104542553, +0.7936177850, -0.0040720468),
+        float3(+1.9779984951, -2.4285922050, +0.4505937099),
+        float3(+0.0259040371, +0.7827717662, -0.8086757660)
     );
 
     float3 CColor_RGBtoOKLAB(float3 RGB)
