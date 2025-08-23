@@ -140,12 +140,12 @@
                 float3 It = I - T;
 
                 // Calculate spatial gradients with central difference operator
-                float3 N = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
-                float3 S = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
-                float3 E = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
-                float3 W = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
-                float3 Ix = (W - E) / 2.0;
-                float3 Iy = (N - S) / 2.0;
+                float3 North = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
+                float3 South = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
+                float3 East = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
+                float3 West = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
+                float3 Ix = (West - East) / 2.0;
+                float3 Iy = (North - South) / 2.0;
 
                 // IxIx = A11; IyIy = A22; IxIy = A12/A22
                 IxIx += dot(Ix, Ix);
@@ -168,20 +168,17 @@
             [-IxIy/D  Iy^2/D] [-IyIt]
         */
 
-        // Calculate multiplications here
-        float IxItIxIt = IxIt * IxIt;
-        float IxItIyIt = IxIt * IyIt;
-        float IyItIyIt = IyIt * IyIt;
-
-        // Calculate C factor
         float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
         float2 B = float2(IxIt, IyIt);
-        float2x2 N = float2x2(IxItIxIt, IxItIyIt, IxItIyIt, IyItIyIt);
-        float D = dot(mul(-B, A), -B);
-        float2x2 C = N / D;
 
-        // Calculate -C*B
-        float2 Flow = (abs(D) > 0.0) ? -mul(C, B) : 0.0;
+        // Calculate C factor
+        float2 E = -B;
+        float N = dot(E, E);
+        float D = dot(E, mul(A, E));
+        float C = N / D;
+
+        // Calculate -C * B
+        float2 Flow = (abs(D) > 0.0) ? -C * B : 0.0;
 
         // Normalize motion vectors
         Flow *= PixelSize;
