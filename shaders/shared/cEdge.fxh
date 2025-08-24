@@ -8,6 +8,11 @@
         float4 Iy;
     };
 
+    float3 CEdge_GetMagnitudeRGB(float3 Ix, float3 Iy)
+    {
+        return sqrt((Ix.rgb * Ix.rgb) + (Iy.rgb * Iy.rgb));
+    }
+
     CEdge_Gradient CEdge_GetDDXY(sampler2D Image, float2 Tex)
     {
         float2 Delta = fwidth(Tex);

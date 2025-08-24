@@ -31,8 +31,8 @@
 
 uniform int _DisplayMode <
     ui_label = "Display Mode";
-    ui_type = "radio";
-    ui_items = "Output\0Mask\0";
+    ui_type = "combo";
+    ui_items = "Output\0Ix\0Iy\0Magnitude\0";
 > = 0;
 
 uniform int _Method <
@@ -44,7 +44,7 @@ uniform int _Method <
 uniform int _WeightMode <
     ui_label = "Edge Weighting Mode";
     ui_type = "combo";
-    ui_items = "Single-Channel\0Multi-Channel\0";
+    ui_items = "RGB\0Luma\0";
 > = 0;
 
 uniform float _Threshold <
@@ -93,71 +93,76 @@ uniform float4 _BackColor <
 
 float3 GetColorFromGradient(CEdge_Gradient Input)
 {
-    float3 Color = sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
-    if (_WeightMode == 1)
-    {
-        return Color;
-    }
-    else
-    {
-        return CColor_RGBtoLuma(Color, 3);
-    }
+    return sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
 }
 
-float3 GetColor(float4 Input)
+CEdge_Gradient GetGradient(float2 Tex)
 {
-    if (_WeightMode == 1)
-    {
-        return Input.rgb;
-    }
-    else
-    {
-        return CColor_RGBtoLuma(Input.rgb, 3);
-    }
-}
+    CEdge_Gradient G;
 
-float3 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
-{
-    float3 I = 0.0;
-
-    switch(_Method)
+    [flatten]
+    switch (_Method)
     {
         case 0: // ddx(), ddy()
-            I = GetColorFromGradient(CEdge_GetDDXY(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetDDXY(CShade_SampleColorTex, Tex);
             break;
         case 1: // Bilinear 3x3 Sobel
-            I = GetColorFromGradient(CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex);
             break;
         case 2: // Bilinear 5x5 Prewitt
-            I = GetColorFromGradient(CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Tex);
             break;
         case 3: // Bilinear 5x5 Sobel by CeeJayDK
-            I = GetColorFromGradient(CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex);
             break;
         case 4: // 3x3 Prewitt
-            I = GetColorFromGradient(CEdge_GetPrewitt3x3(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetPrewitt3x3(CShade_SampleColorTex, Tex);
             break;
         case 5: // 3x3 Scharr
-            I = GetColorFromGradient(CEdge_GetScharr3x3(CShade_SampleColorTex, Input.Tex0));
+            G = CEdge_GetScharr3x3(CShade_SampleColorTex, Tex);
             break;
-        case 6: // Frei-Chen
-            I = GetColor(CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0));
+        default:
             break;
+    }
+
+    return G;
+}
+
+float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    float3 I = 1.0;
+    CEdge_Gradient G = GetGradient(Input.Tex0);
+
+    // Exception for non-directional methods such as Frei-Chen
+    if (_Method == 6)
+    {
+        I = CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0).rgb;
+    }
+    else
+    {
+        I = CEdge_GetMagnitudeRGB(G.Ix.rgb, G.Iy.rgb);
+    }
+
+    if (_WeightMode == 1)
+    {
+        I = CColor_RGBtoLuma(I, 0);
+        G.Ix.rgb = CColor_RGBtoLuma(G.Ix.rgb, 0);
+        G.Iy.rgb = CColor_RGBtoLuma(G.Iy.rgb, 0);
     }
 
     // Getting textures
-    float3 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0.xy).rgb;
+    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0.xy);
     float3 BackgroundColor = lerp(Base.rgb, _BackColor.rgb, _BackColor.a);
 
-    if (_DisplayMode == 1)
-    {
-        return I;
-    }
-
     // Thresholding
-    I = I * _ColorSensitivity;
-    float3 Mask = saturate((I - _Threshold) * _InverseRange);
-    return lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
+    float3 Mask = saturate(((I * _ColorSensitivity) - _Threshold) * _InverseRange);
+    float4 DefaultOutputColor = float4(lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a), Base.a);
+    float4 OutputColor = DefaultOutputColor;
+    OutputColor.rgb = (_DisplayMode == 1) ? (G.Ix.rgb * 0.5) + 0.5 : OutputColor;
+    OutputColor.rgb = (_DisplayMode == 2) ? (G.Iy.rgb * 0.5) + 0.5 : OutputColor;
+    OutputColor.rgb = (_DisplayMode == 3) ? I.rgb : OutputColor;
+
+    return OutputColor;
 }
 
 technique CShade_KinoContour
