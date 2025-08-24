@@ -81,6 +81,14 @@ uniform bool _BlendWithAlpha <
 
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR\n\n";
+    ui_category_closed = false;
+> = 0;
+
 CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, SHADER_BACKBUFFER_SAMPLING, SHADER_BACKBUFFER_SAMPLING, LINEAR, SHADER_BACKBUFFER_ADDRESSU, SHADER_BACKBUFFER_ADDRESSV, SHADER_BACKBUFFER_ADDRESSW)
 
 /*
@@ -148,7 +156,7 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_SolidColor
 <
     ui_label = "CShade · Geometric & Color Transform";
-    ui_tooltip = "Translate, scale, and/or rotate the backbuffer.\n\n* Preprocessor Definitions *\n\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR";
+    ui_tooltip = "Translate, scale, and/or rotate the backbuffer.";
 >
 {
     pass

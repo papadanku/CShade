@@ -39,7 +39,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_SolidColor
 <
     ui_label = "CShade · Solid Color";
-    ui_tooltip = "Output a solid color (use \"Preprocessor Definitions\" for blending).";
+    ui_tooltip = "Output a solid color.";
 >
 {
     pass

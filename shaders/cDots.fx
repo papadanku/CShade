@@ -139,6 +139,14 @@ uniform float3 _BackColor <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [Textures and Samplers]
 */
@@ -356,7 +364,7 @@ float GetTileCircleLength(Tile Input)
 technique CShade_Dots
 <
     ui_label = "CShade · Dots";
-    ui_tooltip = "Creates circles based on image features.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: 0 (disabled), 1 (enabled)";
+    ui_tooltip = "Creates circles based on image features.";
 >
 {
     pass

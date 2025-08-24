@@ -270,6 +270,14 @@ uniform float _BloomIntensity <
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [ Textures & Samplers ]
 */
@@ -506,7 +514,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposureBloom
 <
     ui_label = "CShade · Auto Exposure & Bloom";
-    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)";
+    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.";
 >
 {
     // Prefilter

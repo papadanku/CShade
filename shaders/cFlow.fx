@@ -35,6 +35,14 @@ uniform float _BlendFactor <
     #define SHADER_OPTICAL_FLOW_SAMPLING POINT
 #endif
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [Textures & Samplers]
 */
@@ -215,7 +223,7 @@ technique GenerateNoise <
 technique CShade_Flow
 <
     ui_label = "CShade · Optical Flow";
-    ui_tooltip = "Lucas-Kanade optical flow.\n\n* Preprocessor Definitions *\n\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT";
+    ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
     // Normalize current frame

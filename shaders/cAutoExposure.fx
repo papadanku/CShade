@@ -225,6 +225,14 @@ uniform float2 _SpotExposureOffset <
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [ Textures & Samplers ]
 */
@@ -375,7 +383,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_AutoExposure
 <
     ui_label = "CShade · Auto Exposure";
-    ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.\n\n* Preprocessor Definitions *\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)";
+    ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.";
 >
 {
     pass CCamera_CreateExposureTex

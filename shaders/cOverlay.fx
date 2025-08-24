@@ -36,6 +36,14 @@ uniform float2 _MaskOffset <
 
 #include "shared/cShadeHDR.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [Textures & Samplers]
 */
@@ -97,7 +105,7 @@ float4 PS_Overlay(VS2PS Input) : SV_TARGET0
 technique CShade_Overlay
 <
     ui_label = "CShade · Overlay";
-    ui_tooltip = "Applies a zoomed copy of the backbuffer.\n\n* Preprocessor Definitions *\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR";
+    ui_tooltip = "Applies a zoomed copy of the backbuffer.";
 >
 {
     pass

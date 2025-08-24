@@ -92,6 +92,14 @@ uniform float2 _Scale <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_STABILIZATION_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_STABILIZATION_GRID_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_STABILIZATION_WARP_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [Textures & Samplers]
 */
@@ -220,7 +228,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_MotionStabilization
 <
     ui_label = "CShade · Motion Stabilization";
-    ui_tooltip = "Motion stabilization effect.\n\n* Preprocessor Definitions *\n\nSHADER_STABILIZATION_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_STABILIZATION_GRID_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_STABILIZATION_WARP_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT";
+    ui_tooltip = "Motion stabilization effect.";
 >
 {
     // Normalize current frame

@@ -104,6 +104,14 @@ uniform float _Diffusion <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+uniform int _ShaderPreprocessorGuide <
+    ui_category = "Preprocessor Guide · Shader";
+    ui_label = " ";
+    ui_type = "radio";
+    ui_text = "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_category_closed = false;
+> = 0;
+
 /*
     [Textures and samplers]
 */
@@ -340,7 +348,7 @@ float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
 technique CShade_KinoDatamosh
 <
     ui_label = "CShade · Keijiro Takahashi · KinoDatamosh";
-    ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.\n\n* Preprocessor Definitions *\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT";
+    ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
     // Normalize current frame
