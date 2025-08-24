@@ -33,6 +33,8 @@ uniform float3 _Color2 <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

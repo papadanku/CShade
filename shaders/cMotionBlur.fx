@@ -65,6 +65,8 @@ uniform float _TargetFrameRate <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Textures & Samplers]
 */

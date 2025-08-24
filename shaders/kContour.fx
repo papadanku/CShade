@@ -87,6 +87,8 @@ uniform float4 _BackColor <
 
 #include "shared/cEdge.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

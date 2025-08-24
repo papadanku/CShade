@@ -84,6 +84,8 @@ uniform float _Sharpening <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
 
 void FFX_RCAS(

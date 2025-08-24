@@ -39,6 +39,8 @@ uniform int3 _Range <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

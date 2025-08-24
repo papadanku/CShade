@@ -15,6 +15,8 @@ uniform float _Sigma <
 
 #include "shared/cBlur.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

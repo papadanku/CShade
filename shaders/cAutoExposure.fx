@@ -225,6 +225,8 @@ uniform float2 _SpotExposureOffset <
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";

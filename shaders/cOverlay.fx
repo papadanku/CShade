@@ -36,6 +36,8 @@ uniform float2 _MaskOffset <
 
 #include "shared/cShadeHDR.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";

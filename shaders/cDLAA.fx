@@ -56,6 +56,8 @@ static const float ContrastThresholds[6] =
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8, BUFFER_SIZE_0, RGBA8, 0)
 CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 

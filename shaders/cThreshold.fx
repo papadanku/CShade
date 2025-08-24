@@ -28,6 +28,8 @@ uniform float _Intensity <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

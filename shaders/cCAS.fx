@@ -55,6 +55,8 @@ uniform float _Contrast <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 struct CAS
 {
     float4 Sample[5];

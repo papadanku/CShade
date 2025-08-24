@@ -16,6 +16,8 @@ uniform int _Select <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Pixel Shaders]
 */

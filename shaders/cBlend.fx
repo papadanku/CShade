@@ -30,6 +30,8 @@ uniform float3 _DestFactor <
 
 #include "shared/cShadeHDR.fxh"
 
+#include "shared/cPreprocessorGuide.fxh"
+
 /*
     [Textures & Samplers]
 */
