@@ -427,33 +427,48 @@
         int ImageIndex = 0;
 
         // Variables for Array textures
+        float4 Array[ArrayCount];
         float2 ImageArray[ArrayCount];
         float2 ImageCenter;
 
         [unroll]
-        for (int x = -1; x <= 1; x++)
+        for (int x = -1; x <= 1; ++x)
         {
             [unroll]
-            for (int y = -1; y <= 1; y++)
+            for (int y = -1; y <= 1; ++y)
             {
+                // If a pixel in the window is located at (x+x, y+y), put it at index (x + R)(2R + 1) + (y + R) of the
+                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+                // bottom right pixel of the window at pixel[N-1].
+                int ID = (x + 1) * 3 + (y + 1);
+
                 if ((x == 0) && (y == 0))
                 {
-                    ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
-                    ImageCenter = ImageArray[ImageIndex];
+                    Array[ID] = tex2D(Image, Tex);
                 }
                 else
                 {
-                    float2 Shift = float2(float(x), float(y));
-                    float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
-                    ImageArray[ImageIndex] = tex2D(Image, Tex + (DiskShift * PixelSize)).xy;
+                    float2 Offset = float2(float(x), float(y));
+                    float2 DiskShift = CMath_MapUVtoConcentricDisk(Offset);
+                    Array[ID] = tex2D(Image, Tex + (DiskShift * PixelSize));
                 }
 
+                ImageArray[ImageIndex] = Array[ID].xy;
                 ImageIndex += 1;
             }
         }
 
+        // Starting with a subset of size 6, remove the min and max each time
+        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
+        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
+        MNMX4(Array[2], Array[3], Array[4], Array[7]);
+        MNMX3(Array[3], Array[4], Array[8]);
+
+        // Get median
+        float2 Median = Array[4];
+
         // Store ImageCenter reference
-        float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter);
+        float4 Reference = float4(tex2D(Guide, Tex).xy, Median);
 
         // Initialize variables to compute
         float2 ImageSum = 0.0;
