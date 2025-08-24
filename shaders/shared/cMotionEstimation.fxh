@@ -7,7 +7,7 @@
     #define INCLUDE_CMOTIONESTIMATION
 
     /*
-        Dilate up to 2^3 pixels.
+        Dilate up to 2^4 pixels.
         - Subsequent levels and the post-filter upsampling will address the undersampled regions.
         - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
