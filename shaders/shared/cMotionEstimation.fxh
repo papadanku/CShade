@@ -13,7 +13,7 @@
     */
     float4 CMotionEstimation_GetSparsePyramidUpsample(float2 Pos, float2 Tex, sampler2D SampleSource)
     {
-        float SparseFactor = 3.0;
+        float SparseFactor = 4.0;
         float Pi2 = CMath_GetPi() * 2.0;
         float2 Delta = ldexp(fwidth(Tex), SparseFactor);
 
