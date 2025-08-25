@@ -56,7 +56,7 @@
         Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
-    float2 CMotionEstimation_GetPixelPyLK(
+    float2 CMotionEstimation_GetLucasKanade(
         bool IsCoarse,
         float2 MainTex,
         float2 Vectors,
