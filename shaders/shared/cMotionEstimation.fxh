@@ -48,6 +48,12 @@
         Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
 
         https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation
+
+        ---
+
+        Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method
+
+        Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
     float2 CMotionEstimation_GetPixelPyLK(
@@ -170,13 +176,13 @@
             Weight *= Weight;
 
             // IxIx = A11; IyIy = A22; IxIy = A12/A22
-            IxIx += dot(Ix, Ix) * Weight;
-            IyIy += dot(Iy, Iy) * Weight;
-            IxIy += dot(Ix, Iy) * Weight;
+            IxIx += (dot(Ix, Ix) * Weight);
+            IyIy += (dot(Iy, Iy) * Weight);
+            IxIy += (dot(Ix, Iy) * Weight);
 
             // IxIt = B1; IyIt = B2
-            IxIt += dot(Ix, It) * Weight;
-            IyIt += dot(Iy, It) * Weight;
+            IxIt += (dot(Ix, It) * Weight);
+            IyIt += (dot(Iy, It) * Weight);
 
             // Summate the weights
             SumWeight += Weight;
