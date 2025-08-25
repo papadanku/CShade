@@ -70,7 +70,7 @@
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
-        float SumWeight = 0.0;
+        float SumW = 0.0;
 
         // Decode from FP16
         Vectors = clamp(CMath_Float2_FP16ToNorm(Vectors), -1.0, 1.0);
@@ -185,19 +185,21 @@
             IyIt += (dot(Iy, It) * Weight);
 
             // Summate the weights
-            SumWeight += Weight;
+            SumW += Weight;
 
             // Increment TemplatePos
             FetchGridIndex += 1;
         }
 
-        // Check if SumWeight isn't 0;
-        SumWeight = (SumWeight == 0.0) ? 0.0 : 1.0 / SumWeight;
-        IxIx *= SumWeight;
-        IyIy *= SumWeight;
-        IxIy *= SumWeight;
-        IxIt *= SumWeight;
-        IyIt *= SumWeight;
+        // Check if SumW is not 0
+        SumW = (SumW == 0.0) ? 0.0 : 1.0 / SumW;
+
+        // Normalized weighted variables
+        IxIx *= SumW;
+        IyIy *= SumW;
+        IxIy *= SumW;
+        IxIt *= SumW;
+        IyIt *= SumW;
 
         /*
             Calculate Lucas-Kanade matrix
