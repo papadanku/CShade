@@ -74,6 +74,11 @@
         return 0.0 / 0.0;
     }
 
+    bool CMath_GetOutOfBounds(float2 Tex)
+    {
+        return any(Tex < 0.0 || Tex > 1.0);
+    }
+
     float2x2 CMath_GetRotationMatrix(float A)
     {
         return float2x2(cos(A), sin(A), -sin(A), cos(A));

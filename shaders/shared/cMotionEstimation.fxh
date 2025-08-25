@@ -64,6 +64,7 @@
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
+        float SumWeight = 0.0;
 
         // Decode from FP16
         Vectors = clamp(CMath_Float2_FP16ToNorm(Vectors), -1.0, 1.0);
@@ -78,10 +79,10 @@
         float2 PixelSize = fwidth(MainTex);
 
         /*
-            Template indecies:
+            * = Indecies for calculating the temporal gradient (IT)
+            - = Unused indecies
 
-                * = Indecies for calculating the temporal gradient (IT)
-                - = Unused indecies
+            Template indecies:
 
                 00- 01  02  03  04-
                 05  06* 07* 08* 09
@@ -91,11 +92,11 @@
 
             Template (Row, Column):
 
-                (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
-                (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
-                (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
-                (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
                 (4, 0) (4, 1) (4, 2) (4, 3) (4, 4)
+                (3, 0) (3, 1) (3, 2) (3, 3) (3, 4)
+                (2, 0) (2, 1) (2, 2) (2, 3) (2, 4)
+                (1, 0) (1, 1) (1, 2) (1, 3) (1, 4)
+                (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
         */
 
         // Initiate TemplateCache
@@ -109,7 +110,7 @@
         for (int y1 = 2; y1 >= -2; y1--)
         {
             [unroll]
-            for (int x1 = 2; x1 >= -2; x1--)
+            for (int x1 = -2; x1 <= 2; x1++)
             {
                 bool OutOfBounds = (abs(x1) == 2) && (abs(y1) == 2);
                 float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
@@ -119,48 +120,78 @@
         }
 
         // Loop over the starred template areas
-        int TemplateGridPosIndex = 0;
-        int2 TemplateGridPos[9] =
+        const int FetchGridWidth = 3;
+        const int FetchGridSize = FetchGridWidth * FetchGridWidth;
+        int FetchGridIndex = 0;
+
+        const int2 TemplateGridPos[FetchGridSize] =
         {
-            int2(1, 1), int2(1, 2), int2(1, 3),
-            int2(2, 1), int2(2, 2), int2(2, 3),
             int2(3, 1), int2(3, 2), int2(3, 3),
+            int2(2, 1), int2(2, 2), int2(2, 3),
+            int2(1, 1), int2(1, 2), int2(1, 3)
         };
 
-        [unroll]
-        for (int y2 = 1; y2 >= -1; y2--)
+        const int2 FetchPos[FetchGridSize] =
         {
-            [unroll]
-            for (int x2 = 1; x2 >= -1; x2--)
-            {
-                int2 GridPos = TemplateGridPos[TemplateGridPosIndex];
+            int2(-1, -1), int2(0, -1), int2(1, -1),
+            int2(-1, 0), int2(0, 0), int2(1, 0),
+            int2(-1, 1), int2(0, 1), int2(1, 1)
+        };
 
-                // Calculate temporal gradient
-                float3 I = tex2D(SampleI, WarpTex + (float2(x2, y2) * PixelSize)).xyz;
-                float3 T = TemplateCache[CMath_Get1DIndexFrom2D(GridPos, TemplateGridSize)];
-                float3 It = I - T;
+        // Get center textures (this is for the spatial weighting)
+        float3 CenterT = TemplateCache[CMath_Get1DIndexFrom2D(int2(2, 2), TemplateGridSize)];
+        float3 CenterI = tex2D(SampleI, WarpTex).xyz;
 
-                // Calculate spatial gradients with central difference operator
-                float3 North = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
-                float3 South = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
-                float3 East = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
-                float3 West = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
-                float3 Ix = (West - East) / 2.0;
-                float3 Iy = (North - South) / 2.0;
+        [unroll]
+        for (int i = 0; i < FetchGridSize; i++)
+        {
+            int2 P = FetchPos[i];
+            int2 GridPos = TemplateGridPos[FetchGridIndex];
 
-                // IxIx = A11; IyIy = A22; IxIy = A12/A22
-                IxIx += dot(Ix, Ix);
-                IyIy += dot(Iy, Iy);
-                IxIy += dot(Ix, Iy);
+            // Calculate temporal gradient
+            bool Cached = (P.x == 0) && (P.y == 0);
+            float3 I = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P) * PixelSize)).xyz;
+            float3 T = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(GridPos, TemplateGridSize)];
 
-                // IxIt = B1; IyIt = B2
-                IxIt += dot(Ix, It);
-                IyIt += dot(Iy, It);
+            // Calculate spatial and temporal gradients
+            float3 North = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(1, 0), TemplateGridSize)];
+            float3 South = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(-1, 0), TemplateGridSize)];
+            float3 East = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, 1), TemplateGridSize)];
+            float3 West = TemplateCache[CMath_Get1DIndexFrom2D(GridPos + int2(0, -1), TemplateGridSize)];
+            float3 Ix = (West - East) / 2.0;
+            float3 Iy = (North - South) / 2.0;
+            float3 It = I - T;
 
-                // Increment TemplatePos
-                TemplateGridPosIndex += 1;
-            }
+            // Calculate weight
+            float3 DeltaT = T - CenterT;
+            float3 DeltaI = I - CenterI;
+            float Dot4 = rsqrt(dot(DeltaT, DeltaT) + dot(DeltaI, DeltaI) + 1.0);
+            float Weight = smoothstep(0.0, 1.0, Dot4);
+            Weight *= Weight;
+
+            // IxIx = A11; IyIy = A22; IxIy = A12/A22
+            IxIx += dot(Ix, Ix) * Weight;
+            IyIy += dot(Iy, Iy) * Weight;
+            IxIy += dot(Ix, Iy) * Weight;
+
+            // IxIt = B1; IyIt = B2
+            IxIt += dot(Ix, It) * Weight;
+            IyIt += dot(Iy, It) * Weight;
+
+            // Summate the weights
+            SumWeight += Weight;
+
+            // Increment TemplatePos
+            FetchGridIndex += 1;
         }
+
+        // Check if SumWeight isn't 0;
+        SumWeight = (SumWeight == 0.0) ? 0.0 : 1.0 / SumWeight;
+        IxIx *= SumWeight;
+        IyIy *= SumWeight;
+        IxIy *= SumWeight;
+        IxIt *= SumWeight;
+        IyIt *= SumWeight;
 
         /*
             Calculate Lucas-Kanade matrix
