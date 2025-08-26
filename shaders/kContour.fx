@@ -104,24 +104,24 @@ float3 GetColorFromGradient(CEdge_Gradient Input)
     return sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
 }
 
-CEdge_Gradient GetGradient(float2 Tex)
+CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
 {
     CEdge_Gradient G;
 
     #if (SHADER_EDGE_DETECTION == 0) // ddx(), ddy()
         G = CEdge_GetDDXY(CShade_SampleColorTex, Tex);
     #elif (SHADER_EDGE_DETECTION == 1) // Bilinear 3x3 Sobel
-        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex);
+        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 2) // Bilinear 5x5 Prewitt
-        G = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Tex);
+        G = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 3) // Bilinear 5x5 Sobel by CeeJayDK
-        G = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex);
+        G = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 4) // 3x3 Prewitt
-        G = CEdge_GetPrewitt3x3(CShade_SampleColorTex, Tex);
+        G = CEdge_GetPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 5) // 3x3 Scharr
-        G = CEdge_GetScharr3x3(CShade_SampleColorTex, Tex);
+        G = CEdge_GetScharr3x3(CShade_SampleColorTex, Tex, Delta);
     #else // Our default
-        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex);
+        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
     #endif
 
     return G;
@@ -129,17 +129,18 @@ CEdge_Gradient GetGradient(float2 Tex)
 
 float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
+    float2 Delta = fwidth(Input.Tex0);
     CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
 
     // If we are debugging, sampling in a quadrant.
     Input.Tex0 = (_DisplayMode == 1) ? Grid.Frac : Input.Tex0;
 
     // Get gradient information
-    CEdge_Gradient G = GetGradient(Input.Tex0);
+    CEdge_Gradient G = GetGradient(Input.Tex0, Delta);
 
     // Exception for non-directional methods such as Frei-Chen
     #if SHADER_EDGE_DETECTION == 6
-        float3 I = CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0).rgb;
+        float3 I = CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0, Delta).rgb;
     #else
         float3 I = CEdge_GetMagnitudeRGB(G.Ix.rgb, G.Iy.rgb);
     #endif

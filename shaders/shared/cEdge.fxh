@@ -15,7 +15,6 @@
 
     CEdge_Gradient CEdge_GetDDXY(sampler2D Image, float2 Tex)
     {
-        float2 Delta = fwidth(Tex);
         float4 Color = tex2D(Image, Tex);
 
         CEdge_Gradient Output;
@@ -24,9 +23,8 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetBilinearSobel3x3(sampler2D Image, float2 Tex)
+    CEdge_Gradient CEdge_GetBilinearSobel3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float2 Delta = fwidth(Tex);
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
         float4 A0 = tex2D(Image, Tex0.xw) * 4.0; // <-0.5, +0.5>
         float4 C0 = tex2D(Image, Tex0.zw) * 4.0; // <+0.5, +0.5>
@@ -39,13 +37,12 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetBilinearPrewitt5x5(sampler2D Image, float2 Tex)
+    CEdge_Gradient CEdge_GetBilinearPrewitt5x5(sampler2D Image, float2 Tex, float2 Delta)
     {
         // Sampler locations:
         // A0 B0 C0
         // A1    C1
         // A2 B2 C2
-        float2 Delta = fwidth(Tex);
         float4 Tex1 = Tex.xyyy + (float4(-1.5, 1.5, 0.0, -1.5) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.5, 0.0, -1.5) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.5, 1.5, 0.0, -1.5) * Delta.xyyy);
@@ -65,7 +62,7 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetBilinearSobel5x5(sampler2D Image, float2 Tex)
+    CEdge_Gradient CEdge_GetBilinearSobel5x5(sampler2D Image, float2 Tex, float2 Delta)
     {
         // Bilinear 5x5 Sobel by CeeJayDK
         // Sampler locations:
@@ -73,7 +70,6 @@
         // A0     A1
         // A2     B0
         //   C0 C1
-        float2 Delta = fwidth(Tex);
         float4 Tex1 = Tex.xxyy + (float4(-1.5, 1.5, -0.5, 0.5) * Delta.xxyy);
         float4 Tex2 = Tex.xxyy + (float4(-0.5, 0.5, -1.5, 1.5) * Delta.xxyy);
 
@@ -92,9 +88,8 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetPrewitt3x3(sampler2D Image, float2 Tex)
+    CEdge_Gradient CEdge_GetPrewitt3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float2 Delta = fwidth(Tex);
         float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
@@ -114,9 +109,8 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetScharr3x3(sampler2D Image, float2 Tex)
+    CEdge_Gradient CEdge_GetScharr3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float2 Delta = fwidth(Tex);
         float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
@@ -148,9 +142,8 @@
         https://www.rastergrid.com/blog/2011/01/frei-chen-edge-detector/
     */
 
-    float4 CEdge_GetFreiChen(sampler2D Image, float2 Tex)
+    float4 CEdge_GetFreiChen(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float2 Delta = fwidth(Tex);
         float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
         float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
