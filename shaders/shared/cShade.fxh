@@ -152,18 +152,4 @@
         return Output;
     }
 
-    /*
-        [Math Functions]
-    */
-
-    int2 CShade_GetScreenSizeFromTex(float2 Tex)
-    {
-        return max(round(1.0 / fwidth(Tex)), 1.0);
-    }
-
-    float2 CShade_GetPixelSizeFromTex(float2 Tex)
-    {
-        return 1.0 / CShade_GetScreenSizeFromTex(Tex);
-    }
-
 #endif

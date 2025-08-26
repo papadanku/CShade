@@ -94,6 +94,72 @@
         return O;
     }
 
+    /*
+        Function to convert 2D row and column (0-indexed) to a 1D index.
+        ZeroIndexGridPos.x: The 0-indexed row number.
+        ZeroIndexGridPos.y: The 0-indexed column number.
+        GridWidth: The total width of the grid (number of columns).
+        Returns a 1D index.
+    */
+    int CMath_Get1DIndexFrom2D(int2 ZeroIndexGridPos, int GridWidth)
+    {
+        return (ZeroIndexGridPos.x * GridWidth) + ZeroIndexGridPos.y;
+    }
+
+    // Get the Half format distribution of bits
+    // Sign Exponent Significand
+    // x    xxxxx    xxxxxxxxxx
+    float CMath_CalculateFP16(int Sign, int Exponent, int Significand)
+    {
+        const int Bias = -15;
+        const int MaxExponent = (Exponent - exp2(1)) + Bias;
+        const int MaxSignificand = 1 + ((Significand - 1) / Significand);
+
+        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
+    }
+
+    float CMath_GetFP16Min()
+    {
+        /*
+            Sign Exponent Significand
+            ---- -------- -----------
+            0    00001    000000000
+        */
+        return CMath_CalculateFP16(0, exp2(1) + 1, exp2(0));
+    }
+
+    float CMath_GetFP16Max()
+    {
+        /*
+            Sign Exponent Significand
+            ---- -------- -----------
+            0    11110    1111111111
+        */
+        return CMath_CalculateFP16(0, exp2(5), exp2(10));
+    }
+
+    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
+    float2 CMath_Float2_FP16ToNorm(float2 Half2)
+    {
+        return Half2 / CMath_GetFP16Max();
+    }
+
+    float4 CMath_Float4_FP16ToNorm(float4 Half4)
+    {
+        return Half4 / CMath_GetFP16Max();
+    }
+
+    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
+    float2 CMath_Float2_NormToFP16(float2 Half2)
+    {
+        return Half2 * CMath_GetFP16Max();
+    }
+
+    float4 CMath_Float4_NormToFP16(float4 Half4)
+    {
+        return Half4 * CMath_GetFP16Max();
+    }
+
     void CMath_ApplyGeometricTransform(
         inout float2 Tex, // [0, 1)
         in int Order,
@@ -156,58 +222,32 @@
         Tex = (Tex * 0.5) + 0.5;
     }
 
-    // Get the Half format distribution of bits
-    // Sign Exponent Significand
-    // x    xxxxx    xxxxxxxxxx
-    float CMath_CalculateFP16(int Sign, int Exponent, int Significand)
+    int2 CMath_GetScreenSizeFromTex(float2 Tex)
     {
-        const int Bias = -15;
-        const int MaxExponent = (Exponent - exp2(1)) + Bias;
-        const int MaxSignificand = 1 + ((Significand - 1) / Significand);
-
-        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
+        return max(round(1.0 / fwidth(Tex)), 1.0);
     }
 
-    float CMath_GetFP16Min()
+    float2 CMath_GetPixelSizeFromTex(float2 Tex)
     {
-        /*
-            Sign Exponent Significand
-            ---- -------- -----------
-            0    00001    000000000
-        */
-        return CMath_CalculateFP16(0, exp2(1) + 1, exp2(0));
+        return 1.0 / CMath_GetScreenSizeFromTex(Tex);
     }
 
-    float CMath_GetFP16Max()
+    struct CMath_TexGrid
     {
-        /*
-            Sign Exponent Significand
-            ---- -------- -----------
-            0    11110    1111111111
-        */
-        return CMath_CalculateFP16(0, exp2(5), exp2(10));
-    }
+        float2 Tex;
+        float2 Frac;
+        float2 RowAndColumn;
+        float Index;
+    };
 
-    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_Float2_FP16ToNorm(float2 Half2)
+    CMath_TexGrid CMath_GetTexGrid(float2 Tex, int GridSize)
     {
-        return Half2 / CMath_GetFP16Max();
-    }
-
-    float4 CMath_Float4_FP16ToNorm(float4 Half4)
-    {
-        return Half4 / CMath_GetFP16Max();
-    }
-
-    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_Float2_NormToFP16(float2 Half2)
-    {
-        return Half2 * CMath_GetFP16Max();
-    }
-
-    float4 CMath_Float4_NormToFP16(float4 Half4)
-    {
-        return Half4 * CMath_GetFP16Max();
+        CMath_TexGrid Output;
+        Output.Tex = Tex * GridSize;
+        Output.Frac = frac(Output.Tex);
+        Output.RowAndColumn = floor(Output.Tex);
+        Output.Index = (Output.RowAndColumn.y * GridSize) + Output.RowAndColumn.x;
+        return Output;
     }
 
     /*
@@ -224,18 +264,6 @@
     {
         Velocity = (Velocity * 2.0) - 1.0;
         return (Velocity * Velocity) * sign(Velocity);
-    }
-
-    /*
-        Function to convert 2D row and column (0-indexed) to a 1D index.
-        ZeroIndexGridPos.x: The 0-indexed row number.
-        ZeroIndexGridPos.y: The 0-indexed column number.
-        GridWidth: The total width of the grid (number of columns).
-        Returns a 1D index.
-    */
-    int CMath_Get1DIndexFrom2D(int2 ZeroIndexGridPos, int GridWidth)
-    {
-        return (ZeroIndexGridPos.x * GridWidth) + ZeroIndexGridPos.y;
     }
 
     /*

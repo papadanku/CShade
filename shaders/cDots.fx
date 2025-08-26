@@ -278,7 +278,7 @@ float GetTileCircleLength(Tile Input)
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
-        float2 TexSize = CShade_GetScreenSizeFromTex(Input.Tex0);
+        float2 TexSize = CMath_GetScreenSizeFromTex(Input.Tex0);
         float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
         // Create tiles
@@ -315,7 +315,7 @@ float GetTileCircleLength(Tile Input)
     float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         // Precalculate our needed LOD for all channels
-        float2 TexSize = CShade_GetScreenSizeFromTex(Input.Tex0);
+        float2 TexSize = CMath_GetScreenSizeFromTex(Input.Tex0);
         float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
         // Create per-color tiles
