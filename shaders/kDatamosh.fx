@@ -255,7 +255,7 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float2 MV = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -286,37 +286,33 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     return OutputColor;
 }
 
-float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
 {
-    float2 TexSize = fwidth(Input.Tex0);
-    const float2 DisplacementTexel = BUFFER_SIZE_0;
     const float Quality = 1.0 - _Entropy;
+
+    // Initialize data
     float3 Random = 0.0;
 
-    // Motion vectors
-    float2 MV = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
-
     // Get motion blocks
-    MV = GetMVBlocks(MV, Input.Tex0, Random);
+    MV = GetMVBlocks(MV, Tex, Random);
 
     // Get random motion
-    float RandomMotion = RandUV(Input.Tex0 + length(MV));
+    float RandomMotion = RandUV(Tex + length(MV));
 
     // Pixel coordinates -> Normalized screen space
-    MV = NormalizeUV(MV, TexSize);
+    MV = NormalizeUV(MV, Delta);
 
     // Displacement vector
-    float Disp = tex2D(SampleAccumTex, Input.Tex0).r;
+    float Disp = tex2D(SampleAccumTex, Tex).r;
 
     // Color from the original image
-    float4 Source = CShadeHDR_Tex2D_InvTonemap(SampleSourceTex, Input.Tex0);
-    float4 Work = CShadeHDR_Tex2D_InvTonemap(SampleFeedbackTex, Input.Tex0 + MV);
+    float4 Work = CShadeHDR_Tex2D_InvTonemap(SampleFeedbackTex, Tex + MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
 
     // Generate noise patterns that look like DCT bases.
-    float2 Frequency = Input.HPos.xy * (Rand.x * 80.0 / _Contrast);
+    float2 Frequency = Pos.xy * (Rand.x * 80.0 / _Contrast);
 
     // Basis wave (vertical or horizontal)
     float DCT = cos(lerp(Frequency.x, Frequency.y, 0.5 < Rand.y));
@@ -330,8 +326,17 @@ float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Original image: rand < (Q * 0.8 + 0.2) && acc == 1.0
     CW = lerp(CW, 1.0, Rand.w < lerp(0.2, 1.0, Quality) * (Disp > (1.0 - 1e-3)));
 
-    // If the conditions above are not met, choose work.
-    return CBlend_OutputChannels(float4(lerp(Work.rgb, Source.rgb, CW), _CShadeAlphaFactor));
+    return lerp(Work, Base, CW);
+}
+
+float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    float2 TexSize = fwidth(Input.Tex0);
+    float4 Base = CShadeHDR_Tex2D_InvTonemap(SampleSourceTex, Input.Tex0);
+    float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
+    float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
+
+    return CBlend_OutputChannels(float4(Datamosh.rgb, _CShadeAlphaFactor));
 }
 
 float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0

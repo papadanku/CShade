@@ -465,7 +465,7 @@
         MNMX3(Array[3], Array[4], Array[8]);
 
         // Get median
-        float2 Median = Array[4];
+        float2 Median = Array[4].xy;
 
         // Store ImageCenter reference
         float4 Reference = float4(tex2D(Guide, Tex).xy, Median);

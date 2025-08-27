@@ -34,7 +34,7 @@
 #endif
 
 uniform int _DisplayMode <
-    ui_label = "Display Mode";
+    ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
 > = 0;

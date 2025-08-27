@@ -43,7 +43,7 @@ uniform float2 _Translate <
 
 uniform float2 _Scale <
     ui_category = "Geometric Transform";
-    ui_label = "Scaling";
+    ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 

@@ -260,7 +260,7 @@
         }
         else if (MaxRGB == RGB.r)
         {
-            Hue = 60.0 * CMath_Float1_GetModulus((RGB.g - RGB.b) / Chroma, 6.0);
+            Hue = 60.0 * CMath_GetModulus_FLT1((RGB.g - RGB.b) / Chroma, 6.0);
         }
         else if (MaxRGB == RGB.g)
         {
@@ -283,8 +283,8 @@
     )
     {
         float Chroma = HSV.y * HSV.z;
-        float HPrime = CMath_Float1_GetModulus(HSV.x / 60.0, 6.0);
-        float XValue = Chroma * (1.0 - abs(CMath_Float1_GetModulus(HPrime, 2.0) - 1.0));
+        float HPrime = CMath_GetModulus_FLT1(HSV.x / 60.0, 6.0);
+        float XValue = Chroma * (1.0 - abs(CMath_GetModulus_FLT1(HPrime, 2.0) - 1.0));
         float MValue = HSV.z - Chroma;
 
         float3 RGB;

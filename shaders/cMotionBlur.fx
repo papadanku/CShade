@@ -10,6 +10,12 @@
 
 uniform float _FrameTime < source = "frametime"; > ;
 
+uniform int _DisplayMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+> = 0;
+
 uniform float _MipBias <
     ui_category = "Optical Flow";
     ui_label = "Mipmap Level";
@@ -157,7 +163,7 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
-float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 GetMotionBlur(CShade_VS2PS_Quad Input, float2 MotionVectors)
 {
     const int Samples = 8;
     float4 OutputColor = 0.0;
@@ -166,8 +172,7 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float FrameTimeRatio = _TargetFrameRate / FrameRate;
     float Noise = CMath_GetGoldenRatioNoise(Input.HPos.xy);
 
-    float2 MotionVectors = tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy;
-    float2 ScaledMotionVectors = CMath_Float2_FP16ToNorm(MotionVectors) * _Scale;
+    float2 ScaledMotionVectors = MotionVectors * _Scale;
     ScaledMotionVectors = (_FrameRateScaling) ? ScaledMotionVectors / FrameTimeRatio : ScaledMotionVectors;
 
     [unroll]
@@ -185,6 +190,43 @@ float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
         {
             OutputColor += (Color / Samples);
         }
+    }
+
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+}
+
+float4 PS_MotionBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
+
+    if (_DisplayMode == 1)
+    {
+        Input.Tex0 = Grid.Frac;
+    }
+
+    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float4 ShaderOutput = GetMotionBlur(Input, MotionVectors);
+
+    float4 OutputColor = float4(0.0, 0.0, 0.0, 1.0);
+
+    switch (_DisplayMode)
+    {
+        case 0:
+            OutputColor.rgb = ShaderOutput.rgb;
+            break;
+        case 1:
+            OutputColor.rgb = CMotionEstimation_GetDebugQuadrant(Base.rgb, ShaderOutput.rgb, MotionVectors, Grid.Index);
+            break;
+        case 2:
+            OutputColor.rgb = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
+            break;
+        case 3:
+            OutputColor.rgb = length(MotionVectors);
+            break;
+        default:
+            OutputColor.rgb = Base.rgb;
+            break;
     }
 
     return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));

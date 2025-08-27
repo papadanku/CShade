@@ -14,7 +14,7 @@
     #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
     #define GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))
 
-    #define FP16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
+    #define FLT16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
 
     #define ASPECT_RATIO float(BUFFER_WIDTH * (1.0 / BUFFER_HEIGHT))
     #define BUFFER_SIZE_0 int2(BUFFER_WIDTH, BUFFER_HEIGHT)

@@ -9,7 +9,7 @@
 */
 
 uniform int _DisplayMode <
-    ui_label = "Output Mode";
+    ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Shading · Normalized\0Shading · Renormalized\0Line Integral Convolution\0Line Integral Convolution · Colored\0";
 > = 0;
@@ -148,7 +148,7 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
 float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 Vectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
     // Encode vectors
     float3 VectorColors = normalize(float3(Vectors, 1e-3));

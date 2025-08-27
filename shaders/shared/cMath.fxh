@@ -28,38 +28,38 @@
 #if !defined(INCLUDE_CMATH)
     #define INCLUDE_CMATH
 
-    float4 CMath_Float4_Max3(float4 A, float4 B, float4 C)
+    float4 CMath_Max3_FLT4(float4 A, float4 B, float4 C)
     {
         return max(max(A, B), C);
     }
 
-    float4 CMath_Float4_Min3(float4 A, float4 B, float4 C)
+    float4 CMath_Min3_FLT4(float4 A, float4 B, float4 C)
     {
         return min(min(A, B), C);
     }
 
-    float4 CMath_Float4_Med3(float4 x, float4 y, float4 z)
+    float4 CMath_Med3_FLT4(float4 x, float4 y, float4 z)
     {
         return max(min(x, y), min(max(x, y), z));
     }
 
-    float CMath_Float1_Med3(float x, float y, float z)
+    float CMath_Med3_FLT1(float x, float y, float z)
     {
         return max(min(x, y), min(max(x, y), z));
     }
 
-    float4 CMath_Float4_Med9(
+    float4 CMath_Med9_FLT4(
         float4 X0, float4 X1, float4 X2,
         float4 X3, float4 X4, float4 X5,
         float4 X6, float4 X7, float4 X8)
     {
-        float4 A = CMath_Float4_Max3(CMath_Float4_Min3(X0, X1, X2), CMath_Float4_Min3(X3, X4, X5), CMath_Float4_Min3(X6, X7, X8));
-        float4 B = CMath_Float4_Min3(CMath_Float4_Max3(X0, X1, X2), CMath_Float4_Max3(X3, X4, X5), CMath_Float4_Max3(X6, X7, X8));
-        float4 C = CMath_Float4_Med3(CMath_Float4_Med3(X0, X1, X2), CMath_Float4_Med3(X3, X4, X5), CMath_Float4_Med3(X6, X7, X8));
-        return CMath_Float4_Med3(A, B, C);
+        float4 A = CMath_Max3_FLT4(CMath_Min3_FLT4(X0, X1, X2), CMath_Min3_FLT4(X3, X4, X5), CMath_Min3_FLT4(X6, X7, X8));
+        float4 B = CMath_Min3_FLT4(CMath_Max3_FLT4(X0, X1, X2), CMath_Max3_FLT4(X3, X4, X5), CMath_Max3_FLT4(X6, X7, X8));
+        float4 C = CMath_Med3_FLT4(CMath_Med3_FLT4(X0, X1, X2), CMath_Med3_FLT4(X3, X4, X5), CMath_Med3_FLT4(X6, X7, X8));
+        return CMath_Med3_FLT4(A, B, C);
     }
 
-    float CMath_Float1_GetModulus(float X, float Y)
+    float CMath_GetModulus_FLT1(float X, float Y)
     {
         return X - Y * floor(X / Y);
     }
@@ -109,7 +109,7 @@
     // Get the Half format distribution of bits
     // Sign Exponent Significand
     // x    xxxxx    xxxxxxxxxx
-    float CMath_CalculateFP16(int Sign, int Exponent, int Significand)
+    float CMath_CalculateFLT16(int Sign, int Exponent, int Significand)
     {
         const int Bias = -15;
         const int MaxExponent = (Exponent - exp2(1)) + Bias;
@@ -118,46 +118,46 @@
         return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
     }
 
-    float CMath_GetFP16Min()
+    float CMath_GetFLT16Min()
     {
         /*
             Sign Exponent Significand
             ---- -------- -----------
             0    00001    000000000
         */
-        return CMath_CalculateFP16(0, exp2(1) + 1, exp2(0));
+        return CMath_CalculateFLT16(0, exp2(1) + 1, exp2(0));
     }
 
-    float CMath_GetFP16Max()
+    float CMath_GetFLT16Max()
     {
         /*
             Sign Exponent Significand
             ---- -------- -----------
             0    11110    1111111111
         */
-        return CMath_CalculateFP16(0, exp2(5), exp2(10));
+        return CMath_CalculateFLT16(0, exp2(5), exp2(10));
     }
 
     // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_Float2_FP16ToNorm(float2 Half2)
+    float2 CMath_FLT16toSNORM_FLT2(float2 Half2)
     {
-        return Half2 / CMath_GetFP16Max();
+        return Half2 / CMath_GetFLT16Max();
     }
 
-    float4 CMath_Float4_FP16ToNorm(float4 Half4)
+    float4 CMath_FLT16toSNORM_FLT4(float4 Half4)
     {
-        return Half4 / CMath_GetFP16Max();
+        return Half4 / CMath_GetFLT16Max();
     }
 
     // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_Float2_NormToFP16(float2 Half2)
+    float2 CMath_SNORMtoFLT16_FLT2(float2 Half2)
     {
-        return Half2 * CMath_GetFP16Max();
+        return Half2 * CMath_GetFLT16Max();
     }
 
-    float4 CMath_Float4_NormToFP16(float4 Half4)
+    float4 CMath_SNORMtoFLT16_FLT4(float4 Half4)
     {
-        return Half4 * CMath_GetFP16Max();
+        return Half4 * CMath_GetFLT16Max();
     }
 
     void CMath_ApplyGeometricTransform(

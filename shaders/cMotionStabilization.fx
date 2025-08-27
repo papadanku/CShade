@@ -22,6 +22,12 @@
 
 uniform float _FrameTime < source = "frametime"; > ;
 
+uniform int _DisplayMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+> = 0;
+
 uniform bool _InvertWarpX <
     ui_category = "Motion Stabilization";
     ui_label = "Invert X Axis";
@@ -85,7 +91,7 @@ uniform float2 _Translate <
 
 uniform float2 _Scale <
     ui_category = "Geometric Transform";
-    ui_label = "Scaling";
+    ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
@@ -195,14 +201,8 @@ float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
     return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
 }
 
-float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
+float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
 {
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
-    float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
-
-    // Get motion vectors
-    float2 MotionVectors = CMath_Float2_FP16ToNorm(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
     MotionVectors.x = _InvertWarpX ? -MotionVectors.x : MotionVectors.x;
     MotionVectors.y = _InvertWarpY ? -MotionVectors.y : MotionVectors.y;
 
@@ -214,9 +214,48 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float Pi2 = CMath_GetPi() * 2.0;
     CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
 
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
+    return CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
+}
 
-    return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
+float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
+{
+    CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
+
+    if (_DisplayMode == 1)
+    {
+        Input.Tex0 = Grid.Frac;
+    }
+
+    // Get needed LOD for shader
+    float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
+    float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
+
+    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
+    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors);
+
+    float4 OutputColor = float4(0.0, 0.0, 0.0, 1.0);
+
+    switch (_DisplayMode)
+    {
+        case 0:
+            OutputColor.rgb = ShaderOutput.rgb;
+            break;
+        case 1:
+            OutputColor.rgb = CMotionEstimation_GetDebugQuadrant(Base.rgb, ShaderOutput.rgb, MotionVectors, Grid.Index);
+            break;
+        case 2:
+            OutputColor.rgb = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
+            break;
+        case 3:
+            OutputColor.rgb = length(MotionVectors);
+            break;
+        default:
+            OutputColor.rgb = Base.rgb;
+            break;
+    }
+
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

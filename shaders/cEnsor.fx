@@ -7,7 +7,7 @@
 */
 
 uniform int _DisplayMode <
-    ui_label = "Display Mode";
+    ui_label = "Render Mode";
     ui_type = "radio";
     ui_items = "Output\0Mask\0";
 > = 0;

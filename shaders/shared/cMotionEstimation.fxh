@@ -72,8 +72,8 @@
         float IyIt = 0.0;
         float SumW = 0.0;
 
-        // Decode from FP16
-        Vectors = clamp(CMath_Float2_FP16ToNorm(Vectors), -1.0, 1.0);
+        // Decode from FLT16
+        Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
 
         // Calculate warped texture coordinates
         float2 WarpTex = MainTex;
@@ -222,8 +222,36 @@
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
 
-        // Encode motion vectors to FP16 format
-        return CMath_Float2_NormToFP16(Vectors);
+        // Encode motion vectors to FLT16 format
+        return CMath_SNORMtoFLT16_FLT2(Vectors);
+    }
+
+    float3 CMotionEstimation_GetMotionVectorRGB(float2 MotionVectors)
+    {
+        float3 VectorRGB = normalize(float3(MotionVectors, 1e-3));
+        VectorRGB.xy = (VectorRGB.xy * 0.5) + 0.5;
+        VectorRGB.z = sqrt(1.0 - saturate(dot(VectorRGB.xy, VectorRGB.xy)));
+        VectorRGB = normalize(VectorRGB);
+        return VectorRGB;
+    }
+
+    float3 CMotionEstimation_GetDebugQuadrant(
+        float3 Base,
+        float3 ShaderOutput,
+        float2 MotionVectors,
+        float Index
+    )
+    {
+        // First, process motion vectors
+        float VectorMag = length(MotionVectors);
+        float3 VectorRGB = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
+
+        float3 OutputColor = Base;
+        OutputColor = lerp(OutputColor, VectorRGB, Index == 1);
+        OutputColor = lerp(OutputColor, ShaderOutput, Index == 2);
+        OutputColor = lerp(OutputColor, VectorMag, Index == 3);
+
+        return OutputColor;
     }
 
 #endif
