@@ -38,7 +38,7 @@
     float4 CCamera_CreateExposureTex(float Luminance, float FrameTime)
     {
         // .rgb = Output the highest brightness out of red/green/blue component
-        // .a = Output the weight for Temporal Blending Weight
+        // .a = Output the weight for Temporal Smoothing
         float Delay = 1e-3 * FrameTime;
         return float4((float3)Luminance, saturate(Delay * _CShadeExposureSmoothingSpeed));
     }

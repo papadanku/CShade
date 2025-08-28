@@ -11,7 +11,7 @@
 #endif
 
 uniform float _BlendFactor <
-    ui_label = "Temporal Blending Weight";
+    ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.1;
     ui_max = 0.9;

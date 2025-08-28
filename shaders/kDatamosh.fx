@@ -55,7 +55,7 @@ uniform float _MipBias <
 
 uniform float _BlendFactor <
     ui_category = "Optical Flow";
-    ui_label = "Temporal Blending Weight";
+    ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
