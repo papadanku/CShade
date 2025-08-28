@@ -1,4 +1,8 @@
-#define CSHADE_TEXTUREMAD
+#define CSHADE_TRANSFORM
+
+/*
+    Geometric and color transform shader with a single-texture overlay system.
+*/
 
 /*
     [Shader Options]
@@ -22,30 +26,92 @@
     #define SHADER_BACKBUFFER_SAMPLING POINT
 #endif
 
-uniform int _GeometricTransformOrder <
-    ui_category = "Geometric Transform";
+uniform int _RenderMode <
+    ui_label = "Render Mode";
+    ui_type = "combo";
+    ui_items = "Regular\0Overlay\0";
+> = 0;
+
+uniform int _BaseGeometricTransformOrder <
+    ui_category = "Geometric Transform · Base";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
-uniform float _Angle <
-    ui_category = "Geometric Transform";
+uniform float _BaseAngle <
+    ui_category = "Geometric Transform · Base";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
-uniform float2 _Translate <
-    ui_category = "Geometric Transform";
+uniform float2 _BaseTranslate <
+    ui_category = "Geometric Transform · Base";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
-uniform float2 _Scale <
-    ui_category = "Geometric Transform";
+uniform float2 _BaseScale <
+    ui_category = "Geometric Transform · Base";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
+
+uniform int _OverlayTransformOrder <
+    ui_category = "Geometric Transform · Overlay";
+    ui_label = "Order of Operations";
+    ui_type = "combo";
+    ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+> = 0;
+
+uniform float _OverlayAngle <
+    ui_category = "Geometric Transform · Overlay";
+    ui_label = "Rotation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _OverlayTranslate <
+    ui_category = "Geometric Transform · Overlay";
+    ui_label = "Translation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _OverlayScale <
+    ui_category = "Geometric Transform · Overlay";
+    ui_label = "Scale";
+    ui_type = "drag";
+> = 0.5;
+
+uniform int _OverlayMaskTransformOrder <
+    ui_category = "Geometric Transform · Overlay Mask";
+    ui_label = "Order of Operations";
+    ui_type = "combo";
+    ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+> = 0;
+
+uniform float _OverlayMaskAngle <
+    ui_category = "Geometric Transform · Overlay Mask";
+    ui_label = "Rotation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _OverlayMaskTranslate <
+    ui_category = "Geometric Transform · Overlay Mask";
+    ui_label = "Translation";
+    ui_type = "drag";
+> = 0.0;
+
+uniform float2 _OverlayMaskScale <
+    ui_category = "Geometric Transform · Overlay Mask";
+    ui_label = "Scale";
+    ui_type = "drag";
+> = 1.0;
+
+uniform float2 _OverlayMaskCutoff <
+    ui_category = "Geometric Transform · Overlay Mask";
+    ui_label = "Cutoff";
+    ui_type = "drag";
+> = 0.5;
 
 uniform int _ColorOperationsOrder <
     ui_category = "Color Transform";
@@ -94,22 +160,6 @@ uniform int _ShaderPreprocessorGuide <
 CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, SHADER_BACKBUFFER_SAMPLING, SHADER_BACKBUFFER_SAMPLING, LINEAR, SHADER_BACKBUFFER_ADDRESSU, SHADER_BACKBUFFER_ADDRESSV, SHADER_BACKBUFFER_ADDRESSW)
 
 /*
-    [Vertex Shaders]
-*/
-
-CShade_VS2PS_Quad VS_Matrix(CShade_APP2VS Input)
-{
-    // Calculate the shader's HPos and Tex0
-    CShade_VS2PS_Quad Output = CShade_VS_Quad(Input);
-
-    // Apply Geometric Transform
-    const float Pi2 = CMath_GetPi() * 2.0;
-    CMath_ApplyGeometricTransform(Output.Tex0, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
-
-    return Output;
-}
-
-/*
     [Pixel Shaders]
 */
 
@@ -139,11 +189,37 @@ void ApplyColorTransform(inout float4 Texture)
     }
 }
 
+float CreateOverlayMask(float2 Tex)
+{
+    float2 Shaper = step(abs(Tex), _OverlayMaskCutoff);
+    return Shaper.x * Shaper.y;
+}
+
 float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
+    const float Pi2 = CMath_GetPi() * 2.0;
 
-    // Apply the color transform
+    if (_RenderMode == 1)
+    {
+        // Process Overlay Tex
+        float2 OverlayTex = Input.Tex0;
+        CMath_ApplyGeometricTransform(OverlayTex, _OverlayTransformOrder, _OverlayAngle * Pi2, _OverlayTranslate, _OverlayScale, true);
+
+        // Process Overlay Mask (different from OverlayTex)
+        float2 OverlayMaskTex = (Input.Tex0 * 2.0) - 1.0;
+        CMath_ApplyGeometricTransform(OverlayMaskTex, _OverlayMaskTransformOrder, _OverlayMaskAngle * Pi2, _OverlayMaskTranslate, _OverlayMaskScale, false);
+        float OverlayMask = CreateOverlayMask(OverlayMaskTex);
+
+        // Composite OverlayTex over base tex
+        Input.Tex0 = lerp(Input.Tex0, OverlayTex, OverlayMask);
+    }
+    else
+    {
+        CMath_ApplyGeometricTransform(Input.Tex0, _BaseGeometricTransformOrder, _BaseAngle * Pi2, _BaseTranslate, _BaseScale, true);
+    }
+
+    // Sample the texture and apply the color transform
+    float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
     ApplyColorTransform(Texture);
 
     #if CBLEND_BLENDENABLE
@@ -166,7 +242,7 @@ technique CShade_SolidColor
         SRGBWriteEnable = WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
-        VertexShader = VS_Matrix;
+        VertexShader = CShade_VS_Quad;
         PixelShader = PS_TextureMAD;
     }
 }

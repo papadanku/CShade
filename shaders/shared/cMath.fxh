@@ -165,7 +165,8 @@
         in int Order,
         in float Angle,
         in float2 Translate,
-        in float2 Scale
+        in float2 Scale,
+        bool ProcessTex
     )
     {
         /*
@@ -207,7 +208,10 @@
         );
 
         // Scale TexCoord from [0,1) to [-1,1)
-        Tex = (Tex * 2.0) - 1.0;
+        if (ProcessTex)
+        {
+            Tex = (Tex * 2.0) - 1.0;
+        }
 
         // Do transformations here
         [unroll]
@@ -219,7 +223,10 @@
         }
 
         // Scale TexCoord from [-1,1) to [0,1)
-        Tex = (Tex * 0.5) + 0.5;
+        if (ProcessTex)
+        {
+            Tex = (Tex * 0.5) + 0.5;
+        }
     }
 
     int2 CMath_GetScreenSizeFromTex(float2 Tex)
