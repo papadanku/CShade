@@ -58,17 +58,17 @@ uniform float2 _WarpStrength <
     ui_category = "Motion Stabilization";
     ui_label = "Warping Strength";
     ui_type = "slider";
-    ui_min = -100.0;
-    ui_max = 100.0;
-> = 10.0;
+    ui_min = -8.0;
+    ui_max = 8.0;
+> = 1.0;
 
 uniform float _BlendFactor <
     ui_category = "Motion Stabilization";
-    ui_label = "Temporal Blending Weight";
+    ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
-    ui_max = 1.0;
-> = 0.5;
+    ui_max = 8.0;
+> = 1.0;
 
 uniform int _GeometricTransformOrder <
     ui_category = "Geometric Transform";
@@ -93,6 +93,27 @@ uniform float2 _Scale <
     ui_category = "Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
+> = 1.0;
+
+uniform int _ScaleByImage <
+    ui_category = "Cosmetic · Scale by Image Content";
+    ui_label = "Scalar";
+    ui_type = "combo";
+    ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
+> = 3;
+
+uniform float _ScaleByImageLOD <
+    ui_category = "Cosmetic · Scale by Image Content";
+    ui_label = "Level of Detail";
+    ui_type = "drag";
+> = 0.5;
+
+uniform float _ScaleByImageIntensity <
+    ui_category = "Cosmetic · Scale by Image Content";
+    ui_label = "Intensity";
+    ui_type = "drag";
+    ui_min = -8.0;
+    ui_max = 8.0;
 > = 1.0;
 
 #include "shared/cShadeHDR.fxh"
@@ -169,7 +190,8 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
-    return float4(Flow, 0.0, saturate(0.9 * lerp(1.0, 1.1, _BlendFactor)));
+    const float BlendScale = _BlendFactor + 1.0;
+    return float4(Flow * BlendScale, 0.0, 1.0 / BlendScale);
 }
 
 /*
@@ -212,7 +234,7 @@ float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
 
     // Apply Geometric Transform
     const float Pi2 = CMath_GetPi() * 2.0;
-    CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale);
+    CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale, true);
 
     return CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
 }
@@ -231,8 +253,9 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
 
     float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Image = tex2Dlod(SampleTempTex1, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
-    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors);
+    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);
 
     float4 OutputColor = float4(0.0, 0.0, 0.0, 1.0);
 
@@ -284,8 +307,8 @@ technique CShade_MotionStabilization
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
         BlendOp = ADD;
-        SrcBlend = INVSRCALPHA;
-        DestBlend = SRCALPHA;
+        SrcBlend = SRCALPHA;
+        DestBlend = INVSRCALPHA;
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_LucasKanade1;
