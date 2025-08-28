@@ -48,7 +48,7 @@ uniform bool _GlobalStabilization <
 
 uniform float _LocalStabilizationMipBias <
     ui_category = "Motion Stabilization";
-    ui_label = "Mipmap Bias";
+    ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
@@ -104,7 +104,7 @@ uniform int _ScaleByImage <
 
 uniform float _ScaleByImageLOD <
     ui_category = "Cosmetic · Scale by Image Content";
-    ui_label = "Level of Detail";
+    ui_label = "Mipmap Level";
     ui_type = "drag";
 > = 0.5;
 
