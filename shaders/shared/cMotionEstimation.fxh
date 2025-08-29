@@ -118,10 +118,17 @@
             [unroll]
             for (int x1 = -2; x1 <= 2; x1++)
             {
-                bool OutOfBounds = (abs(x1) == 2) && (abs(y1) == 2);
-                float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
-                TemplateCache[TemplateCacheIndex] = OutOfBounds ? 0.0 : tex2D(SampleT, Tex).xyz;
-                TemplateCacheIndex += 1;
+                [flatten]
+                if ((abs(x1) == 2) && (abs(y1) == 2))
+                {
+                    TemplateCacheIndex += 1;
+                }
+                else
+                {
+                    float2 Tex = MainTex + (float2(x1, y1) * PixelSize);
+                    TemplateCache[TemplateCacheIndex] = tex2D(SampleT, Tex).xyz;
+                    TemplateCacheIndex += 1;
+                }
             }
         }
 
@@ -150,35 +157,39 @@
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
-            // Calculate temporal gradient
             bool Cached = (P[i].x == 0) && (P[i].y == 0);
-            float3 I = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
-            float3 T = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
+
+            // Calculate temporal gradient
+            float3 R0 = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
+            float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
+            float3 It = R1 - R0;
+
+            // Calculate weight
+            R0 -= CenterT;
+            R1 -= CenterI;
+            R0.x = dot(R0, R0);
+            R0.y = dot(R1, R1);
+            R0.z = 1.0;
+            float Weight = rsqrt(dot(R0, 1.0));
+            Weight = smoothstep(0.0, 1.0, Weight);
+            Weight *= Weight;
 
             // Calculate spatial and temporal gradients
             float3 North = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
             float3 South = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
             float3 East = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
             float3 West = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
-            float3 Ix = (West - East) / 2.0;
-            float3 Iy = (North - South) / 2.0;
-            float3 It = I - T;
-
-            // Calculate weight
-            float3 DeltaT = T - CenterT;
-            float3 DeltaI = I - CenterI;
-            float Dot4 = rsqrt(dot(DeltaT, DeltaT) + dot(DeltaI, DeltaI) + 1.0);
-            float Weight = smoothstep(0.0, 1.0, Dot4);
-            Weight *= Weight;
+            R0 = (West * 0.5) - (East * 0.5);
+            R1 = (North * 0.5) - (South * 0.5);
 
             // IxIx = A11; IyIy = A22; IxIy = A12/A22
-            IxIx += (dot(Ix, Ix) * Weight);
-            IyIy += (dot(Iy, Iy) * Weight);
-            IxIy += (dot(Ix, Iy) * Weight);
+            IxIx += (dot(R0, R0) * Weight);
+            IyIy += (dot(R1, R1) * Weight);
+            IxIy += (dot(R0, R1) * Weight);
 
             // IxIt = B1; IyIt = B2
-            IxIt += (dot(Ix, It) * Weight);
-            IyIt += (dot(Iy, It) * Weight);
+            IxIt += (dot(R0, It) * Weight);
+            IyIt += (dot(R1, It) * Weight);
 
             // Summate the weights
             SumW += Weight;

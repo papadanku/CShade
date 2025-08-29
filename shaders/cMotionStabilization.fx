@@ -8,16 +8,20 @@
     [Shader Options]
 */
 
-#ifndef SHADER_STABILIZATION_ADDRESS
-    #define SHADER_STABILIZATION_ADDRESS BORDER
+#ifndef SHADER_BACKBUFFER_ADDRESS
+    #define SHADER_BACKBUFFER_ADDRESS BORDER
 #endif
 
-#ifndef SHADER_STABILIZATION_GRID_SAMPLING
-    #define SHADER_STABILIZATION_GRID_SAMPLING LINEAR
+#ifndef SHADER_DISPLACEMENT_SAMPLING
+    #define SHADER_DISPLACEMENT_SAMPLING POINT
 #endif
 
-#ifndef SHADER_STABILIZATION_WARP_SAMPLING
-    #define SHADER_STABILIZATION_WARP_SAMPLING POINT
+#ifndef SHADER_MOTION_VECTORS_SAMPLING
+    #define SHADER_MOTION_VECTORS_SAMPLING LINEAR
+#endif
+
+#ifndef SHADER_COSMETIC_SAMPLING
+    #define SHADER_COSMETIC_SAMPLING LINEAR
 #endif
 
 uniform float _FrameTime < source = "frametime"; > ;
@@ -125,7 +129,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";
     ui_type = "radio";
-    ui_text = "\nSHADER_STABILIZATION_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_STABILIZATION_GRID_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_STABILIZATION_WARP_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_text = "\nSHADER_BACKBUFFER_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_MOTION_VECTORS_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\nSHADER_COSMETIC_SAMPLING - How the shader filters the image content texture used for color-based displacement.\n\n\tOptions: LINEAR, POINT\n\n";
     ui_category_closed = false;
 > = 0;
 
@@ -152,9 +156,10 @@ CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, TempTex1_RGB10A2, LINEAR, LINEAR, 
 CREATE_TEXTURE(FlowTex, BUFFER_SIZE_3, RG16F, 8)
 CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
 
-CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, SHADER_STABILIZATION_GRID_SAMPLING, CLAMP, CLAMP, CLAMP)
-CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_WARP_SAMPLING, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS, SHADER_STABILIZATION_ADDRESS)
+CREATE_SAMPLER(SampleStabilizationTex, TempTex2_RG16F, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, CLAMP, CLAMP, CLAMP)
+CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS)
 
+CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPLING, SHADER_COSMETIC_SAMPLING, SHADER_COSMETIC_SAMPLING, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS)
 
 /*
     [Pixel Shaders]
@@ -190,8 +195,8 @@ float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
-    const float BlendScale = _BlendFactor + 1.0;
-    return float4(Flow * BlendScale, 0.0, 1.0 / BlendScale);
+    float BlendScale = _BlendFactor + 1.0;
+    return float4(Flow, 0.0, 1.0 / BlendScale);
 }
 
 /*
@@ -253,7 +258,7 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
 
     float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
-    float4 Image = tex2Dlod(SampleTempTex1, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
+    float4 Image = tex2Dlod(SampleCosmeticTex, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
     float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);
 
@@ -307,7 +312,7 @@ technique CShade_MotionStabilization
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
         BlendOp = ADD;
-        SrcBlend = SRCALPHA;
+        SrcBlend = ONE;
         DestBlend = INVSRCALPHA;
 
         VertexShader = CShade_VS_Quad;
