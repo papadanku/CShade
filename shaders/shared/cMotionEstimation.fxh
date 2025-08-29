@@ -179,17 +179,19 @@
             float3 South = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
             float3 East = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
             float3 West = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
+
+            // IxIx = A11; IxIt = B1
             R0 = (West * 0.5) - (East * 0.5);
-            R1 = (North * 0.5) - (South * 0.5);
-
-            // IxIx = A11; IyIy = A22; IxIy = A12/A22
             IxIx += (dot(R0, R0) * Weight);
-            IyIy += (dot(R1, R1) * Weight);
-            IxIy += (dot(R0, R1) * Weight);
-
-            // IxIt = B1; IyIt = B2
             IxIt += (dot(R0, It) * Weight);
+
+            // IyIy = A22; IyIt = B2
+            R1 = (North * 0.5) - (South * 0.5);
+            IyIy += (dot(R1, R1) * Weight);
             IyIt += (dot(R1, It) * Weight);
+
+            // A12/A22
+            IxIy += (dot(R0, R1) * Weight);
 
             // Summate the weights
             SumW += Weight;
