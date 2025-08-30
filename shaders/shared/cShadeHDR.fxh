@@ -4,7 +4,7 @@
 #if !defined(INCLUDE_CSHADE_HDR)
     #define INCLUDE_CSHADE_HDR
 
-    uniform int _CShadeInputTonemapOperator <
+    uniform int _CShadeInverseTonemapper <
         ui_category_closed = true;
         ui_category = "Pipeline · Input · Pre-Processing";
         ui_label = "Inverse Tonemap";
@@ -15,12 +15,12 @@
 
     float4 CShadeHDR_Tex2D_InvTonemap(sampler Source, float2 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2D(Source, Tex), _CShadeInputTonemapOperator);
+        return CTonemap_ApplyInverseTonemap(tex2D(Source, Tex), _CShadeInverseTonemapper);
     }
 
     float4 CShadeHDR_Tex2Dlod_TonemapToRGB(sampler Source, float4 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShadeInputTonemapOperator);
+        return CTonemap_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShadeInverseTonemapper);
     }
 
 #endif

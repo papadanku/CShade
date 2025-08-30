@@ -4,7 +4,7 @@
 #if !defined(INCLUDE_CTONEMAP_OUTPUT)
     #define INCLUDE_CTONEMAP_OUTPUT
 
-    uniform int _CShadeTonemapOperator <
+    uniform int _CTonemapFunction <
         ui_category_closed = true;
         ui_category = "Pipeline · Output · Tonemapping";
         ui_label = "Tonemap Operator";
@@ -15,7 +15,7 @@
 
     float3 CTonemap_ApplyOutputTonemap(float3 HDR)
     {
-        return CTonemap_ApplyTonemap(HDR, _CShadeTonemapOperator);
+        return CTonemap_ApplyTonemap(HDR, _CTonemapFunction);
     }
 
 #endif

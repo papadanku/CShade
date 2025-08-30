@@ -112,8 +112,6 @@ uniform int _ShaderPreprocessorGuide <
     ui_category_closed = false;
 > = 0;
 
-#include "shared/cPreprocessorGuide.fxh"
-
 /*
     [Textures and samplers]
 */

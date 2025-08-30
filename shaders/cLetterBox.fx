@@ -30,8 +30,6 @@ uniform float2 _Cutoff <
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 /*
     [Pixel Shaders]
 */

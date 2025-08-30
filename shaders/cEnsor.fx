@@ -42,8 +42,6 @@ uniform float _Threshold <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
 
 sampler2D SampleTempTex0

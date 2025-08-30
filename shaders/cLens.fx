@@ -86,8 +86,6 @@ uniform float _Vignette <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 // Lens pass entry point.
 void FFX_Lens(
     inout float3 Color,

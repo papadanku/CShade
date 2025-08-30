@@ -85,8 +85,6 @@ uniform float4 _BackColor <
 
 #include "shared/cEdge.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";

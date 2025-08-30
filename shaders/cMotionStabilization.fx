@@ -123,8 +123,6 @@ uniform float _ScaleByImageIntensity <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";

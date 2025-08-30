@@ -21,8 +21,6 @@ uniform bool _BlendWithAlpha <
 
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 /*
     [Pixel Shaders]
 */

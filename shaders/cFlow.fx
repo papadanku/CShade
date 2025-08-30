@@ -35,8 +35,6 @@ uniform float _BlendFactor <
     #define SHADER_OPTICAL_FLOW_SAMPLING POINT
 #endif
 
-#include "shared/cPreprocessorGuide.fxh"
-
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";

@@ -61,8 +61,6 @@ static const float SubpixelBlendings[5] =
 #include "shared/cShade.fxh"
 #include "shared/cBlend.fxh"
 
-#include "shared/cPreprocessorGuide.fxh"
-
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
     float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
