@@ -207,7 +207,7 @@ float2 GetBlockTex(float2 TileIndex)
 float GetTileCircleLength(Tile Input)
 {
     // Create the UV for the circles
-    float2 CircleTiles = (Input.Frac * 2.0) - 1.0;
+    float2 CircleTiles = CMath_UNORMtoSNORM_FLT2(Input.Frac);
     // Shrink the UV so [-1, 1] fills a square
     #if BUFFER_WIDTH > BUFFER_HEIGHT
         CircleTiles.x *= ASPECT_RATIO;

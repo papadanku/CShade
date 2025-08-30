@@ -203,7 +203,7 @@
         YUV.z = SRGB.b - SRGB.r;
         YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
         YUV.x = SRGB.g - (YUV.y * 0.5);
-        YUV.yz = Normalize ? (YUV.yz * 0.5) + 0.5 : YUV.yz;
+        YUV.yz = Normalize ? CMath_SNORMtoUNORM_FLT2(YUV.yz) : YUV.yz;
 
         return YUV;
     }
@@ -223,7 +223,7 @@
         Temp = SRGB.b + (YCoCgR.y * 0.5);
         YCoCgR.z = SRGB.g - Temp;
         YCoCgR.x = Temp + (YCoCgR.z * 0.5);
-        YCoCgR.yz = NormalizeOutput ? (YCoCgR.yz * 0.5) + 0.5 : YCoCgR.yz;
+        YCoCgR.yz = NormalizeOutput ? CMath_SNORMtoUNORM_FLT2(YCoCgR.yz) : YCoCgR.yz;
 
         return YCoCgR;
     }
@@ -233,7 +233,7 @@
         float3 SRGB;
         float Temp;
 
-        YCoCgR.yz = NormalizedInput ? (YCoCgR.yz * 2.0) - 1.0 : YCoCgR.yz;
+        YCoCgR.yz = NormalizedInput ? CMath_UNORMtoSNORM_FLT2(YCoCgR.yz) : YCoCgR.yz;
         Temp = YCoCgR.x - (YCoCgR.z * 0.5);
         SRGB.g = YCoCgR.z + Temp;
         SRGB.b = Temp - (YCoCgR.y * 0.5);
@@ -371,7 +371,7 @@
         RIA.z = (L2 == 0.0) ? 1.0 / sqrt(2.0) : saturate(RGB.x / L2);
 
         // Scale the angles to [-1.0, 1.0) range
-        RIA.yz = (RIA.yz * 2.0) - 1.0;
+        RIA.yz = CMath_UNORMtoSNORM_FLT2(RIA.yz);
 
         // Calculate inclination and azimuth and normalize to [0.0, 1.0)
         RIA.yz = acos(RIA.yz) * InvPi;
@@ -387,7 +387,7 @@
         O *= rsqrt(float3(2.0, 6.0, 3.0));
 
         float H = atan(O.x/O.y) / acos(0.0);
-        H = (H * 0.5) + 0.5; // We also scale to [0,1] range
+        H = CMath_SNORMtoUNORM_FLT1(H); // We also scale to [0, 1) range
         float S = length(O.xy);
         float I = O.z;
 

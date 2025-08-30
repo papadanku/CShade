@@ -152,7 +152,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Encode vectors
     float3 VectorColors = normalize(float3(Vectors, 1e-3));
-    VectorColors.xy = (VectorColors.xy * 0.5) + 0.5;
+    VectorColors.xy = CMath_SNORMtoUNORM_FLT2(VectorColors.xy);
     VectorColors.z = sqrt(1.0 - saturate(dot(VectorColors.xy, VectorColors.xy)));
     VectorColors = normalize(VectorColors);
 

@@ -206,7 +206,7 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
         CMath_ApplyGeometricTransform(OverlayTex, _OverlayTransformOrder, _OverlayAngle * Pi2, _OverlayTranslate, _OverlayScale, true);
 
         // Process Overlay Mask (different from OverlayTex)
-        float2 OverlayMaskTex = (Input.Tex0 * 2.0) - 1.0;
+        float2 OverlayMaskTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
         CMath_ApplyGeometricTransform(OverlayMaskTex, _OverlayMaskTransformOrder, _OverlayMaskAngle * Pi2, _OverlayMaskTranslate, _OverlayMaskScale, false);
         float OverlayMask = CreateOverlayMask(OverlayMaskTex);
 

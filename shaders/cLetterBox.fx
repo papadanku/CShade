@@ -1,5 +1,7 @@
 #define CSHADE_LETTERBOX
 
+#include "shared/cMath.fxh"
+
 /*
     [Shader Options]
 */
@@ -37,7 +39,7 @@ uniform float2 _Cutoff <
 float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Output a rectangle
-    Input.Tex0 = (Input.Tex0 * 2.0) - 1.0;
+    Input.Tex0 = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
     Input.Tex0 = (Input.Tex0 * _Scale) + _Offset;
     float2 Shaper = step(abs(Input.Tex0), _Cutoff);
     return CBlend_OutputChannels(float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor));

@@ -94,6 +94,46 @@
         return O;
     }
 
+    float CMath_UNORMtoSNORM_FLT1(float X)
+    {
+        return (X * 2.0) - 1.0;
+    }
+
+    float2 CMath_UNORMtoSNORM_FLT2(float2 X)
+    {
+        return (X * 2.0) - 1.0;
+    }
+
+    float3 CMath_UNORMtoSNORM_FLT3(float3 X)
+    {
+        return (X * 2.0) - 1.0;
+    }
+    
+    float4 CMath_UNORMtoSNORM_FLT4(float4 X)
+    {
+        return (X * 2.0) - 1.0;
+    }
+
+    float CMath_SNORMtoUNORM_FLT1(float X)
+    {
+        return (X * 0.5) + 0.5;
+    }
+
+    float2 CMath_SNORMtoUNORM_FLT2(float2 X)
+    {
+        return (X * 0.5) + 0.5;
+    }
+
+    float3 CMath_SNORMtoUNORM_FLT3(float3 X)
+    {
+        return (X * 0.5) + 0.5;
+    }
+    
+    float4 CMath_SNORMtoUNORM_FLT4(float4 X)
+    {
+        return (X * 0.5) + 0.5;
+    }
+
     /*
         Function to convert 2D row and column (0-indexed) to a 1D index.
         ZeroIndexGridPos.x: The 0-indexed row number.
@@ -139,25 +179,25 @@
     }
 
     // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_FLT16toSNORM_FLT2(float2 Half2)
+    float2 CMath_FLT16toSNORM_FLT2(float2 Value)
     {
-        return Half2 / CMath_GetFLT16Max();
+        return Value / CMath_GetFLT16Max();
     }
 
-    float4 CMath_FLT16toSNORM_FLT4(float4 Half4)
+    float4 CMath_FLT16toSNORM_FLT4(float4 Value)
     {
-        return Half4 / CMath_GetFLT16Max();
+        return Value / CMath_GetFLT16Max();
     }
 
     // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_SNORMtoFLT16_FLT2(float2 Half2)
+    float2 CMath_SNORMtoFLT16_FLT2(float2 Value)
     {
-        return Half2 * CMath_GetFLT16Max();
+        return Value * CMath_GetFLT16Max();
     }
 
-    float4 CMath_SNORMtoFLT16_FLT4(float4 Half4)
+    float4 CMath_SNORMtoFLT16_FLT4(float4 Value)
     {
-        return Half4 * CMath_GetFLT16Max();
+        return Value * CMath_GetFLT16Max();
     }
 
     void CMath_ApplyGeometricTransform(
@@ -210,7 +250,7 @@
         // Scale TexCoord from [0,1) to [-1,1)
         if (ProcessTex)
         {
-            Tex = (Tex * 2.0) - 1.0;
+            Tex = CMath_UNORMtoSNORM_FLT2(Tex);
         }
 
         // Do transformations here
@@ -225,7 +265,7 @@
         // Scale TexCoord from [-1,1) to [0,1)
         if (ProcessTex)
         {
-            Tex = (Tex * 0.5) + 0.5;
+            Tex = CMath_SNORMtoUNORM_FLT2(Tex);
         }
     }
 
@@ -264,12 +304,12 @@
 
     float2 CMath_EncodeVelocity(float2 Velocity)
     {
-        return (sign(Velocity) * sqrt(abs(Velocity)) * 0.5) + 0.5;
+        return CMath_SNORMtoUNORM_FLT2(sign(Velocity) * sqrt(abs(Velocity)));
     }
 
     float2 CMath_DecodeVelocity(float2 Velocity)
     {
-        Velocity = (Velocity * 2.0) - 1.0;
+        Velocity = CMath_UNORMtoSNORM_FLT2(Velocity);
         return (Velocity * Velocity) * sign(Velocity);
     }
 
@@ -469,7 +509,7 @@
         float D = CMath_GetGradient1(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT1(Noise)) : Noise;
         return Noise;
     }
 
@@ -483,7 +523,7 @@
         float2 D = CMath_GetGradient2(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT2(Noise)) : Noise;
         return Noise;
     }
 
@@ -497,7 +537,7 @@
         float3 D = CMath_GetGradient3(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float3 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate((Noise * 0.5) + 0.5) : Noise;
+        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT3(Noise)) : Noise;
         return Noise;
     }
 

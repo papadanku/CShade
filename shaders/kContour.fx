@@ -164,18 +164,18 @@ float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
             OutputColor.rgb = lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
             break;
         case 1: // Quadrate
-            OutputColor.rgb = lerp(OutputColor.rgb, (G.Ix.rgb * 0.5) + 0.5, Grid.Index == 1);
+            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT2(G.Ix.rgb), Grid.Index == 1);
             OutputColor.rgb = lerp(OutputColor.rgb, I.rgb, Grid.Index == 2);
-            OutputColor.rgb = lerp(OutputColor.rgb, (G.Iy.rgb * 0.5) + 0.5, Grid.Index == 3);
+            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT2(G.Iy.rgb), Grid.Index == 3);
             break;
         case 2: // Magnitude
             OutputColor.rgb = I.rgb;
             break;
         case 3: // X Gradient
-            OutputColor.rgb = (G.Ix.rgb * 0.5) + 0.5;
+            OutputColor.rgb = CMath_SNORMtoUNORM_FLT2(G.Ix.rgb);
             break;
         case 4: // Y Gradient
-            OutputColor.rgb = (G.Iy.rgb * 0.5) + 0.5;
+            OutputColor.rgb = CMath_SNORMtoUNORM_FLT2(G.Iy.rgb);
             break;
         default:
             OutputColor.rgb = Base.rgb;

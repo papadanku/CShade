@@ -80,7 +80,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     const float2 PixelSize = 1.0 / ScreenSize;
 
     float Noise = Pi2 * CMath_GetGoldenRatioNoise(Input.HPos.xy);
-    float2 UNormTex = (Input.Tex0 * 2.0) - 1.0;
+    float2 UNormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
 
     float2 Rotation = 0.0;
     sincos(Noise, Rotation.y, Rotation.x);
@@ -108,7 +108,7 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
         for (float y = -0.75; y <= 0.75; y += 0.5)
         {
             float2 Shift = float2(float(x), float(y));
-            // Shift = mul(Shift, RotationMatrix);
+            Shift = mul(Shift, RotationMatrix);
             float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * 2.0;
             DiskShift *= _Radius;
             DiskShift.x *= AspectRatio;

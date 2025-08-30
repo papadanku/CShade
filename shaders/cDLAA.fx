@@ -182,8 +182,8 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 LongBlurH = (H0 + H1 + H2 + H3 + H4 + H5 + H6 + H7) / 8.0;
     float4 LongBlurV = (V0 + V1 + V2 + V3 + V4 + V5 + V6 + V7) / 8.0;
 
-    float LongEdgeMaskH = saturate((LongBlurH.a * 2.0) - 1.0);
-    float LongEdgeMaskV = saturate((LongBlurV.a * 2.0) - 1.0);
+    float LongEdgeMaskH = saturate(CMath_UNORMtoSNORM_FLT2(LongBlurH.a));
+    float LongEdgeMaskV = saturate(CMath_UNORMtoSNORM_FLT2(LongBlurV.a));
 
     // Put the criteria into a variable.
     bool IsLongEdge = abs(LongEdgeMaskH - LongEdgeMaskV) > ContrastThresholds[_LongEdgesContrastThreshold];

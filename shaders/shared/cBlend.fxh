@@ -68,6 +68,7 @@
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
     uniform float _CShadeAlphaFactor <
+        ui_category_closed = true;
         ui_category = "Pipeline · Output · Blending";
         ui_label = "Alpha Blend Factor";
         ui_tooltip = "Use this to adjust blending factor when using the following Blends: SRCALPHA/INVSRCALPHA";
@@ -77,6 +78,7 @@
     > = 1.0;
 
     uniform int _CShadeSwizzleRed <
+        ui_category_closed = true;
         ui_category = "Pipeline · Output · Color Switch";
         ui_label = "Red [R]";
         ui_type = "combo";

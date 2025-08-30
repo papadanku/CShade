@@ -23,6 +23,8 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "shared/cMath.fxh"
+
 /*
     [Shader Options]
 */
@@ -58,7 +60,7 @@ uniform bool _Symmetry <
 float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
     // Convert to polar coordinates
-    float2 Polar = (Input.Tex0 * 2.0) - 1.0;
+    float2 Polar = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
     float Phi = atan2(Polar.y, Polar.x);
     float Radius = length(Polar);
 
@@ -71,7 +73,7 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Convert back to the texture coordinate.
     float2 PhiSinCos;
     sincos(Phi, PhiSinCos.x, PhiSinCos.y);
-    Input.Tex0 = ((PhiSinCos.yx * Radius) * 0.5) + 0.5;
+    Input.Tex0 = CMath_SNORMtoUNORM_FLT2(PhiSinCos.yx * Radius);
 
     // Reflection at the border of the screen.
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);

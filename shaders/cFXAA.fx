@@ -286,7 +286,7 @@ float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     if (_DisplayMode == 1)
     {
         FXAA = float3(Input.Tex0 - BlendTex, 0.0);
-        FXAA.xy = (normalize(FXAA.xy) * 0.5) + 0.5;
+        FXAA.xy = CMath_SNORMtoUNORM_FLT2(normalize(FXAA.xy));
     }
 
     return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));

@@ -242,7 +242,7 @@
     float3 CMotionEstimation_GetMotionVectorRGB(float2 MotionVectors)
     {
         float3 VectorRGB = normalize(float3(MotionVectors, 1e-3));
-        VectorRGB.xy = (VectorRGB.xy * 0.5) + 0.5;
+        VectorRGB.xy = CMath_SNORMtoUNORM_FLT2(VectorRGB.xy);
         VectorRGB.z = sqrt(1.0 - saturate(dot(VectorRGB.xy, VectorRGB.xy)));
         VectorRGB = normalize(VectorRGB);
         return VectorRGB;
