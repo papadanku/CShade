@@ -13,58 +13,10 @@
 // Exposure-specific settings
 uniform float _Frametime < source = "frametime"; >;
 
-uniform int _ExposureMeter <
-    ui_category = "Exposure";
-    ui_label = "Adaptation";
-    ui_type = "combo";
-    ui_items = "Average Metering\0Spot Metering\0";
-> = 0;
-
-uniform bool _ExposureLumaOverlay <
-    ui_category = "Exposure · Luminance Meter";
-    ui_label = "Enable Luminance Meter";
-    ui_type = "radio";
-> = false;
-
-uniform float _AverageExposureScale <
-    ui_category = "Exposure · Luminance Meter";
-    ui_label = "Scale";
-    ui_type = "slider";
-    ui_min = 1e-3;
-    ui_max = 1.0;
-> = 0.75;
-
-uniform float2 _AverageExposureOffset <
-    ui_category = "Exposure · Luminance Meter";
-    ui_label = "Offset";
-    ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
-> = float2(0.0, -0.25);
-
-uniform bool _ExposureSpotMeterOverlay <
-    ui_category = "Exposure · Spot Meter";
-    ui_label = "Show Area";
-    ui_type = "radio";
-> = false;
-
-uniform float _SpotExposureScale <
-    ui_category = "Exposure · Spot Meter";
-    ui_label = "Scale";
-    ui_type = "slider";
-    ui_min = 1e-3;
-    ui_max = 1.0;
-> = 0.5;
-
-uniform float2 _SpotExposureOffset <
-    ui_category = "Exposure · Spot Meter";
-    ui_label = "Offset";
-    ui_type = "slider";
-    ui_min = -1.0;
-    ui_max = 1.0;
-> = 0.0;
-
 #if SHADER_TOGGLE_GRADING
+
+    #include "shared/cShadeHDR.fxh"
+
     uniform float _GradeLightness <
         ui_category = "Color Grading · Color Adjustments";
         ui_label = "Lightness";
@@ -218,10 +170,14 @@ uniform float2 _SpotExposureOffset <
         ui_min = 0.0;
         ui_max = 1.0;
     > = 1.0;
+
+    #include "shared/cCamera.fxh"
+
+#else
+    #include "shared/cShadeHDR.fxh"
+    #include "shared/cCamera.fxh"
 #endif
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cCamera.fxh"
 #include "shared/cTonemapOutput.fxh"
 #include "shared/cBlend.fxh"
 
@@ -249,65 +205,10 @@ CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CL
     Tonemapping | https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */
 
-// Exposure-specific functions
-float2 GetSpotMeterTex(float2 Tex)
-{
-    // For spot-metering, we fill the target square texture with the region only
-    float2 SpotMeterTex = (Tex * 2.0) - 1.0;
-
-    // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
-    #if BUFFER_WIDTH > BUFFER_HEIGHT
-        SpotMeterTex.x /= ASPECT_RATIO;
-    #else
-        SpotMeterTex.y /= ASPECT_RATIO;
-    #endif
-
-    SpotMeterTex *= _SpotExposureScale;
-    SpotMeterTex += float2(_SpotExposureOffset.x, -_SpotExposureOffset.y);
-    SpotMeterTex = (SpotMeterTex * 0.5) + 0.5;
-
-    return SpotMeterTex;
-}
-
-void ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 NonExposedColor)
-{
-    /*
-        Create a UV that represents a square texture.
-            Width conversion | [0, 1] -> [-N, N]
-            Height conversion | [0, 1] -> [-N, N]
-    */
-    float2 OverlayPos = UnormTex;
-    OverlayPos -= float2(_SpotExposureOffset.x, -_SpotExposureOffset.y);
-    OverlayPos /= _SpotExposureScale;
-    float2 DotPos = OverlayPos;
-
-    // Shrink the UV so [-1, 1] fills a square
-    #if BUFFER_WIDTH > BUFFER_HEIGHT
-        OverlayPos.x *= ASPECT_RATIO;
-    #else
-        OverlayPos.y *= ASPECT_RATIO;
-    #endif
-
-    // Create the needed mask; output 1 if the texcoord is within square range
-    float SquareMask = all(abs(OverlayPos) <= 1.0);
-
-    // Shrink the UV so [-1, 1] fills a square
-    #if BUFFER_WIDTH > BUFFER_HEIGHT
-        DotPos.x *= ASPECT_RATIO;
-    #else
-        DotPos.y *= ASPECT_RATIO;
-    #endif
-    float DotMask = CMath_GetAntiAliasShape(length(DotPos), 0.1);
-
-    // Apply square mask to output
-    Color = lerp(Color, NonExposedColor.rgb, SquareMask);
-    // Apply dot mask to output
-    Color = lerp(1.0, Color, DotMask);
-}
 
 float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float2 Tex = (_ExposureMeter == 1) ? GetSpotMeterTex(Input.Tex0) : Input.Tex0;
+    float2 Tex = (_CCameraMeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
     float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
     return CCamera_CreateExposureTex(LogLuminance, _Frametime);
@@ -322,6 +223,9 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     float Luma = tex2Dlod(SampleExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
     Exposure ExposureData = CCamera_GetExposureData(Luma);
     BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
+
+    // Store the exposed color here for checkerboard check
+    float3 ExposedColor = BaseColor;
 
     #if SHADER_TOGGLE_GRADING
         // Apply color-grading
@@ -354,17 +258,10 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     BaseColor = CTonemap_ApplyOutputTonemap(BaseColor);
 
     // Apply overlays
-    float2 UnormTex = (Input.Tex0 * 2.0) - 1.0;
-
-    if ((_ExposureMeter == 1) && _ExposureSpotMeterOverlay)
-    {
-        ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
-    }
-
-    if (_ExposureLumaOverlay)
-    {
-        CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData, _AverageExposureOffset);
-    }
+    float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+    CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
+    CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
+    CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
     return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));
 }
