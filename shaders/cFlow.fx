@@ -77,7 +77,7 @@ CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR,
 
 float PS_GenerateNoise(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    return CMath_GetHash1(Input.HPos.xy, 0.0);
+    return CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
 }
 
 float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0

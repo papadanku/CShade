@@ -326,21 +326,21 @@
 
     */
 
-    float CMath_GetHash1(float2 P, float Bias)
+    float CMath_GetHash_FLT1(float2 P, float Bias)
     {
         float3 P3 = frac(P.xyx * 0.1031);
         P3 += dot(P3, P3.yzx + 33.33);
         return frac(((P3.x + P3.y) * P3.z) + Bias);
     }
 
-    float2 CMath_GetHash2(float2 P, float2 Bias)
+    float2 CMath_GetHash_FLT2(float2 P, float2 Bias)
     {
         float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
         P3 += dot(P3, P3.yzx + 33.33);
         return frac(((P3.xx + P3.yz) * P3.zy) + Bias);
     }
 
-    float3 CMath_GetHash3(float2 P, float3 Bias)
+    float3 CMath_GetHash_FLT3(float2 P, float3 Bias)
     {
         float3 P3 = frac(P.xyx * float3(0.1031, 0.1030, 0.0973));
         P3 += dot(P3, P3.yxz + 33.33);
@@ -413,7 +413,7 @@
     }
 
     /*
-        CMath_GetGradientNoise1(): https://iquilezles.org/articles/gradientnoise/
+        CMath_GetGradientNoise_FLT1(): https://iquilezles.org/articles/gradientnoise/
         CMath_GetQuintic(): https://iquilezles.org/articles/texture/
 
         The MIT License (MIT)
@@ -447,34 +447,34 @@
     {
         float2 I = floor(Tex);
         float2 F = frac(Tex);
-        float A = CMath_GetHash1(I + float2(0.0, 0.0), Bias);
-        float B = CMath_GetHash1(I + float2(1.0, 0.0), Bias);
-        float C = CMath_GetHash1(I + float2(0.0, 1.0), Bias);
-        float D = CMath_GetHash1(I + float2(1.0, 1.0), Bias);
+        float A = CMath_GetHash_FLT1(I + float2(0.0, 0.0), Bias);
+        float B = CMath_GetHash_FLT1(I + float2(1.0, 0.0), Bias);
+        float C = CMath_GetHash_FLT1(I + float2(0.0, 1.0), Bias);
+        float D = CMath_GetHash_FLT1(I + float2(1.0, 1.0), Bias);
         float2 UV = UseQuintic ? CMath_GetQuintic(F) : F;
         return lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
     }
 
-    float CMath_GetGradient1(float2 I, float2 F, float2 O, float Bias)
+    float CMath_GetGradient_FLT1(float2 I, float2 F, float2 O, float Bias)
     {
         // Get constants
         const float TwoPi = CMath_GetPi() * 2.0;
 
         // Calculate random hash rotation
-        float Hash = CMath_GetHash1(I + O, Bias) * TwoPi;
+        float Hash = CMath_GetHash_FLT1(I + O, Bias) * TwoPi;
         float2 HashSinCos = float2(sin(Hash), cos(Hash));
 
         // Calculate final dot-product
         return dot(HashSinCos, F - O);
     }
 
-    float2 CMath_GetGradient2(float2 I, float2 F, float2 O, float Bias)
+    float2 CMath_GetGradient_FLT2(float2 I, float2 F, float2 O, float Bias)
     {
         // Get constants
         const float TwoPi = CMath_GetPi() * 2.0;
 
         // Calculate random hash rotation
-        float2 Hash = CMath_GetHash2(I + O, Bias) * TwoPi;
+        float2 Hash = CMath_GetHash_FLT2(I + O, Bias) * TwoPi;
         float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
         float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
         float2 Gradient = F - O;
@@ -483,13 +483,13 @@
         return float2(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient));
     }
 
-    float3 CMath_GetGradient3(float2 I, float2 F, float2 O, float Bias)
+    float3 CMath_GetGradient_FLT3(float2 I, float2 F, float2 O, float Bias)
     {
         // Get constants
         const float TwoPi = CMath_GetPi() * 2.0;
 
         // Calculate random hash rotation
-        float3 Hash = CMath_GetHash3(I + O, Bias) * TwoPi;
+        float3 Hash = CMath_GetHash_FLT3(I + O, Bias) * TwoPi;
         float2 HashSinCos1 = float2(sin(Hash.x), cos(Hash.x));
         float2 HashSinCos2 = float2(sin(Hash.y), cos(Hash.y));
         float2 HashSinCos3 = float2(sin(Hash.z), cos(Hash.z));
@@ -499,42 +499,42 @@
         return float3(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient), dot(HashSinCos3, Gradient));
     }
 
-    float CMath_GetGradientNoise1(float2 Tex, float Bias, bool Normalize)
+    float CMath_GetGradientNoise_FLT1(float2 Tex, float Bias, bool Normalize)
     {
         float2 I = floor(Tex);
         float2 F = frac(Tex);
-        float A = CMath_GetGradient1(I, F, float2(0.0, 0.0), Bias);
-        float B = CMath_GetGradient1(I, F, float2(1.0, 0.0), Bias);
-        float C = CMath_GetGradient1(I, F, float2(0.0, 1.0), Bias);
-        float D = CMath_GetGradient1(I, F, float2(1.0, 1.0), Bias);
+        float A = CMath_GetGradient_FLT1(I, F, float2(0.0, 0.0), Bias);
+        float B = CMath_GetGradient_FLT1(I, F, float2(1.0, 0.0), Bias);
+        float C = CMath_GetGradient_FLT1(I, F, float2(0.0, 1.0), Bias);
+        float D = CMath_GetGradient_FLT1(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
         Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT1(Noise)) : Noise;
         return Noise;
     }
 
-    float2 CMath_GetGradientNoise2(float2 Input, float Bias, bool Normalize)
+    float2 CMath_GetGradientNoise_FLT2(float2 Input, float Bias, bool Normalize)
     {
         float2 I = floor(Input);
         float2 F = frac(Input);
-        float2 A = CMath_GetGradient2(I, F, float2(0.0, 0.0), Bias);
-        float2 B = CMath_GetGradient2(I, F, float2(1.0, 0.0), Bias);
-        float2 C = CMath_GetGradient2(I, F, float2(0.0, 1.0), Bias);
-        float2 D = CMath_GetGradient2(I, F, float2(1.0, 1.0), Bias);
+        float2 A = CMath_GetGradient_FLT2(I, F, float2(0.0, 0.0), Bias);
+        float2 B = CMath_GetGradient_FLT2(I, F, float2(1.0, 0.0), Bias);
+        float2 C = CMath_GetGradient_FLT2(I, F, float2(0.0, 1.0), Bias);
+        float2 D = CMath_GetGradient_FLT2(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
         Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT2(Noise)) : Noise;
         return Noise;
     }
 
-    float3 CMath_GetGradientNoise3(float2 Input, float Bias, bool Normalize)
+    float3 CMath_GetGradientNoise_FLT3(float2 Input, float Bias, bool Normalize)
     {
         float2 I = floor(Input);
         float2 F = frac(Input);
-        float3 A = CMath_GetGradient3(I, F, float2(0.0, 0.0), Bias);
-        float3 B = CMath_GetGradient3(I, F, float2(1.0, 0.0), Bias);
-        float3 C = CMath_GetGradient3(I, F, float2(0.0, 1.0), Bias);
-        float3 D = CMath_GetGradient3(I, F, float2(1.0, 1.0), Bias);
+        float3 A = CMath_GetGradient_FLT3(I, F, float2(0.0, 0.0), Bias);
+        float3 B = CMath_GetGradient_FLT3(I, F, float2(1.0, 0.0), Bias);
+        float3 C = CMath_GetGradient_FLT3(I, F, float2(0.0, 1.0), Bias);
+        float3 D = CMath_GetGradient_FLT3(I, F, float2(1.0, 1.0), Bias);
         float2 UV = CMath_GetQuintic(F);
         float3 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
         Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT3(Noise)) : Noise;

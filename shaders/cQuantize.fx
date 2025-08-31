@@ -73,7 +73,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
                 Dither = CMath_GetInterleavedGradientNoise(HashPos) / _Range;
                 break;
             case 2:
-                Dither = CMath_GetHash1(HashPos, 0.0) / _Range;
+                Dither = CMath_GetHash_FLT1(HashPos, 0.0) / _Range;
                 break;
             default:
                 Dither = 0.0;
