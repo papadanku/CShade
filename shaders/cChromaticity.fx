@@ -77,7 +77,7 @@ float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
             const float Pi2 = 1.0 / CMath_GetPi();
             Chromaticity.rg = CColor_RGBtoOKLCH(Color).yz;
             Chromaticity.g *= Pi2;
-            Chromaticity.g = CMath_SNORMtoUNORM_FLT2(Chromaticity.g);
+            Chromaticity.g = CMath_SNORMtoUNORM_FLT1(Chromaticity.g);
             break;
         default: // No Chromaticity
             Chromaticity.rgb = 0.0;

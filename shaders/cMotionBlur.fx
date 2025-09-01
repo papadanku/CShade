@@ -176,7 +176,7 @@ float4 GetMotionBlur(CShade_VS2PS_Quad Input, float2 MotionVectors)
     [unroll]
     for (int i = 0; i < Samples; ++i)
     {
-        float Random = (_BlurDirection == 1) ? CMath_UNORMtoSNORM_FLT2(Noise) : Noise;
+        float Random = (_BlurDirection == 1) ? CMath_UNORMtoSNORM_FLT1(Noise) : Noise;
         float MotionMultiplier = (float(i) + Random) / float(Samples - 1);
         float2 LocalTex = Input.Tex0 - (ScaledMotionVectors * MotionMultiplier);
         float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, LocalTex);
