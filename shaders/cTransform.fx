@@ -199,17 +199,18 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_RenderMode == 1)
     {
-        // Process Overlay Tex
+        float2 BaseTex = Input.Tex0;
         float2 OverlayTex = Input.Tex0;
-        CMath_ApplyGeometricTransform(OverlayTex, _OverlayTransformOrder, _OverlayAngle * Pi2, _OverlayTranslate, _OverlayScale, true);
-
-        // Process Overlay Mask (different from OverlayTex)
         float2 OverlayMaskTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+
+        // Apply transformations
+        CMath_ApplyGeometricTransform(BaseTex, _BaseGeometricTransformOrder, _BaseAngle * Pi2, _BaseTranslate, _BaseScale, true);
+        CMath_ApplyGeometricTransform(OverlayTex, _OverlayTransformOrder, _OverlayAngle * Pi2, _OverlayTranslate, _OverlayScale, true);
         CMath_ApplyGeometricTransform(OverlayMaskTex, _OverlayMaskTransformOrder, _OverlayMaskAngle * Pi2, _OverlayMaskTranslate, _OverlayMaskScale, false);
-        float OverlayMask = CreateOverlayMask(OverlayMaskTex);
 
         // Composite OverlayTex over base tex
-        Input.Tex0 = lerp(Input.Tex0, OverlayTex, OverlayMask);
+        float OverlayMask = CreateOverlayMask(OverlayMaskTex);
+        Input.Tex0 = lerp(BaseTex, OverlayTex, OverlayMask);
     }
     else
     {
