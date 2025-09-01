@@ -248,7 +248,7 @@ float GetEdgeBlendFactor(LumaNeighborhood LN, LumaDiagonals LD, Edge E, float2 T
     }
 }
 
-float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Delta = fwidth(Input.Tex0);
     LumaNeighborhood LN = GetLumaNeighborhood(Input.Tex0, Delta);
@@ -287,7 +287,7 @@ float4 PS_FXAA(CShade_VS2PS_Quad Input) : SV_TARGET0
         FXAA.xy = CMath_SNORMtoUNORM_FLT2(normalize(FXAA.xy));
     }
 
-    return CBlend_OutputChannels(float4(FXAA, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(FXAA, _CShadeAlphaFactor);
 }
 
 technique CShade_FXAA
@@ -301,6 +301,6 @@ technique CShade_FXAA
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_FXAA;
+        PixelShader = PS_Main;
     }
 }

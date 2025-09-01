@@ -55,7 +55,7 @@ uniform bool _Symmetry <
     [Pixel Shaders]
 */
 
-float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     // Convert to polar coordinates
     float2 Polar = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
@@ -75,7 +75,9 @@ float4 PS_Mirror(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Reflection at the border of the screen.
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
-    return CBlend_OutputChannels(float4(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb, _CShadeAlphaFactor));
+    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+
+    Output = CBlend_OutputChannels(Base.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_KinoMirror
@@ -90,6 +92,6 @@ technique CShade_KinoMirror
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Mirror;
+        PixelShader = PS_Main;
     }
 }

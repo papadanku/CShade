@@ -258,15 +258,15 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 */
 
 #if SHADER_TOGGLE_AUTOEXPOSURE
-    float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
+    void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
-        return CCamera_CreateExposureTex(LogLuminance, _Frametime);
+        Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
     }
 #endif
 
 // Bloom-specific functions
-float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
     float Luminance = 1.0;
@@ -302,13 +302,14 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _BloomThreshold) / max(Brightness, 1e-10);
 
-    return float4(Color.rgb, Luminance);
+    Output.rgb = Color.rgb;
+    Output.a = Luminance;
 }
 
 #define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
-    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
+    void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
     { \
-        return CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
+        Output = CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
     }
 
 CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
@@ -321,9 +322,10 @@ CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
 CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
 #define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
-    float4 METHOD_NAME(CShade_VS2PS_Quad Input) : SV_TARGET0 \
+    void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
     { \
-        return float4(CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb, 1.0); \
+        Output.rgb = CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb; \
+        Output.a = 1.0; \
     }
 
 CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
@@ -334,7 +336,7 @@ CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
 CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
 CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
-float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
@@ -390,7 +392,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
         CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
     #endif
 
-    return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(BaseColor.rgb, _CShadeAlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -444,12 +446,12 @@ technique CShade_AutoExposureBloom
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Composite;
+        PixelShader = PS_Main;
     }
 
     /*
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
-        We store the coarsest level here to synchronize the auto exposure Luma texture in the PS_Prefilter and PS_Composite passes.
+        We store the coarsest level here to synchronize the auto exposure Luma texture in the PS_Prefilter and PS_Main passes.
     */
     #if SHADER_TOGGLE_AUTOEXPOSURE
         pass CCamera_CreateExposureTex

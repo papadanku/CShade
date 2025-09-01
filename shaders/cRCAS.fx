@@ -153,7 +153,7 @@ void FFX_RCAS(
     FilterMask = -Lobe;
 }
 
-float4 PS_RCAS(CShade_VS2PS_Quad Input): SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 OutputColor = 1.0;
     float4 OutputMask = 1.0;
@@ -170,7 +170,7 @@ float4 PS_RCAS(CShade_VS2PS_Quad Input): SV_TARGET0
         OutputColor = OutputMask;
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_RCAS
@@ -185,6 +185,6 @@ technique CShade_RCAS
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_RCAS;
+        PixelShader = PS_Main;
     }
 }

@@ -2,6 +2,12 @@
 
 #include "cBlur.fxh"
 
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+{
+    Output.rgb = GetGaussianBlur(Input.Tex0, false).rgb;
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
+}
+
 technique CShade_VerticalBlur
 <
     ui_label = "CShade · Vertical Blur";
@@ -14,6 +20,6 @@ technique CShade_VerticalBlur
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_VGaussianBlur;
+        PixelShader = PS_Main;
     }
 }

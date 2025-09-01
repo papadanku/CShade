@@ -8,13 +8,13 @@ uniform float4 _Color <
     ui_label = "Color";
     ui_type = "color";
     ui_min = 0.0;
-> = 1.0;
+> = 0.5;
 
 #include "shared/cShade.fxh"
 
 uniform bool _BlendWithAlpha <
     ui_category = "Pipeline · Output · Blending";
-    ui_label = "Blend With Alpha Channel";
+    ui_label = "Apply Texture Alpha";
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";
 > = false;
@@ -25,15 +25,15 @@ uniform bool _BlendWithAlpha <
     [Pixel Shaders]
 */
 
-float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    #if CBLEND_BLENDENABLE
+    #if (CBLEND_BLENDENABLE == TRUE)
         float Alpha = _BlendWithAlpha ? _Color.a * _CShadeAlphaFactor : _CShadeAlphaFactor;
     #else
         float Alpha = _Color.a;
     #endif
 
-    return CBlend_OutputChannels(float4(_Color.rgb, Alpha));
+    Output = CBlend_OutputChannels(_Color.rgb, Alpha);
 }
 
 technique CShade_SolidColor
@@ -48,6 +48,6 @@ technique CShade_SolidColor
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Color;
+        PixelShader = PS_Main;
     }
 }

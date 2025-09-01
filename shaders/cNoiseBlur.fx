@@ -69,10 +69,8 @@ uniform float2 _FalloffOffset <
     [Pixel Shaders]
 */
 
-float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 OutputColor = 0.0;
-
     float Pi2 = CMath_GetPi() * 2.0;
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
@@ -88,15 +86,14 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
     float AspectRatio = ScreenSize.y * (1.0 / ScreenSize.x);
 
     // Compute optional radius falloff
-    float FalloffFactor = 1.0;
-
+    float Falloff = 1.0;
     if (_EnableFalloff)
     {
-        FalloffFactor = FFX_Lens_GetVignetteMask(UNormTex + _FalloffOffset, 0.0, _FalloffAmount);
+        Falloff = FFX_Lens_GetVignetteMask(UNormTex + _FalloffOffset, 0.0, _FalloffAmount);
+        Falloff = _InvertFalloff ? Falloff : 1.0 - Falloff;
     }
 
-    FalloffFactor = _InvertFalloff ? FalloffFactor : 1.0 - FalloffFactor;
-
+    Output = 0.0;
     float Weight = 0.0;
 
     [unroll]
@@ -108,16 +105,17 @@ float4 PS_NoiseBlur(CShade_VS2PS_Quad Input) : SV_TARGET0
             float2 Shift = float2(float(x), float(y));
             Shift = mul(Shift, RotationMatrix);
             float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * 2.0;
+            DiskShift *= Falloff;
             DiskShift *= _Radius;
             DiskShift.x *= AspectRatio;
 
             float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
-            OutputColor += tex2D(CShade_SampleColorTex, FetchTex);
+            Output += tex2D(CShade_SampleColorTex, FetchTex);
             Weight += 1.0;
         }
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb / Weight, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShadeAlphaFactor);
 }
 
 technique CShade_NoiseBlur
@@ -132,6 +130,6 @@ technique CShade_NoiseBlur
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_NoiseBlur;
+        PixelShader = PS_Main;
     }
 }

@@ -204,15 +204,15 @@ CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CL
 */
 
 
-float4 PS_GetExposure(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Tex = (_CCameraMeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
     float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
-    return CCamera_CreateExposureTex(LogLuminance, _Frametime);
+    Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
 }
 
-float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
@@ -261,7 +261,7 @@ float4 PS_Composite(CShade_VS2PS_Quad Input) : SV_TARGET0
     CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
     CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
-    return CBlend_OutputChannels(float4(BaseColor, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(BaseColor.rgb, _CShadeAlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -303,6 +303,6 @@ technique CShade_AutoExposure
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Composite;
+        PixelShader = PS_Main;
     }
 }

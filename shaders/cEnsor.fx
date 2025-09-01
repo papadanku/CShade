@@ -8,17 +8,9 @@
 
 uniform int _DisplayMode <
     ui_label = "Render Mode";
-    ui_type = "radio";
+    ui_type = "combo";
     ui_items = "Output\0Mask\0";
 > = 0;
-
-uniform float _Blockiness <
-    ui_label = "Blockiness";
-    ui_type = "slider";
-    ui_min = 0.0;
-    ui_max = 7.0;
-    ui_step = 0.1;
-> = 3.0;
 
 uniform int _DetectionMode <
     ui_label = "Search Algorithm";
@@ -31,6 +23,14 @@ uniform int _Comparison <
     ui_type = "combo";
     ui_items = "Less Than\0Greater Than\0Equal\0Not Equal\0Less Than or Equal\0Greater Than or Equal\0";
 > = 1;
+
+uniform float _Blockiness <
+    ui_label = "Blockiness";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 7.0;
+    ui_step = 0.1;
+> = 3.0;
 
 uniform float _Threshold <
     ui_label = "Search Threshold";
@@ -100,7 +100,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
     return Color;
 }
 
-float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
     float4 Blocks = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
@@ -108,7 +108,6 @@ float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Initialize variables
     float3 Feature = (_DetectionMode == 0) ? Blocks.rgb : Blocks.aaa;
     bool3 Mask = false;
-    float3 OutputColor = 0.0;
 
     switch (_Comparison)
     {
@@ -134,14 +133,14 @@ float4 PS_Censor(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     if (_DisplayMode == 1)
     {
-        OutputColor = Mask;
+        Output.rgb = Mask;
     }
     else
     {
-        OutputColor = lerp(Color.rgb, Blocks.rgb, Mask);
+        Output.rgb = lerp(Color.rgb, Blocks.rgb, Mask);
     }
 
-    return CBlend_OutputChannels(float4(OutputColor, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Censor
@@ -165,6 +164,6 @@ technique CShade_Censor
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Censor;
+        PixelShader = PS_Main;
     }
 }

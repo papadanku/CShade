@@ -163,67 +163,66 @@ CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPLING, SH
     [Pixel Shaders]
 */
 
-float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
-    return float4(CColor_RGBtoSphericalRGB(Color), 1.0);
+    Output = float4(CColor_RGBtoSphericalRGB(Color), 1.0);
 }
 
 // Run Lucas-Kanade
 
-float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex5).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex4).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
-    float BlendScale = _BlendFactor + 1.0;
-    return float4(Flow, 0.0, 1.0 / BlendScale);
+    Output = float4(Flow, 0.0, 1.0 / (_BlendFactor + 1.0));
 }
 
 /*
     Post-process filtering
 */
 
-float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rgb, 1.0);
+    Output = tex2D(SampleTempTex1, Input.Tex0.xy);
 }
 
-float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Median(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetMedian(SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetMedian(SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).xy;
 }
 
 float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
@@ -242,7 +241,7 @@ float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
     return CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
 }
 
-float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
 
@@ -260,28 +259,26 @@ float4 PS_MotionStabilization(CShade_VS2PS_Quad Input) : SV_TARGET0
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
     float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);
 
-    float4 OutputColor = float4(0.0, 0.0, 0.0, 1.0);
-
     switch (_DisplayMode)
     {
         case 0:
-            OutputColor.rgb = ShaderOutput.rgb;
+            Output.rgb = ShaderOutput.rgb;
             break;
         case 1:
-            OutputColor.rgb = CMotionEstimation_GetDebugQuadrant(Base.rgb, ShaderOutput.rgb, MotionVectors, Grid.Index);
+            Output.rgb = CMotionEstimation_GetDebugQuadrant(Base.rgb, ShaderOutput.rgb, MotionVectors, Grid.Index);
             break;
         case 2:
-            OutputColor.rgb = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
+            Output.rgb = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
             break;
         case 3:
-            OutputColor.rgb = length(MotionVectors);
+            Output.rgb = length(MotionVectors);
             break;
         default:
-            OutputColor.rgb = Base.rgb;
+            Output.rgb = Base.rgb;
             break;
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
@@ -359,6 +356,6 @@ technique CShade_MotionStabilization
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_MotionStabilization;
+        PixelShader = PS_Main;
     }
 }

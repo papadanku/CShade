@@ -33,19 +33,19 @@ CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LINEAR, CL
 */
 
 // Display the buffer
-float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 CurrentFrame = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 PreviousFrame = CColor_SRGBtoRGB(tex2D(SamplePreviousFrameTex, Input.Tex0));
     float3 BlendColor = lerp(CurrentFrame.rgb, PreviousFrame.rgb, _BlendFactor);
 
-    return CBlend_OutputChannels(float4(BlendColor, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(BlendColor, _CShadeAlphaFactor);
 }
 
 // Copy backbuffer to a that continuously blends with its previous result
-float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return tex2D(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 technique CShade_Ghosting
@@ -60,7 +60,7 @@ technique CShade_Ghosting
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Blend;
+        PixelShader = PS_Main;
     }
 
     pass

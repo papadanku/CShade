@@ -111,7 +111,7 @@ void FFX_Lens(
     FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
 }
 
-float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 OutputColor = 1.0;
     float Seed = _GrainSeed;
@@ -126,7 +126,8 @@ float4 PS_Lens(CShade_VS2PS_Quad Input): SV_TARGET0
         _Vignette,
         Seed
     );
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Lens
@@ -141,6 +142,6 @@ technique CShade_Lens
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Lens;
+        PixelShader = PS_Main;
     }
 }

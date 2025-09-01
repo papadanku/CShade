@@ -125,7 +125,7 @@ CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
     return G;
 }
 
-float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float Threshold = _LowerThreshold;
     float InverseRange = 1.0 / (_UpperThreshold - _LowerThreshold);
@@ -183,7 +183,7 @@ float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
             break;
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_KinoContour
@@ -198,6 +198,6 @@ technique CShade_KinoContour
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Grad;
+        PixelShader = PS_Main;
     }
 }

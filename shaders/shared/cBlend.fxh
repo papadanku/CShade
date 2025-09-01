@@ -137,7 +137,7 @@
         ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
     > = 0;
 
-    void CBlend_SwapChannel(in float4 Cache, inout float Color, in int Parameter)
+    void CBlend_SwapChannel(inout float Color, in float4 Cache, in int Parameter)
     {
         switch (Parameter)
         {
@@ -159,14 +159,15 @@
         }
     }
 
-    float4 CBlend_OutputChannels(float4 Channels)
+    float4 CBlend_OutputChannels(float3 Color, float Alpha)
     {
         // Swizzling
-        float4 Cache = Channels;
-        CBlend_SwapChannel(Cache, Channels.r, _CShadeSwizzleRed);
-        CBlend_SwapChannel(Cache, Channels.g, _CShadeSwizzleGreen);
-        CBlend_SwapChannel(Cache, Channels.b, _CShadeSwizzleBlue);
-        CBlend_SwapChannel(Cache, Channels.a, _CShadeSwizzleAlpha);
+        float4 Cache = float4(Color, Alpha);
+        float4 Channels = Cache;
+        CBlend_SwapChannel(Channels.r, Cache, _CShadeSwizzleRed);
+        CBlend_SwapChannel(Channels.g, Cache, _CShadeSwizzleGreen);
+        CBlend_SwapChannel(Channels.b, Cache, _CShadeSwizzleBlue);
+        CBlend_SwapChannel(Channels.a, Cache, _CShadeSwizzleAlpha);
 
         // Process OutputColor
         float4 OutputColor = 0.0;
@@ -193,7 +194,7 @@
                 break;
         }
 
-       return OutputColor;
+        return OutputColor;
     }
 
     uniform int _CBlendPreprocessorGuide <

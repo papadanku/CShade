@@ -19,11 +19,12 @@ uniform int _Select <
     [Pixel Shaders]
 */
 
-float4 PS_Luminance(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
     float3 Luma = CColor_RGBtoLuma(Color.rgb, _Select);
-    return CBlend_OutputChannels(float4(Luma, _CShadeAlphaFactor));
+
+    Output = CBlend_OutputChannels(Luma, _CShadeAlphaFactor);
 }
 
 technique CShade_Grayscale
@@ -38,6 +39,6 @@ technique CShade_Grayscale
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Luminance;
+        PixelShader = PS_Main;
     }
 }

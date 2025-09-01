@@ -140,7 +140,7 @@ uniform float4 _Addition <
 
 uniform bool _BlendWithAlpha <
     ui_category = "Pipeline · Output · Blending";
-    ui_label = "Blend With Alpha Channel";
+    ui_label = "Apply Texture Alpha";
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";
 > = false;
@@ -193,7 +193,7 @@ float CreateOverlayMask(float2 Tex)
     return Shaper.x * Shaper.y;
 }
 
-float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     const float Pi2 = CMath_GetPi() * 2.0;
 
@@ -221,13 +221,17 @@ float4 PS_TextureMAD(CShade_VS2PS_Quad Input) : SV_TARGET0
     float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
     ApplyColorTransform(Texture);
 
-    #if CBLEND_BLENDENABLE
-        float Alpha = _BlendWithAlpha ? Texture.a * _CShadeAlphaFactor : _CShadeAlphaFactor;
+    #if (CBLEND_BLENDENABLE == TRUE)
+        float Alpha = _CShadeAlphaFactor;
+        if (_BlendWithAlpha)
+        {
+            Alpha *= Texture.a;
+        }
     #else
-        float Alpha = Texture.a;
+        float Alpha = 1.0;
     #endif
 
-    return CBlend_OutputChannels(float4(Texture.rgb, Alpha));
+    Output = CBlend_OutputChannels(Texture.rgb, Alpha);
 }
 
 technique CShade_SolidColor
@@ -242,6 +246,6 @@ technique CShade_SolidColor
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_TextureMAD;
+        PixelShader = PS_Main;
     }
 }

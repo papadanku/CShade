@@ -19,72 +19,74 @@ uniform int _Select <
     [Pixel Shaders]
 */
 
-float4 PS_Chromaticity(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
-    float4 Chromaticity = 0.0;
+
+    // Initialize
+    Output = float4(0.0, 0.0, 0.0, 1.0);
 
     switch(_Select)
     {
         case 0: // Length (XY)
-            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 0).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 0).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 0).rgb;
             break;
         case 2: // Average (XY)
-            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 1).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 1).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 2).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 2).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 2).rgb;
             break;
         case 6: // Max (XY)
-            Chromaticity.rg = CColor_RGBtoChromaticityRGB(Color, 3).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Chromaticity.rgb = CColor_RGBtoChromaticityRGB(Color, 3).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Chromaticity.rg = CColor_RGBtoChromaticityRG(Color);
+            Output.rg = CColor_RGBtoChromaticityRG(Color);
             break;
         case 9: // Spherical (XY)
-            Chromaticity.rg = CColor_RGBtoSphericalRGB(Color).yz;
+            Output.rg = CColor_RGBtoSphericalRGB(Color).yz;
             break;
         case 10: // Hue-Saturation (HSI)
-            Chromaticity.rg = CColor_RGBtoHSI(Color).rg;
+            Output.rg = CColor_RGBtoHSI(Color).rg;
             break;
         case 11: // Hue-Saturation (HSL)
-            Chromaticity.rg = CColor_RGBtoHSL(Color).rg;
+            Output.rg = CColor_RGBtoHSL(Color).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Chromaticity.rg = CColor_RGBtoHSV(Color).rg;
+            Output.rg = CColor_RGBtoHSV(Color).rg;
             break;
         case 13: // CoCg (XY)
-            Chromaticity.rg = CColor_SRGBtoYCOCGR(Gamma, true).yz;
+            Output.rg = CColor_SRGBtoYCOCGR(Gamma, true).yz;
             break;
         case 14: // OKLab (AB)
-            Chromaticity.rg = CColor_RGBtoOKLAB(Color).yz;
-            Chromaticity.rg = (Chromaticity.rg + 0.4) / 0.8;
+            Output.rg = CColor_RGBtoOKLAB(Color).yz;
+            Output.rg = (Output.rg + 0.4) / 0.8;
             break;
         case 15: // OKLch (CH)
             const float Pi2 = 1.0 / CMath_GetPi();
-            Chromaticity.rg = CColor_RGBtoOKLCH(Color).yz;
-            Chromaticity.g *= Pi2;
-            Chromaticity.g = CMath_SNORMtoUNORM_FLT1(Chromaticity.g);
+            Output.rg = CColor_RGBtoOKLCH(Color).yz;
+            Output.g *= Pi2;
+            Output.g = CMath_SNORMtoUNORM_FLT1(Output.g);
             break;
-        default: // No Chromaticity
-            Chromaticity.rgb = 0.0;
+        default: // No Output
+            Output.rgb = 0.0;
             break;
     }
 
-    return CBlend_OutputChannels(float4(Chromaticity.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Chromaticity
@@ -98,6 +100,6 @@ technique CShade_Chromaticity
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Chromaticity;
+        PixelShader = PS_Main;
     }
 }

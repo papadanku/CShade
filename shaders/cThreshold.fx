@@ -32,7 +32,7 @@ uniform float _Intensity <
     [Pixel Shaders]
 */
 
-float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5f);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
@@ -45,7 +45,8 @@ float4 PS_Threshold(CShade_VS2PS_Quad Input) : SV_TARGET0
 
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
-    return CBlend_OutputChannels(float4(saturate(Color.rgb * _Intensity), _CShadeAlphaFactor));
+
+    Output = CBlend_OutputChannels(saturate(Color.rgb * _Intensity), _CShadeAlphaFactor);
 }
 
 technique CShade_Threshold
@@ -60,6 +61,6 @@ technique CShade_Threshold
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Threshold;
+        PixelShader = PS_Main;
     }
 }

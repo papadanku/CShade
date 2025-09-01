@@ -170,12 +170,11 @@ void FFX_CAS(
     FilterMask = AmplifyRGB;
 }
 
-float4 PS_CAS(CShade_VS2PS_Quad Input): SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 OutputColor = 1.0;
     float4 OutputMask = 1.0;
     FFX_CAS(
-        OutputColor,
+        Output,
         OutputMask,
         Input.Tex0,
         fwidth(Input.Tex0.xy),
@@ -185,10 +184,10 @@ float4 PS_CAS(CShade_VS2PS_Quad Input): SV_TARGET0
 
     if (_DisplayMode == 1)
     {
-        OutputColor = OutputMask;
+        Output = OutputMask;
     }
 
-    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_CAS
@@ -203,6 +202,6 @@ technique CShade_CAS
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_CAS;
+        PixelShader = PS_Main;
     }
 }

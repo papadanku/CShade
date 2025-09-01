@@ -37,13 +37,13 @@ uniform float3 _Color2 <
     [Pixel Shaders]
 */
 
-float4 PS_Checkerboard(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 Checkerboard = frac(dot(floor(Input.HPos.xy / _Width), 0.5)) * 2.0;
     Checkerboard = _InvertCheckerboard ? 1.0 - Checkerboard : Checkerboard;
     Checkerboard = Checkerboard == 1.0 ? _Color1 : _Color2;
 
-    return CBlend_OutputChannels(float4(Checkerboard, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Checkerboard, _CShadeAlphaFactor);
 }
 
 technique CShade_CheckerBoard
@@ -58,6 +58,6 @@ technique CShade_CheckerBoard
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Checkerboard;
+        PixelShader = PS_Main;
     }
 }

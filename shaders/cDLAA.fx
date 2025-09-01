@@ -64,7 +64,7 @@ float GetIntensity(float3 Color)
     return dot(Color, 1.0 / 3.0);
 }
 
-float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Delta = fwidth(Input.Tex0.xy);
     float4 EdgeTex0 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
@@ -84,11 +84,11 @@ float4 PS_Prefilter(CShade_VS2PS_Quad Input) : SV_TARGET0
     Edges = max(Edges, abs(Center - Neighborhood[2]));
     Edges = max(Edges, abs(Center - Neighborhood[3]));
 
-    // It costs more ALU, but we should do the multiplication in the sampling pass for precision reasons
-    return float4(Center, smoothstep(0.0, 0.25, GetIntensity(Edges)));
+    Output.rgb = Center;
+    Output.a = smoothstep(0.0, 0.25, GetIntensity(Edges));
 }
 
-float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Delta = fwidth(Input.Tex0);
 
@@ -232,14 +232,14 @@ float4 PS_DLAA(CShade_VS2PS_Quad Input) : SV_TARGET0
     switch (_DisplayMode)
     {
         case 1:
-            Color = float4(EdgeMaskH, EdgeMaskV, 0.0, 0.0);
+            Color.rgb = float3(EdgeMaskH, EdgeMaskV, 0.0);
             break;
         case 2:
-            Color = float4(LongEdgeMaskDebugH, LongEdgeMaskDebugV, 0.0, 0.0);
+            Color.rgb = float3(LongEdgeMaskDebugH, LongEdgeMaskDebugV, 0.0);
             break;
     }
 
-    return CBlend_OutputChannels(float4(Color.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Color.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_DLAA
@@ -260,6 +260,6 @@ technique CShade_DLAA
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_DLAA;
+        PixelShader = PS_Main;
     }
 }

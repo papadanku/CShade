@@ -27,7 +27,7 @@
 #endif
 
 uniform int _CircleAmount <
-    ui_label = "Number of Circles";
+    ui_label = "Circle Count";
     ui_type = "slider";
     ui_min = 1;
     ui_max = 256;
@@ -51,16 +51,27 @@ uniform float _InputBias <
 
 #if SHADER_TOGGLE_MONO
     uniform float2 _Offset <
-        ui_category = "Offset · [ Horizontal, Vertical ]";
-        ui_label = "Offset";
+        ui_category = "Geometry";
+        ui_text = "Offset (Horizontal, Vertical)";
+        ui_label = " ";
         ui_type = "slider";
-        ui_min = -1.0;
-        ui_max = 1.0;
+        ui_min = -100.0;
+        ui_max = 100.0;
     > = 0.0;
+
+    uniform int4 _Crop <
+        ui_category = "Geometry";
+        ui_text = "Crop (Left, Right, Top, Bottom)";
+        ui_label = " ";
+        ui_type = "slider";
+        ui_min = 0;
+        ui_max = 10;
+    > = 0;
 #else
     uniform float2 _RedChannelOffset <
-        ui_category = "Offset · [ Horizontal, Vertical ]";
-        ui_label = "Red Channel";
+        ui_category = "Geometry";
+        ui_text = "Offset (Horizontal, Vertical)";
+        ui_label = "Red";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -68,8 +79,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _GreenChannelOffset <
-        ui_category = "Offset · [ Horizontal, Vertical ]";
-        ui_label = "Green Channel";
+        ui_category = "Geometry";
+        ui_label = "Green";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -77,8 +88,8 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _BlueChannelOffset <
-        ui_category = "Offset · [ Horizontal, Vertical ]";
-        ui_label = "Blue Channel";
+        ui_category = "Geometry";
+        ui_label = "Blue";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -86,24 +97,25 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannelCrop <
-        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
-        ui_label = "Red Channel";
+        ui_category = "Geometry";
+        ui_text = "Crop (Left, Right, Top, Bottom)";
+        ui_label = "Red";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
     > = 0;
 
     uniform int4 _GreenChannelCrop <
-        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
-        ui_label = "Green Channel";
+        ui_category = "Geometry";
+        ui_label = "Green";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
     > = 0;
 
     uniform int4 _BlueChannelCrop <
-        ui_category = "Crop · [ Left, Right, Top, Bottom ]";
-        ui_label = "Blue Channel";
+        ui_category = "Geometry";
+        ui_label = "Blue";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
@@ -125,16 +137,6 @@ uniform float3 _BackColor <
     ui_min = 0.0;
     ui_max = 1.0;
 > = float3(1.0, 1.0, 1.0);
-
-#if SHADER_TOGGLE_MONO
-    uniform int4 _Crop <
-        ui_category = "Composition";
-        ui_label = "Crop · [ Left, Right, Top, Bottom ]";
-        ui_type = "slider";
-        ui_min = 0;
-        ui_max = 10;
-    > = 0;
-#endif
 
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
@@ -232,53 +234,54 @@ float GetTileCircleLength(Tile Input)
     [Pixel Shaders]
 */
 
-#if SHADER_TOGGLE_MONO
-    float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
-    {
-        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+{
+    Output = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+
+    #if SHADER_TOGGLE_MONO
         switch(_Select)
         {
             case 0:
-                Color.a = CColor_RGBtoHSV(Color.rgb).r;
+                Output.a = CColor_RGBtoHSV(Output.rgb).r;
                 break;
             case 1:
-                Color.a = CColor_RGBtoHSV(Color.rgb).g;
+                Output.a = CColor_RGBtoHSV(Output.rgb).g;
                 break;
             case 2:
-                Color.a = CColor_RGBtoHSV(Color.rgb).b;
+                Output.a = CColor_RGBtoHSV(Output.rgb).b;
                 break;
             case 3:
-                Color.a = CColor_RGBtoHSL(Color.rgb).r;
+                Output.a = CColor_RGBtoHSL(Output.rgb).r;
                 break;
             case 4:
-                Color.a = CColor_RGBtoHSL(Color.rgb).g;
+                Output.a = CColor_RGBtoHSL(Output.rgb).g;
                 break;
             case 5:
-                Color.a = CColor_RGBtoHSL(Color.rgb).b;
+                Output.a = CColor_RGBtoHSL(Output.rgb).b;
                 break;
             case 6:
-                Color.a = CColor_RGBtoHSI(Color.rgb).r;
+                Output.a = CColor_RGBtoHSI(Output.rgb).r;
                 break;
             case 7:
-                Color.a = CColor_RGBtoHSI(Color.rgb).g;
+                Output.a = CColor_RGBtoHSI(Output.rgb).g;
                 break;
             case 8:
-                Color.a = CColor_RGBtoHSI(Color.rgb).b;
+                Output.a = CColor_RGBtoHSI(Output.rgb).b;
                 break;
             default:
-                Color.a = 1.0;
+                Output.a = 1.0;
                 break;
         }
+    #endif
+}
 
-        return Color;
-    }
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+{
+    // Precalculate our needed LOD for all channels
+    float2 TexSize = CMath_GetScreenSizeFromTex(Input.Tex0);
+    float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
 
-    float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
-    {
-        // Precalculate our needed LOD for all channels
-        float2 TexSize = CMath_GetScreenSizeFromTex(Input.Tex0);
-        float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
-
+    #if SHADER_TOGGLE_MONO
         // Create tiles
         Tile MainTiles = GetTiles(Input.Tex0.xy, _Offset);
 
@@ -301,21 +304,7 @@ float GetTileCircleLength(Tile Input)
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.x < (_CircleAmount - _Crop.y));
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y > _Crop.z * 2.0);
         OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y < (_CircleAmount - _Crop.w * 2.0));
-
-        return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
-    }
-#else
-    float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
-    {
-        return CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
-    }
-
-    float4 PS_Circles(CShade_VS2PS_Quad Input) : SV_TARGET0
-    {
-        // Precalculate our needed LOD for all channels
-        float2 TexSize = CMath_GetScreenSizeFromTex(Input.Tex0);
-        float LOD = max(0.0, log2(max(TexSize.x, TexSize.y) / _CircleAmount));
-
+    #else
         // Create per-color tiles
         Tile RedChannel_Tiles = GetTiles(Input.Tex0.xy, _RedChannelOffset);
         Tile GreenChannel_Tiles = GetTiles(Input.Tex0.xy, _GreenChannelOffset);
@@ -356,10 +345,10 @@ float GetTileCircleLength(Tile Input)
         CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannelCrop);
         CropChannel(OutputColor.g, 1, GreenChannel_Tiles, _GreenChannelCrop);
         CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannelCrop);
+    #endif
 
-        return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
-    }
-#endif
+    Output = CBlend_OutputChannels(OutputColor, _CShadeAlphaFactor);;
+}
 
 technique CShade_Dots
 <
@@ -380,6 +369,6 @@ technique CShade_Dots
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Circles;
+        PixelShader = PS_Main;
     }
 }

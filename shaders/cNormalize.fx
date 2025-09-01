@@ -76,21 +76,24 @@ float4 GetLocalContrastNormalization(float2 Tex)
     return (S[0] - Mean) / StdDev;
 }
 
-float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     switch (_Select)
     {
         case 0:
             float4 LCN = GetLocalContrastNormalization(Input.Tex0);
-            LCN.rgb = (float3)CMath_SNORMtoUNORM_FLT1(CColor_RGBtoLuma(LCN.rgb, 0));
-            return CBlend_OutputChannels(float4(LCN.rgb, _CShadeAlphaFactor));
+            Output.rgb = (float3)CMath_SNORMtoUNORM_FLT1(CColor_RGBtoLuma(LCN.rgb, 0));
+            break;
         case 1:
             float4 CT = GetCensusTransform(Input.Tex0);
-            CT.rgb = (float3)CColor_RGBtoLuma(CT.rgb, 0);
-            return CBlend_OutputChannels(float4(CT.rgb, _CShadeAlphaFactor));
+            Output.rgb = (float3)CColor_RGBtoLuma(CT.rgb, 0);
+            break;
         default:
-            return CBlend_OutputChannels(float4(0.5, 0.5, 0.5, _CShadeAlphaFactor));
+            Output.rgb = 0.5;
+            break;
     }
+
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Normalize
@@ -105,6 +108,6 @@ technique CShade_Normalize
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_ContrastNormalization;
+        PixelShader = PS_Main;
     }
 }

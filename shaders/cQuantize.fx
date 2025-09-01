@@ -43,7 +43,7 @@ uniform int3 _Range <
     [Pixel Shaders]
 */
 
-float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 ColorMapTex = Input.Tex0;
     float2 HashPos = Input.HPos.xy;
@@ -85,7 +85,7 @@ float4 PS_Color(CShade_VS2PS_Quad Input) : SV_TARGET0
     ColorMap.rgb += (Dither / _Range);
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / _Range;
 
-    return CBlend_OutputChannels(float4(ColorMap.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(ColorMap.rgb, _CShadeAlphaFactor);
 }
 
 technique CShade_Quantize
@@ -99,6 +99,6 @@ technique CShade_Quantize
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Color;
+        PixelShader = PS_Main;
     }
 }

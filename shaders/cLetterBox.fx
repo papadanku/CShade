@@ -34,13 +34,14 @@ uniform float2 _Cutoff <
     [Pixel Shaders]
 */
 
-float4 PS_Letterbox(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     // Output a rectangle
     Input.Tex0 = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
     Input.Tex0 = (Input.Tex0 * _Scale) + _Offset;
     float2 Shaper = step(abs(Input.Tex0), _Cutoff);
-    return CBlend_OutputChannels(float4(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor));
+
+    Output = CBlend_OutputChannels(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor);
 }
 
 #undef CBLEND_BLENDENABLE
@@ -81,6 +82,6 @@ technique CShade_LetterBox
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Letterbox;
+        PixelShader = PS_Main;
     }
 }

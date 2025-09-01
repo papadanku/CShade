@@ -75,75 +75,74 @@ CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR,
     [Pixel Shaders]
 */
 
-float PS_GenerateNoise(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
 {
-    return CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
+    Output = CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
 }
 
-float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
-    return float4(CColor_RGBtoSphericalRGB(Color), 1.0);
+    Output = float4(CColor_RGBtoSphericalRGB(Color), 1.0);
 }
 
 // Run Lucas-Kanade
 
-float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex5).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex4).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
-    return float4(Flow, 0.0, _BlendFactor);
+    Output = float4(Flow, 0.0, _BlendFactor);
 }
 
 /*
     Postfilter median
 */
 
-// We use MRT to immeduately copy the current blurred frame for the next frame
-float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rgb, 1.0);
+    Output = tex2D(SampleTempTex1, Input.Tex0.xy);
 }
 
-float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Median(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetMedian(SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetMedian(SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 Vectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
@@ -174,28 +173,26 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
     LIC /= WeightSum;
 
     // Conditional output
-    float3 OutputColor = 0.0;
-
     switch (_DisplayMode)
     {
         case 0:
-            OutputColor = VectorColors;
+            Output.rgb = VectorColors;
             break;
         case 1:
-            OutputColor = RenormalizedVectorColors;
+            Output.rgb = RenormalizedVectorColors;
             break;
         case 2:
-            OutputColor = LIC;
+            Output.rgb = LIC;
             break;
         case 3:
-            OutputColor = LIC * RenormalizedVectorColors;
+            Output.rgb = LIC * RenormalizedVectorColors;
             break;
         default:
-            OutputColor = 0.0;
+            Output.rgb = 0.0;
             break;
     }
 
-    return CBlend_OutputChannels(float4(OutputColor, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
@@ -287,6 +284,6 @@ technique CShade_Flow
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Shading;
+        PixelShader = PS_Main;
     }
 }

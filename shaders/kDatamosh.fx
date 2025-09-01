@@ -145,66 +145,66 @@ CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING, SHADER
     [Pixel Shaders]
 */
 
-float4 PS_Pyramid(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
-    return float4(CColor_RGBtoSphericalRGB(Color), 1.0);
+    Output = float4(CColor_RGBtoSphericalRGB(Color), 1.0);
 }
 
 // Run Lucas-Kanade
 
-float2 PS_LucasKanade4(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = 0.0;
-    return CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex5).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float2 PS_LucasKanade2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex4).xy;
-    return CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
-float4 PS_LucasKanade1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, SampleTempTex3).xy;
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
-    return float4(Flow, 0.0, _BlendFactor);
+    Output = float4(Flow, 0.0, _BlendFactor);
 }
 
 /*
     Post-process filtering
 */
 
-float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return float4(tex2D(SampleTempTex1, Input.Tex0.xy).rgb, 1.0);
+    Output = tex2D(SampleTempTex1, Input.Tex0.xy);
 }
 
-float4 PS_Median(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Median(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetMedian(SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetMedian(SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample1(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex5, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample2(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex4, SampleGuide, Input.Tex0).xy;
 }
 
-float4 PS_Upsample3(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    return float4(CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).rg, 0.0, 1.0);
+    Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).xy;
 }
 
 // Datamosh
@@ -247,7 +247,7 @@ float2 GetMVBlocks(float2 MV, float2 Tex, out float3 Random)
     return round(MV);
 }
 
-float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Accumulate(CShade_VS2PS_Quad Input, out float4 Accumulation : SV_TARGET0)
 {
     float Quality = 1.0 - _Entropy;
     float3 Random = 0.0;
@@ -261,8 +261,6 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     // Accumulates the amount of motion.
     float MVLength = length(MV);
 
-    float4 OutputColor = 0.0;
-
     // Simple update
     float UpdateAcc = min(MVLength, _BlockSize) * 0.005;
     UpdateAcc += lerp(-Random.z, Random.z, Quality * 0.02);
@@ -274,14 +272,14 @@ float4 PS_Accumulate(CShade_VS2PS_Quad Input) : SV_TARGET0
     [branch]
     if (MVLength > _BlockSize)
     {
-        OutputColor = float4((float3)ResetAcc, 0.0);
+        Accumulation.rgb = ResetAcc;
+        Accumulation.a = 0.0;
     }
     else
     {
-        OutputColor = float4((float3)UpdateAcc, 1.0);
+        Accumulation.rgb = UpdateAcc;
+        Accumulation.a = 1.0;
     }
-
-    return OutputColor;
 }
 
 float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
@@ -327,19 +325,19 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
     return lerp(Work, Base, CW);
 }
 
-float4 PS_Datamosh(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 TexSize = fwidth(Input.Tex0);
     float4 Base = CShadeHDR_Tex2D_InvTonemap(SampleSourceTex, Input.Tex0);
     float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
 
-    return CBlend_OutputChannels(float4(Datamosh.rgb, _CShadeAlphaFactor));
+    Output = CBlend_OutputChannels(Datamosh.rgb, _CShadeAlphaFactor);
 }
 
-float4 PS_CopyColorTex(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return tex2D(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
@@ -431,7 +429,7 @@ technique CShade_KinoDatamosh
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Datamosh;
+        PixelShader = PS_Main;
     }
 
     // Copy frame for feedback
@@ -440,7 +438,7 @@ technique CShade_KinoDatamosh
         SRGBWriteEnable = WRITE_SRGB;
 
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_CopyColorTex;
+        PixelShader = PS_CopyBackBuffer;
         RenderTarget0 = FeedbackTex;
     }
 }

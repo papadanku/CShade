@@ -46,12 +46,12 @@ CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAM
     [Pixel Shaders]
 */
 
-float4 PS_Copy(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    return CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    Output = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
 }
 
-float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
+void PS_Blend(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Src = tex2D(SampleSrcTex, Input.Tex0);
     float4 Dest = tex2D(SampleDestTex, Input.Tex0);
@@ -65,7 +65,7 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 ColorBlend = CColor_Blend(Dest.rgb, Src.rgb, _ColorBlend);
     float AlphaBlend = CColor_Blend(DestAlpha, SrcAlpha, _AlphaBlend).r;
 
-    return CBlend_OutputChannels(float4(ColorBlend, AlphaBlend));
+    Output = CBlend_OutputChannels(ColorBlend, AlphaBlend);
 }
 
 technique CShade_CopyBuffer
