@@ -237,9 +237,12 @@
         float4 S = 0.0;
 
         // Compute M
+        [unroll]
         for (int i = 0; i < 9; i++)
         {
             float4 G = 0.0;
+
+            [unroll]
             for (int j = 0; j < 9; j++)
             {
                 G += T[j] * (Masks[i].Kernel[j]);
