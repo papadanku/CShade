@@ -45,26 +45,26 @@ uniform int _WeightMode <
     ui_items = "RGB\0Luma\0";
 > = 0;
 
-uniform float _Threshold <
-    ui_label = "Threshold";
+uniform float _LowerThreshold <
+    ui_label = "Lower Threshold";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
 > = 0.05;
 
-uniform float _InverseRange <
-    ui_label = "Inverse Range";
+uniform float _UpperThreshold <
+    ui_label = "Upper Threshold";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = 0.05;
+> = 0.5;
 
 uniform float _ColorSensitivity <
     ui_label = "Color Sensitivity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
-> = 0.0;
+> = 0.5;
 
 uniform float4 _FrontColor <
     ui_label = "Front Color";
@@ -127,6 +127,9 @@ CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
 
 float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
+    float Threshold = _LowerThreshold;
+    float InverseRange = 1.0 / (_UpperThreshold - _LowerThreshold);
+
     float2 Delta = fwidth(Input.Tex0);
     CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
 
@@ -158,7 +161,7 @@ float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
     {
         case 0: // Contour
             float3 BackgroundColor = lerp(Base.rgb, _BackColor.rgb, _BackColor.a);
-            float3 Mask = saturate(((I * _ColorSensitivity) - _Threshold) * _InverseRange);
+            float3 Mask = saturate(((I * _ColorSensitivity) - Threshold) * InverseRange);
             OutputColor.rgb = lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
             break;
         case 1: // Quadrate
