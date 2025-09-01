@@ -183,7 +183,7 @@ float4 PS_Grad(CShade_VS2PS_Quad Input) : SV_TARGET0
             break;
     }
 
-    return OutputColor;
+    return CBlend_OutputChannels(float4(OutputColor.rgb, _CShadeAlphaFactor));
 }
 
 technique CShade_KinoContour
