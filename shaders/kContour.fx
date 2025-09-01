@@ -89,7 +89,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide · Shader";
     ui_label = " ";
     ui_type = "radio";
-    ui_text = "\nEDGE_DETECTION_KERNEL - Edge Detection Kernel.\n\n\tOptions:\n\n\t\t0 (ddx, ddy)\n\t\t1 (Sobel Bilinear 3x3)\n\t\t2 (Prewitt Bilinear 5x5)\n\t\t3 (Sobel Bilinear 5x5)\n\t\t4 (Prewitt 3x3)\n\t\t5 (Scharr 3x3)\n\t\t6 (Frei-Chen)\n\n";
+    ui_text = "\nEDGE_DETECTION_KERNEL - Edge Detection Kernel.\n\n\tOptions:\n\n\t\t0 (ddx, ddy)\n\t\t1 (Sobel Bilinear 3x3)\n\t\t2 (Prewitt Bilinear 5x5)\n\t\t3 (Sobel Bilinear 5x5)\n\t\t4 (Prewitt Bilinear 3x3)\n\t\t5 (Scharr 3x3)\n\t\t6 (Frei-Chen)\n\n";
     ui_category_closed = false;
 > = 0;
 
@@ -115,7 +115,7 @@ CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
     #elif (SHADER_EDGE_DETECTION == 3) // Bilinear 5x5 Sobel by CeeJayDK
         G = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 4) // 3x3 Prewitt
-        G = CEdge_GetPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
+        G = CEdge_GetBilinearPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 5) // 3x3 Scharr
         G = CEdge_GetScharr3x3(CShade_SampleColorTex, Tex, Delta);
     #else // Our default

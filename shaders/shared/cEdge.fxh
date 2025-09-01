@@ -25,15 +25,16 @@
 
     CEdge_Gradient CEdge_GetBilinearSobel3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
-        float4 A0 = tex2D(Image, Tex0.xw) * 4.0; // <-0.5, +0.5>
-        float4 C0 = tex2D(Image, Tex0.zw) * 4.0; // <+0.5, +0.5>
-        float4 A2 = tex2D(Image, Tex0.xy) * 4.0; // <-0.5, -0.5>
-        float4 C2 = tex2D(Image, Tex0.zy) * 4.0; // <+0.5, -0.5>
+        const float P = 1.0 / 2.0;
+        float4 Tex0 = Tex.xyxy + (float4(-P, -P, P, P) * Delta.xyxy);
+        float4 A0 = tex2D(Image, Tex0.xw); // <-0.5, +0.5>
+        float4 C0 = tex2D(Image, Tex0.zw); // <+0.5, +0.5>
+        float4 A2 = tex2D(Image, Tex0.xy); // <-0.5, -0.5>
+        float4 C2 = tex2D(Image, Tex0.zy); // <+0.5, -0.5>
 
         CEdge_Gradient Output;
-        Output.Ix = ((C0 + C2) - (A0 + A2)) / 4.0;
-        Output.Iy = ((A0 + C0) - (A2 + C2)) / 4.0;
+        Output.Ix = (C0 + C2) - (A0 + A2);
+        Output.Iy = (A0 + C0) - (A2 + C2);
         return Output;
     }
 
@@ -88,24 +89,19 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetPrewitt3x3(sampler2D Image, float2 Tex, float2 Delta)
+    CEdge_Gradient CEdge_GetBilinearPrewitt3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-        float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-        float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-
-        float4 A0 = tex2D(Image, Tex1.xy) * 1.0; // <-1.0, 1.0>
-        float4 A1 = tex2D(Image, Tex1.xz) * 1.0; // <-1.0, 0.0>
-        float4 A2 = tex2D(Image, Tex1.xw) * 1.0; // <-1.0, -1.0>
-        float4 B0 = tex2D(Image, Tex2.xy) * 1.0; // <0.0, 1.0>
-        float4 B2 = tex2D(Image, Tex2.xw) * 1.0; // <0.0, -1.0>
-        float4 C0 = tex2D(Image, Tex3.xy) * 1.0; // <1.0, 1.0>
-        float4 C1 = tex2D(Image, Tex3.xz) * 1.0; // <1.0, 0.0>
-        float4 C2 = tex2D(Image, Tex3.xw) * 1.0; // <1.0, -1.0>
+        const float P = 2.0 / 3.0;
+        const float Normalize = 3.0 / 4.0;
+        float4 Tex0 = Tex.xyxy + (float4(-P, -P, P, P) * Delta.xyxy);
+        float4 A0 = tex2D(Image, Tex0.xw); // <-0.625, +0.625>
+        float4 C0 = tex2D(Image, Tex0.zw); // <+0.625, +0.625>
+        float4 A2 = tex2D(Image, Tex0.xy); // <-0.625, -0.625>
+        float4 C2 = tex2D(Image, Tex0.zy); // <+0.625, -0.625>
 
         CEdge_Gradient Output;
-        Output.Ix = ((C0 + C1 + C2) - (A0 + A1 + A2)) / 3.0;
-        Output.Iy = ((A0 + B0 + C0) - (A2 + B2 + C2)) / 3.0;
+        Output.Ix = ((C0 + C2) - (A0 + A2)) * Normalize;
+        Output.Iy = ((A0 + C0) - (A2 + C2)) * Normalize;
         return Output;
     }
 
