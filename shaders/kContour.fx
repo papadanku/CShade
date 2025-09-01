@@ -40,9 +40,9 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _WeightMode <
-    ui_label = "Edge Weighting Mode";
+    ui_label = "Edge Detection Type";
     ui_type = "combo";
-    ui_items = "RGB\0Luma\0";
+    ui_items = "Color\0Luma\0";
 > = 0;
 
 uniform float _LowerThreshold <
