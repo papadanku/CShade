@@ -89,7 +89,7 @@ float4 PS_ContrastNormalization(CShade_VS2PS_Quad Input) : SV_TARGET0
             CT.rgb = (float3)CColor_RGBtoLuma(CT.rgb, 0);
             return CBlend_OutputChannels(float4(CT.rgb, _CShadeAlphaFactor));
         default:
-            return 0.5;
+            return CBlend_OutputChannels(float4(0.5, 0.5, 0.5, _CShadeAlphaFactor));
     }
 }
 

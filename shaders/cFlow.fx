@@ -195,7 +195,7 @@ float4 PS_Shading(CShade_VS2PS_Quad Input) : SV_TARGET0
             break;
     }
 
-    return float4(OutputColor, 1.0);
+    return CBlend_OutputChannels(float4(OutputColor, _CShadeAlphaFactor));
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

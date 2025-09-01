@@ -29,6 +29,7 @@ uniform float3 _DestFactor <
 > = 1.0;
 
 #include "shared/cShadeHDR.fxh"
+#include "shared/cBlend.fxh"
 
 /*
     [Textures & Samplers]
@@ -64,7 +65,7 @@ float4 PS_Blend(CShade_VS2PS_Quad Input) : SV_TARGET0
     float3 ColorBlend = CColor_Blend(Dest.rgb, Src.rgb, _ColorBlend);
     float AlphaBlend = CColor_Blend(DestAlpha, SrcAlpha, _AlphaBlend).r;
 
-    return float4(ColorBlend, AlphaBlend);
+    return CBlend_OutputChannels(float4(ColorBlend, AlphaBlend));
 }
 
 technique CShade_CopyBuffer
