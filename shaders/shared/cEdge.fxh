@@ -108,7 +108,7 @@
     CEdge_Gradient CEdge_GetBilinearScharr3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
         const float P = 3.0 / 8.0;
-        const float Normalize = 3.0 / 4.0;
+        const float Normalize = 4.0 / 3.0;
         float4 Tex0 = Tex.xyxy + (float4(-P, -P, P, P) * Delta.xyxy);
         float4 A0 = tex2D(Image, Tex0.xw); // <-0.375, +0.375>
         float4 C0 = tex2D(Image, Tex0.zw); // <+0.375, +0.375>
