@@ -105,24 +105,19 @@
         return Output;
     }
 
-    CEdge_Gradient CEdge_GetScharr3x3(sampler2D Image, float2 Tex, float2 Delta)
+    CEdge_Gradient CEdge_GetBilinearScharr3x3(sampler2D Image, float2 Tex, float2 Delta)
     {
-        float4 Tex1 = Tex.xyyy + (float4(-1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-        float4 Tex2 = Tex.xyyy + (float4(0.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-        float4 Tex3 = Tex.xyyy + (float4(1.0, 1.0, 0.0, -1.0) * Delta.xyyy);
-
-        float4 A0 = tex2D(Image, Tex1.xy) * 3.0;  // <-1.0, 1.0>
-        float4 A1 = tex2D(Image, Tex1.xz) * 10.0; // <-1.0, 0.0>
-        float4 A2 = tex2D(Image, Tex1.xw) * 3.0;  // <-1.0, -1.0>
-        float4 B0 = tex2D(Image, Tex2.xy) * 10.0; // <0.0, 1.0>
-        float4 B2 = tex2D(Image, Tex2.xw) * 10.0; // <0.0, -1.0>
-        float4 C0 = tex2D(Image, Tex3.xy) * 3.0;  // <1.0, 1.0>
-        float4 C1 = tex2D(Image, Tex3.xz) * 10.0; // <1.0, 0.0>
-        float4 C2 = tex2D(Image, Tex3.xw) * 3.0;  // <1.0, -1.0>
+        const float P = 3.0 / 8.0;
+        const float Normalize = 3.0 / 4.0;
+        float4 Tex0 = Tex.xyxy + (float4(-P, -P, P, P) * Delta.xyxy);
+        float4 A0 = tex2D(Image, Tex0.xw); // <-0.375, +0.375>
+        float4 C0 = tex2D(Image, Tex0.zw); // <+0.375, +0.375>
+        float4 A2 = tex2D(Image, Tex0.xy); // <-0.375, -0.375>
+        float4 C2 = tex2D(Image, Tex0.zy); // <+0.375, -0.375>
 
         CEdge_Gradient Output;
-        Output.Ix = ((C0 + C1 + C2) - (A0 + A1 + A2)) / 16.0;
-        Output.Iy = ((A0 + B0 + C0) - (A2 + B2 + C2)) / 16.0;
+        Output.Ix = ((C0 + C2) - (A0 + A2)) * Normalize;
+        Output.Iy = ((A0 + C0) - (A2 + C2)) * Normalize;
         return Output;
     }
 

@@ -117,7 +117,7 @@ CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
     #elif (SHADER_EDGE_DETECTION == 4) // 3x3 Prewitt
         G = CEdge_GetBilinearPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 5) // 3x3 Scharr
-        G = CEdge_GetScharr3x3(CShade_SampleColorTex, Tex, Delta);
+        G = CEdge_GetBilinearScharr3x3(CShade_SampleColorTex, Tex, Delta);
     #else // Our default
         G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
     #endif
