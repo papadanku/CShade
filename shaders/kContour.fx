@@ -97,32 +97,32 @@ uniform int _ShaderPreprocessorGuide <
     [Pixel Shaders]
 */
 
-float3 GetColorFromGradient(CEdge_Gradient Input)
+float3 GetColorFromGradient(CEdge_Filter Input)
 {
-    return sqrt((Input.Ix.rgb * Input.Ix.rgb) + (Input.Iy.rgb * Input.Iy.rgb));
+    return sqrt((Input.Gx.rgb * Input.Gx.rgb) + (Input.Gy.rgb * Input.Gy.rgb));
 }
 
-CEdge_Gradient GetGradient(float2 Tex, float2 Delta)
+CEdge_Filter GetGradient(float2 Tex, float2 Delta)
 {
-    CEdge_Gradient G;
+    CEdge_Filter F;
 
     #if (SHADER_EDGE_DETECTION == 0) // ddx(), ddy()
-        G = CEdge_GetDDXY(CShade_SampleColorTex, Tex);
+        F = CEdge_GetDDXY(CShade_SampleColorTex, Tex);
     #elif (SHADER_EDGE_DETECTION == 1) // Bilinear 3x3 Sobel
-        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 2) // Bilinear 5x5 Prewitt
-        G = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearPrewitt5x5(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 3) // Bilinear 5x5 Sobel by CeeJayDK
-        G = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearSobel5x5(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 4) // 3x3 Prewitt
-        G = CEdge_GetBilinearPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearPrewitt3x3(CShade_SampleColorTex, Tex, Delta);
     #elif (SHADER_EDGE_DETECTION == 5) // 3x3 Scharr
-        G = CEdge_GetBilinearScharr3x3(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearScharr3x3(CShade_SampleColorTex, Tex, Delta);
     #else // Our default
-        G = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
+        F = CEdge_GetBilinearSobel3x3(CShade_SampleColorTex, Tex, Delta);
     #endif
 
-    return G;
+    return F;
 }
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -137,20 +137,20 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Input.Tex0 = (_DisplayMode == 1) ? Grid.Frac : Input.Tex0;
 
     // Get gradient information
-    CEdge_Gradient G = GetGradient(Input.Tex0, Delta);
+    CEdge_Filter F = GetGradient(Input.Tex0, Delta);
 
     // Exception for non-directional methods such as Frei-Chen
     #if SHADER_EDGE_DETECTION == 6
         float3 I = CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0, Delta).rgb;
     #else
-        float3 I = CEdge_GetMagnitudeRGB(G.Ix.rgb, G.Iy.rgb);
+        float3 I = CEdge_GetMagnitudeRGB(F.Gx.rgb, F.Gy.rgb);
     #endif
 
     if (_WeightMode == 1)
     {
         I = CColor_RGBtoLuma(I, 0);
-        G.Ix.rgb = CColor_RGBtoLuma(G.Ix.rgb, 0);
-        G.Iy.rgb = CColor_RGBtoLuma(G.Iy.rgb, 0);
+        F.Gx.rgb = CColor_RGBtoLuma(F.Gx.rgb, 0);
+        F.Gy.rgb = CColor_RGBtoLuma(F.Gy.rgb, 0);
     }
 
     // Initialize variables for Output
@@ -165,18 +165,18 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             OutputColor.rgb = lerp(BackgroundColor, _FrontColor.rgb, Mask * _FrontColor.a);
             break;
         case 1: // Quadrate
-            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT3(G.Ix.rgb), Grid.Index == 1);
+            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT3(F.Gx.rgb), Grid.Index == 1);
             OutputColor.rgb = lerp(OutputColor.rgb, I.rgb, Grid.Index == 2);
-            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT3(G.Iy.rgb), Grid.Index == 3);
+            OutputColor.rgb = lerp(OutputColor.rgb, CMath_SNORMtoUNORM_FLT3(F.Gy.rgb), Grid.Index == 3);
             break;
         case 2: // Magnitude
             OutputColor.rgb = I.rgb;
             break;
         case 3: // X Gradient
-            OutputColor.rgb = CMath_SNORMtoUNORM_FLT3(G.Ix.rgb);
+            OutputColor.rgb = CMath_SNORMtoUNORM_FLT3(F.Gx.rgb);
             break;
         case 4: // Y Gradient
-            OutputColor.rgb = CMath_SNORMtoUNORM_FLT3(G.Iy.rgb);
+            OutputColor.rgb = CMath_SNORMtoUNORM_FLT3(F.Gy.rgb);
             break;
         default:
             OutputColor.rgb = Base.rgb;
