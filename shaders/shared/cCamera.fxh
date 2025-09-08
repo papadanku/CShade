@@ -231,7 +231,8 @@
         {
             float2 Grid = Pos / _CCameraExposurePeakingCellWidth;
             float3 Checkerboard = frac(dot(floor(Grid), 0.5)) * 2.0;
-            Color = lerp(Color, Checkerboard, Color > _CCameraExposurePeakingThreshold);
+            float3 Mask = smoothstep(_CCameraExposurePeakingThreshold * 0.9, _CCameraExposurePeakingThreshold, Color);
+            Color = lerp(Color, Checkerboard, Mask);
         }
     }
 

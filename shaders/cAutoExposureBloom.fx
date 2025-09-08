@@ -387,9 +387,9 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Apply overlays
     #if SHADER_TOGGLE_AUTOEXPOSURE
         float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+        CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
         CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
         CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
-        CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
     #endif
 
     Output = CBlend_OutputChannels(BaseColor.rgb, _CShadeAlphaFactor);
