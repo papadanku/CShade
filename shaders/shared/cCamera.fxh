@@ -1,4 +1,6 @@
 
+#include "cMath.fxh"
+
 #if !defined(INCLUDE_CCAMERA_OUTPUT)
     #define INCLUDE_CCAMERA_OUTPUT
 
@@ -86,9 +88,16 @@
     uniform bool _CCameraExposurePeaking <
         ui_text = "\nExposure Peaking";
         ui_category = "Pipeline · Output · Auto Exposure · Tools";
-        ui_label = "Display Peaking Cells";
+        ui_label = "Display Exposure Peaking";
         ui_type = "radio";
     > = false;
+
+    uniform int _CCameraExposurePeakingDitherType <
+        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_label = "Dither Algorithm";
+        ui_type = "combo";
+        ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
+    > = 0;
 
     uniform float3 _CCameraExposurePeakingThreshold <
         ui_category = "Pipeline · Output · Auto Exposure · Tools";
@@ -229,10 +238,31 @@
     {
         if (_CCameraExposurePeaking)
         {
+            // Create the checkerboard
             float2 Grid = Pos / _CCameraExposurePeakingCellWidth;
             float3 Checkerboard = frac(dot(floor(Grid), 0.5)) * 2.0;
-            float3 Mask = smoothstep(_CCameraExposurePeakingThreshold * 0.9, _CCameraExposurePeakingThreshold, Color);
-            Color = lerp(Color, Checkerboard, Mask);
+
+            // Compute our dithered thresholds
+            float Hash = 0.0;
+
+            switch (_CCameraExposurePeakingDitherType)
+            {
+                case 0:
+                    Hash = CMath_GetGoldenRatioNoise(Pos);
+                    break;
+                case 1:
+                    Hash = CMath_GetInterleavedGradientNoise(Pos);
+                    break;
+                case 2:
+                    Hash = CMath_GetHash_FLT1(Pos, 0.0);
+                    break;
+                default:
+                    Hash = 0.0;
+                    break;
+            }
+
+            float Threshold = _CCameraExposurePeakingThreshold + Hash;
+            Color = lerp(Color, Checkerboard, Color > Threshold);
         }
     }
 
