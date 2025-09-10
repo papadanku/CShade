@@ -219,11 +219,6 @@
 
         if (PartialKaris)
         {
-            CBlur_KarisSample D0 = GetKarisSample(SampleSource, Tex0.xw);
-            CBlur_KarisSample D1 = GetKarisSample(SampleSource, Tex0.zw);
-            CBlur_KarisSample D2 = GetKarisSample(SampleSource, Tex0.xy);
-            CBlur_KarisSample D3 = GetKarisSample(SampleSource, Tex0.zy);
-
             CBlur_KarisSample A0 = GetKarisSample(SampleSource, Tex1.xy);
             CBlur_KarisSample A1 = GetKarisSample(SampleSource, Tex1.xz);
             CBlur_KarisSample A2 = GetKarisSample(SampleSource, Tex1.xw);
@@ -236,25 +231,25 @@
             CBlur_KarisSample C1 = GetKarisSample(SampleSource, Tex3.xz);
             CBlur_KarisSample C2 = GetKarisSample(SampleSource, Tex3.xw);
 
-            CBlur_KarisSample GroupA[4] = { D0, D1, D2, D3 };
-            CBlur_KarisSample GroupB[4] = { A0, B0, A1, B1 };
-            CBlur_KarisSample GroupC[4] = { B0, C0, B1, C1 };
-            CBlur_KarisSample GroupD[4] = { A1, B1, A2, B2 };
-            CBlur_KarisSample GroupE[4] = { B1, C1, B2, C2 };
+            CBlur_KarisSample D0 = GetKarisSample(SampleSource, Tex0.xw);
+            CBlur_KarisSample D1 = GetKarisSample(SampleSource, Tex0.zw);
+            CBlur_KarisSample D2 = GetKarisSample(SampleSource, Tex0.xy);
+            CBlur_KarisSample D3 = GetKarisSample(SampleSource, Tex0.zy);
 
-            OutputColor0 += (CBlur_GetKarisAverage(GroupA) * float2(0.500, 0.500 / 4.0).xxxy);
+            CBlur_KarisSample GroupA[4] = { A0, B0, A1, B1 };
+            CBlur_KarisSample GroupB[4] = { B0, C0, B1, C1 };
+            CBlur_KarisSample GroupC[4] = { A1, B1, A2, B2 };
+            CBlur_KarisSample GroupD[4] = { B1, C1, B2, C2 };
+            CBlur_KarisSample GroupE[4] = { D0, D1, D2, D3 };
+
+            OutputColor0 += (CBlur_GetKarisAverage(GroupA) * float2(0.125, 0.125 / 4.0).xxxy);
             OutputColor0 += (CBlur_GetKarisAverage(GroupB) * float2(0.125, 0.125 / 4.0).xxxy);
             OutputColor0 += (CBlur_GetKarisAverage(GroupC) * float2(0.125, 0.125 / 4.0).xxxy);
             OutputColor0 += (CBlur_GetKarisAverage(GroupD) * float2(0.125, 0.125 / 4.0).xxxy);
-            OutputColor0 += (CBlur_GetKarisAverage(GroupE) * float2(0.125, 0.125 / 4.0).xxxy);
+            OutputColor0 += (CBlur_GetKarisAverage(GroupE) * float2(0.500, 0.500 / 4.0).xxxy);
         }
         else
         {
-            float4 D0 = tex2D(SampleSource, Tex0.xw);
-            float4 D1 = tex2D(SampleSource, Tex0.zw);
-            float4 D2 = tex2D(SampleSource, Tex0.xy);
-            float4 D3 = tex2D(SampleSource, Tex0.zy);
-
             float4 A0 = tex2D(SampleSource, Tex1.xy);
             float4 A1 = tex2D(SampleSource, Tex1.xz);
             float4 A2 = tex2D(SampleSource, Tex1.xw);
@@ -267,17 +262,22 @@
             float4 C1 = tex2D(SampleSource, Tex3.xz);
             float4 C2 = tex2D(SampleSource, Tex3.xw);
 
-            float4 GroupA = D0 + D1 + D2 + D3;
-            float4 GroupB = A0 + B0 + A1 + B1;
-            float4 GroupC = B0 + C0 + B1 + C1;
-            float4 GroupD = A1 + B1 + A2 + B2;
-            float4 GroupE = B1 + C1 + B2 + C2;
+            float4 D0 = tex2D(SampleSource, Tex0.xw);
+            float4 D1 = tex2D(SampleSource, Tex0.zw);
+            float4 D2 = tex2D(SampleSource, Tex0.xy);
+            float4 D3 = tex2D(SampleSource, Tex0.zy);
 
-            OutputColor0 += (GroupA * (0.500 / 4.0));
+            float4 GroupA = A0 + B0 + A1 + B1;
+            float4 GroupB = B0 + C0 + B1 + C1;
+            float4 GroupC = A1 + B1 + A2 + B2;
+            float4 GroupD = B1 + C1 + B2 + C2;
+            float4 GroupE = D0 + D1 + D2 + D3;
+
+            OutputColor0 += (GroupA * (0.125 / 4.0));
             OutputColor0 += (GroupB * (0.125 / 4.0));
             OutputColor0 += (GroupC * (0.125 / 4.0));
             OutputColor0 += (GroupD * (0.125 / 4.0));
-            OutputColor0 += (GroupE * (0.125 / 4.0));
+            OutputColor0 += (GroupE * (0.500 / 4.0));
         }
 
         return OutputColor0;
