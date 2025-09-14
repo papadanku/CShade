@@ -165,8 +165,14 @@ CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPLING, SH
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0)).rgb;
-    Output = float4(CColor_RGBtoSphericalRGB(Color), 1.0);
+    float4 Color = CColor_RGBtoSRGB(CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0));
+    float Sum = dot(Color, 1.0);
+    float3 Ratio = abs(Sum) > 0.0 ? Color / Sum : 1.0 / 3.0;
+    float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
+    float MaxColor = max(Color.r, max(Color.g, Color.b)); 
+    Output.xy = MaxRatio > 0.0 ? Ratio.xy / MaxRatio : 1.0;
+    Output.z = MaxColor;
+    Output.w = 1.0;
 }
 
 // Run Lucas-Kanade
