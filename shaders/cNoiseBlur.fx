@@ -106,9 +106,9 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         {
             float2 Shift = float2(i, j) / float(Sum);
             Shift = CMath_UNORMtoSNORM_FLT2(Shift);
-            Shift = mul(Shift, RotationMatrix);
 
             float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
+            DiskShift = mul(DiskShift, RotationMatrix);
             DiskShift *= Falloff;
             DiskShift *= _Radius;
             DiskShift.x *= AspectRatio;
