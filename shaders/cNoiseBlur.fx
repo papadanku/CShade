@@ -97,21 +97,21 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Weight = 0.0;
 
     [unroll]
-    for (float x = -0.75; x <= 0.75; x += 0.5)
+    for (int i = 1; i < 4; ++i)
     {
         [unroll]
-        for (float y = -0.75; y <= 0.75; y += 0.5)
+        for (int j = 0; j < 4 * i; ++j)
         {
-            float2 Shift = float2(float(x), float(y));
-            Shift = mul(Shift, RotationMatrix);
-            float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * 2.0;
-            DiskShift *= Falloff;
-            DiskShift *= _Radius;
-            DiskShift.x *= AspectRatio;
+            float2 AngleShift = 0.0;
+            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
+            sincos(Shift, AngleShift.x, AngleShift.y);
+            AngleShift *= float(i);
 
-            float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
-            Output += tex2D(CShade_SampleColorTex, FetchTex);
-            Weight += 1.0;
+            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
+            SampleOffset *= _Radius;
+            SampleOffset.x *= AspectRatio;
+            OutputColor += CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
+            Weight++;
         }
     }
 
