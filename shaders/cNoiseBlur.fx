@@ -74,6 +74,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Pi2 = CMath_GetPi() * 2.0;
     const float2 ScreenSize = int2(BUFFER_WIDTH, BUFFER_HEIGHT);
     const float2 PixelSize = 1.0 / ScreenSize;
+    const int Taps = 4;
+    const int Sum = Taps - 1;
 
     float Noise = Pi2 * CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
     float2 UNormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
@@ -97,25 +99,27 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Weight = 0.0;
 
     [unroll]
-    for (int i = 1; i < 4; ++i)
+    for (int i = 0; i < Taps ; i++)
     {
         [unroll]
-        for (int j = 0; j < 4 * i; ++j)
+        for (int j = 0; j < Taps ; j++)
         {
-            float2 AngleShift = 0.0;
-            float Shift = (Pi2 / (4.0 * float(i))) * float(j);
-            sincos(Shift, AngleShift.x, AngleShift.y);
-            AngleShift *= float(i);
+            float2 Shift = float2(i, j) / float(Sum);
+            Shift = CMath_UNORMtoSNORM_FLT2(Shift);
+            Shift = mul(Shift, RotationMatrix);
 
-            float2 SampleOffset = mul(AngleShift, RotationMatrix) * Falloff;
-            SampleOffset *= _Radius;
-            SampleOffset.x *= AspectRatio;
-            Output += CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
-            Weight++;
+            float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
+            DiskShift *= Falloff;
+            DiskShift *= _Radius;
+            DiskShift.x *= AspectRatio;
+
+            float2 FetchTex = Input.Tex0 + (DiskShift * 0.03);
+            Output += tex2D(CShade_SampleColorTex, FetchTex);
+            Weight += 1.0;
         }
     }
 
-    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output / Weight, _CShadeAlphaFactor);
 }
 
 technique CShade_NoiseBlur
