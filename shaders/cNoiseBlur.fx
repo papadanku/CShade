@@ -108,12 +108,12 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             Shift = CMath_UNORMtoSNORM_FLT2(Shift);
 
             float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
-            DiskShift = mul(DiskShift, RotationMatrix);
+            DiskShift = mul(DiskShift * 3.0, RotationMatrix);
             DiskShift *= Falloff;
             DiskShift *= _Radius;
             DiskShift.x *= AspectRatio;
 
-            float2 FetchTex = Input.Tex0 + (DiskShift * 0.03);
+            float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
             Output += tex2D(CShade_SampleColorTex, FetchTex);
             Weight += 1.0;
         }
