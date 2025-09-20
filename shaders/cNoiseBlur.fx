@@ -107,10 +107,10 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             sincos(Shift, AngleShift.x, AngleShift.y);
             AngleShift *= float(i);
 
-            float2 SampleOffset = mul(AngleShift, RotationMatrix) * FalloffFactor;
+            float2 SampleOffset = mul(AngleShift, RotationMatrix) * Falloff;
             SampleOffset *= _Radius;
             SampleOffset.x *= AspectRatio;
-            OutputColor += CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
+            Output += CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0 + (SampleOffset * 0.01));
             Weight++;
         }
     }
