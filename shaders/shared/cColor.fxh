@@ -522,11 +522,11 @@
     CColor_LogC_Constants CColor_GetLogC_Constants()
     {
         CColor_LogC_Constants Output;
-        const float A = (exp2(18.0) - 16.0) / 117.45;
+        const float A = (pow(2.0, 18.0) - 16.0) / 117.45;
         const float B = (1023.0 - 95.0) / 1023.0;
         const float C = 95.0 / 1023.0;
-        const float S = (7.0 * log(2.0) * exp2(7.0 - 14.0 * C / B)) / (A * B);
-        const float T = (exp2(14.0 * (-C / B) + 6.0) - 64.0) / A;
+        const float S = (7.0 * log(2.0) * pow(2.0, 7.0 - 14.0 * C / B)) / (A * B);
+        const float T = (pow(2.0, 14.0 *(-C / B) + 6.0) - 64.0) / A;
         Output.A = A;
         Output.B = B;
         Output.C = C;
@@ -535,24 +535,34 @@
         return Output;
     }
 
+    float3 CColor_EncodeLogC_Log2(float3 X)
+    {
+        return log(X) / log(2.0);
+    }
+
     // LogC4 Curve Encoding Function
-    float3 CColor_EncodeLogC(float3 RGB)
+    float3 CColor_EncodeLogC(float3 X)
     {
         CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
-        float3 A = (RGB - LogC.T) / LogC.S;
-        float3 B = (log2(LogC.A * RGB + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
-        return lerp(B, A, RGB < LogC.T);
+
+        float3 Out1 = (X - LogC.T) / LogC.S;
+        float3 Out2 = (CColor_EncodeLogC_Log2(LogC.A * X + 64.0) - 6.0) / 14.0 * LogC.B + LogC.C;
+        float3 Output = (X < LogC.T) ? Out1: Out2;
+
+        return Output;
     }
 
     // LogC4 Curve Decoding Function
-    float3 CColor_DecodeLogC(float3 RGB)
+    float3 CColor_DecodeLogC(float3 X)
     {
         CColor_LogC_Constants LogC = CColor_GetLogC_Constants();
-        float3 A = RGB * LogC.S + LogC.T;
-        float3 P = 14.0 * (RGB - LogC.C) / LogC.B + 6.0;
-        float3 B = (exp2(P) - 64.0) / LogC.A;
 
-        return lerp(B, A, RGB < 0.0);
+        float3 Out1 = X * LogC.S + LogC.T;
+        float3 P = 14.0 * (X - LogC.C) / LogC.B + 6.0;
+        float3 Out2 = (pow(2.0, P) - 64.0) / LogC.A;
+        float3 Output = (X < 0.0) ? Out1 : Out2;
+
+        return Output;
     }
 
     /*
