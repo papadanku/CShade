@@ -10,7 +10,7 @@
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";
-        ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0";
+        ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0Logarithmic C [Encode]\0";
     > = 2;
 
     float3 CTonemap_ApplyOutputTonemap(float3 HDR)

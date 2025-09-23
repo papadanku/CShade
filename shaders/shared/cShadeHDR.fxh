@@ -10,7 +10,7 @@
         ui_label = "Inverse Tonemap";
         ui_tooltip = "Select a tonemap operator for sampling the backbuffer";
         ui_type = "combo";
-        ui_items = "None\0Inverse Reinhard\0Inverse Reinhard Squared\0Inverse AMD Resolve\0";
+        ui_items = "None\0Reinhard [Inverse]\0Reinhard Squared [Inverse]\0AMD Resolve [Inverse]\0Logarithmic C [Decode]\0";
     > = 0;
 
     float4 CShadeHDR_Tex2D_InvTonemap(sampler Source, float2 Tex)

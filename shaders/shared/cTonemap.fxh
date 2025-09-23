@@ -23,6 +23,8 @@
     SOFTWARE.
 */
 
+#include "cColor.fxh"
+
 #if !defined(INCLUDE_TONEMAP)
     #define INCLUDE_TONEMAP
 
@@ -105,6 +107,8 @@
                 return CTonemap_ApplyReinhardSquared(HDR, 0.25);
             case 3:
                 return CTonemap_ApplyAMDTonemap(HDR);
+            case 4:
+                return CColor_EncodeLogC(HDR);
             default:
                 return HDR;
         }
@@ -125,6 +129,9 @@
                 break;
             case 3:
                 SDR.rgb = CTonemap_ApplyInverseAMDTonemap(SDR.rgb);
+                break;
+            case 4:
+                SDR.rgb = CColor_DecodeLogC(SDR.rgb);
                 break;
             default:
                 SDR.rgb = SDR.rgb;
