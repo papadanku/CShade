@@ -395,32 +395,16 @@ VK_OEM_CLEAR | 0xFE | Clear key
 
 ### Individuals
 
-The Shadersphere.
+#### The Shadersphere
 
 - BeTa/Alea
 - BlueSkyDefender
 - Pfoiffee
 - Certain individuals in #code-chat/#shader-programming
 
-GitHub Contributors
+#### GitHub Contributors
 
-- Overall
-
-  - 0CCULTIST
-
-- Reported Bugs
-
-  - Jakey757
-  - simonedibilio
-  - WardedPredator
-
-- Submitted Ideas
-
-  - mrjoshisattvablack
-  - liuxd17thu
-  - Maximus961
-
-- Asked Questions
-
-  - R0nBurgandy
-  - lapsio
+- **Overall:** 0CCULTIST
+- **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
+- **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
+- **Asked Questions:** R0nBurgandy, lapsio
