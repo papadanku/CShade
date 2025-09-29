@@ -69,12 +69,14 @@
 */
 
 uniform int _DisplayMode <
+    ui_category = "Main Shader";
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Mask\0";
 > = 0;
 
 uniform float _Sharpening <
+    ui_category = "Main Shader";
     ui_label = "Sharpening";
     ui_type = "slider";
     ui_min = 0.0;
@@ -170,7 +172,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         OutputColor = OutputMask;
     }
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_RCAS

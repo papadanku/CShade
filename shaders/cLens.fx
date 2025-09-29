@@ -38,16 +38,19 @@
 uniform float _Time < source = "timer"; >;
 
 uniform bool _UseTimeSeed <
+    ui_category = "Main Shader";
     ui_label = "Enable Time Seed";
     ui_type = "radio";
 > = true;
 
 uniform float _GrainSeed <
+    ui_category = "Main Shader";
     ui_label = "Seed Offset";
     ui_type = "drag";
 > = 0.0;
 
 uniform float _GrainSeedSpeed <
+    ui_category = "Main Shader";
     ui_label = "Seed Speed";
     ui_type = "slider";
     ui_min = 0.1;
@@ -55,7 +58,8 @@ uniform float _GrainSeedSpeed <
 > = 0.5;
 
 uniform float _GrainScale <
-    ui_category = "Grain";
+    ui_category = "Main Shader";
+    ui_text = " ";
     ui_label = "Grain Scale";
     ui_type = "slider";
     ui_min = 0.01;
@@ -63,6 +67,7 @@ uniform float _GrainScale <
 > = 0.01;
 
 uniform float _GrainAmount <
+    ui_category = "Main Shader";
     ui_label = "Grain Amount";
     ui_type = "slider";
     ui_min = 0.0;
@@ -70,6 +75,7 @@ uniform float _GrainAmount <
 > = 0.35;
 
 uniform float _ChromAb <
+    ui_category = "Main Shader";
     ui_label = "Chromatic Aberration";
     ui_type = "slider";
     ui_min = 0.0;
@@ -77,6 +83,7 @@ uniform float _ChromAb <
 > = 1.65;
 
 uniform float _Vignette <
+    ui_category = "Main Shader";
     ui_label = "Vignette";
     ui_type = "slider";
     ui_min = 0.0;
@@ -127,7 +134,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Seed
     );
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_Lens

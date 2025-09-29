@@ -11,13 +11,15 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform int _DisplayMode <
+    ui_category = "Main Shader";
+    ui_text = "Optical Flow";
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug / Quadrant\0Debug / Motion Vector Direction\0Debug / Motion Vector Magnitude\0";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
 > = 0;
 
 uniform float _MipBias <
-    ui_category = "Optical Flow";
+    ui_category = "Main Shader";
     ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
@@ -25,7 +27,7 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Optical Flow";
+    ui_category = "Main Shader";
     ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -33,27 +35,28 @@ uniform float _BlendFactor <
 > = 0.25;
 
 uniform bool _FrameRateScaling <
-    ui_category = "Motion Blur";
+    ui_category = "Main Shader";
+    ui_text = "\nMotion Blur";
     ui_label = "Enable Frame Rate Scaling";
     ui_type = "radio";
 > = false;
 
 uniform int _BlurAccumuation <
-    ui_category = "Motion Blur";
+    ui_category = "Main Shader";
     ui_label = "Blur Accumuation";
     ui_type = "combo";
     ui_items = "Average\0Max\0";
 > = 0;
 
 uniform int _BlurDirection <
-    ui_category = "Motion Blur";
+    ui_category = "Main Shader";
     ui_label = "Blur Direction";
     ui_type = "combo";
     ui_items = "Unidirectional\0Bidirectional\0";
 > = 0;
 
 uniform float _Scale <
-    ui_category = "Motion Blur";
+    ui_category = "Main Shader";
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -61,7 +64,7 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _TargetFrameRate <
-    ui_category = "Motion Blur";
+    ui_category = "Main Shader";
     ui_label = "Target Frame Rate";
     ui_type = "slider";
     ui_min = 0.0;
@@ -234,7 +237,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

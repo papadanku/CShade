@@ -4,6 +4,7 @@
 */
 
 uniform float _Sigma <
+    ui_category = "Main Shader";
     ui_label = "Sigma";
     ui_type = "slider";
     ui_min = 0.0;

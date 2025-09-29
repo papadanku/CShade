@@ -7,22 +7,26 @@
 */
 
 uniform bool _Pixelate <
+    ui_category = "Main Shader";
     ui_label = "Enable Pixelation";
     ui_type = "radio";
 > = false;
 
 uniform bool _Dithering <
+    ui_category = "Main Shader";
     ui_label = "Enable Dithering";
     ui_type = "radio";
 > = false;
 
 uniform int _DitherMethod <
+    ui_category = "Main Shader";
     ui_label = "Dither Algorithm";
     ui_type = "combo";
     ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
 > = 0;
 
 uniform int2 _Resolution <
+    ui_category = "Main Shader";
     ui_label = "Pixel Count";
     ui_type = "slider";
     ui_min = 16;
@@ -30,6 +34,7 @@ uniform int2 _Resolution <
 > = int2(128, 128);
 
 uniform int3 _Range <
+    ui_category = "Main Shader";
     ui_label = "Color Banding Range";
     ui_type = "slider";
     ui_min = 1.0;
@@ -85,7 +90,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     ColorMap.rgb += (Dither / _Range);
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / _Range;
 
-    Output = CBlend_OutputChannels(ColorMap.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(ColorMap.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_Quantize

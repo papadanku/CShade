@@ -89,9 +89,10 @@
         DestBlendAlpha = CBLEND_DESTBLENDALPHA; \
         RenderTargetWriteMask = int(CBLEND_WRITEMASK);
 
-    uniform float _CShadeAlphaFactor <
+    uniform float _CShade_AlphaFactor <
         ui_category_closed = true;
-        ui_category = "Pipeline / Output / Blending";
+        ui_category = "Pipeline / Output / Merge";
+        ui_text = "Alpha Blend";
         ui_label = "Blend Weight";
         ui_tooltip = "Use this to adjust blending Weight when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";
@@ -99,39 +100,40 @@
         ui_max = 1.0;
     > = 1.0;
 
-    uniform int _CShadeSwizzleRed <
+    uniform int _CShade_SwizzleRed <
         ui_category_closed = true;
-        ui_category = "Pipeline / Output / Color Switch";
+        ui_category = "Pipeline / Output / Merge";
+        ui_text = "\nColor Write Mask";
         ui_label = "-> Red";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 0;
 
-    uniform int _CShadeSwizzleGreen <
-        ui_category = "Pipeline / Output / Color Switch";
+    uniform int _CShade_SwizzleGreen <
+        ui_category = "Pipeline / Output / Merge";
         ui_label = "-> Green";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 1;
 
-    uniform int _CShadeSwizzleBlue <
-        ui_category = "Pipeline / Output / Color Switch";
+    uniform int _CShade_SwizzleBlue <
+        ui_category = "Pipeline / Output / Merge";
         ui_label = "-> Blue";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 2;
 
-    uniform int _CShadeSwizzleAlpha <
-        ui_category = "Pipeline / Output / Color Switch";
+    uniform int _CShade_SwizzleAlpha <
+        ui_category = "Pipeline / Output / Merge";
         ui_label = "-> Alpha";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 3;
 
-    uniform int _CShadeOutputMode <
-        ui_category = "Pipeline / Output / Color Switch";
+    uniform int _CShade_OutputMode <
+        ui_category = "Pipeline / Output / Merge";
         ui_label = " ";
-        ui_text = "\nDebugging / Show Channel";
+        ui_text = "\n[Debug] Show Channel";
         ui_tooltip = "Reset this option once you are done debugging.";
         ui_type = "combo";
         ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
@@ -164,14 +166,14 @@
         // Swizzling
         float4 Cache = float4(Color, Alpha);
         float4 Channels = Cache;
-        CBlend_SwapChannel(Channels.r, Cache, _CShadeSwizzleRed);
-        CBlend_SwapChannel(Channels.g, Cache, _CShadeSwizzleGreen);
-        CBlend_SwapChannel(Channels.b, Cache, _CShadeSwizzleBlue);
-        CBlend_SwapChannel(Channels.a, Cache, _CShadeSwizzleAlpha);
+        CBlend_SwapChannel(Channels.r, Cache, _CShade_SwizzleRed);
+        CBlend_SwapChannel(Channels.g, Cache, _CShade_SwizzleGreen);
+        CBlend_SwapChannel(Channels.b, Cache, _CShade_SwizzleBlue);
+        CBlend_SwapChannel(Channels.a, Cache, _CShade_SwizzleAlpha);
 
         // Process OutputColor
         float4 OutputColor = 0.0;
-        switch (_CShadeOutputMode)
+        switch (_CShade_OutputMode)
         {
             case 1:
                 OutputColor.r = Channels.r;

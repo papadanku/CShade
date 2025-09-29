@@ -31,16 +31,19 @@
 */
 
 uniform bool _EnableFalloff <
+    ui_category = "Main Shader";
     ui_label = "Enable Radius Falloff";
     ui_type = "radio";
 > = true;
 
 uniform bool _InvertFalloff <
+    ui_category = "Main Shader";
     ui_label = "Invert Radius Falloff";
     ui_type = "radio";
 > = false;
 
 uniform float _Radius <
+    ui_category = "Main Shader";
     ui_label = "Radius";
     ui_type = "slider";
     ui_min = 0.0;
@@ -48,6 +51,7 @@ uniform float _Radius <
 > = 0.5;
 
 uniform float _FalloffAmount <
+    ui_category = "Main Shader";
     ui_label = "Falloff Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -55,6 +59,7 @@ uniform float _FalloffAmount <
 > = 0.6;
 
 uniform float2 _FalloffOffset <
+    ui_category = "Main Shader";
     ui_label = "Falloff Offset";
     ui_type = "slider";
     ui_step = 0.001;
@@ -119,7 +124,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         }
     }
 
-    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShade_AlphaFactor);
 }
 
 technique CShade_NoiseBlur

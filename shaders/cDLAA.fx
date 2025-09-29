@@ -16,17 +16,20 @@
 
 
 uniform bool _PreserveFrequencies <
+    ui_category = "Main Shader";
     ui_label = "Preserve High Frequencies";
     ui_type = "radio";
 > = true;
 
 uniform int _DisplayMode <
+    ui_category = "Main Shader";
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
 > = 0;
 
 uniform int _ShortEdgesScale <
+    ui_category = "Main Shader";
     ui_label = "Short Edges / Scaling";
     ui_tooltip = "How much to scale short edges.";
     ui_type = "slider";
@@ -35,6 +38,7 @@ uniform int _ShortEdgesScale <
 > = 3.0;
 
 uniform int _ShortEdgesContrastThreshold <
+    ui_category = "Main Shader";
     ui_label = "Short Edges / Threshold";
     ui_tooltip = "The minimum amount of noise required to detect short edges.";
     ui_type = "combo";
@@ -42,6 +46,7 @@ uniform int _ShortEdgesContrastThreshold <
 > = 2;
 
 uniform int _LongEdgesContrastThreshold <
+    ui_category = "Main Shader";
     ui_label = "Long Edges / Threshold";
     ui_tooltip = "The minimum amount of noise required to detect long edges.";
     ui_type = "combo";
@@ -239,7 +244,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Color.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Color.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_DLAA

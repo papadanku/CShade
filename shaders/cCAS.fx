@@ -34,18 +34,21 @@
 */
 
 uniform int _DisplayMode <
+    ui_category = "Main Shader";
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Image\0Mask\0";
 > = 0;
 
 uniform int _Kernel <
+    ui_category = "Main Shader";
     ui_label = "Kernel Shape";
     ui_type = "combo";
     ui_items = "Diamond\0Box\0";
 > = 0;
 
 uniform float _Contrast <
+    ui_category = "Main Shader";
     ui_label = "Contrast";
     ui_type = "slider";
     ui_min = 0.0;
@@ -187,7 +190,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Output = OutputMask;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_CAS

@@ -30,21 +30,25 @@
 */
 
 uniform float _Divisor <
+    ui_category = "Main Shader";
     ui_label = "Divisor";
     ui_type = "drag";
 > = 0.05;
 
 uniform float _Offset <
+    ui_category = "Main Shader";
     ui_label = "Offset";
     ui_type = "drag";
 > = 0.05;
 
 uniform float _Roll <
+    ui_category = "Main Shader";
     ui_label = "Roll";
     ui_type = "drag";
 > = 0.0;
 
 uniform bool _Symmetry <
+    ui_category = "Main Shader";
     ui_label = "Symmetry";
 > = true;
 
@@ -77,7 +81,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
     float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
 
-    Output = CBlend_OutputChannels(Base.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Base.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_KinoMirror

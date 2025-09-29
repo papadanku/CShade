@@ -7,23 +7,27 @@
 #include "shared/cColor.fxh"
 
 uniform int _ColorBlend <
+    ui_category = "Main Shader";
     ui_label = "Color Blend Mode";
     ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
 > = 0;
 
 uniform int _AlphaBlend <
+    ui_category = "Main Shader";
     ui_label = "Alpha Blend Mode";
     ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
 > = 0;
 
 uniform float3 _SrcFactor <
+    ui_category = "Main Shader";
     ui_label = "Source Factor / RGB";
     ui_type = "drag";
 > = 1.0;
 
 uniform float3 _DestFactor <
+    ui_category = "Main Shader";
     ui_label = "Destination Factor / RGB";
     ui_type = "drag";
 > = 1.0;

@@ -29,29 +29,30 @@ uniform float _FrameTime < source = "frametime"; > ;
 uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug / Quadrant\0Debug / Motion Vector Direction\0Debug / Motion Vector Magnitude\0";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
 > = 0;
 
 uniform bool _InvertWarpX <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
+    ui_text = "Motion Stabilization";
     ui_label = "Invert X Axis";
     ui_type = "radio";
 > = false;
 
 uniform bool _InvertWarpY <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
     ui_label = "Invert Y Axis";
     ui_type = "radio";
 > = false;
 
 uniform bool _GlobalStabilization <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
     ui_label = "Enable Global Stabilization";
     ui_type = "radio";
 > = false;
 
 uniform float _LocalStabilizationMipBias <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
     ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
@@ -59,7 +60,7 @@ uniform float _LocalStabilizationMipBias <
 > = 3.5;
 
 uniform float2 _WarpStrength <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
     ui_label = "Warping Strength";
     ui_type = "slider";
     ui_min = -8.0;
@@ -67,7 +68,7 @@ uniform float2 _WarpStrength <
 > = 1.0;
 
 uniform float _BlendFactor <
-    ui_category = "Motion Stabilization";
+    ui_category = "Main Shader";
     ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -75,45 +76,47 @@ uniform float _BlendFactor <
 > = 1.0;
 
 uniform int _GeometricTransformOrder <
-    ui_category = "Geometric Transform";
+    ui_category = "Main Shader";
+    ui_text = "\nGeometric Transform";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _Angle <
-    ui_category = "Geometric Transform";
+    ui_category = "Main Shader";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _Translate <
-    ui_category = "Geometric Transform";
+    ui_category = "Main Shader";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _Scale <
-    ui_category = "Geometric Transform";
+    ui_category = "Main Shader";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
 uniform int _ScaleByImage <
-    ui_category = "Cosmetic / Scale by Image Content";
+    ui_category = "Main Shader";
+    ui_text = "\n[Cosmetic] Image-Based Scaling";
     ui_label = "Scalar";
     ui_type = "combo";
     ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
 > = 3;
 
 uniform float _ScaleByImageLOD <
-    ui_category = "Cosmetic / Scale by Image Content";
+    ui_category = "Main Shader";
     ui_label = "Mipmap Level";
     ui_type = "drag";
 > = 0.5;
 
 uniform float _ScaleByImageIntensity <
-    ui_category = "Cosmetic / Scale by Image Content";
+    ui_category = "Main Shader";
     ui_label = "Intensity";
     ui_type = "drag";
     ui_min = -8.0;
@@ -287,7 +290,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

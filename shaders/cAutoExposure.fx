@@ -18,14 +18,14 @@ uniform float _Frametime < source = "frametime"; >;
     #include "shared/cShadeHDR.fxh"
 
     uniform float _GradeLightness <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_text = "Color Adjustments";
         ui_label = "Lightness";
         ui_type = "drag";
     > = 0.0;
 
     uniform float _GradeSaturation <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Saturation";
         ui_type = "slider";
         ui_min = -1.0;
@@ -33,7 +33,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float _GradeHueShift <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Hue";
         ui_type = "slider";
         ui_min = -1.0;
@@ -41,7 +41,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float _GradeContrast <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Contrast";
         ui_type = "slider";
         ui_min = -1.0;
@@ -49,7 +49,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float3 _GradeColorFilter <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Color Filter";
         ui_type = "color";
         ui_min = 0.0;
@@ -57,7 +57,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 1.0;
 
     uniform float _GradeTemperature <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_text = "\nWhite Balance";
         ui_label = "Temperature";
         ui_type = "slider";
@@ -66,7 +66,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float _GradeTint <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Tint";
         ui_type = "slider";
         ui_min = -1.0;
@@ -74,20 +74,20 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float3 _GradeShadows <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_text = "\nSplit Toning";
         ui_label = "Shadows";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float3 _GradeHighLights <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Highlights";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float _GradeBalance <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Balance";
         ui_type = "slider";
         ui_min = -1.0;
@@ -95,7 +95,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float3 _GradeMixRed <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_text = "\nChannel Mixer";
         ui_label = "Red";
         ui_type = "color";
@@ -104,7 +104,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(1.0, 0.0, 0.0);
 
     uniform float3 _GradeMixGreen <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Green";
         ui_type = "color";
         ui_min = 0.0;
@@ -112,7 +112,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(0.0, 1.0, 0.0);
 
     uniform float3 _GradeMixBlue <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Blue";
         ui_type = "color";
         ui_min = 0.0;
@@ -120,7 +120,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(0.0, 0.0, 1.0);
 
     uniform float3 _GradeMidtoneShadowColor <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Shadow Color";
         ui_type = "color";
         ui_min = 0.0;
@@ -128,7 +128,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(1.0, 1.0, 1.0);
 
     uniform float3 _GradeMidtoneColor <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_text = "\nShadows / Midtones / Hightlights";
         ui_label = "Midtone Color";
         ui_type = "color";
@@ -137,7 +137,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(1.0, 1.0, 1.0);
 
     uniform float3 _GradeMidtoneHighlightColor <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Highlight Color";
         ui_type = "color";
         ui_min = 0.0;
@@ -145,7 +145,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = float3(1.0, 1.0, 1.0);
 
     uniform float _GradeMidtoneShadowStart <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Shadows Start";
         ui_type = "slider";
         ui_min = 0.0;
@@ -153,7 +153,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.0;
 
     uniform float _GradeMidtoneShadowEnd <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Shadows End";
         ui_type = "slider";
         ui_min = 0.0;
@@ -161,7 +161,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.3;
 
     uniform float _GradeMidtoneHighlightStart <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Highlights Start";
         ui_type = "slider";
         ui_min = 0.0;
@@ -169,7 +169,7 @@ uniform float _Frametime < source = "frametime"; >;
     > = 0.55;
 
     uniform float _GradeMidtoneHighlightEnd <
-        ui_category = "Color Grading";
+        ui_category = "Main Shader";
         ui_label = "Highlights End";
         ui_type = "slider";
         ui_min = 0.0;
@@ -183,7 +183,7 @@ uniform float _Frametime < source = "frametime"; >;
     #include "shared/cCamera.fxh"
 #endif
 
-#include "shared/cTonemapOutput.fxh"
+#include "shared/cComposite.fxh"
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
@@ -211,7 +211,7 @@ CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CL
 
 void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float2 Tex = (_CCameraMeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
+    float2 Tex = (_CCamera_MeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
     float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
     Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
@@ -231,34 +231,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float3 ExposedColor = BaseColor;
 
     #if SHADER_TOGGLE_GRADING
-        // Apply color-grading
-        CColor_ApplyColorGrading(
-            BaseColor,
-            _GradeLightness,
-            _GradeHueShift,
-            _GradeSaturation,
-            _GradeContrast,
-            _GradeColorFilter,
-            _GradeTemperature,
-            _GradeTint,
-            _GradeShadows,
-            _GradeHighLights,
-            _GradeBalance,
-            _GradeMixRed,
-            _GradeMixGreen,
-            _GradeMixBlue,
-            _GradeMidtoneShadowColor,
-            _GradeMidtoneColor,
-            _GradeMidtoneHighlightColor,
-            _GradeMidtoneShadowStart,
-            _GradeMidtoneShadowEnd,
-            _GradeMidtoneHighlightStart,
-            _GradeMidtoneHighlightEnd
-        );
+        CComposite_ApplyOutput(BaseColor.rgb);
     #endif
-
-    // Apply tonemapping
-    BaseColor = CTonemap_ApplyOutputTonemap(BaseColor);
 
     // Apply overlays
     float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
@@ -266,7 +240,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
     CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
-    Output = CBlend_OutputChannels(BaseColor.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(BaseColor.rgb, _CShade_AlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \

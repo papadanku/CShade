@@ -7,6 +7,7 @@
 */
 
 uniform float2 _Offset <
+    ui_category = "Main Shader";
     ui_label = "Offset";
     ui_type = "slider";
     ui_min = -1.0;
@@ -14,6 +15,7 @@ uniform float2 _Offset <
 > = float2(0.0, 0.0);
 
 uniform float2 _Scale <
+    ui_category = "Main Shader";
     ui_label = "Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -21,6 +23,7 @@ uniform float2 _Scale <
 > = float2(1.0, 1.0);
 
 uniform float2 _Cutoff <
+    ui_category = "Main Shader";
     ui_label = "Cutoff";
     ui_type = "slider";
     ui_min = 0.0;
@@ -41,7 +44,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Input.Tex0 = (Input.Tex0 * _Scale) + _Offset;
     float2 Shaper = step(abs(Input.Tex0), _Cutoff);
 
-    Output = CBlend_OutputChannels(Shaper.xxx * Shaper.yyy, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Shaper.xxx * Shaper.yyy, _CShade_AlphaFactor);
 }
 
 #undef CBLEND_BLENDENABLE

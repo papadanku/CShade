@@ -11,6 +11,7 @@
 #endif
 
 uniform float _BlendFactor <
+    ui_category = "Main Shader";
     ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.1;
@@ -39,7 +40,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float4 PreviousFrame = CColor_SRGBtoRGB(tex2D(SamplePreviousFrameTex, Input.Tex0));
     float3 BlendColor = lerp(CurrentFrame.rgb, PreviousFrame.rgb, _BlendFactor);
 
-    Output = CBlend_OutputChannels(BlendColor, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(BlendColor, _CShade_AlphaFactor);
 }
 
 // Copy backbuffer to a that continuously blends with its previous result

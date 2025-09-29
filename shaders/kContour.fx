@@ -34,18 +34,21 @@
 #endif
 
 uniform int _DisplayMode <
+    ui_category = "Main Shader";
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug / Quadrant\0Debug / Magnitude\0Debug / X Gradient\0Debug / Y Gradient\0";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
 > = 0;
 
 uniform int _WeightMode <
+    ui_category = "Main Shader";
     ui_label = "Edge Detection Type";
     ui_type = "combo";
     ui_items = "Color\0Luma\0";
 > = 0;
 
 uniform float _LowerThreshold <
+    ui_category = "Main Shader";
     ui_label = "Lower Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -53,6 +56,7 @@ uniform float _LowerThreshold <
 > = 0.05;
 
 uniform float _UpperThreshold <
+    ui_category = "Main Shader";
     ui_label = "Upper Threshold";
     ui_type = "slider";
     ui_min = 0.0;
@@ -60,6 +64,7 @@ uniform float _UpperThreshold <
 > = 0.5;
 
 uniform float _ColorSensitivity <
+    ui_category = "Main Shader";
     ui_label = "Color Sensitivity";
     ui_type = "slider";
     ui_min = 0.0;
@@ -67,6 +72,7 @@ uniform float _ColorSensitivity <
 > = 0.5;
 
 uniform float4 _FrontColor <
+    ui_category = "Main Shader";
     ui_label = "Front Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -74,6 +80,7 @@ uniform float4 _FrontColor <
 > = float4(1.0, 1.0, 1.0, 1.0);
 
 uniform float4 _BackColor <
+    ui_category = "Main Shader";
     ui_label = "Back Color";
     ui_type = "color";
     ui_min = 0.0;
@@ -183,7 +190,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_KinoContour

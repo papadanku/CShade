@@ -7,6 +7,7 @@
 */
 
 uniform int _Select <
+    ui_category = "Main Shader";
     ui_label = "Luminance Method";
     ui_type = "combo";
     ui_items = "Average\0Min\0Median\0Max\0Length\0Min+Max\0None\0";
@@ -24,7 +25,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
     float3 Luma = CColor_RGBtoLuma(Color.rgb, _Select);
 
-    Output = CBlend_OutputChannels(Luma, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Luma, _CShade_AlphaFactor);
 }
 
 technique CShade_Grayscale

@@ -46,7 +46,7 @@
 uniform float _Time < source = "timer"; >;
 
 uniform float _MipBias <
-    ui_category = "Optical Flow";
+    ui_category = "Main Shader / Optical Flow";
     ui_label = "Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
@@ -54,7 +54,7 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Optical Flow";
+    ui_category = "Main Shader / Optical Flow";
     ui_label = "Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
@@ -62,7 +62,7 @@ uniform float _BlendFactor <
 > = 0.25;
 
 uniform int _BlockSize <
-    ui_category = "Datamosh";
+    ui_category = "Main Shader / Datamosh";
     ui_label = "Block Size";
     ui_type = "slider";
     ui_min = 0;
@@ -70,7 +70,7 @@ uniform int _BlockSize <
 > = 4;
 
 uniform float _Entropy <
-    ui_category = "Datamosh";
+    ui_category = "Main Shader / Datamosh";
     ui_label = "Entropy";
     ui_type = "slider";
     ui_min = 0.0;
@@ -78,7 +78,7 @@ uniform float _Entropy <
 > = 0.1;
 
 uniform float _Contrast <
-    ui_category = "Datamosh";
+    ui_category = "Main Shader / Datamosh";
     ui_label = "Noise Contrast";
     ui_type = "slider";
     ui_min = 0.0;
@@ -86,7 +86,7 @@ uniform float _Contrast <
 > = 0.1;
 
 uniform float _Scale <
-    ui_category = "Datamosh";
+    ui_category = "Main Shader / Datamosh";
     ui_label = "Velocity Scale";
     ui_type = "slider";
     ui_min = 0.0;
@@ -94,7 +94,7 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _Diffusion <
-    ui_category = "Datamosh";
+    ui_category = "Main Shader / Datamosh";
     ui_label = "Random Displacement";
     ui_type = "slider";
     ui_min = 0.0;
@@ -341,7 +341,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
 
-    Output = CBlend_OutputChannels(Datamosh.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Datamosh.rgb, _CShade_AlphaFactor);
 }
 
 void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)

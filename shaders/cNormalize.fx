@@ -93,7 +93,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_Normalize

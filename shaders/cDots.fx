@@ -13,6 +13,7 @@
 
 #if !SHADER_TOGGLE_MONO
     uniform bool _InvertProcessing <
+        ui_category = "Main Shader";
         ui_label = "Invert Processing";
         ui_type = "radio";
     > = false;
@@ -20,6 +21,7 @@
 
 #if SHADER_TOGGLE_MONO
     uniform int _Select <
+        ui_category = "Main Shader";
         ui_label = "Search Feature";
         ui_type = "combo";
         ui_items = "HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
@@ -27,6 +29,7 @@
 #endif
 
 uniform int _CircleAmount <
+    ui_category = "Main Shader";
     ui_label = "Circle Count";
     ui_type = "slider";
     ui_min = 1;
@@ -34,7 +37,7 @@ uniform int _CircleAmount <
 > = 128;
 
 uniform float _InputMultiplier <
-    ui_category = "Input Color";
+    ui_category = "Main Shader / Input Color";
     ui_label = "Multiplier";
     ui_type = "slider";
     ui_min = 0.0;
@@ -42,7 +45,7 @@ uniform float _InputMultiplier <
 > = 4.0;
 
 uniform float _InputBias <
-    ui_category = "Input Color";
+    ui_category = "Main Shader / Input Color";
     ui_label = "Bias";
     ui_type = "slider";
     ui_min = 0.0;
@@ -51,7 +54,7 @@ uniform float _InputBias <
 
 #if SHADER_TOGGLE_MONO
     uniform float2 _Offset <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_text = "Offset (Horizontal, Vertical)";
         ui_label = " ";
         ui_type = "slider";
@@ -60,7 +63,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _Crop <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_text = "Crop (Left, Right, Top, Bottom)";
         ui_label = " ";
         ui_type = "slider";
@@ -69,7 +72,7 @@ uniform float _InputBias <
     > = 0;
 #else
     uniform float2 _RedChannelOffset <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_text = "Offset (Horizontal, Vertical)";
         ui_label = "Red";
         ui_type = "slider";
@@ -79,7 +82,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _GreenChannelOffset <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_label = "Green";
         ui_type = "slider";
         ui_step = 0.1;
@@ -88,7 +91,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _BlueChannelOffset <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_label = "Blue";
         ui_type = "slider";
         ui_step = 0.1;
@@ -97,7 +100,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannelCrop <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_text = "Crop (Left, Right, Top, Bottom)";
         ui_label = "Red";
         ui_type = "slider";
@@ -106,7 +109,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _GreenChannelCrop <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_label = "Green";
         ui_type = "slider";
         ui_min = 0;
@@ -114,7 +117,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _BlueChannelCrop <
-        ui_category = "Geometry";
+        ui_category = "Main Shader / Geometry";
         ui_label = "Blue";
         ui_type = "slider";
         ui_min = 0;
@@ -123,7 +126,7 @@ uniform float _InputBias <
 #endif
 
 uniform float3 _FrontColor <
-    ui_category = "Composition";
+    ui_category = "Main Shader / Composition";
     ui_label = "Foreground";
     ui_type = "color";
     ui_min = 0.0;
@@ -131,7 +134,7 @@ uniform float3 _FrontColor <
 > = float3(0.0, 0.0, 0.0);
 
 uniform float3 _BackColor <
-    ui_category = "Composition";
+    ui_category = "Main Shader / Composition";
     ui_label = "Background";
     ui_type = "color";
     ui_min = 0.0;
@@ -347,7 +350,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannelCrop);
     #endif
 
-    Output = CBlend_OutputChannels(OutputColor, _CShadeAlphaFactor);;
+    Output = CBlend_OutputChannels(OutputColor, _CShade_AlphaFactor);
 }
 
 technique CShade_Dots

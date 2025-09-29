@@ -8,18 +8,21 @@
 */
 
 uniform float _Threshold <
+    ui_category = "Main Shader";
     ui_label = "Threshold";
     ui_type = "drag";
     ui_min = 0.0;
 > = 0.8;
 
 uniform float _Smooth <
+    ui_category = "Main Shader";
     ui_label = "Smoothing";
     ui_type = "drag";
     ui_min = 0.0;
 > = 0.5;
 
 uniform float _Intensity <
+    ui_category = "Main Shader";
     ui_label = "Intensity";
     ui_type = "drag";
     ui_min = 0.0;
@@ -46,7 +49,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
 
-    Output = CBlend_OutputChannels(saturate(Color.rgb * _Intensity), _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(saturate(Color.rgb * _Intensity), _CShade_AlphaFactor);
 }
 
 technique CShade_Threshold

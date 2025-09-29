@@ -1,6 +1,4 @@
 
-#include "cTonemap.fxh"
-
 #if !defined(INCLUDE_CSHADE)
     #define INCLUDE_CSHADE
 

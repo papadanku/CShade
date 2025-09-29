@@ -4,16 +4,17 @@
 #if !defined(INCLUDE_CCAMERA_OUTPUT)
     #define INCLUDE_CCAMERA_OUTPUT
 
-    uniform float _CCameraExposureSmoothingSpeed <
+    uniform float _CCamera_ExposureSmoothingSpeed <
         ui_category_closed = true;
         ui_category = "Pipeline / Output / Auto Exposure";
+        ui_text = "Exposure Settings";
         ui_label = "Smoothing Speed";
         ui_type = "slider";
         ui_min = 0.1;
         ui_max = 1.0;
     > = 0.25;
 
-    uniform float _CCameraExposureBias <
+    uniform float _CCamera_ExposureBias <
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Compensation Bias";
         ui_type = "slider";
@@ -22,7 +23,7 @@
         ui_max = 4.0;
     > = 1.0;
 
-    uniform float _CCameraExposureRange <
+    uniform float _CCamera_ExposureRange <
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Compensation Range";
         ui_type = "slider";
@@ -31,84 +32,84 @@
         ui_max = 4.0;
     > = 1.0;
 
-    uniform int _CCameraMeteringType <
+    uniform int _CCamera_MeteringType <
         ui_category_closed = true;
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Adaptation";
         ui_type = "combo";
         ui_items = "Average Metering\0Spot Metering\0";
     > = 0;
 
-    uniform bool _CCameraLumaMeter <
-        ui_text = "\nLuminance Metering";
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform bool _CCamera_LumaMeter <
+        ui_text = "\n[Tools] Luminance Metering";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Luminance Meter";
         ui_type = "radio";
     > = false;
 
-    uniform float _CCameraLumaMeterScale <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform float _CCamera_LumaMeterScale <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.75;
 
-    uniform float2 _CCameraLumaMeterOffset <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform float2 _CCamera_LumaMeterOffset <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
     > = float2(0.0, -0.25);
 
-    uniform bool _CCameraShowSpotMeterOverlay <
-        ui_text = "\nSpot Metering";
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform bool _CCamera_ShowSpotMeterOverlay <
+        ui_text = "\n[Tools] Spot Metering";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Spot Meter Area";
         ui_type = "radio";
     > = false;
 
-    uniform float _CCameraSpotMeterScale <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform float _CCamera_SpotMeterScale <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
     > = 0.5;
 
-    uniform float2 _CCameraSpotMeterOffset <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform float2 _CCamera_SpotMeterOffset <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
     > = 0.0;
 
-    uniform bool _CCameraExposurePeaking <
-        ui_text = "\nExposure Peaking";
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform bool _CCamera_ExposurePeaking <
+        ui_text = "\n[Tools] Exposure Peaking";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Exposure Peaking";
         ui_type = "radio";
     > = false;
 
-    uniform int _CCameraExposurePeakingDitherType <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform int _CCamera_ExposurePeakingDitherType <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Dither Algorithm";
         ui_type = "combo";
         ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
     > = 0;
 
-    uniform float3 _CCameraExposurePeakingThreshold <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform float3 _CCamera_ExposurePeakingThreshold <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Threshold";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
     > = float3(1.0, 1.0, 1.0);
 
-    uniform int _CCameraExposurePeakingCellWidth <
-        ui_category = "Pipeline / Output / Auto Exposure / Tools";
+    uniform int _CCamera_ExposurePeakingCellWidth <
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Cell Size";
         ui_type = "slider";
         ui_min = 1;
@@ -127,7 +128,7 @@
         // .rgb = Output the highest brightness out of red/green/blue component
         // .a = Output the weight for Temporal Smoothing
         float Delay = 1e-3 * FrameTime;
-        return float4((float3)Luminance, saturate(Delay * _CCameraExposureSmoothingSpeed));
+        return float4((float3)Luminance, saturate(Delay * _CCamera_ExposureSmoothingSpeed));
     }
 
     struct Exposure
@@ -142,8 +143,8 @@
         Exposure Output;
         Output.ExpLuma = exp(LumaTex);
         Output.Ev100 = log2(Output.ExpLuma * 100.0 / 12.5);
-        Output.Ev100 -= _CCameraExposureBias; // optional manual bias
-        Output.Ev100 = clamp(Output.Ev100, -_CCameraExposureRange, _CCameraExposureRange);
+        Output.Ev100 -= _CCamera_ExposureBias; // optional manual bias
+        Output.Ev100 = clamp(Output.Ev100, -_CCamera_ExposureRange, _CCamera_ExposureRange);
         Output.Value = 1.0 / (1.2 * exp2(Output.Ev100));
         return Output;
     }
@@ -155,12 +156,12 @@
 
     void CCamera_ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
     {
-        if (_CCameraLumaMeter)
+        if (_CCamera_LumaMeter)
         {
             // Maps texture coordinates less-than/equal to the brightness.
             // We use [-1,-1] texture coordinates and bias them by 0.5 to have 0.0 be at the middle-left of the screen.
-            UnormTex /= _CCameraLumaMeterScale;
-            UnormTex += float2(-_CCameraLumaMeterOffset.x, _CCameraLumaMeterOffset.y);
+            UnormTex /= _CCamera_LumaMeterScale;
+            UnormTex += float2(-_CCamera_LumaMeterOffset.x, _CCamera_LumaMeterOffset.y);
 
             float AETex = UnormTex.x + 0.5;
             float3 AEMask = lerp(Color * 0.1, 1.0, AETex <= E.ExpLuma);
@@ -188,8 +189,8 @@
             SpotMeterTex.y /= ASPECT_RATIO;
         #endif
 
-        SpotMeterTex *= _CCameraSpotMeterScale;
-        SpotMeterTex += float2(_CCameraSpotMeterOffset.x, -_CCameraSpotMeterOffset.y);
+        SpotMeterTex *= _CCamera_SpotMeterScale;
+        SpotMeterTex += float2(_CCamera_SpotMeterOffset.x, -_CCamera_SpotMeterOffset.y);
         SpotMeterTex = CMath_SNORMtoUNORM_FLT2(SpotMeterTex);
 
         return SpotMeterTex;
@@ -197,7 +198,7 @@
 
     void CCamera_ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 NonExposedColor)
     {
-        if ((_CCameraMeteringType == 1) && _CCameraShowSpotMeterOverlay)
+        if ((_CCamera_MeteringType == 1) && _CCamera_ShowSpotMeterOverlay)
         {
             /*
                 Create a UV that represents a square texture.
@@ -205,8 +206,8 @@
                     Height conversion | [0, 1] -> [-N, N]
             */
             float2 OverlayPos = UnormTex;
-            OverlayPos -= float2(_CCameraSpotMeterOffset.x, -_CCameraSpotMeterOffset.y);
-            OverlayPos /= _CCameraSpotMeterScale;
+            OverlayPos -= float2(_CCamera_SpotMeterOffset.x, -_CCamera_SpotMeterOffset.y);
+            OverlayPos /= _CCamera_SpotMeterScale;
             float2 DotPos = OverlayPos;
 
             // Shrink the UV so [-1, 1] fills a square
@@ -236,16 +237,16 @@
 
     void CCAmera_ApplyExposurePeaking(inout float3 Color, in float2 Pos)
     {
-        if (_CCameraExposurePeaking)
+        if (_CCamera_ExposurePeaking)
         {
             // Create the checkerboard
-            float2 Grid = Pos / _CCameraExposurePeakingCellWidth;
+            float2 Grid = Pos / _CCamera_ExposurePeakingCellWidth;
             float3 Checkerboard = frac(dot(floor(Grid), 0.5)) * 2.0;
 
             // Compute our dithered thresholds
             float Hash = 0.0;
 
-            switch (_CCameraExposurePeakingDitherType)
+            switch (_CCamera_ExposurePeakingDitherType)
             {
                 case 0:
                     Hash = CMath_GetGoldenRatioNoise(Pos);
@@ -261,7 +262,7 @@
                     break;
             }
 
-            float Threshold = _CCameraExposurePeakingThreshold + Hash;
+            float3 Threshold = _CCamera_ExposurePeakingThreshold + Hash;
             Color = lerp(Color, Checkerboard, Color > Threshold);
         }
     }

@@ -1,10 +1,11 @@
 
 #include "cShade.fxh"
+#include "cColor.fxh"
 
 #if !defined(INCLUDE_CSHADE_HDR)
     #define INCLUDE_CSHADE_HDR
 
-    uniform int _CShadeInverseTonemapper <
+    uniform int _CShade_InverseTonemapper <
         ui_category_closed = true;
         ui_category = "Pipeline / Input / Pre-Processing";
         ui_label = "Inverse Tonemap";
@@ -15,12 +16,12 @@
 
     float4 CShadeHDR_Tex2D_InvTonemap(sampler Source, float2 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2D(Source, Tex), _CShadeInverseTonemapper);
+        return CColor_ApplyInverseTonemap(tex2D(Source, Tex), _CShade_InverseTonemapper);
     }
 
     float4 CShadeHDR_Tex2Dlod_TonemapToRGB(sampler Source, float4 Tex)
     {
-        return CTonemap_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShadeInverseTonemapper);
+        return CColor_ApplyInverseTonemap(tex2Dlod(Source, Tex), _CShade_InverseTonemapper);
     }
 
 #endif

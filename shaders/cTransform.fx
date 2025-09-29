@@ -26,6 +26,12 @@
     #define SHADER_BACKBUFFER_SAMPLING POINT
 #endif
 
+uniform bool _BlendWithAlpha <
+    ui_label = "Apply Texture Alpha";
+    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
+    ui_type = "radio";
+> = false;
+
 uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
@@ -33,95 +39,98 @@ uniform int _RenderMode <
 > = 0;
 
 uniform int _BaseGeometricTransformOrder <
-    ui_category = "Geometric Transform / Base";
+    ui_category = "Main Shader / Geometric Transform";
+    ui_text = "Base Layer";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _BaseAngle <
-    ui_category = "Geometric Transform / Base";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _BaseTranslate <
-    ui_category = "Geometric Transform / Base";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _BaseScale <
-    ui_category = "Geometric Transform / Base";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
 uniform int _OverlayTransformOrder <
-    ui_category = "Geometric Transform / Overlay";
+    ui_category = "Main Shader / Geometric Transform";
+    ui_text = "\nOverlay Layer";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _OverlayAngle <
-    ui_category = "Geometric Transform / Overlay";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayTranslate <
-    ui_category = "Geometric Transform / Overlay";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayScale <
-    ui_category = "Geometric Transform / Overlay";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
 > = 0.5;
 
 uniform int _OverlayMaskTransformOrder <
-    ui_category = "Geometric Transform / Overlay Mask";
+    ui_category = "Main Shader / Geometric Transform";
+    ui_text = "\nOverlay Mask";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _OverlayMaskAngle <
-    ui_category = "Geometric Transform / Overlay Mask";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayMaskTranslate <
-    ui_category = "Geometric Transform / Overlay Mask";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayMaskScale <
-    ui_category = "Geometric Transform / Overlay Mask";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
 uniform float2 _OverlayMaskCutoff <
-    ui_category = "Geometric Transform / Overlay Mask";
+    ui_category = "Main Shader / Geometric Transform";
     ui_label = "Cutoff";
     ui_type = "drag";
 > = 0.5;
 
 uniform int _ColorOperationsOrder <
-    ui_category = "Color Transform";
+    ui_category = "Main Shader / Color Transform";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Multiply > Add\0Add > Multiply\0";
 > = 0;
 
 uniform float4 _Multiply <
-    ui_category = "Color Transform";
+    ui_category = "Main Shader / Color Transform";
     ui_label = "Multiplication";
     ui_type = "slider";
     ui_min = -2.0;
@@ -129,7 +138,7 @@ uniform float4 _Multiply <
 > = 1.0;
 
 uniform float4 _Addition <
-    ui_category = "Color Transform";
+    ui_category = "Main Shader / Color Transform";
     ui_label = "Addition";
     ui_type = "slider";
     ui_min = -2.0;
@@ -137,14 +146,6 @@ uniform float4 _Addition <
 > = 0.0;
 
 #include "shared/cShadeHDR.fxh"
-
-uniform bool _BlendWithAlpha <
-    ui_category = "Pipeline / Output / Blending";
-    ui_label = "Apply Texture Alpha";
-    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
-    ui_type = "radio";
-> = false;
-
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
@@ -222,7 +223,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     ApplyColorTransform(Texture);
 
     #if (CBLEND_BLENDENABLE == TRUE)
-        float Alpha = _CShadeAlphaFactor;
+        float Alpha = _CShade_AlphaFactor;
         if (_BlendWithAlpha)
         {
             Alpha *= Texture.a;
