@@ -8,6 +8,7 @@
 */
 
 uniform int _Select <
+    ui_category = "Main Shader";
     ui_label = "Filter";
     ui_type = "combo";
     ui_items = "Local Contrast Normalization\0Census Transform\0";
