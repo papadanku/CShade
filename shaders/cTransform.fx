@@ -33,82 +33,82 @@ uniform int _RenderMode <
 > = 0;
 
 uniform int _BaseGeometricTransformOrder <
-    ui_category = "Geometric Transform · Base";
+    ui_category = "Geometric Transform / Base";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _BaseAngle <
-    ui_category = "Geometric Transform · Base";
+    ui_category = "Geometric Transform / Base";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _BaseTranslate <
-    ui_category = "Geometric Transform · Base";
+    ui_category = "Geometric Transform / Base";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _BaseScale <
-    ui_category = "Geometric Transform · Base";
+    ui_category = "Geometric Transform / Base";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
 uniform int _OverlayTransformOrder <
-    ui_category = "Geometric Transform · Overlay";
+    ui_category = "Geometric Transform / Overlay";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _OverlayAngle <
-    ui_category = "Geometric Transform · Overlay";
+    ui_category = "Geometric Transform / Overlay";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayTranslate <
-    ui_category = "Geometric Transform · Overlay";
+    ui_category = "Geometric Transform / Overlay";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayScale <
-    ui_category = "Geometric Transform · Overlay";
+    ui_category = "Geometric Transform / Overlay";
     ui_label = "Scale";
     ui_type = "drag";
 > = 0.5;
 
 uniform int _OverlayMaskTransformOrder <
-    ui_category = "Geometric Transform · Overlay Mask";
+    ui_category = "Geometric Transform / Overlay Mask";
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
 > = 0;
 
 uniform float _OverlayMaskAngle <
-    ui_category = "Geometric Transform · Overlay Mask";
+    ui_category = "Geometric Transform / Overlay Mask";
     ui_label = "Rotation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayMaskTranslate <
-    ui_category = "Geometric Transform · Overlay Mask";
+    ui_category = "Geometric Transform / Overlay Mask";
     ui_label = "Translation";
     ui_type = "drag";
 > = 0.0;
 
 uniform float2 _OverlayMaskScale <
-    ui_category = "Geometric Transform · Overlay Mask";
+    ui_category = "Geometric Transform / Overlay Mask";
     ui_label = "Scale";
     ui_type = "drag";
 > = 1.0;
 
 uniform float2 _OverlayMaskCutoff <
-    ui_category = "Geometric Transform · Overlay Mask";
+    ui_category = "Geometric Transform / Overlay Mask";
     ui_label = "Cutoff";
     ui_type = "drag";
 > = 0.5;
@@ -139,7 +139,7 @@ uniform float4 _Addition <
 #include "shared/cShadeHDR.fxh"
 
 uniform bool _BlendWithAlpha <
-    ui_category = "Pipeline · Output · Blending";
+    ui_category = "Pipeline / Output / Blending";
     ui_label = "Apply Texture Alpha";
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";
@@ -148,7 +148,7 @@ uniform bool _BlendWithAlpha <
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR\n\n";

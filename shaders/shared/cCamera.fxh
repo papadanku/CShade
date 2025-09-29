@@ -6,7 +6,7 @@
 
     uniform float _CCameraExposureSmoothingSpeed <
         ui_category_closed = true;
-        ui_category = "Pipeline · Output · Auto Exposure";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Smoothing Speed";
         ui_type = "slider";
         ui_min = 0.1;
@@ -14,7 +14,7 @@
     > = 0.25;
 
     uniform float _CCameraExposureBias <
-        ui_category = "Pipeline · Output · Auto Exposure";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Compensation Bias";
         ui_type = "slider";
         ui_step = 0.001;
@@ -23,7 +23,7 @@
     > = 1.0;
 
     uniform float _CCameraExposureRange <
-        ui_category = "Pipeline · Output · Auto Exposure";
+        ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Compensation Range";
         ui_type = "slider";
         ui_step = 0.001;
@@ -33,7 +33,7 @@
 
     uniform int _CCameraMeteringType <
         ui_category_closed = true;
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Adaptation";
         ui_type = "combo";
         ui_items = "Average Metering\0Spot Metering\0";
@@ -41,13 +41,13 @@
 
     uniform bool _CCameraLumaMeter <
         ui_text = "\nLuminance Metering";
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Display Luminance Meter";
         ui_type = "radio";
     > = false;
 
     uniform float _CCameraLumaMeterScale <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
@@ -55,7 +55,7 @@
     > = 0.75;
 
     uniform float2 _CCameraLumaMeterOffset <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
@@ -64,13 +64,13 @@
 
     uniform bool _CCameraShowSpotMeterOverlay <
         ui_text = "\nSpot Metering";
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Display Spot Meter Area";
         ui_type = "radio";
     > = false;
 
     uniform float _CCameraSpotMeterScale <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Scale";
         ui_type = "slider";
         ui_min = 1e-3;
@@ -78,7 +78,7 @@
     > = 0.5;
 
     uniform float2 _CCameraSpotMeterOffset <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Offset";
         ui_type = "slider";
         ui_min = -1.0;
@@ -87,20 +87,20 @@
 
     uniform bool _CCameraExposurePeaking <
         ui_text = "\nExposure Peaking";
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Display Exposure Peaking";
         ui_type = "radio";
     > = false;
 
     uniform int _CCameraExposurePeakingDitherType <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Dither Algorithm";
         ui_type = "combo";
         ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
     > = 0;
 
     uniform float3 _CCameraExposurePeakingThreshold <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Threshold";
         ui_type = "slider";
         ui_min = 0.0;
@@ -108,7 +108,7 @@
     > = float3(1.0, 1.0, 1.0);
 
     uniform int _CCameraExposurePeakingCellWidth <
-        ui_category = "Pipeline · Output · Auto Exposure · Tools";
+        ui_category = "Pipeline / Output / Auto Exposure / Tools";
         ui_label = "Cell Size";
         ui_type = "slider";
         ui_min = 1;

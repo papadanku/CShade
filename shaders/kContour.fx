@@ -36,7 +36,7 @@
 uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
+    ui_items = "Output\0Debug / Quadrant\0Debug / Magnitude\0Debug / X Gradient\0Debug / Y Gradient\0";
 > = 0;
 
 uniform int _WeightMode <
@@ -86,7 +86,7 @@ uniform float4 _BackColor <
 #include "shared/cEdge.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nEDGE_DETECTION_KERNEL - Edge Detection Kernel.\n\n\tOptions:\n\n\t\t0 (ddx, ddy)\n\t\t1 (Sobel Bilinear 3x3)\n\t\t2 (Prewitt Bilinear 5x5)\n\t\t3 (Sobel Bilinear 5x5)\n\t\t4 (Prewitt Bilinear 3x3)\n\t\t5 (Scharr Bilinear 3x3)\n\t\t6 (Frei-Chen)\n\n";

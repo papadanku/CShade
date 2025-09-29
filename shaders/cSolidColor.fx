@@ -13,7 +13,7 @@ uniform float4 _Color <
 #include "shared/cShade.fxh"
 
 uniform bool _BlendWithAlpha <
-    ui_category = "Pipeline · Output · Blending";
+    ui_category = "Pipeline / Output / Blending";
     ui_label = "Apply Texture Alpha";
     ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
     ui_type = "radio";

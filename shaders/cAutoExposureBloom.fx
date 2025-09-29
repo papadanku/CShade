@@ -50,13 +50,13 @@ uniform float _BloomIntensity <
 
 #if SHADER_TOGGLE_GRADING
     uniform float _GradeLightness <
-        ui_category = "Color Grading · Color Adjustments";
+        ui_category = "Color Grading / Color Adjustments";
         ui_label = "Lightness";
         ui_type = "drag";
     > = 0.0;
 
     uniform float _GradeSaturation <
-        ui_category = "Color Grading · Color Adjustments";
+        ui_category = "Color Grading / Color Adjustments";
         ui_label = "Saturation";
         ui_type = "slider";
         ui_min = -1.0;
@@ -64,7 +64,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float _GradeHueShift <
-        ui_category = "Color Grading · Color Adjustments";
+        ui_category = "Color Grading / Color Adjustments";
         ui_label = "Hue";
         ui_type = "slider";
         ui_min = -1.0;
@@ -72,7 +72,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float _GradeContrast <
-        ui_category = "Color Grading · Color Adjustments";
+        ui_category = "Color Grading / Color Adjustments";
         ui_label = "Contrast";
         ui_type = "slider";
         ui_min = -1.0;
@@ -80,7 +80,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float3 _GradeColorFilter <
-        ui_category = "Color Grading · Color Adjustments";
+        ui_category = "Color Grading / Color Adjustments";
         ui_label = "Color Filter";
         ui_type = "color";
         ui_min = 0.0;
@@ -88,7 +88,7 @@ uniform float _BloomIntensity <
     > = 1.0;
 
     uniform float _GradeTemperature <
-        ui_category = "Color Grading · White Balance";
+        ui_category = "Color Grading / White Balance";
         ui_label = "Temperature";
         ui_type = "slider";
         ui_min = -1.0;
@@ -96,7 +96,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float _GradeTint <
-        ui_category = "Color Grading · White Balance";
+        ui_category = "Color Grading / White Balance";
         ui_label = "Tint";
         ui_type = "slider";
         ui_min = -1.0;
@@ -104,19 +104,19 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float3 _GradeShadows <
-        ui_category = "Color Grading · Split Toning";
+        ui_category = "Color Grading / Split Toning";
         ui_label = "Shadows";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float3 _GradeHighLights <
-        ui_category = "Color Grading · Split Toning";
+        ui_category = "Color Grading / Split Toning";
         ui_label = "Highlights";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float _GradeBalance <
-        ui_category = "Color Grading · Split Toning";
+        ui_category = "Color Grading / Split Toning";
         ui_label = "Balance";
         ui_type = "slider";
         ui_min = -1.0;
@@ -124,7 +124,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float3 _GradeMixRed <
-        ui_category = "Color Grading · Channel Mixer";
+        ui_category = "Color Grading / Channel Mixer";
         ui_label = "Red";
         ui_type = "color";
         ui_min = 0.0;
@@ -132,7 +132,7 @@ uniform float _BloomIntensity <
     > = float3(1.0, 0.0, 0.0);
 
     uniform float3 _GradeMixGreen <
-        ui_category = "Color Grading · Channel Mixer";
+        ui_category = "Color Grading / Channel Mixer";
         ui_label = "Green";
         ui_type = "color";
         ui_min = 0.0;
@@ -140,7 +140,7 @@ uniform float _BloomIntensity <
     > = float3(0.0, 1.0, 0.0);
 
     uniform float3 _GradeMixBlue <
-        ui_category = "Color Grading · Channel Mixer";
+        ui_category = "Color Grading / Channel Mixer";
         ui_label = "Blue";
         ui_type = "color";
         ui_min = 0.0;
@@ -148,7 +148,7 @@ uniform float _BloomIntensity <
     > = float3(0.0, 0.0, 1.0);
 
     uniform float3 _GradeMidtoneShadowColor <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Shadow Color";
         ui_type = "color";
         ui_min = 0.0;
@@ -156,7 +156,7 @@ uniform float _BloomIntensity <
     > = float3(1.0, 1.0, 1.0);
 
     uniform float3 _GradeMidtoneColor <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Midtone Color";
         ui_type = "color";
         ui_min = 0.0;
@@ -164,7 +164,7 @@ uniform float _BloomIntensity <
     > = float3(1.0, 1.0, 1.0);
 
     uniform float3 _GradeMidtoneHighlightColor <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Highlight Color";
         ui_type = "color";
         ui_min = 0.0;
@@ -172,7 +172,7 @@ uniform float _BloomIntensity <
     > = float3(1.0, 1.0, 1.0);
 
     uniform float _GradeMidtoneShadowStart <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Shadows Start";
         ui_type = "slider";
         ui_min = 0.0;
@@ -180,7 +180,7 @@ uniform float _BloomIntensity <
     > = 0.0;
 
     uniform float _GradeMidtoneShadowEnd <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Shadows End";
         ui_type = "slider";
         ui_min = 0.0;
@@ -188,7 +188,7 @@ uniform float _BloomIntensity <
     > = 0.3;
 
     uniform float _GradeMidtoneHighlightStart <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Highlights Start";
         ui_type = "slider";
         ui_min = 0.0;
@@ -196,7 +196,7 @@ uniform float _BloomIntensity <
     > = 0.55;
 
     uniform float _GradeMidtoneHighlightEnd <
-        ui_category = "Color Grading · Shadows, Midtones, Hightlights";
+        ui_category = "Color Grading / Shadows, Midtones, Hightlights";
         ui_label = "Highlights End";
         ui_type = "slider";
         ui_min = 0.0;
@@ -213,7 +213,7 @@ uniform float _BloomIntensity <
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";

@@ -13,7 +13,7 @@ uniform float _FrameTime < source = "frametime"; > ;
 uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+    ui_items = "Output\0Debug / Quadrant\0Debug / Motion Vector Direction\0Debug / Motion Vector Magnitude\0";
 > = 0;
 
 uniform float _MipBias <

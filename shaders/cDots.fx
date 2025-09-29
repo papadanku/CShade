@@ -142,7 +142,7 @@ uniform float3 _BackColor <
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nSHADER_TOGGLE_MONO - Switches to the shader's monochrome version.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";

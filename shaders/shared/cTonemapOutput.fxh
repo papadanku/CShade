@@ -6,7 +6,7 @@
 
     uniform int _CTonemapFunction <
         ui_category_closed = true;
-        ui_category = "Pipeline · Output · Tonemapping";
+        ui_category = "Pipeline / Output / Tonemapping";
         ui_label = "Tonemap Operator";
         ui_tooltip = "Select a tonemap operator for the output";
         ui_type = "combo";

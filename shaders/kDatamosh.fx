@@ -105,7 +105,7 @@ uniform float _Diffusion <
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n";

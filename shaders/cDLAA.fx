@@ -27,7 +27,7 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _ShortEdgesScale <
-    ui_label = "Short Edges · Scaling";
+    ui_label = "Short Edges / Scaling";
     ui_tooltip = "How much to scale short edges.";
     ui_type = "slider";
     ui_min = 0.0;
@@ -35,14 +35,14 @@ uniform int _ShortEdgesScale <
 > = 3.0;
 
 uniform int _ShortEdgesContrastThreshold <
-    ui_label = "Short Edges · Threshold";
+    ui_label = "Short Edges / Threshold";
     ui_tooltip = "The minimum amount of noise required to detect short edges.";
     ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
 > = 2;
 
 uniform int _LongEdgesContrastThreshold <
-    ui_label = "Long Edges · Threshold";
+    ui_label = "Long Edges / Threshold";
     ui_tooltip = "The minimum amount of noise required to detect long edges.";
     ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";

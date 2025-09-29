@@ -119,7 +119,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         }
     }
 
-    Output = CBlend_OutputChannels(Output / Weight, _CShadeAlphaFactor);
+    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShadeAlphaFactor);
 }
 
 technique CShade_NoiseBlur

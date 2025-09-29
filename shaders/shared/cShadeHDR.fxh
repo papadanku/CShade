@@ -6,7 +6,7 @@
 
     uniform int _CShadeInverseTonemapper <
         ui_category_closed = true;
-        ui_category = "Pipeline · Input · Pre-Processing";
+        ui_category = "Pipeline / Input / Pre-Processing";
         ui_label = "Inverse Tonemap";
         ui_tooltip = "Select a tonemap operator for sampling the backbuffer";
         ui_type = "combo";

@@ -91,7 +91,7 @@
 
     uniform float _CShadeAlphaFactor <
         ui_category_closed = true;
-        ui_category = "Pipeline · Output · Blending";
+        ui_category = "Pipeline / Output / Blending";
         ui_label = "Blend Weight";
         ui_tooltip = "Use this to adjust blending Weight when using the following Blends: SRCALPHA/INVSRCALPHA";
         ui_type = "slider";
@@ -101,37 +101,37 @@
 
     uniform int _CShadeSwizzleRed <
         ui_category_closed = true;
-        ui_category = "Pipeline · Output · Color Switch";
+        ui_category = "Pipeline / Output / Color Switch";
         ui_label = "-> Red";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 0;
 
     uniform int _CShadeSwizzleGreen <
-        ui_category = "Pipeline · Output · Color Switch";
+        ui_category = "Pipeline / Output / Color Switch";
         ui_label = "-> Green";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 1;
 
     uniform int _CShadeSwizzleBlue <
-        ui_category = "Pipeline · Output · Color Switch";
+        ui_category = "Pipeline / Output / Color Switch";
         ui_label = "-> Blue";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 2;
 
     uniform int _CShadeSwizzleAlpha <
-        ui_category = "Pipeline · Output · Color Switch";
+        ui_category = "Pipeline / Output / Color Switch";
         ui_label = "-> Alpha";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
     > = 3;
 
     uniform int _CShadeOutputMode <
-        ui_category = "Pipeline · Output · Color Switch";
+        ui_category = "Pipeline / Output / Color Switch";
         ui_label = " ";
-        ui_text = "\nDebugging · Show Channel";
+        ui_text = "\nDebugging / Show Channel";
         ui_tooltip = "Reset this option once you are done debugging.";
         ui_type = "combo";
         ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
@@ -199,7 +199,7 @@
 
     uniform int _CBlendPreprocessorGuide <
         ui_category_closed = true;
-        ui_category = "CShade · Preprocessor Guide · Blending";
+        ui_category = "CShade / Preprocessor Guide / Blending";
         ui_label = " ";
         ui_type = "radio";
         ui_text = "\nCBLEND_BLENDENABLE - Enables or disables color and alpha blending for the render target.\n\n\tOptions: TRUE, FALSE\n\tDefault: FALSE\n\n\tNote: To blend with existing data, you must also set ClearRenderTargets to FALSE.\n\nCBLEND_BLENDOP - Defines the operator used for color blending.\n\n\tOptions: ADD, SUBTRACT, REVSUBTRACT, MIN, MAX\n\tDefault: ADD\n\nCBLEND_BLENDOPALPHA - Defines the operator used for alpha blending.\n\n\tOptions: ADD, SUBTRACT, REVSUBTRACT, MIN, MAX\n\tDefault: ADD\n\nCBLEND_SRCBLEND - Specifies the source operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ONE\n\nCBLEND_SRCBLENDALPHA - Specifies the optional pre-blend operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ONE\n\nCBLEND_DESTBLEND - Specifies the destination operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ZERO\n\nCBLEND_DESTBLENDALPHA - Specifies the optional pre-blend operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ZERO\n\nCBLEND_WRITEMASK - A color mask applied to the output before it is written to the render target.\n\n\tOptions: RED, GREEN, BLUE, ALPHA\n\tDefault: RED + GREEN + BLUE + ALPHA\n\n";
@@ -207,7 +207,7 @@
 
     uniform int _CBlendPreprocessorGuidePreset <
         ui_category_closed = true;
-        ui_category = "CShade · Preprocessor Guide · Blending · Presets";
+        ui_category = "CShade / Preprocessor Guide / Blending / Presets";
         ui_label = " ";
         ui_type = "radio";
         ui_text = "\nCBLEND_APPLY_PRESET 0 (Default):\n\n\tCBLEND_BLENDENABLE_VALUE FALSE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE ONE\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE ZERO\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\nCBLEND_APPLY_PRESET 1 (Enables Alpha Blending):\n\n\tCBLEND_BLENDENABLE_VALUE TRUE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE SRCALPHA\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE INVSRCALPHA\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\n";

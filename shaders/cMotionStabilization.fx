@@ -29,7 +29,7 @@ uniform float _FrameTime < source = "frametime"; > ;
 uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+    ui_items = "Output\0Debug / Quadrant\0Debug / Motion Vector Direction\0Debug / Motion Vector Magnitude\0";
 > = 0;
 
 uniform bool _InvertWarpX <
@@ -100,20 +100,20 @@ uniform float2 _Scale <
 > = 1.0;
 
 uniform int _ScaleByImage <
-    ui_category = "Cosmetic · Scale by Image Content";
+    ui_category = "Cosmetic / Scale by Image Content";
     ui_label = "Scalar";
     ui_type = "combo";
     ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
 > = 3;
 
 uniform float _ScaleByImageLOD <
-    ui_category = "Cosmetic · Scale by Image Content";
+    ui_category = "Cosmetic / Scale by Image Content";
     ui_label = "Mipmap Level";
     ui_type = "drag";
 > = 0.5;
 
 uniform float _ScaleByImageIntensity <
-    ui_category = "Cosmetic · Scale by Image Content";
+    ui_category = "Cosmetic / Scale by Image Content";
     ui_label = "Intensity";
     ui_type = "drag";
     ui_min = -8.0;
@@ -124,7 +124,7 @@ uniform float _ScaleByImageIntensity <
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide · Shader";
+    ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
     ui_text = "\nSHADER_BACKBUFFER_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_MOTION_VECTORS_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\nSHADER_COSMETIC_SAMPLING - How the shader filters the image content texture used for color-based displacement.\n\n\tOptions: LINEAR, POINT\n\n";
