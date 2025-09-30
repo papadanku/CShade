@@ -57,7 +57,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
-    ui_text = "\nSHADER_TOGGLE_AUTOEXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_category_closed = false;
 > = 0;
 
@@ -191,14 +191,10 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Bloom composition
     float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
-    BaseColor = (_BloomRenderMode == 0)
-    ? BaseColor + (BloomColor * _BloomIntensity)
-    : BloomColor;
+    BaseColor = (_BloomRenderMode == 0) ? BaseColor + (BloomColor * _BloomIntensity) : BloomColor;
 
     // Apply color-grading
-    #if SHADER_TOGGLE_GRADING
-        CComposite_ApplyOutput(BaseColor.rgb);
-    #endif
+    CComposite_ApplyOutput(BaseColor.rgb);
 
     // Apply overlays
     #if SHADER_TOGGLE_AUTOEXPOSURE

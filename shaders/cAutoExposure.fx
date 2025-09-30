@@ -6,10 +6,6 @@
     [ Shader Options ]
 */
 
-#ifndef SHADER_TOGGLE_GRADING
-    #define SHADER_TOGGLE_GRADING 0
-#endif
-
 // Exposure-specific settings
 uniform float _Frametime < source = "frametime"; >;
 
@@ -190,7 +186,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
     ui_label = " ";
     ui_type = "radio";
-    ui_text = "\nSHADER_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_category_closed = false;
 > = 0;
 
@@ -229,10 +225,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Store the exposed color here for checkerboard check
     float3 ExposedColor = BaseColor;
-
-    #if SHADER_TOGGLE_GRADING
-        CComposite_ApplyOutput(BaseColor.rgb);
-    #endif
+    CComposite_ApplyOutput(BaseColor.rgb);
 
     // Apply overlays
     float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
