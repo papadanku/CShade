@@ -22,24 +22,24 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 CShade features shaders that deal with getting information about an image.
 
 - [AMD FidelityFX](https://gpuopen.com/amd-fidelityfx-sdk/)
-  - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
-  - [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/)
-  - [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
+    - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
+    - [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/)
+    - [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
 - Anti-aliasing
-  - [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
-  - [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
+    - [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
+    - [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
 - Color conversions
-  - Chromaticity spaces
-  - Cylindrical color spaces
-  - Polar color spaces
-  - Grayscale
+    - Chromaticity spaces
+    - Cylindrical color spaces
+    - Polar color spaces
+    - Grayscale
 - Convolutions
-  - Gaussian blur
-  - Edge detection
-  - Hierarchical (joint) bilateral upsampling
+    - Gaussian blur
+    - Edge detection
+    - Hierarchical (joint) bilateral upsampling
 - Local normalization
-  - Census transform
-  - Local contrast normalization
+    - Census transform
+    - Local contrast normalization
 
 ### Video Processing
 
@@ -90,87 +90,87 @@ uniform float _CShadeExposureSmoothingSpeed <
 
 #### Shared Method From Header File
 
-  `shared/common/cLib.fxh` -> `Common_CLib_FunctionName()`
+`shared/common/cLib.fxh` -> `Common_CLib_FunctionName()`
 
 #### ALLCAPS
 
 - State parameters
 
-  `BlendOp = ADD`
+    `BlendOp = ADD`
 
 - System semantics
 
-  `float4 SV_POSITION`
+    `float4 SV_POSITION`
 
 #### ALL_CAPS
 
 - Preprocessor definition
 
-  `#define SHADER_VERSION`
+    `#define SHADER_VERSION`
 
 - Preprocessor Macros
 
-  `#define EXAMPLE_MACRO()`
+    `#define EXAMPLE_MACRO()`
 
 - Preprocessor Macro Arguments
 
-  `#define EXAMPLE_MACRO(EXAMPLE_ARG)`
+    `#define EXAMPLE_MACRO(EXAMPLE_ARG)`
 
 #### _SnakeCase
 
 - Uniform variables
 
-  `uniform float3 _Example`
+    `uniform float3 _Example`
 
 #### SnakeCase
 
 - Function arguments
 
-  `void Function(float4 ArgumentOne)`
+    `void Function(float4 ArgumentOne)`
 
 - Global Variables
 
-  ```md
-  static const float4 GlobalVariable = 1.0;
-  void Function()
-  {
-      return GlobalVariable;
-  }
-  ```
+    ```md
+    static const float4 GlobalVariable = 1.0;
+    void Function()
+    {
+        return GlobalVariable;
+    }
+    ```
 
 - Local Variables
 
-  ```md
-  void Function()
-  {
-      float4 LocalVariable = 1.0;
-      return LocalVariable;
-  }
-  ```
+    ```md
+    void Function()
+    {
+        float4 LocalVariable = 1.0;
+        return LocalVariable;
+    }
+    ```
 
 - Textures and Samples
 
-  `texture2D ExampleTex ...`
+    `texture2D ExampleTex ...`
 
-  `sampler2D SampleExampleTex ...`
+    `sampler2D SampleExampleTex ...`
 
 #### SNAKE_Case
 
 - `struct` datatype
 
-  `struct APP2VS_Example ...`
+    `struct APP2VS_Example ...`
 
-  `struct VS2PS_Example ...`
+    `struct VS2PS_Example ...`
 
-  `struct PS2FB_Example ...`
+    `struct PS2FB_Example ...`
 
-  `struct PS2MRT_Example ...`
+    `struct PS2MRT_Example ...`
 
 - `VertexShader` and `PixelShader`
 
-  `VertexShader = VS_Example;`
+    `VertexShader = VS_Example;`
 
-  `PixelShader = PS_Example;`
+    `PixelShader = PS_Example;`
 
 ### Virtual-Key Codes
 
@@ -408,3 +408,26 @@ VK_OEM_CLEAR | 0xFE | Clear key
 - **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
 - **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
 - **Asked Questions:** R0nBurgandy, lapsio
+
+## AI-Assisted Programming with Gemini CLI
+
+This project supports AI-assisted programming through the Gemini CLI. The Gemini CLI is an interactive command-line interface that leverages large language models to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations.
+
+### How to Use
+
+1.  **Install Gemini CLI:** Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
+2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
+
+    ```bash
+    cd C:\Users\Paul\Documents\GitHub\CShade
+    ```
+
+3.  **Start Gemini CLI:** Launch the Gemini CLI.
+4.  **Interact with the AI:** You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
+
+    - "Explain the `cMotionBlur.fx` shader."
+    - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
+    - "Add a new uniform variable to `cLens.fx` that controls the chromatic aberration strength."
+    - "Find all occurrences of `tex2Dlod` in the `shaders` directory."
+
+For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in the `gemini` directory.
