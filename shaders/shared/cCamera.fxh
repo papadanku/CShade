@@ -12,6 +12,7 @@
         ui_type = "slider";
         ui_min = 0.1;
         ui_max = 1.0;
+        ui_tooltip = "Controls how quickly the auto-exposure adapts to changes in scene luminance.";
     > = 0.25;
 
     uniform float _CCamera_ExposureBias <
@@ -21,6 +22,7 @@
         ui_step = 0.001;
         ui_min = -4.0;
         ui_max = 4.0;
+        ui_tooltip = "Applies a manual compensation bias to the auto-exposure, adjusting the overall brightness.";
     > = 1.0;
 
     uniform float _CCamera_ExposureRange <
@@ -30,6 +32,7 @@
         ui_step = 0.001;
         ui_min = 1.0;
         ui_max = 4.0;
+        ui_tooltip = "Defines the maximum range (in f-stops) that the auto-exposure can adjust the scene brightness.";
     > = 1.0;
 
     uniform int _CCamera_MeteringType <
@@ -38,6 +41,7 @@
         ui_label = "Adaptation";
         ui_type = "combo";
         ui_items = "Average Metering\0Spot Metering\0";
+        ui_tooltip = "Selects the method for auto-exposure adaptation: either average metering across the whole scene or spot metering on a specific area.";
     > = 0;
 
     uniform bool _CCamera_LumaMeter <
@@ -45,6 +49,7 @@
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Luminance Meter";
         ui_type = "radio";
+        ui_tooltip = "When enabled, displays an overlay that visualizes the scene's luminance levels.";
     > = false;
 
     uniform float _CCamera_LumaMeterScale <
@@ -53,6 +58,7 @@
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
+        ui_tooltip = "Controls the size or scale of the luminance meter overlay.";
     > = 0.75;
 
     uniform float2 _CCamera_LumaMeterOffset <
@@ -61,6 +67,7 @@
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
+        ui_tooltip = "Adjusts the horizontal and vertical position of the luminance meter overlay.";
     > = float2(0.0, -0.25);
 
     uniform bool _CCamera_ShowSpotMeterOverlay <
@@ -68,6 +75,7 @@
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Spot Meter Area";
         ui_type = "radio";
+        ui_tooltip = "When enabled, displays an overlay indicating the area used for spot metering.";
     > = false;
 
     uniform float _CCamera_SpotMeterScale <
@@ -76,6 +84,7 @@
         ui_type = "slider";
         ui_min = 1e-3;
         ui_max = 1.0;
+        ui_tooltip = "Controls the size or scale of the spot metering area.";
     > = 0.5;
 
     uniform float2 _CCamera_SpotMeterOffset <
@@ -84,6 +93,7 @@
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
+        ui_tooltip = "Adjusts the horizontal and vertical position of the spot metering area.";
     > = 0.0;
 
     uniform bool _CCamera_ExposurePeaking <
@@ -91,6 +101,7 @@
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_label = "Display Exposure Peaking";
         ui_type = "radio";
+        ui_tooltip = "When enabled, displays an overlay that highlights areas within a specified exposure threshold.";
     > = false;
 
     uniform int _CCamera_ExposurePeakingDitherType <
@@ -98,6 +109,7 @@
         ui_label = "Dither Algorithm";
         ui_type = "combo";
         ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
+        ui_tooltip = "Selects the dither algorithm used for the exposure peaking overlay.";
     > = 0;
 
     uniform float3 _CCamera_ExposurePeakingThreshold <
@@ -106,6 +118,7 @@
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
+        ui_tooltip = "Sets the luminance threshold for exposure peaking, highlighting areas above this level.";
     > = float3(1.0, 1.0, 1.0);
 
     uniform int _CCamera_ExposurePeakingCellWidth <
@@ -114,6 +127,7 @@
         ui_type = "slider";
         ui_min = 1;
         ui_max = 16;
+        ui_tooltip = "Sets the width of the cells in the checkerboard pattern used for exposure peaking.";
     > = 8;
 
     // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html

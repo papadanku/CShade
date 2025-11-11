@@ -9,7 +9,7 @@
         ui_category_closed = true;
         ui_category = "Pipeline / Input / Pre-Processing";
         ui_label = "Inverse Tonemap";
-        ui_tooltip = "Select a tonemap operator for sampling the backbuffer";
+        ui_tooltip = "Selects an inverse tonemap operator to convert SDR colors back to HDR for processing, affecting how the backbuffer is sampled.";
         ui_type = "combo";
         ui_items = "None\0Reinhard [Inverse]\0Reinhard Squared [Inverse]\0AMD Resolve [Inverse]\0Logarithmic C [Decode]\0";
     > = 0;

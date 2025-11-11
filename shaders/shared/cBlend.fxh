@@ -94,7 +94,7 @@
         ui_category = "Pipeline / Output / Merge";
         ui_text = "Alpha Blend";
         ui_label = "Blend Weight";
-        ui_tooltip = "Use this to adjust blending Weight when using the following Blends: SRCALPHA/INVSRCALPHA";
+        ui_tooltip = "Adjusts the blending weight when using source alpha (SRCALPHA) or inverse source alpha (INVSRCALPHA) blend modes.";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -107,6 +107,7 @@
         ui_label = "-> Red";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+        ui_tooltip = "Maps the red output channel to one of the source color or alpha channels, or disables it.";
     > = 0;
 
     uniform int _CShade_SwizzleGreen <
@@ -114,6 +115,7 @@
         ui_label = "-> Green";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+        ui_tooltip = "Maps the green output channel to one of the source color or alpha channels, or disables it.";
     > = 1;
 
     uniform int _CShade_SwizzleBlue <
@@ -121,6 +123,7 @@
         ui_label = "-> Blue";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+        ui_tooltip = "Maps the blue output channel to one of the source color or alpha channels, or disables it.";
     > = 2;
 
     uniform int _CShade_SwizzleAlpha <
@@ -128,13 +131,14 @@
         ui_label = "-> Alpha";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+        ui_tooltip = "Maps the alpha output channel to one of the source color or alpha channels, or disables it.";
     > = 3;
 
     uniform int _CShade_OutputMode <
         ui_category = "Pipeline / Output / Merge";
         ui_label = " ";
         ui_text = "\n[Debug] Show Channel";
-        ui_tooltip = "Reset this option once you are done debugging.";
+        ui_tooltip = "Displays a specific color channel (Red, Green, Blue, or Alpha) for debugging purposes. Remember to reset this option when done.";
         ui_type = "combo";
         ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
     > = 0;
@@ -205,6 +209,7 @@
         ui_label = " ";
         ui_type = "radio";
         ui_text = "\nCBLEND_BLENDENABLE - Enables or disables color and alpha blending for the render target.\n\n\tOptions: TRUE, FALSE\n\tDefault: FALSE\n\n\tNote: To blend with existing data, you must also set ClearRenderTargets to FALSE.\n\nCBLEND_BLENDOP - Defines the operator used for color blending.\n\n\tOptions: ADD, SUBTRACT, REVSUBTRACT, MIN, MAX\n\tDefault: ADD\n\nCBLEND_BLENDOPALPHA - Defines the operator used for alpha blending.\n\n\tOptions: ADD, SUBTRACT, REVSUBTRACT, MIN, MAX\n\tDefault: ADD\n\nCBLEND_SRCBLEND - Specifies the source operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ONE\n\nCBLEND_SRCBLENDALPHA - Specifies the optional pre-blend operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ONE\n\nCBLEND_DESTBLEND - Specifies the destination operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ZERO\n\nCBLEND_DESTBLENDALPHA - Specifies the optional pre-blend operation for blending.\n\n\tOptions: ZERO, ONE, SRCCOLOR, SRCALPHA, INVSRCCOLOR, INVSRCALPHA, DESTCOLOR, DESTALPHA, INVDESTCOLOR, INVDESTALPHA\n\tDefault: ZERO\n\nCBLEND_WRITEMASK - A color mask applied to the output before it is written to the render target.\n\n\tOptions: RED, GREEN, BLUE, ALPHA\n\tDefault: RED + GREEN + BLUE + ALPHA\n\n";
+        ui_tooltip = "Provides a guide for understanding and configuring preprocessor directives related to blending operations.";
     > = 0;
 
     uniform int _CBlendPreprocessorGuidePreset <
@@ -213,6 +218,7 @@
         ui_label = " ";
         ui_type = "radio";
         ui_text = "\nCBLEND_APPLY_PRESET 0 (Default):\n\n\tCBLEND_BLENDENABLE_VALUE FALSE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE ONE\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE ZERO\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\nCBLEND_APPLY_PRESET 1 (Enables Alpha Blending):\n\n\tCBLEND_BLENDENABLE_VALUE TRUE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE SRCALPHA\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE INVSRCALPHA\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\n";
+        ui_tooltip = "Provides a guide for understanding and configuring preprocessor directive presets for common blending scenarios.";
     > = 0;
 
 #endif
