@@ -1,0 +1,1053 @@
+
+--- Daltonize.fx ---
+
+/**
+ * Daltonization algorithm by daltonize.org
+ * http://www.daltonize.org/2010/05/lms-daltonization-algorithm.html
+ * Originally ported to ReShade by IDDQD, modified for ReShade 3.0 by crosire
+ */
+
+uniform int Type <
+    ui_type = "combo";
+    ui_items = "Protanopia\0Deuteranopia\0Tritanopia\0";
+> = 0;
+
+#include "ReShade.fxh"
+
+float3 PS_DaltonizeFXmain(float4 vpos : SV_Position, float2 texcoord : TexCoord) : SV_Target
+{
+    float3 input = tex2D(ReShade::BackBuffer, texcoord).rgb;
+
+    // RGB to LMS matrix conversion
+    float OnizeL = (17.8824f * input.r) + (43.5161f * input.g) + (4.11935f * input.b);
+    float OnizeM = (3.45565f * input.r) + (27.1554f * input.g) + (3.86714f * input.b);
+    float OnizeS = (0.0299566f * input.r) + (0.184309f * input.g) + (1.46709f * input.b);
+
+    // Simulate color blindness
+    float Daltl, Daltm, Dalts;
+
+    if (Type == 0) // Protanopia - reds are greatly reduced (1% men)
+    {
+        Daltl = 0.0f * OnizeL + 2.02344f * OnizeM + -2.52581f * OnizeS;
+        Daltm = 0.0f * OnizeL + 1.0f * OnizeM + 0.0f * OnizeS;
+        Dalts = 0.0f * OnizeL + 0.0f * OnizeM + 1.0f * OnizeS;
+    }
+    else if (Type == 1) // Deuteranopia - greens are greatly reduced (1% men)
+    {
+        Daltl = 1.0f * OnizeL + 0.0f * OnizeM + 0.0f * OnizeS;
+        Daltm = 0.494207f * OnizeL + 0.0f * OnizeM + 1.24827f * OnizeS;
+        Dalts = 0.0f * OnizeL + 0.0f * OnizeM + 1.0f * OnizeS;
+    }
+    else if (Type == 2) // Tritanopia - blues are greatly reduced (0.003% population)
+    {
+        Daltl = 1.0f * OnizeL + 0.0f * OnizeM + 0.0f * OnizeS;
+        Daltm = 0.0f * OnizeL + 1.0f * OnizeM + 0.0f * OnizeS;
+        Dalts = -0.395913f * OnizeL + 0.801109f * OnizeM + 0.0f * OnizeS;
+    }
+
+    // LMS to RGB matrix conversion
+    float3 error;
+    error.r = (0.0809444479f * Daltl) + (-0.130504409f * Daltm) + (0.116721066f * Dalts);
+    error.g = (-0.0102485335f * Daltl) + (0.0540193266f * Daltm) + (-0.113614708f * Dalts);
+    error.b = (-0.000365296938f * Daltl) + (-0.00412161469f * Daltm) + (0.693511405f * Dalts);
+
+    // Isolate invisible colors to color vision deficiency (calculate error matrix)
+    error = (input - error);
+
+    // Shift colors towards visible spectrum (apply error modifications)
+    float3 correction;
+    correction.r = 0; // (error.r * 0.0) + (error.g * 0.0) + (error.b * 0.0);
+    correction.g = (error.r * 0.7) + (error.g * 1.0); // + (error.b * 0.0);
+    correction.b = (error.r * 0.7) + (error.b * 1.0); // + (error.g * 0.0);
+
+    // Add compensation to original values
+    correction = input + correction;
+
+    return correction;
+}
+
+technique Daltonize
+{
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = PS_DaltonizeFXmain;
+    }
+}
+
+--- Deband.fx ---
+
+/**
+ * Deband shader by haasn
+ * https://github.com/haasn/gentoo-conf/blob/xor/home/nand/.mpv/shaders/deband-pre.glsl
+ *
+ * Copyright (c) 2015 Niklas Haas
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Modified and optimized for ReShade by JPulowski
+ * https://reshade.me/forum/shader-presentation/768-deband
+ *
+ * Do not distribute without giving credit to the original author(s).
+ *
+ * 1.0  - Initial release
+ * 1.1  - Replaced the algorithm with the one from MPV
+ * 1.1a - Minor optimizations
+ *      - Removed unnecessary lines and replaced them with ReShadeFX intrinsic counterparts
+ * 2.0  - Replaced "grain" with CeeJay.dk's ordered dithering algorithm and enabled it by default
+ *      - The configuration is now more simpler and straightforward
+ *      - Some minor code changes and optimizations
+ *      - Improved the algorithm and made it more robust by adding some of the madshi's
+ *        improvements to flash3kyuu_deband which should cause an increase in quality. Higher
+ *        iterations/ranges should now yield higher quality debanding without too much decrease
+ *        in quality.
+ *      - Changed licensing text and original source code URL
+ * 3.0  - Replaced the entire banding detection algorithm with modified standard deviation and
+ *        Weber ratio analyses which give more accurate and error-free results compared to the
+ *        previous algorithm
+ *      - Added banding map debug view
+ *      - Added and redefined UI categories
+ *      - Added depth detection (credits to spiro) which should be useful when banding only
+ *        occurs in the sky texture for example
+ *      - Fixed a bug in random number generation which was causing artifacts on the upper left
+ *        side of the screen
+ *      - Dithering is now applied only when debanding a pixel as it should be which should
+ *        reduce the overall noise in the final texture
+ *      - Minor code optimizations
+ * 3.1  - Switched to chroma-based analysis from luma-based analysis which was causing artifacts
+ *        under some scenarios
+ *      - Changed parts of the code which was causing compatibility issues on some renderers
+ */
+
+#include "ReShadeUI.fxh"
+#include "ReShade.fxh"
+
+uniform bool enable_weber <
+    ui_category = "Banding analysis";
+    ui_label = "Weber ratio";
+    ui_tooltip = "Weber ratio analysis that calculates the ratio of the each local pixel's intensity to average background intensity of all the local pixels.";
+    ui_type = "radio";
+> = true;
+
+uniform bool enable_sdeviation <
+    ui_category = "Banding analysis";
+    ui_label = "Standard deviation";
+    ui_tooltip = "Modified standard deviation analysis that calculates nearby pixels' intensity deviation from the current pixel instead of the mean.";
+    ui_type = "radio";
+> = true;
+
+uniform bool enable_depthbuffer <
+    ui_category = "Banding analysis";
+    ui_label = "Depth detection";
+    ui_tooltip = "Allows depth information to be used when analysing banding, pixels will only be analysed if they are in a certain depth. (e.g. debanding only the sky)";
+    ui_type = "radio";
+> = false;
+
+uniform float t1 <
+    ui_category = "Banding analysis";
+    ui_label = "Standard deviation threshold";
+    ui_max = 0.5;
+    ui_min = 0.0;
+    ui_step = 0.001;
+    ui_tooltip = "Standard deviations lower than this threshold will be flagged as flat regions with potential banding.";
+    ui_type = "slider";
+> = 0.007;
+
+uniform float t2 <
+    ui_category = "Banding analysis";
+    ui_label = "Weber ratio threshold";
+    ui_max = 2.0;
+    ui_min = 0.0;
+    ui_step = 0.01;
+    ui_tooltip = "Weber ratios lower than this threshold will be flagged as flat regions with potential banding.";
+    ui_type = "slider";
+> = 0.04;
+
+uniform float banding_depth <
+    ui_category = "Banding analysis";
+    ui_label = "Banding depth";
+    ui_max = 1.0;
+    ui_min = 0.0;
+    ui_step = 0.001;
+    ui_tooltip = "Pixels under this depth threshold will not be processed and returned as they are.";
+    ui_type = "slider";
+> = 1.0;
+
+uniform float range <
+    ui_category = "Banding detection & removal";
+    ui_label = "Radius";
+    ui_max = 32.0;
+    ui_min = 1.0;
+    ui_step = 1.0;
+    ui_tooltip = "The radius increases linearly for each iteration. A higher radius will find more gradients, but a lower radius will smooth more aggressively.";
+    ui_type = "slider";
+> = 24.0;
+
+uniform int iterations <
+    ui_category = "Banding detection & removal";
+    ui_label = "Iterations";
+    ui_max = 4;
+    ui_min = 1;
+    ui_tooltip = "The number of debanding steps to perform per sample. Each step reduces a bit more banding, but takes time to compute.";
+    ui_type = "slider";
+> = 1;
+
+uniform int debug_output <
+    ui_category = "Debug";
+    ui_items = "None\0Blurred (LPF) image\0Banding map\0";
+    ui_label = "Debug view";
+    ui_tooltip = "Blurred (LPF) image: Useful when tweaking radius and iterations to make sure all banding regions are blurred enough.\nBanding map: Useful when tweaking analysis parameters, continuous green regions indicate flat (i.e. banding) regions.";
+    ui_type = "combo";
+> = 0;
+
+// Reshade uses C rand for random, max cannot be larger than 2^15-1
+uniform int drandom < source = "random"; min = 0; max = 32767; >;
+
+float rand(float x)
+{
+    return frac(x / 41.0);
+}
+
+float permute(float x)
+{
+    return ((34.0 * x + 1.0) * x) % 289.0;
+}
+
+float3 PS_Deband(float4 vpos : SV_Position, float2 texcoord : TexCoord) : SV_Target
+{
+    float3 ori = tex2Dlod(ReShade::BackBuffer, float4(texcoord, 0.0, 0.0)).rgb;
+
+    if (enable_depthbuffer && (ReShade::GetLinearizedDepth(texcoord) < banding_depth))
+        return ori;
+
+    // Initialize the PRNG by hashing the position + a random uniform
+    float3 m = float3(texcoord + 1.0, (drandom / 32767.0) + 1.0);
+    float h = permute(permute(permute(m.x) + m.y) + m.z);
+
+    // Compute a random angle
+    float dir  = rand(permute(h)) * 6.2831853;
+    float2 o;
+    sincos(dir, o.y, o.x);
+
+    // Distance calculations
+    float2 pt;
+    float dist;
+
+    for (int i = 1; i <= iterations; ++i) {
+        dist = rand(h) * range * i;
+        pt = dist * BUFFER_PIXEL_SIZE;
+
+        h = permute(h);
+    }
+
+    // Sample at quarter-turn intervals around the source pixel
+    float3 ref[4] = {
+        tex2Dlod(ReShade::BackBuffer, float4(mad(pt,                  o, texcoord), 0.0, 0.0)).rgb, // SE
+        tex2Dlod(ReShade::BackBuffer, float4(mad(pt,                 -o, texcoord), 0.0, 0.0)).rgb, // NW
+        tex2Dlod(ReShade::BackBuffer, float4(mad(pt, float2(-o.y,  o.x), texcoord), 0.0, 0.0)).rgb, // NE
+        tex2Dlod(ReShade::BackBuffer, float4(mad(pt, float2( o.y, -o.x), texcoord), 0.0, 0.0)).rgb  // SW
+    };
+
+    // Calculate weber ratio
+    float3 mean = (ori + ref[0] + ref[1] + ref[2] + ref[3]) * 0.2;
+    float3 k = abs(ori - mean);
+    for (int j = 0; j < 4; ++j) {
+        k += abs(ref[j] - mean);
+    }
+
+    k = k * 0.2 / mean;
+
+    // Calculate std. deviation
+    float3 sd = 0.0;
+
+    for (int j = 0; j < 4; ++j) {
+        sd += pow(ref[j] - ori, 2);
+    }
+
+    sd = sqrt(sd * 0.25);
+
+    // Generate final output
+    float3 output;
+
+    if (debug_output == 2)
+        output = float3(0.0, 1.0, 0.0);
+    else
+        output = (ref[0] + ref[1] + ref[2] + ref[3]) * 0.25;
+
+    // Generate a binary banding map
+    bool3 banding_map = true;
+
+    if (debug_output != 1) {
+        if (enable_weber)
+            banding_map = banding_map && k <= t2 * iterations;
+
+        if (enable_sdeviation)
+            banding_map = banding_map && sd <= t1 * iterations;
+    }
+
+    /*------------------------.
+    | :: Ordered Dithering :: |
+    '------------------------*/
+    //Calculate grid position
+    float grid_position = frac(dot(texcoord, (BUFFER_SCREEN_SIZE * float2(1.0 / 16.0, 10.0 / 36.0)) + 0.25));
+
+    //Calculate how big the shift should be
+    float dither_shift = 0.25 * (1.0 / (pow(2, BUFFER_COLOR_BIT_DEPTH) - 1.0));
+
+    //Shift the individual colors differently, thus making it even harder to see the dithering pattern
+    float3 dither_shift_RGB = float3(dither_shift, -dither_shift, dither_shift); //subpixel dithering
+
+    //modify shift acording to grid position.
+    dither_shift_RGB = lerp(2.0 * dither_shift_RGB, -2.0 * dither_shift_RGB, grid_position); //shift acording to grid position.
+
+    return banding_map ? output + dither_shift_RGB : ori;
+}
+
+technique Deband <
+ui_tooltip = "Alleviates color banding by trying to approximate original color values.";
+>
+{
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = PS_Deband;
+    }
+}
+
+--- DisplayDepth.fx ---
+
+/*
+  DisplayDepth by CeeJay.dk (with many updates and additions by the Reshade community)
+
+  Visualizes the depth buffer. The distance of pixels determine their brightness.
+  Close objects are dark. Far away objects are bright.
+  Use this to configure the depth input preprocessor definitions (RESHADE_DEPTH_INPUT_*).
+*/
+
+#include "ReShade.fxh"
+
+// -- Basic options --
+#if RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN
+#define TEXT_UPSIDE_DOWN "1"
+#define TEXT_UPSIDE_DOWN_ALTER "0"
+#else
+#define TEXT_UPSIDE_DOWN "0"
+#define TEXT_UPSIDE_DOWN_ALTER "1"
+#endif
+#if RESHADE_DEPTH_INPUT_IS_REVERSED
+#define TEXT_REVERSED "1"
+#define TEXT_REVERSED_ALTER "0"
+#else
+#define TEXT_REVERSED "0"
+#define TEXT_REVERSED_ALTER "1"
+#endif
+#if RESHADE_DEPTH_INPUT_IS_LOGARITHMIC
+#define TEXT_LOGARITHMIC "1"
+#define TEXT_LOGARITHMIC_ALTER "0"
+#else
+#define TEXT_LOGARITHMIC "0"
+#define TEXT_LOGARITHMIC_ALTER "1"
+#endif
+
+// "ui_text" was introduced in ReShade 4.5, so cannot show instructions in older versions
+
+uniform int iUIPresentType <
+    ui_label = "Present type";
+    ui_label_ja_jp = "画面効果";
+    ui_type = "combo";
+    ui_items = "Depth map\0Normal map\0Show both (Vertical 50/50)\0";
+    ui_items_ja_jp = "深度マップ\0法線マップ\0両方を表示 (左右分割)\0";
+#if __RESHADE__ < 40500
+    ui_tooltip =
+#else
+    ui_text =
+#endif
+        "The right settings need to be set in the dialog that opens after clicking the \"Edit global preprocessor definitions\" button above.\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN is currently set to " TEXT_UPSIDE_DOWN ".\n"
+        "If the Depth map is shown upside down set it to " TEXT_UPSIDE_DOWN_ALTER ".\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED is currently set to " TEXT_REVERSED ".\n"
+        "If close objects in the Depth map are bright and far ones are dark set it to " TEXT_REVERSED_ALTER ".\n"
+        "Also try this if you can see the normals, but the depth view is all black.\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC is currently set to " TEXT_LOGARITHMIC ".\n"
+        "If the Normal map has banding artifacts (extra stripes) set it to " TEXT_LOGARITHMIC_ALTER ".";
+    ui_text_ja_jp =
+#if ADDON_ADJUST_DEPTH
+        "Adjust Depthアドオンのインストールを検出しました。\n"
+        "'設定に保存して反映する'ボタンをクリックすると、このエフェクトで調節した全ての変数が共通設定に反映されます。\n"
+        "または、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログで直接編集する事もできます。";
+#else
+        "調節が終わったら、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力する必要があります。\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWNは現在" TEXT_UPSIDE_DOWN "に設定されています。\n"
+        "深度マップが上下逆さまに表示されている場合は" TEXT_UPSIDE_DOWN_ALTER "に変更して下さい。\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_REVERSEDは現在" TEXT_REVERSED "に設定されています。\n"
+        "画面効果が深度マップのとき、近くの形状がより白く、遠くの形状がより黒い場合は" TEXT_REVERSED_ALTER "に変更して下さい。\n"
+        "また、法線マップで形が判別出来るが、深度マップが真っ暗に見えるという場合も、この設定の変更を試して下さい。\n"
+        "\n"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMICは現在" TEXT_LOGARITHMIC "に設定されています。\n"
+        "画面効果に実際のレンダリングと合致しない縞模様がある場合は" TEXT_LOGARITHMIC_ALTER "に変更して下さい。";
+#endif
+    ui_tooltip_ja_jp =
+        "'深度マップ'は、形状の遠近を白黒で表現します。正しい見え方では、近くの形状ほど黒く、遠くの形状ほど白くなります。\n"
+        "'法線マップ'は、形状を滑らかに表現します。正しい見え方では、全体的に青緑風で、地平線を見たときに地面が緑掛かった色合いになります。\n"
+        "'両方を表示 (左右分割)'が選択された場合は、左に法線マップ、右に深度マップを表示します。";
+> = 2;
+
+uniform bool bUIShowOffset <
+    ui_label = "Blend Depth map into the image (to help with finding the right offset)";
+    ui_label_ja_jp = "透かし比較";
+    ui_tooltip_ja_jp = "補正作業を支援するために、画面効果を半透過で適用します。";
+> = false;
+
+uniform bool bUIUseLivePreview <
+    ui_category = "Preview settings";
+    ui_category_ja_jp = "基本的な補正";
+#if __RESHADE__ <= 50902
+    ui_category_closed = true;
+#elif !ADDON_ADJUST_DEPTH
+    ui_category_toggle = true;
+#endif
+    ui_label = "Show live preview and ignore preprocessor definitions";
+    ui_label_ja_jp = "プリプロセッサの定義を無視 (補正プレビューをオン)";
+    ui_tooltip = "Enable this to preview with the current preset settings instead of the global preprocessor settings.";
+    ui_tooltip_ja_jp =
+        "共通設定に保存されたプリプロセッサの定義ではなく、これより下のプレビュー設定を使用するには、これを有効にします。\n"
+#if ADDON_ADJUST_DEPTH
+        "設定の準備が出来たら、'設定に保存して反映する'ボタンをクリックしてから、このチェックボックスをオフにして下さい。"
+#else
+        "設定の準備が出来たら、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力して下さい。"
+#endif
+        "\n\n"
+        "プレビューをオンにした場合と比較して画面効果がまったく同じになれば、正しく設定が反映されています。";
+> = false;
+
+#if __RESHADE__ <= 50902
+uniform int iUIUpsideDown <
+#else
+uniform bool iUIUpsideDown <
+#endif
+    ui_category = "Preview settings";
+    ui_label = "Upside Down";
+    ui_label_ja_jp = "深度バッファの上下反転を修正";
+#if __RESHADE__ <= 50902
+    ui_type = "combo";
+    ui_items = "Off\0On\0";
+#endif
+    ui_text_ja_jp =
+        "\n"
+#if ADDON_ADJUST_DEPTH
+        "項目にカーソルを合わせると、設定が必要な状況の説明が表示されます。"
+#else
+        "項目にカーソルを合わせると、設定が必要な状況の説明と、プリプロセッサの定義が表示されます。"
+#endif
+    ;
+    ui_tooltip_ja_jp =
+        "深度マップが上下逆さまに表示されている場合は変更して下さい。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=値\n"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=1\n"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=0"
+#endif
+        ;
+> = RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN;
+
+#if __RESHADE__ <= 50902
+uniform int iUIReversed <
+#else
+uniform bool iUIReversed <
+#endif
+    ui_category = "Preview settings";
+    ui_label = "Reversed";
+    ui_label_ja_jp = "深度バッファの奥行反転を修正";
+#if __RESHADE__ <= 50902
+    ui_type = "combo";
+    ui_items = "Off\0On\0";
+#endif
+    ui_tooltip_ja_jp =
+        "画面効果が深度マップのとき、近くの形状が明るく、遠くの形状が暗い場合は変更して下さい。\n"
+        "また、法線マップで形が判別出来るが、深度マップが真っ暗に見えるという場合も、この設定の変更を試して下さい。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED=値\n"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED=1\n"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED=0"
+#endif
+        ;
+> = RESHADE_DEPTH_INPUT_IS_REVERSED;
+
+#if __RESHADE__ <= 50902
+uniform int iUILogarithmic <
+#else
+uniform bool iUILogarithmic <
+#endif
+    ui_category = "Preview settings";
+    ui_label = "Logarithmic";
+    ui_label_ja_jp = "深度バッファを対数分布として扱うように修正";
+#if __RESHADE__ <= 50902
+    ui_type = "combo";
+    ui_items = "Off\0On\0";
+#endif
+    ui_tooltip = "Change this setting if the displayed surface normals have stripes in them.";
+    ui_tooltip_ja_jp =
+        "画面効果に実際のゲーム画面と合致しない縞模様がある場合は変更して下さい。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=値\n"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=1\n"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=0"
+#endif
+        ;
+> = RESHADE_DEPTH_INPUT_IS_LOGARITHMIC;
+
+// -- Advanced options --
+
+uniform float2 fUIScale <
+    ui_category = "Preview settings";
+    ui_label = "Scale";
+    ui_label_ja_jp = "拡大率";
+    ui_type = "drag";
+    ui_text =
+        "\n"
+        " * Advanced options\n"
+        "\n"
+        "The following settings also need to be set using \"Edit global preprocessor definitions\" above in order to take effect.\n"
+        "You can preview how they will affect the Depth map using the controls below.\n"
+        "\n"
+        "It is rarely necessary to change these though, as their defaults fit almost all games.\n\n";
+    ui_text_ja_jp =
+        "\n"
+        " * その他の補正 (不定形またはその他)\n"
+        "\n"
+        "これより下は、深度バッファが不定形など、特別なケース向けの設定です。\n"
+        "通常はこれより上の'基本的な補正'のみでほとんどのゲームに適合します。\n"
+        "また、これらの設定は画質の向上にはまったく役に立ちません。\n\n";
+    ui_tooltip =
+        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the scale.\n"
+        "Use these values for:\nRESHADE_DEPTH_INPUT_X_SCALE=<left value>\nRESHADE_DEPTH_INPUT_Y_SCALE=<right value>\n"
+        "\n"
+        "If you know the right resolution of the games depth buffer then this scale value is simply the ratio\n"
+        "between the correct resolution and the resolution Reshade thinks it is.\n"
+        "For example:\n"
+        "If it thinks the resolution is 1920 x 1080, but it's really 1280 x 720 then the right scale is (1.5 , 1.5)\n"
+        "because 1920 / 1280 is 1.5 and 1080 / 720 is also 1.5, so 1.5 is the right scale for both the x and the y";
+    ui_tooltip_ja_jp =
+        "深度バッファの解像度がクライアント解像度と異なる場合に変更して下さい。\n"
+        "このスケール値は、深度バッファの解像度とクライアント解像度との単純な比率になります。\n"
+        "深度バッファの解像度が1280×720でクライアント解像度が1920×1080の場合、横の比率が1920÷1280、縦の比率が1080÷720となります。\n"
+        "計算した結果を設定すると、値はそれぞれX_SCALE=1.5、Y_SCALE=1.5となります。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_INPUT_X_SCALE=横の値\n"
+        "RESHADE_DEPTH_INPUT_Y_SCALE=縦の値\n"
+        "定義値は次の通りです。横の値はX_SCALE、縦の値はY_SCALEに指定して下さい。\n"
+        "RESHADE_DEPTH_INPUT_X_SCALE=1.0\n"
+        "RESHADE_DEPTH_INPUT_Y_SCALE=1.0"
+#endif
+        ;
+    ui_min = 0.0; ui_max = 2.0;
+    ui_step = 0.001;
+> = float2(RESHADE_DEPTH_INPUT_X_SCALE, RESHADE_DEPTH_INPUT_Y_SCALE);
+
+uniform int2 iUIOffset <
+    ui_category = "Preview settings";
+    ui_label = "Offset";
+    ui_label_ja_jp = "位置オフセット";
+    ui_type = "slider";
+    ui_tooltip =
+        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the offset in pixels.\n"
+        "Use these values for:\nRESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=<left value>\nRESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=<right value>";
+    ui_tooltip_ja_jp =
+        "深度バッファにレンダリングされた物体の形状が画面効果と重なり合っていない場合に変更して下さい。\n"
+        "この値は、ピクセル単位で指定します。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=横の値\n"
+        "RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=縦の値\n"
+        "定義値は次の通りです。横の値はX_PIXEL_OFFSET、縦の値はY_PIXEL_OFFSETに指定して下さい。\n"
+        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=0.0\n"
+        "RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=0.0"
+#endif
+        ;
+    ui_min = -BUFFER_SCREEN_SIZE;
+    ui_max = BUFFER_SCREEN_SIZE;
+    ui_step = 1;
+> = int2(RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET, RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET);
+
+uniform float fUIFarPlane <
+    ui_category = "Preview settings";
+    ui_label = "Far Plane";
+    ui_label_ja_jp = "遠点距離";
+    ui_type = "drag";
+    ui_tooltip =
+        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=<value>\n"
+        "Changing this value is not necessary in most cases.";
+    ui_tooltip_ja_jp =
+        "深度マップの色合いが距離感と合致しない、法線マップの表面が平面に見える、などの場合に変更して下さい。\n"
+        "遠点距離を1000に設定すると、ゲームの描画距離が1000メートルであると見なします。\n\n"
+        "このプレビュー画面はあくまでプレビューであり、ほとんどの場合、深度バッファは深度マップの色数より遥かに高い精度で表現されています。\n"
+        "例えば、10m前後の距離の形状が純粋な黒に見えるからという理由で値を変更しないで下さい。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=値\n"
+        "定義値は次の通りです。\n"
+        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=1000.0"
+#endif
+        ;
+    ui_min = 0.0; ui_max = 1000.0;
+    ui_step = 0.1;
+> = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
+
+uniform float fUIDepthMultiplier <
+    ui_category = "Preview settings";
+    ui_label = "Multiplier";
+    ui_label_ja_jp = "深度乗数";
+    ui_type = "drag";
+    ui_tooltip = "RESHADE_DEPTH_MULTIPLIER=<value>";
+    ui_tooltip_ja_jp =
+        "特定のエミュレータソフトウェアにおける深度バッファを修正するため、特別に追加された変数です。\n"
+        "この値は僅かな変更でも計算式を破壊するため、設定すべき値を知らない場合は変更しないで下さい。"
+#if !ADDON_ADJUST_DEPTH
+        "\n\n"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
+        "RESHADE_DEPTH_MULTIPLIER=値\n"
+        "定義値は次の通りです。\n"
+        "RESHADE_DEPTH_MULTIPLIER=1.0"
+#endif
+        ;
+    ui_min = 0.0; ui_max = 1000.0;
+    ui_step = 0.001;
+> = RESHADE_DEPTH_MULTIPLIER;
+
+float GetLinearizedDepth(float2 texcoord)
+{
+    if (!bUIUseLivePreview)
+    {
+        return ReShade::GetLinearizedDepth(texcoord);
+    }
+    else
+    {
+        if (iUIUpsideDown) // RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN
+            texcoord.y = 1.0 - texcoord.y;
+
+        texcoord.x /= fUIScale.x; // RESHADE_DEPTH_INPUT_X_SCALE
+        texcoord.y /= fUIScale.y; // RESHADE_DEPTH_INPUT_Y_SCALE
+        texcoord.x -= iUIOffset.x * BUFFER_RCP_WIDTH; // RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET
+        texcoord.y += iUIOffset.y * BUFFER_RCP_HEIGHT; // RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET
+
+        float depth = tex2Dlod(ReShade::DepthBuffer, float4(texcoord, 0, 0)).x * fUIDepthMultiplier;
+
+        const float C = 0.01;
+        if (iUILogarithmic) // RESHADE_DEPTH_INPUT_IS_LOGARITHMIC
+            depth = (exp(depth * log(C + 1.0)) - 1.0) / C;
+
+        if (iUIReversed) // RESHADE_DEPTH_INPUT_IS_REVERSED
+            depth = 1.0 - depth;
+
+        const float N = 1.0;
+        depth /= fUIFarPlane - depth * (fUIFarPlane - N);
+
+        return depth;
+    }
+}
+
+float3 GetScreenSpaceNormal(float2 texcoord)
+{
+    float3 offset = float3(BUFFER_PIXEL_SIZE, 0.0);
+    float2 posCenter = texcoord.xy;
+    float2 posNorth  = posCenter - offset.zy;
+    float2 posEast   = posCenter + offset.xz;
+
+    float3 vertCenter = float3(posCenter - 0.5, 1) * GetLinearizedDepth(posCenter);
+    float3 vertNorth  = float3(posNorth - 0.5,  1) * GetLinearizedDepth(posNorth);
+    float3 vertEast   = float3(posEast - 0.5,   1) * GetLinearizedDepth(posEast);
+
+    return normalize(cross(vertCenter - vertNorth, vertCenter - vertEast)) * 0.5 + 0.5;
+}
+
+void PS_DisplayDepth(in float4 position : SV_Position, in float2 texcoord : TEXCOORD, out float3 color : SV_Target)
+{
+    float3 depth = GetLinearizedDepth(texcoord).xxx;
+    float3 normal = GetScreenSpaceNormal(texcoord);
+
+    // Ordered dithering
+#if 1
+    const float dither_bit = 8.0; // Number of bits per channel. Should be 8 for most monitors.
+    // Calculate grid position
+    float grid_position = frac(dot(texcoord, (BUFFER_SCREEN_SIZE * float2(1.0 / 16.0, 10.0 / 36.0)) + 0.25));
+    // Calculate how big the shift should be
+    float dither_shift = 0.25 * (1.0 / (pow(2, dither_bit) - 1.0));
+    // Shift the individual colors differently, thus making it even harder to see the dithering pattern
+    float3 dither_shift_RGB = float3(dither_shift, -dither_shift, dither_shift); // Subpixel dithering
+    // Modify shift acording to grid position.
+    dither_shift_RGB = lerp(2.0 * dither_shift_RGB, -2.0 * dither_shift_RGB, grid_position);
+    depth += dither_shift_RGB;
+#endif
+
+    color = depth;
+    if (iUIPresentType == 1)
+        color = normal;
+    if (iUIPresentType == 2)
+        color = lerp(normal, depth, step(BUFFER_WIDTH * 0.5, position.x));
+
+    if (bUIShowOffset)
+    {
+        float3 color_orig = tex2D(ReShade::BackBuffer, texcoord).rgb;
+
+        // Blend depth and back buffer color with 'overlay' so the offset is more noticeable
+        color = lerp(2 * color * color_orig, 1.0 - 2.0 * (1.0 - color) * (1.0 - color_orig), max(color.r, max(color.g, color.b)) < 0.5 ? 0.0 : 1.0);
+    }
+}
+
+technique DisplayDepth <
+    ui_tooltip =
+        "This shader helps you set the right preprocessor settings for depth input.\n"
+        "To set the settings click on 'Edit global preprocessor definitions' and set them there - not in this shader.\n"
+        "The settings will then take effect for all shaders, including this one.\n"
+        "\n"
+        "By default calculated normals and depth are shown side by side.\n"
+        "Normals (on the left) should look smooth and the ground should be greenish when looking at the horizon.\n"
+        "Depth (on the right) should show close objects as dark and use gradually brighter shades the further away objects are.\n";
+    ui_tooltip_ja_jp =
+        "これは、深度バッファの入力をReShade側の計算式に合わせる調節をするための、設定作業の支援に特化した特殊な扱いのエフェクトです。\n"
+        "初期状態では「両方を表示」が選択されており、左に法線マップ、右に深度マップが表示されます。\n"
+        "\n"
+        "法線マップ(左側)は、形状を滑らかに表現します。正しい設定では、全体的に青緑風で、地平線を見たときに地面が緑を帯びた色になります。\n"
+        "深度マップ(右側)は、形状の遠近を白黒で表現します。正しい設定では、近くの形状ほど黒く、遠くの形状ほど白くなります。\n"
+        "\n"
+#if ADDON_ADJUST_DEPTH
+        "設定を完了するには、DisplayDepth.fxエフェクトの変数の一覧にある'設定に保存して反映する'ボタンをクリックして下さい。\n"
+#else
+        "設定を完了するには、エフェクト変数の編集画面にある'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力して下さい。\n"
+#endif
+        "すると、インストール先のゲームに対して共通の設定として保存され、他のプリセットでも正しく表示されるようになります。";
+>
+
+{
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = PS_DisplayDepth;
+    }
+}
+
+--- UIMask.fx ---
+
+/*
+    Simple UIMask shader by luluco250
+
+    I have no idea why this was never ported back to ReShade 3.0 from 2.0,
+    but if you missed it, here it is.
+
+    It doesn't feature the auto mask from the original shader.
+
+    It does feature a new multi-channnel masking feature. UI masks can now contain
+    separate 'modes' within each of the three color channels.
+
+    For example, you can have the regular hud on the red channel (the default one),
+    a mask for an inventory screen on the green channel and a mask for a quest menu
+    on the blue channel. You can then use keyboard keys to toggle each channel on or off.
+
+    Multiple channels can be active at once, they'll just add up to mask the image.
+
+    Simple/legacy masks are not affected by this, they'll work just as you'd expect,
+    so you can still make simple black and white masks that use all color channels, it'll
+    be no different than just having it on a single channel.
+
+    Tips:
+
+    --You can adjust how much it will affect your HUD by changing "Mask Intensity".
+
+    --You don't actually need to place the UIMask_Bottom technique at the bottom of
+      your shader pipeline, if you have any effects that don't necessarily affect
+      the visibility of the HUD you can place it before that.
+      For instance, if you use color correction shaders like LUT, you might want
+      to place UIMask_Bottom just before that.
+
+    --Preprocessor flags:
+      --UIMASK_MULTICHANNEL:
+        Enables having up to three different masks on each color channel.
+
+    --Refer to this page for keycodes:
+      https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+
+    --To make a custom mask:
+
+      1-Take a screenshot of your game with the HUD enabled,
+       preferrably with any effects disabled for maximum visibility.
+
+      2-Open the screenshot with your preferred image editor program, I use GIMP.
+
+      3-Make a background white layer if there isn't one already.
+        Be sure to leave it behind your actual screenshot for the while.
+
+      4-Make an empty layer for the mask itself, you can call it "mask".
+
+      5-Having selected the mask layer, paint the places where HUD constantly is,
+        such as health bars, important messages, minimaps etc.
+
+      6-Delete or make your screenshot layer invisible.
+
+      7-Before saving your mask, let's do some gaussian blurring to improve it's look and feel:
+        For every step of blurring you want to do, make a new layer, such as:
+        Mask - Blur16x16
+        Mask - Blur8x8
+        Mask - Blur4x4
+        Mask - Blur2x2
+        Mask - NoBlur
+        You should use your image editor's default gaussian blurring filter, if there is one.
+        This avoids possible artifacts and makes the mask blend more easily on the eyes.
+        You may not need this if your mask is accurate enough and/or the HUD is simple enough.
+
+      8-Now save the final image with a unique name such as "MyUIMask.png" in your textures folder.
+
+      9-Set the preprocessor definition UIMASK_TEXTURE to the unique name of your image, with quotes.
+        You're done!
+
+
+    MIT Licensed:
+
+    Copyright (c) 2017 Lucas Melo
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
+
+//#region Preprocessor
+
+#include "ReShade.fxh"
+#include "ReShadeUI.fxh"
+
+#ifndef UIMASK_MULTICHANNEL
+    #define UIMASK_MULTICHANNEL 0
+#endif
+
+#if !UIMASK_MULTICHANNEL
+    #define TEXFORMAT R8
+#else
+    #define TEXFORMAT RGBA8
+#endif
+
+#ifndef UIMASK_TEXTURE
+    #define UIMASK_TEXTURE "UIMask.png"
+#endif
+
+//#endregion
+
+namespace UIMask
+{
+
+//#region Uniforms
+
+uniform int _Help
+<
+    ui_label = " ";
+    ui_text =
+        "For more detailed instructions, see the text at the top of this "
+        "effect's shader file (UIMask.fx).\n"
+        "\n"
+        "Available preprocessor definitions:\n"
+        "  UIMASK_MULTICHANNEL:\n"
+        "    If set to 1, each of the RGB color channels in the texture is "
+        "treated as a separate mask.\n"
+        "\n"
+        "How to create a mask:\n"
+        "\n"
+        "1. Take a screenshot with the game's UI appearing.\n"
+        "2. Open the screenshot in an image editor, GIMP or Photoshop are "
+        "recommended.\n"
+        "3. Create a new layer over the screenshot layer, fill it with black.\n"
+        "4. Reduce the layer opacity so you can see the screenshot layer "
+        "below.\n"
+        "5. Cover the UI with white to mask it from effects. The stronger the "
+        "mask white color, the more opaque the mask will be.\n"
+        "6. Set the mask layer opacity back to 100%.\n"
+        "7. Save the image in one of your texture folders, making sure to "
+        "use a unique name such as: \"MyUIMask.png\"\n"
+        "8. Set the preprocessor definition UIMASK_TEXTURE to the name of "
+        "your image, with quotes: \"MyUIMask.png\"\n"
+        ;
+    ui_category = "Help";
+    ui_category_closed = true;
+    ui_type = "radio";
+>;
+
+uniform float fMask_Intensity
+<
+    __UNIFORM_SLIDER_FLOAT1
+
+    ui_label = "Mask Intensity";
+    ui_tooltip =
+        "How much to mask effects from affecting the original image.\n"
+        "\nDefault: 1.0";
+    ui_min = 0.0;
+    ui_max = 1.0;
+    ui_step = 0.001;
+> = 1.0;
+
+uniform bool bDisplayMask <
+    ui_label = "Display Mask";
+    ui_tooltip =
+        "Display the mask texture.\n"
+        "Useful for testing multiple channels or simply the mask itself.\n"
+        "\nDefault: Off";
+> = false;
+
+#if UIMASK_MULTICHANNEL
+
+uniform bool bToggleRed <
+    ui_label = "Toggle Red Channel";
+    ui_tooltip = "Toggle UI masking for the red channel.\n"
+             "Right click to assign a hotkey.\n"
+             "\nDefault: On";
+> = true;
+
+uniform bool bToggleGreen <
+    ui_label = "Toggle Green Channel";
+    ui_tooltip = "Toggle UI masking for the green channel.\n"
+             "Right click to assign a hotkey."
+             "\nDefault: On";
+> = true;
+
+uniform bool bToggleBlue <
+    ui_label = "Toggle Blue Channel";
+    ui_tooltip = "Toggle UI masking for the blue channel.\n"
+             "Right click to assign a hotkey."
+             "\nDefault: On";
+> = true;
+
+#endif
+
+//#endregion
+
+//#region Textures
+
+texture BackupTex
+{
+    Width = BUFFER_WIDTH;
+    Height = BUFFER_HEIGHT;
+};
+sampler Backup
+{
+    Texture = BackupTex;
+};
+
+texture MaskTex <source=UIMASK_TEXTURE;>
+{
+    Width = BUFFER_WIDTH;
+    Height = BUFFER_HEIGHT;
+    Format = TEXFORMAT;
+};
+sampler Mask
+{
+    Texture = MaskTex;
+};
+
+//#endregion
+
+//#region Shaders
+
+float4 BackupPS(float4 pos : SV_Position, float2 uv : TEXCOORD) : SV_Target {
+    return tex2D(ReShade::BackBuffer, uv);
+}
+
+float4 MainPS(float4 pos : SV_Position, float2 uv : TEXCOORD) : SV_Target {
+    float4 color = tex2D(ReShade::BackBuffer, uv);
+    float4 backup = tex2D(Backup, uv);
+
+    #if !UIMASK_MULTICHANNEL
+        float mask = tex2D(Mask, uv).r;
+    #else
+        float3 mask_rgb = tex2D(Mask, uv).rgb;
+
+        // This just works, it basically adds masking with each channel that has
+        // been toggled.
+        float mask = saturate(
+            1.0 - dot(1.0 - mask_rgb,
+                float3(bToggleRed, bToggleGreen, bToggleBlue)));
+    #endif
+
+    color = lerp(color, backup, mask * fMask_Intensity);
+    color = bDisplayMask ? mask : color;
+
+    return color;
+}
+
+//#endregion
+
+//#region Techniques
+
+technique UIMask_Top
+<
+    ui_tooltip = "Place this *above* the effects to be masked.";
+>
+{
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = BackupPS;
+        RenderTarget = BackupTex;
+    }
+}
+
+technique UIMask_Bottom
+<
+    ui_tooltip =
+        "Place this *below* the effects to be masked.\n"
+        "If you want to add a toggle key for the effect, set it to this one.";
+>
+{
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = MainPS;
+    }
+}
+
+//#endregion
+
+} // Namespace.
