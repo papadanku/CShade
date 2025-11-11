@@ -35,7 +35,7 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
-    ui_label = "Render Mode";
+    ui_label = "Display Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
     ui_tooltip = "Controls how the contour effect is displayed, including various debug visualizations of gradients and magnitudes.";
@@ -43,7 +43,7 @@ uniform int _DisplayMode <
 
 uniform int _WeightMode <
     ui_category = "Main Shader";
-    ui_label = "Edge Detection Type";
+    ui_label = "Edge Detection Method";
     ui_type = "combo";
     ui_items = "Color\0Luma\0";
     ui_tooltip = "Selects whether edge detection is based on color differences or luminance differences.";
@@ -51,7 +51,7 @@ uniform int _WeightMode <
 
 uniform float _LowerThreshold <
     ui_category = "Main Shader";
-    ui_label = "Lower Threshold";
+    ui_label = "Lower Edge Threshold";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -60,7 +60,7 @@ uniform float _LowerThreshold <
 
 uniform float _UpperThreshold <
     ui_category = "Main Shader";
-    ui_label = "Upper Threshold";
+    ui_label = "Upper Edge Threshold";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -69,7 +69,7 @@ uniform float _UpperThreshold <
 
 uniform float _ColorSensitivity <
     ui_category = "Main Shader";
-    ui_label = "Color Sensitivity";
+    ui_label = "Color Difference Sensitivity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -78,7 +78,7 @@ uniform float _ColorSensitivity <
 
 uniform float4 _FrontColor <
     ui_category = "Main Shader";
-    ui_label = "Front Color";
+    ui_label = "Contour Line Color";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -87,7 +87,7 @@ uniform float4 _FrontColor <
 
 uniform float4 _BackColor <
     ui_category = "Main Shader";
-    ui_label = "Back Color";
+    ui_label = "Background Color";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;

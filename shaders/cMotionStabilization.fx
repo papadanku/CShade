@@ -27,7 +27,7 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform int _DisplayMode <
-    ui_label = "Render Mode";
+    ui_label = "Display Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
     ui_tooltip = "Controls how the optical flow information is displayed, including different debug views.";
@@ -36,21 +36,21 @@ uniform int _DisplayMode <
 uniform bool _InvertWarpX <
     ui_category = "Main Shader";
     ui_text = "Motion Stabilization";
-    ui_label = "Invert X Axis";
+    ui_label = "Invert Horizontal Stabilization";
     ui_type = "radio";
     ui_tooltip = "Inverts the motion stabilization effect along the horizontal (X) axis.";
 > = false;
 
 uniform bool _InvertWarpY <
     ui_category = "Main Shader";
-    ui_label = "Invert Y Axis";
+    ui_label = "Invert Vertical Stabilization";
     ui_type = "radio";
     ui_tooltip = "Inverts the motion stabilization effect along the vertical (Y) axis.";
 > = false;
 
 uniform bool _GlobalStabilization <
     ui_category = "Main Shader";
-    ui_label = "Enable Global Stabilization";
+    ui_label = "Use Global Stabilization";
     ui_type = "radio";
     ui_tooltip = "When enabled, the entire frame is stabilized based on overall motion, rather than local movements.";
 > = false;
@@ -66,7 +66,7 @@ uniform float _LocalStabilizationMipBias <
 
 uniform float2 _WarpStrength <
     ui_category = "Main Shader";
-    ui_label = "Warping Strength";
+    ui_label = "Stabilization Warp Strength";
     ui_type = "slider";
     ui_min = -8.0;
     ui_max = 8.0;
@@ -75,7 +75,7 @@ uniform float2 _WarpStrength <
 
 uniform float _BlendFactor <
     ui_category = "Main Shader";
-    ui_label = "Temporal Smoothing";
+    ui_label = "Stabilization Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 8.0;
@@ -85,7 +85,7 @@ uniform float _BlendFactor <
 uniform int _GeometricTransformOrder <
     ui_category = "Main Shader";
     ui_text = "\nGeometric Transform";
-    ui_label = "Order of Operations";
+    ui_label = "Geometric Transform Order";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the image.";
@@ -93,21 +93,21 @@ uniform int _GeometricTransformOrder <
 
 uniform float _Angle <
     ui_category = "Main Shader";
-    ui_label = "Rotation";
+    ui_label = "Geometric Rotation";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the image around its center.";
 > = 0.0;
 
 uniform float2 _Translate <
     ui_category = "Main Shader";
-    ui_label = "Translation";
+    ui_label = "Geometric Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the image.";
 > = 0.0;
 
 uniform float2 _Scale <
     ui_category = "Main Shader";
-    ui_label = "Scale";
+    ui_label = "Geometric Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the image.";
 > = 1.0;
@@ -115,7 +115,7 @@ uniform float2 _Scale <
 uniform int _ScaleByImage <
     ui_category = "Main Shader";
     ui_text = "\n[Cosmetic] Image-Based Scaling";
-    ui_label = "Scalar";
+    ui_label = "Cosmetic Scaling Method";
     ui_type = "combo";
     ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
     ui_tooltip = "Selects a color channel from the image to use as a scalar for cosmetic scaling effects.";
@@ -123,14 +123,14 @@ uniform int _ScaleByImage <
 
 uniform float _ScaleByImageLOD <
     ui_category = "Main Shader";
-    ui_label = "Image-Based Scaling Mipmap Level";
+    ui_label = "Cosmetic Scaling Mipmap Level";
     ui_type = "drag";
     ui_tooltip = "Adjusts the mipmap level used for the image that influences cosmetic scaling.";
 > = 0.5;
 
 uniform float _ScaleByImageIntensity <
     ui_category = "Main Shader";
-    ui_label = "Image-Based Scaling Intensity";
+    ui_label = "Cosmetic Scaling Intensity";
     ui_type = "drag";
     ui_min = -8.0;
     ui_max = 8.0;

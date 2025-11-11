@@ -47,7 +47,7 @@ uniform float _Time < source = "timer"; ui_tooltip = "The shader's internal time
 
 uniform float _MipBias <
     ui_category = "Main Shader / Optical Flow";
-    ui_label = "Mipmap Level";
+    ui_label = "Mipmap Level for Optical Flow";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
@@ -56,7 +56,7 @@ uniform float _MipBias <
 
 uniform float _BlendFactor <
     ui_category = "Main Shader / Optical Flow";
-    ui_label = "Temporal Smoothing";
+    ui_label = "Temporal Smoothing Factor";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
@@ -65,7 +65,7 @@ uniform float _BlendFactor <
 
 uniform int _BlockSize <
     ui_category = "Main Shader / Datamosh";
-    ui_label = "Block Size";
+    ui_label = "Datamosh Block Size";
     ui_type = "slider";
     ui_min = 0;
     ui_max = 32;
@@ -74,7 +74,7 @@ uniform int _BlockSize <
 
 uniform float _Entropy <
     ui_category = "Main Shader / Datamosh";
-    ui_label = "Entropy";
+    ui_label = "Datamosh Randomness";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -83,7 +83,7 @@ uniform float _Entropy <
 
 uniform float _Contrast <
     ui_category = "Main Shader / Datamosh";
-    ui_label = "Noise Contrast";
+    ui_label = "Datamosh Noise Contrast";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;
@@ -92,7 +92,7 @@ uniform float _Contrast <
 
 uniform float _Scale <
     ui_category = "Main Shader / Datamosh";
-    ui_label = "Velocity Scale";
+    ui_label = "Motion Vector Scale";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 2.0;
@@ -101,7 +101,7 @@ uniform float _Scale <
 
 uniform float _Diffusion <
     ui_category = "Main Shader / Datamosh";
-    ui_label = "Random Displacement";
+    ui_label = "Random Pixel Displacement";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;

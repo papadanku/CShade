@@ -8,7 +8,7 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
-    ui_label = "Render Mode";
+    ui_label = "Display Mode";
     ui_tooltip = "Selects the output mode: either the pixelated image or a mask showing the detected areas.";
     ui_type = "combo";
     ui_items = "Output\0Mask\0";
@@ -16,7 +16,7 @@ uniform int _DisplayMode <
 
 uniform int _DetectionMode <
     ui_category = "Main Shader";
-    ui_label = "Search Algorithm";
+    ui_label = "Pixelation Detection Method";
     ui_tooltip = "Chooses the algorithm used to detect features in the image for pixelation, based on color or specific HSV/HSL/HSI components.";
     ui_type = "combo";
     ui_items = "Color\0\HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
@@ -24,7 +24,7 @@ uniform int _DetectionMode <
 
 uniform int _Comparison <
     ui_category = "Main Shader";
-    ui_label = "Search Operator";
+    ui_label = "Comparison Operator";
     ui_tooltip = "Sets the operator for comparing the detected feature value against the threshold, determining which areas are pixelated.";
     ui_type = "combo";
     ui_items = "Less Than\0Greater Than\0Equal\0Not Equal\0Less Than or Equal\0Greater Than or Equal\0";
@@ -32,7 +32,7 @@ uniform int _Comparison <
 
 uniform float _Blockiness <
     ui_category = "Main Shader";
-    ui_label = "Blockiness";
+    ui_label = "Pixelation Block Size";
     ui_tooltip = "Controls the size of the pixelation blocks. Higher values result in larger, more noticeable blocks.";
     ui_type = "slider";
     ui_min = 0.0;
@@ -42,7 +42,7 @@ uniform float _Blockiness <
 
 uniform float _Threshold <
     ui_category = "Main Shader";
-    ui_label = "Search Threshold";
+    ui_label = "Detection Threshold";
     ui_tooltip = "Sets the value that the detected feature is compared against. Areas meeting the comparison criteria with this threshold will be pixelated.";
     ui_type = "slider";
     ui_min = 0.0;

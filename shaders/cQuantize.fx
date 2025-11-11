@@ -8,21 +8,21 @@
 
 uniform bool _Pixelate <
     ui_category = "Main Shader";
-    ui_label = "Enable Pixelation";
+    ui_label = "Enable Pixelated Effect";
     ui_type = "radio";
     ui_tooltip = "When enabled, the image will be rendered with a blocky, pixelated appearance.";
 > = false;
 
 uniform bool _Dithering <
     ui_category = "Main Shader";
-    ui_label = "Enable Dithering";
+    ui_label = "Enable Dithering Effect";
     ui_type = "radio";
     ui_tooltip = "When enabled, dithering is applied to reduce color banding and create the illusion of more colors.";
 > = false;
 
 uniform int _DitherMethod <
     ui_category = "Main Shader";
-    ui_label = "Dither Algorithm";
+    ui_label = "Dither Pattern Algorithm";
     ui_type = "combo";
     ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
     ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
@@ -30,7 +30,7 @@ uniform int _DitherMethod <
 
 uniform int2 _Resolution <
     ui_category = "Main Shader";
-    ui_label = "Pixel Count";
+    ui_label = "Pixelation Block Resolution";
     ui_type = "slider";
     ui_min = 16;
     ui_max = 256;
@@ -39,7 +39,7 @@ uniform int2 _Resolution <
 
 uniform int3 _Range <
     ui_category = "Main Shader";
-    ui_label = "Color Banding Range";
+    ui_label = "Quantization Levels";
     ui_type = "slider";
     ui_min = 1.0;
     ui_max = 32.0;

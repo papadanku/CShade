@@ -10,7 +10,7 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
-    ui_label = "Render Mode";
+    ui_label = "Display Mode";
     ui_tooltip = "Selects the visual output mode for optical flow, including normalized or renormalized shading, and different Line Integral Convolution (LIC) visualizations.";
     ui_type = "combo";
     ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
@@ -18,7 +18,7 @@ uniform int _DisplayMode <
 
 uniform float _MipBias <
     ui_category = "Main Shader";
-    ui_label = "Mipmap Level";
+    ui_label = "Optical Flow Mipmap Level";
     ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
     ui_type = "slider";
     ui_min = 0.0;
@@ -27,7 +27,7 @@ uniform float _MipBias <
 
 uniform float _BlendFactor <
     ui_category = "Main Shader";
-    ui_label = "Temporal Smoothing";
+    ui_label = "Flow Temporal Smoothing";
     ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
     ui_type = "slider";
     ui_min = 0.0;

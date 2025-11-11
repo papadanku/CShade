@@ -32,21 +32,21 @@
 
 uniform bool _EnableFalloff <
     ui_category = "Main Shader";
-    ui_label = "Enable Radius Falloff";
+    ui_label = "Enable Edge Falloff";
     ui_type = "radio";
     ui_tooltip = "When enabled, the blur intensity will decrease towards the edges of the screen.";
 > = true;
 
 uniform bool _InvertFalloff <
     ui_category = "Main Shader";
-    ui_label = "Invert Radius Falloff";
+    ui_label = "Invert Edge Falloff";
     ui_type = "radio";
     ui_tooltip = "When enabled, the blur intensity will be higher at the edges and lower in the center.";
 > = false;
 
 uniform float _Radius <
     ui_category = "Main Shader";
-    ui_label = "Blur Radius";
+    ui_label = "Blur Strength";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -55,7 +55,7 @@ uniform float _Radius <
 
 uniform float _FalloffAmount <
     ui_category = "Main Shader";
-    ui_label = "Falloff Scale";
+    ui_label = "Falloff Intensity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 2.0;
@@ -64,7 +64,7 @@ uniform float _FalloffAmount <
 
 uniform float2 _FalloffOffset <
     ui_category = "Main Shader";
-    ui_label = "Falloff Offset";
+    ui_label = "Falloff Center Offset";
     ui_type = "slider";
     ui_step = 0.001;
     ui_min = -1.0;

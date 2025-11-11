@@ -31,28 +31,28 @@
 
 uniform float _Divisor <
     ui_category = "Main Shader";
-    ui_label = "Angular Division";
+    ui_label = "Mirroring Angle Division";
     ui_type = "drag";
     ui_tooltip = "Controls the angular division, creating a kaleidoscope or mirroring effect by repeating sections of the image.";
 > = 0.05;
 
 uniform float _Offset <
     ui_category = "Main Shader";
-    ui_label = "Angular Offset";
+    ui_label = "Mirroring Angle Offset";
     ui_type = "drag";
     ui_tooltip = "Offsets the starting point of the angular division, shifting the mirrored pattern.";
 > = 0.05;
 
 uniform float _Roll <
     ui_category = "Main Shader";
-    ui_label = "Roll";
+    ui_label = "Mirroring Pattern Roll";
     ui_type = "drag";
     ui_tooltip = "Applies a rotational roll to the mirrored pattern.";
 > = 0.0;
 
 uniform bool _Symmetry <
     ui_category = "Main Shader";
-    ui_label = "Symmetry";
+    ui_label = "Symmetrical Mirroring";
     ui_tooltip = "When enabled, the mirrored pattern will be symmetrical; otherwise, it will be a repeating pattern.";
 > = true;
 

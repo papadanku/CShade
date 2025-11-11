@@ -27,13 +27,13 @@
 #endif
 
 uniform bool _BlendWithAlpha <
-    ui_label = "Apply Texture Alpha";
+    ui_label = "Blend with Texture Alpha";
     ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
     ui_type = "radio";
 > = false;
 
 uniform int _RenderMode <
-    ui_label = "Render Mode";
+    ui_label = "Rendering Mode";
     ui_type = "combo";
     ui_items = "Regular\0Overlay\0";
     ui_tooltip = "Switches between rendering the base layer with transformations or compositing an overlay layer.";
@@ -42,7 +42,7 @@ uniform int _RenderMode <
 uniform int _BaseGeometricTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_text = "Base Layer";
-    ui_label = "Order of Operations";
+    ui_label = "Base Layer Geometric Transform Order";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the base layer.";
@@ -50,21 +50,21 @@ uniform int _BaseGeometricTransformOrder <
 
 uniform float _BaseAngle <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Rotation";
+    ui_label = "Base Layer Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the base layer around its center.";
 > = 0.0;
 
 uniform float2 _BaseTranslate <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Translation";
+    ui_label = "Base Layer Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the base layer.";
 > = 0.0;
 
 uniform float2 _BaseScale <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Scale";
+    ui_label = "Base Layer Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the base layer.";
 > = 1.0;
@@ -72,7 +72,7 @@ uniform float2 _BaseScale <
 uniform int _OverlayTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_text = "\nOverlay Layer";
-    ui_label = "Order of Operations";
+    ui_label = "Overlay Layer Geometric Transform Order";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the overlay layer.";
@@ -80,21 +80,21 @@ uniform int _OverlayTransformOrder <
 
 uniform float _OverlayAngle <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Rotation";
+    ui_label = "Overlay Layer Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the overlay layer around its center.";
 > = 0.0;
 
 uniform float2 _OverlayTranslate <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Translation";
+    ui_label = "Overlay Layer Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay layer.";
 > = 0.0;
 
 uniform float2 _OverlayScale <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Scale";
+    ui_label = "Overlay Layer Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the overlay layer.";
 > = 0.5;
@@ -102,7 +102,7 @@ uniform float2 _OverlayScale <
 uniform int _OverlayMaskTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_text = "\nOverlay Mask";
-    ui_label = "Order of Operations";
+    ui_label = "Overlay Mask Geometric Transform Order";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_tooltip = "Defines the order in which geometric transformations are applied to the overlay mask.";
@@ -110,35 +110,35 @@ uniform int _OverlayMaskTransformOrder <
 
 uniform float _OverlayMaskAngle <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Rotation";
+    ui_label = "Overlay Mask Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the overlay mask around its center.";
 > = 0.0;
 
 uniform float2 _OverlayMaskTranslate <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Translation";
+    ui_label = "Overlay Mask Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay mask.";
 > = 0.0;
 
 uniform float2 _OverlayMaskScale <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Scale";
+    ui_label = "Overlay Mask Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the overlay mask.";
 > = 1.0;
 
 uniform float2 _OverlayMaskCutoff <
     ui_category = "Main Shader / Geometric Transform";
-    ui_label = "Cutoff";
+    ui_label = "Overlay Mask Cutoff Values";
     ui_type = "drag";
     ui_tooltip = "Defines the cutoff values for the overlay mask, determining which parts of the overlay are visible.";
 > = 0.5;
 
 uniform int _ColorOperationsOrder <
     ui_category = "Main Shader / Color Transform";
-    ui_label = "Order of Operations";
+    ui_label = "Color Transformation Order";
     ui_type = "combo";
     ui_items = "Multiply > Add\0Add > Multiply\0";
     ui_tooltip = "Defines the order in which color multiplication and addition operations are applied.";
@@ -146,7 +146,7 @@ uniform int _ColorOperationsOrder <
 
 uniform float4 _Multiply <
     ui_category = "Main Shader / Color Transform";
-    ui_label = "Multiplication";
+    ui_label = "Color Multiplication Factor";
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;
@@ -155,7 +155,7 @@ uniform float4 _Multiply <
 
 uniform float4 _Addition <
     ui_category = "Main Shader / Color Transform";
-    ui_label = "Addition";
+    ui_label = "Color Addition Factor";
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;

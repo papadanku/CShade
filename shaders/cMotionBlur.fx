@@ -13,7 +13,7 @@ uniform float _FrameTime < source = "frametime"; > ;
 uniform int _DisplayMode <
     ui_category = "Main Shader";
     ui_text = "Optical Flow";
-    ui_label = "Render Mode";
+    ui_label = "Display Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
     ui_tooltip = "Controls how the optical flow information is displayed, including different debug views.";
@@ -21,7 +21,7 @@ uniform int _DisplayMode <
 
 uniform float _MipBias <
     ui_category = "Main Shader";
-    ui_label = "Mipmap Level";
+    ui_label = "Optical Flow Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
@@ -30,7 +30,7 @@ uniform float _MipBias <
 
 uniform float _BlendFactor <
     ui_category = "Main Shader";
-    ui_label = "Temporal Smoothing";
+    ui_label = "Motion Blur Temporal Smoothing";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
@@ -40,14 +40,14 @@ uniform float _BlendFactor <
 uniform bool _FrameRateScaling <
     ui_category = "Main Shader";
     ui_text = "\nMotion Blur";
-    ui_label = "Enable Frame Rate Scaling";
+    ui_label = "Scale Blur with Frame Rate";
     ui_type = "radio";
     ui_tooltip = "When enabled, the motion blur effect will adjust its intensity based on the current frame rate.";
 > = false;
 
 uniform int _BlurAccumuation <
     ui_category = "Main Shader";
-    ui_label = "Blur Accumulation Method";
+    ui_label = "Blur Combination Method";
     ui_type = "combo";
     ui_items = "Average\0Max\0";
     ui_tooltip = "Selects how individual blur samples are combined: either by averaging them or taking the maximum value.";
@@ -55,7 +55,7 @@ uniform int _BlurAccumuation <
 
 uniform int _BlurDirection <
     ui_category = "Main Shader";
-    ui_label = "Blur Direction";
+    ui_label = "Motion Blur Direction";
     ui_type = "combo";
     ui_items = "Unidirectional\0Bidirectional\0";
     ui_tooltip = "Determines if the motion blur extends in one direction (unidirectional) or both directions (bidirectional) from the original position.";
@@ -63,7 +63,7 @@ uniform int _BlurDirection <
 
 uniform float _Scale <
     ui_category = "Main Shader";
-    ui_label = "Blur Intensity";
+    ui_label = "Motion Blur Intensity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;
@@ -72,7 +72,7 @@ uniform float _Scale <
 
 uniform float _TargetFrameRate <
     ui_category = "Main Shader";
-    ui_label = "Target Frame Rate";
+    ui_label = "Target Frame Rate for Scaling";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 144.0;
