@@ -36,6 +36,7 @@
 uniform int _DisplayMode <
     ui_category = "Main Shader";
     ui_label = "Render Mode";
+    ui_tooltip = "Selects how the output is rendered: either the sharpened image or a mask showing where sharpening is applied.";
     ui_type = "combo";
     ui_items = "Image\0Mask\0";
 > = 0;
@@ -43,6 +44,7 @@ uniform int _DisplayMode <
 uniform int _Kernel <
     ui_category = "Main Shader";
     ui_label = "Kernel Shape";
+    ui_tooltip = "Determines the shape of the sampling kernel used for contrast detection, affecting how edges are identified.";
     ui_type = "combo";
     ui_items = "Diamond\0Box\0";
 > = 0;
@@ -50,6 +52,7 @@ uniform int _Kernel <
 uniform float _Contrast <
     ui_category = "Main Shader";
     ui_label = "Contrast";
+    ui_tooltip = "Adjusts the intensity of the sharpening effect based on local contrast. Higher values lead to more pronounced sharpening.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;

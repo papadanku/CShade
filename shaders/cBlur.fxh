@@ -6,6 +6,7 @@
 uniform float _Sigma <
     ui_category = "Main Shader";
     ui_label = "Sigma";
+    ui_tooltip = "Controls the spread of the Gaussian blur. Higher values result in a wider and more intense blur.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 16.0;

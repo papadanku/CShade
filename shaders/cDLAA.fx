@@ -18,12 +18,14 @@
 uniform bool _PreserveFrequencies <
     ui_category = "Main Shader";
     ui_label = "Preserve High Frequencies";
+    ui_tooltip = "When enabled, the shader attempts to retain fine details and high-frequency information in the image, preventing them from being blurred by the anti-aliasing process.";
     ui_type = "radio";
 > = true;
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
     ui_label = "Render Mode";
+    ui_tooltip = "Selects the visual output mode: either the anti-aliased image, a mask highlighting short edges, or a mask highlighting long edges.";
     ui_type = "combo";
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
 > = 0;

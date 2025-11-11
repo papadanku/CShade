@@ -16,6 +16,7 @@ uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+    ui_tooltip = "Controls how the optical flow information is displayed, including different debug views.";
 > = 0;
 
 uniform float _MipBias <
@@ -24,6 +25,7 @@ uniform float _MipBias <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
+    ui_tooltip = "Adjusts the mipmap level used for texture sampling, which affects the level of detail.";
 > = 0.0;
 
 uniform float _BlendFactor <
@@ -32,6 +34,7 @@ uniform float _BlendFactor <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
+    ui_tooltip = "Controls the amount of temporal smoothing applied to the motion vectors, reducing flickering.";
 > = 0.25;
 
 uniform bool _FrameRateScaling <
@@ -39,13 +42,15 @@ uniform bool _FrameRateScaling <
     ui_text = "\nMotion Blur";
     ui_label = "Enable Frame Rate Scaling";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the motion blur effect will adjust its intensity based on the current frame rate.";
 > = false;
 
 uniform int _BlurAccumuation <
     ui_category = "Main Shader";
-    ui_label = "Blur Accumuation";
+    ui_label = "Blur Accumulation Method";
     ui_type = "combo";
     ui_items = "Average\0Max\0";
+    ui_tooltip = "Selects how individual blur samples are combined: either by averaging them or taking the maximum value.";
 > = 0;
 
 uniform int _BlurDirection <
@@ -53,14 +58,16 @@ uniform int _BlurDirection <
     ui_label = "Blur Direction";
     ui_type = "combo";
     ui_items = "Unidirectional\0Bidirectional\0";
+    ui_tooltip = "Determines if the motion blur extends in one direction (unidirectional) or both directions (bidirectional) from the original position.";
 > = 0;
 
 uniform float _Scale <
     ui_category = "Main Shader";
-    ui_label = "Scale";
+    ui_label = "Blur Intensity";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;
+    ui_tooltip = "Adjusts the overall intensity or length of the motion blur effect.";
 > = 1.0;
 
 uniform float _TargetFrameRate <
@@ -69,6 +76,7 @@ uniform float _TargetFrameRate <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 144.0;
+    ui_tooltip = "Sets the target frame rate used for scaling the motion blur effect, especially when 'Enable Frame Rate Scaling' is active.";
 > = 60.0;
 
 #include "shared/cShadeHDR.fxh"

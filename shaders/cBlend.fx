@@ -9,6 +9,7 @@
 uniform int _ColorBlend <
     ui_category = "Main Shader";
     ui_label = "Color Blend Mode";
+    ui_tooltip = "Selects the blending mode to combine colors from the source and destination. This affects how colors interact.";
     ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
 > = 0;
@@ -16,6 +17,7 @@ uniform int _ColorBlend <
 uniform int _AlphaBlend <
     ui_category = "Main Shader";
     ui_label = "Alpha Blend Mode";
+    ui_tooltip = "Selects the blending mode to combine alpha (transparency) values from the source and destination. This affects how transparency interacts.";
     ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
 > = 0;
@@ -23,12 +25,14 @@ uniform int _AlphaBlend <
 uniform float3 _SrcFactor <
     ui_category = "Main Shader";
     ui_label = "Source Factor / RGB";
+    ui_tooltip = "Adjusts the influence of the source color (the color being applied) during blending. Higher values mean more of the source color is used.";
     ui_type = "drag";
 > = 1.0;
 
 uniform float3 _DestFactor <
     ui_category = "Main Shader";
     ui_label = "Destination Factor / RGB";
+    ui_tooltip = "Adjusts the influence of the destination color (the color already present) during blending. Higher values mean more of the existing color is retained.";
     ui_type = "drag";
 > = 1.0;
 

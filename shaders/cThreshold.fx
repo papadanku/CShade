@@ -9,23 +9,26 @@
 
 uniform float _Threshold <
     ui_category = "Main Shader";
-    ui_label = "Threshold";
+    ui_label = "Luminance Threshold";
     ui_type = "drag";
     ui_min = 0.0;
+    ui_tooltip = "Sets the luminance level above which pixels will be affected by the threshold effect.";
 > = 0.8;
 
 uniform float _Smooth <
     ui_category = "Main Shader";
-    ui_label = "Smoothing";
+    ui_label = "Threshold Smoothing";
     ui_type = "drag";
     ui_min = 0.0;
+    ui_tooltip = "Controls the smoothness of the transition between areas above and below the threshold.";
 > = 0.5;
 
 uniform float _Intensity <
     ui_category = "Main Shader";
-    ui_label = "Intensity";
+    ui_label = "Effect Intensity";
     ui_type = "drag";
     ui_min = 0.0;
+    ui_tooltip = "Controls the overall intensity or strength of the threshold effect.";
 > = 1.0;
 
 #include "shared/cShadeHDR.fxh"

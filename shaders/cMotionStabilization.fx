@@ -30,6 +30,7 @@ uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
+    ui_tooltip = "Controls how the optical flow information is displayed, including different debug views.";
 > = 0;
 
 uniform bool _InvertWarpX <
@@ -37,26 +38,30 @@ uniform bool _InvertWarpX <
     ui_text = "Motion Stabilization";
     ui_label = "Invert X Axis";
     ui_type = "radio";
+    ui_tooltip = "Inverts the motion stabilization effect along the horizontal (X) axis.";
 > = false;
 
 uniform bool _InvertWarpY <
     ui_category = "Main Shader";
     ui_label = "Invert Y Axis";
     ui_type = "radio";
+    ui_tooltip = "Inverts the motion stabilization effect along the vertical (Y) axis.";
 > = false;
 
 uniform bool _GlobalStabilization <
     ui_category = "Main Shader";
     ui_label = "Enable Global Stabilization";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the entire frame is stabilized based on overall motion, rather than local movements.";
 > = false;
 
 uniform float _LocalStabilizationMipBias <
     ui_category = "Main Shader";
-    ui_label = "Mipmap Level";
+    ui_label = "Local Stabilization Mipmap Level";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
+    ui_tooltip = "Adjusts the mipmap level used for local stabilization, which affects the level of detail considered for motion.";
 > = 3.5;
 
 uniform float2 _WarpStrength <
@@ -65,6 +70,7 @@ uniform float2 _WarpStrength <
     ui_type = "slider";
     ui_min = -8.0;
     ui_max = 8.0;
+    ui_tooltip = "Controls the intensity of the image warping applied for motion stabilization.";
 > = 1.0;
 
 uniform float _BlendFactor <
@@ -73,6 +79,7 @@ uniform float _BlendFactor <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 8.0;
+    ui_tooltip = "Controls the amount of temporal smoothing applied to the motion vectors, reducing flickering.";
 > = 1.0;
 
 uniform int _GeometricTransformOrder <
@@ -81,24 +88,28 @@ uniform int _GeometricTransformOrder <
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the image.";
 > = 0;
 
 uniform float _Angle <
     ui_category = "Main Shader";
     ui_label = "Rotation";
     ui_type = "drag";
+    ui_tooltip = "Controls the rotation of the image around its center.";
 > = 0.0;
 
 uniform float2 _Translate <
     ui_category = "Main Shader";
     ui_label = "Translation";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical translation (position) of the image.";
 > = 0.0;
 
 uniform float2 _Scale <
     ui_category = "Main Shader";
     ui_label = "Scale";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical scaling of the image.";
 > = 1.0;
 
 uniform int _ScaleByImage <
@@ -107,20 +118,23 @@ uniform int _ScaleByImage <
     ui_label = "Scalar";
     ui_type = "combo";
     ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
+    ui_tooltip = "Selects a color channel from the image to use as a scalar for cosmetic scaling effects.";
 > = 3;
 
 uniform float _ScaleByImageLOD <
     ui_category = "Main Shader";
-    ui_label = "Mipmap Level";
+    ui_label = "Image-Based Scaling Mipmap Level";
     ui_type = "drag";
+    ui_tooltip = "Adjusts the mipmap level used for the image that influences cosmetic scaling.";
 > = 0.5;
 
 uniform float _ScaleByImageIntensity <
     ui_category = "Main Shader";
-    ui_label = "Intensity";
+    ui_label = "Image-Based Scaling Intensity";
     ui_type = "drag";
     ui_min = -8.0;
     ui_max = 8.0;
+    ui_tooltip = "Controls the intensity of the cosmetic scaling effect driven by image content.";
 > = 1.0;
 
 #include "shared/cShadeHDR.fxh"

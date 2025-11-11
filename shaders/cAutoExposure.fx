@@ -17,12 +17,14 @@ uniform float _Frametime < source = "frametime"; >;
         ui_category = "Main Shader";
         ui_text = "Color Adjustments";
         ui_label = "Lightness";
+        ui_tooltip = "Adjusts the overall brightness or darkness of the image.";
         ui_type = "drag";
     > = 0.0;
 
     uniform float _GradeSaturation <
         ui_category = "Main Shader";
         ui_label = "Saturation";
+        ui_tooltip = "Controls the intensity of colors in the image. Higher values mean more vibrant colors.";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -31,6 +33,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeHueShift <
         ui_category = "Main Shader";
         ui_label = "Hue";
+        ui_tooltip = "Shifts the hue of colors in the image, changing their tint.";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -39,6 +42,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeContrast <
         ui_category = "Main Shader";
         ui_label = "Contrast";
+        ui_tooltip = "Adjusts the difference between the brightest and darkest parts of the image.";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -47,6 +51,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float3 _GradeColorFilter <
         ui_category = "Main Shader";
         ui_label = "Color Filter";
+        ui_tooltip = "Applies a color tint to the entire image, useful for white balance or creative effects.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -56,6 +61,7 @@ uniform float _Frametime < source = "frametime"; >;
         ui_category = "Main Shader";
         ui_text = "\nWhite Balance";
         ui_label = "Temperature";
+        ui_tooltip = "Adjusts the color temperature of the image, making it warmer (yellow/red) or cooler (blue).";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -64,6 +70,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeTint <
         ui_category = "Main Shader";
         ui_label = "Tint";
+        ui_tooltip = "Adjusts the green-magenta balance of the image.";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -73,18 +80,21 @@ uniform float _Frametime < source = "frametime"; >;
         ui_category = "Main Shader";
         ui_text = "\nSplit Toning";
         ui_label = "Shadows";
+        ui_tooltip = "Applies a color tint to the darker areas of the image.";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float3 _GradeHighLights <
         ui_category = "Main Shader";
         ui_label = "Highlights";
+        ui_tooltip = "Applies a color tint to the brighter areas of the image.";
         ui_type = "color";
     > = float3(0.5, 0.5, 0.5);
 
     uniform float _GradeBalance <
         ui_category = "Main Shader";
         ui_label = "Balance";
+        ui_tooltip = "Adjusts the balance between shadows and highlights in split toning.";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -94,6 +104,7 @@ uniform float _Frametime < source = "frametime"; >;
         ui_category = "Main Shader";
         ui_text = "\nChannel Mixer";
         ui_label = "Red";
+        ui_tooltip = "Adjusts the contribution of red, green, and blue channels to the output red channel.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -102,6 +113,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float3 _GradeMixGreen <
         ui_category = "Main Shader";
         ui_label = "Green";
+        ui_tooltip = "Adjusts the contribution of red, green, and blue channels to the output green channel.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -110,6 +122,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float3 _GradeMixBlue <
         ui_category = "Main Shader";
         ui_label = "Blue";
+        ui_tooltip = "Adjusts the contribution of red, green, and blue channels to the output blue channel.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -118,6 +131,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float3 _GradeMidtoneShadowColor <
         ui_category = "Main Shader";
         ui_label = "Shadow Color";
+        ui_tooltip = "Sets the color tint for the shadow midtones.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -127,6 +141,7 @@ uniform float _Frametime < source = "frametime"; >;
         ui_category = "Main Shader";
         ui_text = "\nShadows / Midtones / Hightlights";
         ui_label = "Midtone Color";
+        ui_tooltip = "Sets the color tint for the midtones.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -135,6 +150,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float3 _GradeMidtoneHighlightColor <
         ui_category = "Main Shader";
         ui_label = "Highlight Color";
+        ui_tooltip = "Sets the color tint for the highlight midtones.";
         ui_type = "color";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -143,6 +159,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeMidtoneShadowStart <
         ui_category = "Main Shader";
         ui_label = "Shadows Start";
+        ui_tooltip = "Defines the starting point of the shadow region for midtone adjustments.";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -151,6 +168,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeMidtoneShadowEnd <
         ui_category = "Main Shader";
         ui_label = "Shadows End";
+        ui_tooltip = "Defines the ending point of the shadow region for midtone adjustments.";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -167,6 +185,7 @@ uniform float _Frametime < source = "frametime"; >;
     uniform float _GradeMidtoneHighlightEnd <
         ui_category = "Main Shader";
         ui_label = "Highlights End";
+        ui_tooltip = "Defines the ending point of the highlight region for midtone adjustments.";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;

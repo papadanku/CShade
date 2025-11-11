@@ -9,6 +9,7 @@
 uniform float2 _Offset <
     ui_category = "Main Shader";
     ui_label = "Offset";
+    ui_tooltip = "Adjusts the horizontal and vertical position of the letterbox effect on the screen.";
     ui_type = "slider";
     ui_min = -1.0;
     ui_max = 1.0;
@@ -17,6 +18,7 @@ uniform float2 _Offset <
 uniform float2 _Scale <
     ui_category = "Main Shader";
     ui_label = "Scale";
+    ui_tooltip = "Controls the size of the letterbox, making it larger or smaller.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -25,6 +27,7 @@ uniform float2 _Scale <
 uniform float2 _Cutoff <
     ui_category = "Main Shader";
     ui_label = "Cutoff";
+    ui_tooltip = "Determines the sharpness of the letterbox edges. Lower values create a softer transition.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;

@@ -12,6 +12,7 @@ uniform int _Select <
     ui_label = "Filter";
     ui_type = "combo";
     ui_items = "Local Contrast Normalization\0Census Transform\0";
+    ui_tooltip = "Selects the normalization algorithm to apply, such as Local Contrast Normalization or Census Transform.";
 > = 0;
 
 #include "shared/cShadeHDR.fxh"

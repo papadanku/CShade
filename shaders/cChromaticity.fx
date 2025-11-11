@@ -9,6 +9,7 @@
 uniform int _Select <
     ui_category = "Main Shader";
     ui_label = "Chromaticity Method";
+    ui_tooltip = "Chooses the method for calculating and displaying chromaticity, which represents the color's purity and hue independent of brightness.";
     ui_type = "combo";
     ui_items = "Length / XY\0Length / XYZ\0Average / XY\0Average / XYZ\0Sum / XY\0Sum / XYZ\0Max / XY\0Max / XYZ\0Ratio / XY\0Spherical / XY\0Hue-Saturation / HSI\0Hue-Saturation / HSL\0Hue-Saturation / HSV\0YCoCg / XY\0OKLab / AB\0OKLch / CH\0";
 > = 0;

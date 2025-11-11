@@ -34,20 +34,23 @@ uniform bool _EnableFalloff <
     ui_category = "Main Shader";
     ui_label = "Enable Radius Falloff";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the blur intensity will decrease towards the edges of the screen.";
 > = true;
 
 uniform bool _InvertFalloff <
     ui_category = "Main Shader";
     ui_label = "Invert Radius Falloff";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the blur intensity will be higher at the edges and lower in the center.";
 > = false;
 
 uniform float _Radius <
     ui_category = "Main Shader";
-    ui_label = "Radius";
+    ui_label = "Blur Radius";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Controls the overall radius or spread of the noise blur effect.";
 > = 0.5;
 
 uniform float _FalloffAmount <
@@ -56,6 +59,7 @@ uniform float _FalloffAmount <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 2.0;
+    ui_tooltip = "Controls how quickly the blur intensity changes from the center to the edges when falloff is enabled.";
 > = 0.6;
 
 uniform float2 _FalloffOffset <
@@ -65,6 +69,7 @@ uniform float2 _FalloffOffset <
     ui_step = 0.001;
     ui_min = -1.0;
     ui_max = 1.0;
+    ui_tooltip = "Adjusts the center point of the blur radius falloff effect.";
 > = float2(0.0, 0.0);
 
 #include "shared/cShadeHDR.fxh"

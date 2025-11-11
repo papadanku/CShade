@@ -10,12 +10,14 @@ uniform bool _Pixelate <
     ui_category = "Main Shader";
     ui_label = "Enable Pixelation";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the image will be rendered with a blocky, pixelated appearance.";
 > = false;
 
 uniform bool _Dithering <
     ui_category = "Main Shader";
     ui_label = "Enable Dithering";
     ui_type = "radio";
+    ui_tooltip = "When enabled, dithering is applied to reduce color banding and create the illusion of more colors.";
 > = false;
 
 uniform int _DitherMethod <
@@ -23,6 +25,7 @@ uniform int _DitherMethod <
     ui_label = "Dither Algorithm";
     ui_type = "combo";
     ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
+    ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
 > = 0;
 
 uniform int2 _Resolution <
@@ -31,6 +34,7 @@ uniform int2 _Resolution <
     ui_type = "slider";
     ui_min = 16;
     ui_max = 256;
+    ui_tooltip = "Sets the number of pixels horizontally and vertically when pixelation is enabled, controlling the block size.";
 > = int2(128, 128);
 
 uniform int3 _Range <
@@ -39,6 +43,7 @@ uniform int3 _Range <
     ui_type = "slider";
     ui_min = 1.0;
     ui_max = 32.0;
+    ui_tooltip = "Defines the number of distinct color bands available for each color channel, creating a quantized or posterized look.";
 > = 8;
 
 #include "shared/cShade.fxh"

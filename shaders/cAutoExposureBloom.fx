@@ -16,6 +16,7 @@
 uniform int _BloomRenderMode <
     ui_category = "Main Shader";
     ui_label = "Rendering Mode";
+    ui_tooltip = "Determines how the bloom effect is rendered, either combined with the base image or as a standalone bloom.";
     ui_type = "combo";
     ui_items = "Base + Bloom\0Bloom\0";
 > = 0;
@@ -23,6 +24,7 @@ uniform int _BloomRenderMode <
 uniform float _BloomThreshold <
     ui_category = "Main Shader";
     ui_label = "Threshold";
+    ui_tooltip = "Sets the minimum brightness level for pixels to contribute to the bloom effect. Only pixels brighter than this value will bloom.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -31,6 +33,7 @@ uniform float _BloomThreshold <
 uniform float _BloomSmoothing <
     ui_category = "Main Shader";
     ui_label = "Smoothing";
+    ui_tooltip = "Controls the smoothness of the transition between non-blooming and blooming areas, affecting how soft the bloom edges appear.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -39,6 +42,7 @@ uniform float _BloomSmoothing <
 uniform float _BloomIntensity <
     ui_category = "Main Shader";
     ui_label = "Intensity";
+    ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
     ui_type = "slider";
     ui_step = 0.001;
     ui_min = 0.0;

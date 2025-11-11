@@ -38,6 +38,7 @@ uniform int _DisplayMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
+    ui_tooltip = "Controls how the contour effect is displayed, including various debug visualizations of gradients and magnitudes.";
 > = 0;
 
 uniform int _WeightMode <
@@ -45,6 +46,7 @@ uniform int _WeightMode <
     ui_label = "Edge Detection Type";
     ui_type = "combo";
     ui_items = "Color\0Luma\0";
+    ui_tooltip = "Selects whether edge detection is based on color differences or luminance differences.";
 > = 0;
 
 uniform float _LowerThreshold <
@@ -53,6 +55,7 @@ uniform float _LowerThreshold <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Sets the minimum gradient magnitude required for a pixel to be considered part of a contour.";
 > = 0.05;
 
 uniform float _UpperThreshold <
@@ -61,6 +64,7 @@ uniform float _UpperThreshold <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Sets the maximum gradient magnitude for a pixel to be considered part of a contour, used in conjunction with the lower threshold.";
 > = 0.5;
 
 uniform float _ColorSensitivity <
@@ -69,6 +73,7 @@ uniform float _ColorSensitivity <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Controls how sensitive the edge detection algorithm is to color differences when determining contours.";
 > = 0.5;
 
 uniform float4 _FrontColor <
@@ -77,6 +82,7 @@ uniform float4 _FrontColor <
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Sets the color of the detected contour lines.";
 > = float4(1.0, 1.0, 1.0, 1.0);
 
 uniform float4 _BackColor <
@@ -85,6 +91,7 @@ uniform float4 _BackColor <
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Sets the background color that appears behind the contour lines.";
 > = float4(0.0, 0.0, 0.0, 0.0);
 
 #include "shared/cShadeHDR.fxh"

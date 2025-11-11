@@ -19,6 +19,7 @@
 uniform int _DisplayMode <
     ui_category = "Main Shader";
     ui_label = "Render Mode";
+    ui_tooltip = "Selects the visual output mode: either the anti-aliased image or a debug view showing the detected edge directions.";
     ui_type = "combo";
     ui_items = "Image\0Directions\0";
 > = 0;
@@ -26,7 +27,7 @@ uniform int _DisplayMode <
 uniform int _RelativeThreshold <
     ui_category = "Main Shader";
     ui_label = "Relative Threshold";
-    ui_tooltip = "Trims the algorithm from processing darks.";
+    ui_tooltip = "Reduces FXAA processing in darker areas to prevent unwanted sharpening of noise, making the effect more subtle in shadows.";
     ui_type = "combo";
     ui_items = "High\0Medium\0Low\0";
 > = 1;
@@ -39,7 +40,7 @@ static const float RelativeThresholds[3] =
 uniform int _ContrastThreshold <
     ui_category = "Main Shader";
     ui_label = "Contrast Threshold";
-    ui_tooltip = "The minimum amount of local contrast required to apply algorithm.";
+    ui_tooltip = "Sets the minimum local contrast required for FXAA to be applied. Edges with contrast below this threshold will not be anti-aliased.";
     ui_type = "combo";
     ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
 > = 2;
@@ -52,7 +53,7 @@ static const float ContrastThresholds[5] =
 uniform int _SubpixelBlending <
     ui_category = "Main Shader";
     ui_label = "Subpixel Blending";
-    ui_tooltip = "Choose the amount of sub-pixel aliasing removal.";
+    ui_tooltip = "Controls the strength of sub-pixel aliasing removal, which helps to smooth jagged edges at a very fine level.";
     ui_type = "combo";
     ui_items = "High\0Medium\0Low\0Very Low\0Off\0";
 > = 1;

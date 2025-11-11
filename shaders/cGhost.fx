@@ -13,6 +13,7 @@
 uniform float _BlendFactor <
     ui_category = "Main Shader";
     ui_label = "Temporal Smoothing";
+    ui_tooltip = "Controls the strength of the temporal smoothing, determining how much of the previous frame is blended with the current frame to create the ghosting effect.";
     ui_type = "slider";
     ui_min = 0.1;
     ui_max = 0.9;

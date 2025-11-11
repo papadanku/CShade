@@ -28,7 +28,7 @@
 
 uniform bool _BlendWithAlpha <
     ui_label = "Apply Texture Alpha";
-    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
+    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
     ui_type = "radio";
 > = false;
 
@@ -36,6 +36,7 @@ uniform int _RenderMode <
     ui_label = "Render Mode";
     ui_type = "combo";
     ui_items = "Regular\0Overlay\0";
+    ui_tooltip = "Switches between rendering the base layer with transformations or compositing an overlay layer.";
 > = 0;
 
 uniform int _BaseGeometricTransformOrder <
@@ -44,24 +45,28 @@ uniform int _BaseGeometricTransformOrder <
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the base layer.";
 > = 0;
 
 uniform float _BaseAngle <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
+    ui_tooltip = "Controls the rotation of the base layer around its center.";
 > = 0.0;
 
 uniform float2 _BaseTranslate <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical translation (position) of the base layer.";
 > = 0.0;
 
 uniform float2 _BaseScale <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical scaling of the base layer.";
 > = 1.0;
 
 uniform int _OverlayTransformOrder <
@@ -70,24 +75,28 @@ uniform int _OverlayTransformOrder <
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the overlay layer.";
 > = 0;
 
 uniform float _OverlayAngle <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
+    ui_tooltip = "Controls the rotation of the overlay layer around its center.";
 > = 0.0;
 
 uniform float2 _OverlayTranslate <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay layer.";
 > = 0.0;
 
 uniform float2 _OverlayScale <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical scaling of the overlay layer.";
 > = 0.5;
 
 uniform int _OverlayMaskTransformOrder <
@@ -96,30 +105,35 @@ uniform int _OverlayMaskTransformOrder <
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_tooltip = "Defines the order in which geometric transformations are applied to the overlay mask.";
 > = 0;
 
 uniform float _OverlayMaskAngle <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Rotation";
     ui_type = "drag";
+    ui_tooltip = "Controls the rotation of the overlay mask around its center.";
 > = 0.0;
 
 uniform float2 _OverlayMaskTranslate <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay mask.";
 > = 0.0;
 
 uniform float2 _OverlayMaskScale <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
+    ui_tooltip = "Controls the horizontal and vertical scaling of the overlay mask.";
 > = 1.0;
 
 uniform float2 _OverlayMaskCutoff <
     ui_category = "Main Shader / Geometric Transform";
     ui_label = "Cutoff";
     ui_type = "drag";
+    ui_tooltip = "Defines the cutoff values for the overlay mask, determining which parts of the overlay are visible.";
 > = 0.5;
 
 uniform int _ColorOperationsOrder <
@@ -127,6 +141,7 @@ uniform int _ColorOperationsOrder <
     ui_label = "Order of Operations";
     ui_type = "combo";
     ui_items = "Multiply > Add\0Add > Multiply\0";
+    ui_tooltip = "Defines the order in which color multiplication and addition operations are applied.";
 > = 0;
 
 uniform float4 _Multiply <
@@ -135,6 +150,7 @@ uniform float4 _Multiply <
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;
+    ui_tooltip = "Applies a multiplication factor to the RGB color channels, affecting brightness and saturation.";
 > = 1.0;
 
 uniform float4 _Addition <
@@ -143,6 +159,7 @@ uniform float4 _Addition <
     ui_type = "slider";
     ui_min = -2.0;
     ui_max = 2.0;
+    ui_tooltip = "Applies an addition factor to the RGB color channels, shifting the overall brightness.";
 > = 0.0;
 
 #include "shared/cShadeHDR.fxh"

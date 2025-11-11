@@ -43,7 +43,7 @@
     #define SHADER_WARP_SAMPLING POINT
 #endif
 
-uniform float _Time < source = "timer"; >;
+uniform float _Time < source = "timer"; ui_tooltip = "The shader's internal timer, used for time-based effects."; > ;
 
 uniform float _MipBias <
     ui_category = "Main Shader / Optical Flow";
@@ -51,6 +51,7 @@ uniform float _MipBias <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 7.0;
+    ui_tooltip = "Adjusts the mipmap level used for texture sampling in optical flow calculations, affecting the level of detail.";
 > = 0.0;
 
 uniform float _BlendFactor <
@@ -59,6 +60,7 @@ uniform float _BlendFactor <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 0.9;
+    ui_tooltip = "Controls the amount of temporal smoothing applied to the motion vectors, reducing flickering in the optical flow.";
 > = 0.25;
 
 uniform int _BlockSize <
@@ -67,6 +69,7 @@ uniform int _BlockSize <
     ui_type = "slider";
     ui_min = 0;
     ui_max = 32;
+    ui_tooltip = "Defines the size of the pixel blocks used for the datamoshing effect.";
 > = 4;
 
 uniform float _Entropy <
@@ -75,6 +78,7 @@ uniform float _Entropy <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
+    ui_tooltip = "Controls the level of randomness or corruption applied to the datamosh effect.";
 > = 0.1;
 
 uniform float _Contrast <
@@ -83,6 +87,7 @@ uniform float _Contrast <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;
+    ui_tooltip = "Adjusts the contrast of the noise patterns generated for the datamosh effect.";
 > = 0.1;
 
 uniform float _Scale <
@@ -91,6 +96,7 @@ uniform float _Scale <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 2.0;
+    ui_tooltip = "Controls the scaling factor applied to motion vectors, influencing the intensity of displacement.";
 > = 1.0;
 
 uniform float _Diffusion <
@@ -99,6 +105,7 @@ uniform float _Diffusion <
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 4.0;
+    ui_tooltip = "Controls the amount of random displacement applied to pixels, contributing to the glitch effect.";
 > = 2.0;
 
 #include "shared/cShadeHDR.fxh"

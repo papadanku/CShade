@@ -7,7 +7,7 @@
 uniform bool _BlendWithAlpha <
     ui_category = "Main Shader";
     ui_label = "Apply Texture Alpha";
-    ui_tooltip = "If the user enabled CBLEND_BLENDENABLE, blend with the computed alpha channel.";
+    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
     ui_type = "radio";
 > = false;
 
@@ -16,6 +16,7 @@ uniform float4 _Color <
     ui_label = "Color";
     ui_type = "color";
     ui_min = 0.0;
+    ui_tooltip = "Sets the solid color that the shader will output.";
 > = 0.5;
 
 #include "shared/cShade.fxh"

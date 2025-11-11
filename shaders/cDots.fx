@@ -15,6 +15,7 @@
     uniform bool _InvertProcessing <
         ui_category = "Main Shader";
         ui_label = "Invert Processing";
+        ui_tooltip = "Reverses the effect of the dot pattern, swapping foreground and background colors.";
         ui_type = "radio";
     > = false;
 #endif
@@ -23,6 +24,7 @@
     uniform int _Select <
         ui_category = "Main Shader";
         ui_label = "Search Feature";
+        ui_tooltip = "Determines which color feature (Hue, Saturation, or Value) is used to generate the dot pattern in monochrome mode.";
         ui_type = "combo";
         ui_items = "HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
     > = 2;
@@ -31,6 +33,7 @@
 uniform int _CircleAmount <
     ui_category = "Main Shader";
     ui_label = "Circle Count";
+    ui_tooltip = "Sets the number of circles horizontally and vertically across the screen, influencing the density of the dot pattern.";
     ui_type = "slider";
     ui_min = 1;
     ui_max = 256;
@@ -39,6 +42,7 @@ uniform int _CircleAmount <
 uniform float _InputMultiplier <
     ui_category = "Main Shader / Input Color";
     ui_label = "Multiplier";
+    ui_tooltip = "Adjusts the intensity of the input color data before it's used to determine the size of the circles.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 8.0;
@@ -47,6 +51,7 @@ uniform float _InputMultiplier <
 uniform float _InputBias <
     ui_category = "Main Shader / Input Color";
     ui_label = "Bias";
+    ui_tooltip = "Adds a constant value to the input color data, shifting the overall brightness that influences circle size.";
     ui_type = "slider";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -57,6 +62,7 @@ uniform float _InputBias <
         ui_category = "Main Shader / Geometry";
         ui_text = "Offset (Horizontal, Vertical)";
         ui_label = " ";
+        ui_tooltip = "Adjusts the horizontal and vertical position of the dot pattern on the screen.";
         ui_type = "slider";
         ui_min = -100.0;
         ui_max = 100.0;
@@ -66,6 +72,7 @@ uniform float _InputBias <
         ui_category = "Main Shader / Geometry";
         ui_text = "Crop (Left, Right, Top, Bottom)";
         ui_label = " ";
+        ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the dot pattern, effectively trimming the effect from the edges.";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
@@ -75,6 +82,7 @@ uniform float _InputBias <
         ui_category = "Main Shader / Geometry";
         ui_text = "Offset (Horizontal, Vertical)";
         ui_label = "Red";
+        ui_tooltip = "Adjusts the horizontal and vertical offset for the red channel's dot pattern.";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -84,6 +92,7 @@ uniform float _InputBias <
     uniform float2 _GreenChannelOffset <
         ui_category = "Main Shader / Geometry";
         ui_label = "Green";
+        ui_tooltip = "Adjusts the horizontal and vertical offset for the green channel's dot pattern.";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -93,6 +102,7 @@ uniform float _InputBias <
     uniform float2 _BlueChannelOffset <
         ui_category = "Main Shader / Geometry";
         ui_label = "Blue";
+        ui_tooltip = "Adjusts the horizontal and vertical offset for the blue channel's dot pattern.";
         ui_type = "slider";
         ui_step = 0.1;
         ui_min = -10.0;
@@ -103,6 +113,7 @@ uniform float _InputBias <
         ui_category = "Main Shader / Geometry";
         ui_text = "Crop (Left, Right, Top, Bottom)";
         ui_label = "Red";
+        ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the red channel's dot pattern.";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
@@ -111,6 +122,7 @@ uniform float _InputBias <
     uniform int4 _GreenChannelCrop <
         ui_category = "Main Shader / Geometry";
         ui_label = "Green";
+        ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the green channel's dot pattern.";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
@@ -119,6 +131,7 @@ uniform float _InputBias <
     uniform int4 _BlueChannelCrop <
         ui_category = "Main Shader / Geometry";
         ui_label = "Blue";
+        ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the blue channel's dot pattern.";
         ui_type = "slider";
         ui_min = 0;
         ui_max = 10;
@@ -128,6 +141,7 @@ uniform float _InputBias <
 uniform float3 _FrontColor <
     ui_category = "Main Shader / Composition";
     ui_label = "Foreground";
+    ui_tooltip = "Sets the color of the dots (foreground) in the pattern.";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
@@ -136,6 +150,7 @@ uniform float3 _FrontColor <
 uniform float3 _BackColor <
     ui_category = "Main Shader / Composition";
     ui_label = "Background";
+    ui_tooltip = "Sets the background color behind the dots in the pattern.";
     ui_type = "color";
     ui_min = 0.0;
     ui_max = 1.0;
