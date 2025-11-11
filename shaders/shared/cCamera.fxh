@@ -8,7 +8,7 @@
         ui_category_closed = true;
         ui_category = "Pipeline / Output / Auto Exposure";
         ui_text = "Exposure Settings";
-        ui_label = "Smoothing Speed";
+        ui_label = "Auto Exposure Smoothing Speed";
         ui_type = "slider";
         ui_min = 0.1;
         ui_max = 1.0;
@@ -17,7 +17,7 @@
 
     uniform float _CCamera_ExposureBias <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Compensation Bias";
+        ui_label = "Auto Exposure Compensation Bias";
         ui_type = "slider";
         ui_step = 0.001;
         ui_min = -4.0;
@@ -27,7 +27,7 @@
 
     uniform float _CCamera_ExposureRange <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Compensation Range";
+        ui_label = "Auto Exposure Compensation Range";
         ui_type = "slider";
         ui_step = 0.001;
         ui_min = 1.0;
@@ -38,7 +38,7 @@
     uniform int _CCamera_MeteringType <
         ui_category_closed = true;
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Adaptation";
+        ui_label = "Auto Exposure Adaptation Method";
         ui_type = "combo";
         ui_items = "Average Metering\0Spot Metering\0";
         ui_tooltip = "Selects the method for auto-exposure adaptation: either average metering across the whole scene or spot metering on a specific area.";
@@ -47,7 +47,7 @@
     uniform bool _CCamera_LumaMeter <
         ui_text = "\n[Tools] Luminance Metering";
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Display Luminance Meter";
+        ui_label = "Show Luminance Meter Overlay";
         ui_type = "radio";
         ui_tooltip = "When enabled, displays an overlay that visualizes the scene's luminance levels.";
     > = false;
@@ -73,7 +73,7 @@
     uniform bool _CCamera_ShowSpotMeterOverlay <
         ui_text = "\n[Tools] Spot Metering";
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Display Spot Meter Area";
+        ui_label = "Show Spot Meter Area Overlay";
         ui_type = "radio";
         ui_tooltip = "When enabled, displays an overlay indicating the area used for spot metering.";
     > = false;
@@ -89,7 +89,7 @@
 
     uniform float2 _CCamera_SpotMeterOffset <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Offset";
+        ui_label = "Spot Meter Area Position Offset";
         ui_type = "slider";
         ui_min = -1.0;
         ui_max = 1.0;
@@ -99,14 +99,14 @@
     uniform bool _CCamera_ExposurePeaking <
         ui_text = "\n[Tools] Exposure Peaking";
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Display Exposure Peaking";
+        ui_label = "Show Exposure Peaking Overlay";
         ui_type = "radio";
         ui_tooltip = "When enabled, displays an overlay that highlights areas within a specified exposure threshold.";
     > = false;
 
     uniform int _CCamera_ExposurePeakingDitherType <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Dither Algorithm";
+        ui_label = "Exposure Peaking Dither Algorithm";
         ui_type = "combo";
         ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
         ui_tooltip = "Selects the dither algorithm used for the exposure peaking overlay.";
@@ -114,7 +114,7 @@
 
     uniform float3 _CCamera_ExposurePeakingThreshold <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Threshold";
+        ui_label = "Exposure Peaking Luminance Threshold";
         ui_type = "slider";
         ui_min = 0.0;
         ui_max = 1.0;
@@ -123,7 +123,7 @@
 
     uniform int _CCamera_ExposurePeakingCellWidth <
         ui_category = "Pipeline / Output / Auto Exposure";
-        ui_label = "Cell Size";
+        ui_label = "Exposure Peaking Cell Size";
         ui_type = "slider";
         ui_min = 1;
         ui_max = 16;

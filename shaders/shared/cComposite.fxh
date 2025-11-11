@@ -17,14 +17,14 @@
         uniform float _CComposite_ExposureBias <
             ui_category = "Pipeline / Output / Color Grade";
             ui_text = "Exposure & Color Filter";
-            ui_label = "Exposure Bias (f-stops)";
+            ui_label = "Exposure Adjustment (f-stops)";
             ui_type = "slider";
             ui_tooltip = "Adjusts the overall exposure of the scene in f-stops, making it brighter or darker.";
         > = 0.0;
 
         uniform float3 _CComposite_ColorFilter <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Color Filter (White Balance)";
+            ui_label = "Color Filter (Tint)";
             ui_type = "color";
             ui_tooltip = "Applies a color tint to the scene, useful for adjusting white balance or creating stylistic looks.";
         > = 1.0;
@@ -32,14 +32,14 @@
         uniform float _CComposite_Saturation <
             ui_category = "Pipeline / Output / Color Grade";
             ui_text = "\nSaturation & Contrast";
-            ui_label = "Saturation";
+            ui_label = "Color Saturation";
             ui_type = "slider";
             ui_tooltip = "Adjusts the intensity of colors in the scene; higher values make colors more vibrant, lower values desaturate them.";
         > = 1.0;
 
         uniform float _CComposite_Contrast <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Contrast";
+            ui_label = "Image Contrast";
             ui_type = "slider";
             ui_tooltip = "Adjusts the difference between the brightest and darkest parts of the image, affecting perceived depth and richness.";
         > = 1.0;
@@ -48,21 +48,21 @@
         uniform float3 _CComposite_ShadowColor <
             ui_category = "Pipeline / Output / Color Grade";
             ui_text = "\nLift/Gamma/Gain";
-            ui_label = "Shadow Color (Lift)";
+            ui_label = "Shadow Tint (Lift)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the darkest areas (shadows) of the image.";
         > = 1.0;
 
         uniform float3 _CComposite_MidtoneColor <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Midtone Color (Gamma)";
+            ui_label = "Midtone Tint (Gamma)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the mid-range tones (midtones) of the image.";
         > = 1.0;
 
         uniform float3 _CComposite_HighlightColor <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Highlight Color (Gain)";
+            ui_label = "Highlight Tint (Gain)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the brightest areas (highlights) of the image.";
         > = 1.0;
@@ -70,21 +70,21 @@
         // Lift/Gamma/Gain - Offset Controls
         uniform float _CComposite_ShadowOffset <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Shadow Offset";
+            ui_label = "Shadow Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for shadow values, making dark areas brighter or darker.";
         > = 0.0;
 
         uniform float _CComposite_MidtoneOffset <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Midtone Offset";
+            ui_label = "Midtone Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for midtone values, affecting the brightness of mid-range tones.";
         > = 0.0;
 
         uniform float _CComposite_HighlightOffset <
             ui_category = "Pipeline / Output / Color Grade";
-            ui_label = "Highlight Offset";
+            ui_label = "Highlight Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for highlight values, making bright areas brighter or darker.";
         > = 0.0;
@@ -94,7 +94,7 @@
         uniform int _CComposite_Tonemapper <
             ui_category_closed = true;
             ui_category = "Pipeline / Output / Tonemap";
-            ui_label = "Tonemap Operator";
+            ui_label = "Tonemapping Operator";
             ui_tooltip = "Selects a tonemap operator to map HDR colors to SDR, affecting how bright areas are compressed.";
             ui_type = "combo";
             ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0Logarithmic C [Encode]\0";

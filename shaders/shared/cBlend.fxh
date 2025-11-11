@@ -93,7 +93,7 @@
         ui_category_closed = true;
         ui_category = "Pipeline / Output / Merge";
         ui_text = "Alpha Blend";
-        ui_label = "Blend Weight";
+        ui_label = "Alpha Blend Weight";
         ui_tooltip = "Adjusts the blending weight when using source alpha (SRCALPHA) or inverse source alpha (INVSRCALPHA) blend modes.";
         ui_type = "slider";
         ui_min = 0.0;
@@ -104,7 +104,7 @@
         ui_category_closed = true;
         ui_category = "Pipeline / Output / Merge";
         ui_text = "\nColor Write Mask";
-        ui_label = "-> Red";
+        ui_label = "Map Red Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
         ui_tooltip = "Maps the red output channel to one of the source color or alpha channels, or disables it.";
@@ -112,7 +112,7 @@
 
     uniform int _CShade_SwizzleGreen <
         ui_category = "Pipeline / Output / Merge";
-        ui_label = "-> Green";
+        ui_label = "Map Green Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
         ui_tooltip = "Maps the green output channel to one of the source color or alpha channels, or disables it.";
@@ -120,7 +120,7 @@
 
     uniform int _CShade_SwizzleBlue <
         ui_category = "Pipeline / Output / Merge";
-        ui_label = "-> Blue";
+        ui_label = "Map Blue Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
         ui_tooltip = "Maps the blue output channel to one of the source color or alpha channels, or disables it.";
@@ -128,7 +128,7 @@
 
     uniform int _CShade_SwizzleAlpha <
         ui_category = "Pipeline / Output / Merge";
-        ui_label = "-> Alpha";
+        ui_label = "Map Alpha Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
         ui_tooltip = "Maps the alpha output channel to one of the source color or alpha channels, or disables it.";
