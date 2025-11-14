@@ -51,7 +51,11 @@ To "run" these shaders:
 * **Mathematical Utilities:** Leverages a rich set of mathematical functions provided in `cMath.fxh` for complex calculations.
 * **Texture and Sampler Management:** Utilizes custom macros (`CREATE_TEXTURE`, `CREATE_SAMPLER`, etc.) for consistent definition of textures and samplers.
 
-# Knowledge
+## Instructions
+
+@./gemini/Instructions.md
+
+## Knowledge
 
 @./gemini/Examples.txt
 
