@@ -7,7 +7,7 @@ CShade is an HLSL shader collection for ReShade. CShade introduces conventional 
 
 CShade also includes `.fxh` files that contain algorithms used in the collection or have potential use.
 
-## Effects
+## Features
 
 ### Inter-Shader Merging
 
@@ -61,6 +61,69 @@ CShade features shaders that filter images for aesthetics.
 - Letterbox
 - Sharpening
 - Vignetting
+
+### AI-Assisted Programming with Gemini CLI
+
+This project supports AI-assisted programming through the Gemini CLI. The Gemini CLI is an interactive command-line interface that leverages large language models to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations.
+
+#### How to Use
+
+1.  **Install Gemini CLI:** Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
+2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
+
+    ```bash
+    cd C:\Users\Paul\Documents\GitHub\CShade
+    ```
+
+3.  **Start Gemini CLI:** Launch the Gemini CLI.
+4.  **Interact with the AI:** You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
+
+    - "Explain the `cMotionBlur.fx` shader."
+    - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
+    - "Add a new uniform variable to `cLens.fx` that controls the chromatic aberration strength."
+    - "Find all occurrences of `tex2Dlod` in the `shaders` directory."
+
+For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in the `gemini` directory.
+
+## Acknowledgments
+
+### Groups
+
+- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
+
+  Major knowledge-base and inspiration.
+
+- [The Project Reality Team](https://www.realitymod.com/)
+
+  memes
+
+- [The ReShade Community](https://reshade.me/)
+
+  Where the coding journey started.
+
+- [Vietnamese Student Association](https://www.instagram.com/asu.vsa)
+
+  The community I needed.
+
+- Family, friends, and acquaintances
+
+  You know who you are.
+
+### Individuals
+
+#### The Shadersphere
+
+- BeTa/Alea
+- BlueSkyDefender
+- Pfoiffee
+- Certain individuals in #code-chat/#shader-programming
+
+#### GitHub Contributors
+
+- **Overall:** 0CCULTIST
+- **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
+- **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
+- **Asked Questions:** R0nBurgandy, lapsio
 
 ## Coding Convention
 
@@ -368,66 +431,3 @@ VK_ZOOM | 0xFB | Zoom key
 VK_NONAME | 0xFC | Reserved
 VK_PA1 | 0xFD | PA1 key
 VK_OEM_CLEAR | 0xFE | Clear key
-
-## Acknowledgments
-
-### Groups
-
-- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
-
-  Major knowledge-base and inspiration.
-
-- [The Project Reality Team](https://www.realitymod.com/)
-
-  memes
-
-- [The ReShade Community](https://reshade.me/)
-
-  Where the coding journey started.
-
-- [Vietnamese Student Association](https://www.instagram.com/asu.vsa)
-
-  The community I needed.
-
-- Family, friends, and acquaintances
-
-  You know who you are.
-
-### Individuals
-
-#### The Shadersphere
-
-- BeTa/Alea
-- BlueSkyDefender
-- Pfoiffee
-- Certain individuals in #code-chat/#shader-programming
-
-#### GitHub Contributors
-
-- **Overall:** 0CCULTIST
-- **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
-- **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
-- **Asked Questions:** R0nBurgandy, lapsio
-
-## AI-Assisted Programming with Gemini CLI
-
-This project supports AI-assisted programming through the Gemini CLI. The Gemini CLI is an interactive command-line interface that leverages large language models to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations.
-
-### How to Use
-
-1.  **Install Gemini CLI:** Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
-2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
-
-    ```bash
-    cd C:\Users\Paul\Documents\GitHub\CShade
-    ```
-
-3.  **Start Gemini CLI:** Launch the Gemini CLI.
-4.  **Interact with the AI:** You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
-
-    - "Explain the `cMotionBlur.fx` shader."
-    - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
-    - "Add a new uniform variable to `cLens.fx` that controls the chromatic aberration strength."
-    - "Find all occurrences of `tex2Dlod` in the `shaders` directory."
-
-For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in the `gemini` directory.
