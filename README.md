@@ -72,7 +72,7 @@ This project supports AI-assisted programming through the Gemini CLI. The Gemini
 2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
 
     ```bash
-    cd C:\Users\Paul\Documents\GitHub\CShade
+    cd C:\Users\papadanku\Documents\GitHub\CShade
     ```
 
 3.  **Start Gemini CLI:** Launch the Gemini CLI.
@@ -83,7 +83,7 @@ This project supports AI-assisted programming through the Gemini CLI. The Gemini
     - "Add a new uniform variable to `cLens.fx` that controls the chromatic aberration strength."
     - "Find all occurrences of `tex2Dlod` in the `shaders` directory."
 
-For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in the `gemini` directory.
+For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in CShade's directory.
 
 ## Acknowledgments
 
