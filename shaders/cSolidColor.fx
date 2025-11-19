@@ -7,15 +7,15 @@
 uniform bool _BlendWithAlpha <
     ui_category = "Main Shader";
     ui_label = "Blend with Texture Alpha";
-    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
 > = false;
 
 uniform float4 _Color <
     ui_category = "Main Shader";
     ui_label = "Solid Color";
-    ui_type = "color";
     ui_min = 0.0;
+    ui_type = "color";
     ui_tooltip = "Sets the solid color that the shader will output.";
 > = 0.5;
 

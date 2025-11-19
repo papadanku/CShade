@@ -48,63 +48,63 @@ uniform float _Time < source = "timer"; ui_tooltip = "The shader's internal time
 uniform float _MipBias <
     ui_category = "Main Shader / Optical Flow";
     ui_label = "Mipmap Level for Optical Flow";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 7.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Adjusts the mipmap level used for texture sampling in optical flow calculations, affecting the level of detail.";
 > = 0.0;
 
 uniform float _BlendFactor <
     ui_category = "Main Shader / Optical Flow";
     ui_label = "Temporal Smoothing Factor";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 0.9;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls the amount of temporal smoothing applied to the motion vectors, reducing flickering in the optical flow.";
 > = 0.25;
 
 uniform int _BlockSize <
     ui_category = "Main Shader / Datamosh";
     ui_label = "Datamosh Block Size";
-    ui_type = "slider";
-    ui_min = 0;
     ui_max = 32;
+    ui_min = 0;
+    ui_type = "slider";
     ui_tooltip = "Defines the size of the pixel blocks used for the datamoshing effect.";
 > = 4;
 
 uniform float _Entropy <
     ui_category = "Main Shader / Datamosh";
     ui_label = "Datamosh Randomness";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls the level of randomness or corruption applied to the datamosh effect.";
 > = 0.1;
 
 uniform float _Contrast <
     ui_category = "Main Shader / Datamosh";
     ui_label = "Datamosh Noise Contrast";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 4.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Adjusts the contrast of the noise patterns generated for the datamosh effect.";
 > = 0.1;
 
 uniform float _Scale <
     ui_category = "Main Shader / Datamosh";
     ui_label = "Motion Vector Scale";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 2.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls the scaling factor applied to motion vectors, influencing the intensity of displacement.";
 > = 1.0;
 
 uniform float _Diffusion <
     ui_category = "Main Shader / Datamosh";
     ui_label = "Random Pixel Displacement";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 4.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls the amount of random displacement applied to pixels, contributing to the glitch effect.";
 > = 2.0;
 
@@ -113,10 +113,10 @@ uniform float _Diffusion <
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n";
     ui_category_closed = false;
+    ui_label = " ";
+    ui_text = "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_type = "radio";
 > = 0;
 
 /*

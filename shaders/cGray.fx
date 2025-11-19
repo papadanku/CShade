@@ -8,10 +8,10 @@
 
 uniform int _Select <
     ui_category = "Main Shader";
-    ui_label = "Grayscale Luminance Method";
-    ui_tooltip = "Chooses the method used to convert the color image to grayscale, based on different luminance calculation techniques.";
-    ui_type = "combo";
     ui_items = "Average\0Min\0Median\0Max\0Length\0Min+Max\0None\0";
+    ui_label = "Grayscale Luminance Method";
+    ui_type = "combo";
+    ui_tooltip = "Chooses the method used to convert the color image to grayscale, based on different luminance calculation techniques.";
 > = 0;
 
 #include "shared/cShadeHDR.fxh"

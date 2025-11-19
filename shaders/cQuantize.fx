@@ -22,27 +22,27 @@ uniform bool _Dithering <
 
 uniform int _DitherMethod <
     ui_category = "Main Shader";
+    ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
     ui_label = "Dither Pattern Algorithm";
     ui_type = "combo";
-    ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
     ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
 > = 0;
 
 uniform int2 _Resolution <
     ui_category = "Main Shader";
     ui_label = "Pixelation Block Resolution";
-    ui_type = "slider";
-    ui_min = 16;
     ui_max = 256;
+    ui_min = 16;
+    ui_type = "slider";
     ui_tooltip = "Sets the number of pixels horizontally and vertically when pixelation is enabled, controlling the block size.";
 > = int2(128, 128);
 
 uniform int3 _Range <
     ui_category = "Main Shader";
     ui_label = "Quantization Levels";
-    ui_type = "slider";
-    ui_min = 1.0;
     ui_max = 32.0;
+    ui_min = 1.0;
+    ui_type = "slider";
     ui_tooltip = "Defines the number of distinct color bands available for each color channel, creating a quantized or posterized look.";
 > = 8;
 

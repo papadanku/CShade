@@ -15,38 +15,38 @@
 // Bloom-specific settings
 uniform int _BloomRenderMode <
     ui_category = "Main Shader";
-    ui_label = "Bloom Rendering Mode";
-    ui_tooltip = "Determines how the bloom effect is rendered, either combined with the base image or as a standalone bloom.";
-    ui_type = "combo";
     ui_items = "Base + Bloom\0Bloom\0";
+    ui_label = "Bloom Rendering Mode";
+    ui_type = "combo";
+    ui_tooltip = "Determines how the bloom effect is rendered, either combined with the base image or as a standalone bloom.";
 > = 0;
 
 uniform float _BloomThreshold <
     ui_category = "Main Shader";
     ui_label = "Bloom Threshold";
-    ui_tooltip = "Sets the minimum brightness level for pixels to contribute to the bloom effect. Only pixels brighter than this value will bloom.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Sets the minimum brightness level for pixels to contribute to the bloom effect. Only pixels brighter than this value will bloom.";
 > = 0.8;
 
 uniform float _BloomSmoothing <
     ui_category = "Main Shader";
     ui_label = "Bloom Smoothing";
-    ui_tooltip = "Controls the smoothness of the transition between non-blooming and blooming areas, affecting how soft the bloom edges appear.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Controls the smoothness of the transition between non-blooming and blooming areas, affecting how soft the bloom edges appear.";
 > = 0.5;
 
 uniform float _BloomIntensity <
     ui_category = "Main Shader";
     ui_label = "Bloom Intensity";
-    ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
-    ui_type = "slider";
-    ui_step = 0.001;
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_step = 0.001;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
 > = 0.5;
 
 #include "shared/cShadeHDR.fxh"
@@ -59,10 +59,10 @@ uniform float _BloomIntensity <
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_category_closed = false;
+    ui_label = " ";
+    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_type = "radio";
 > = 0;
 
 /*

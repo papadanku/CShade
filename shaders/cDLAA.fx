@@ -18,41 +18,41 @@
 uniform bool _PreserveFrequencies <
     ui_category = "Main Shader";
     ui_label = "Retain Fine Details";
-    ui_tooltip = "When enabled, the shader attempts to retain fine details and high-frequency information in the image, preventing them from being blurred by the anti-aliasing process.";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the shader attempts to retain fine details and high-frequency information in the image, preventing them from being blurred by the anti-aliasing process.";
 > = true;
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
-    ui_label = "Display Mode";
-    ui_tooltip = "Selects the visual output mode: either the anti-aliased image, a mask highlighting short edges, or a mask highlighting long edges.";
-    ui_type = "combo";
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
+    ui_label = "Display Mode";
+    ui_type = "combo";
+    ui_tooltip = "Selects the visual output mode: either the anti-aliased image, a mask highlighting short edges, or a mask highlighting long edges.";
 > = 0;
 
 uniform int _ShortEdgesScale <
     ui_category = "Main Shader";
     ui_label = "Short Edges Scale";
-    ui_tooltip = "How much to scale short edges.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 4.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "How much to scale short edges.";
 > = 3.0;
 
 uniform int _ShortEdgesContrastThreshold <
     ui_category = "Main Shader";
-    ui_label = "Short Edges Contrast Threshold";
-    ui_tooltip = "The minimum amount of noise required to detect short edges.";
-    ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
+    ui_label = "Short Edges Contrast Threshold";
+    ui_type = "combo";
+    ui_tooltip = "The minimum amount of noise required to detect short edges.";
 > = 2;
 
 uniform int _LongEdgesContrastThreshold <
     ui_category = "Main Shader";
-    ui_label = "Long Edges Contrast Threshold";
-    ui_tooltip = "The minimum amount of noise required to detect long edges.";
-    ui_type = "combo";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
+    ui_label = "Long Edges Contrast Threshold";
+    ui_type = "combo";
+    ui_tooltip = "The minimum amount of noise required to detect long edges.";
 > = 3;
 
 static const float ContrastThresholds[6] =

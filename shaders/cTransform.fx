@@ -28,23 +28,23 @@
 
 uniform bool _BlendWithAlpha <
     ui_label = "Blend with Texture Alpha";
-    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
 > = false;
 
 uniform int _RenderMode <
+    ui_items = "Regular\0Overlay\0";
     ui_label = "Rendering Mode";
     ui_type = "combo";
-    ui_items = "Regular\0Overlay\0";
     ui_tooltip = "Switches between rendering the base layer with transformations or compositing an overlay layer.";
 > = 0;
 
 uniform int _BaseGeometricTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
-    ui_text = "Base Layer";
-    ui_label = "Base Layer Geometric Transform Order";
-    ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_label = "Base Layer Geometric Transform Order";
+    ui_text = "Base Layer";
+    ui_type = "combo";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the base layer.";
 > = 0;
 
@@ -71,10 +71,10 @@ uniform float2 _BaseScale <
 
 uniform int _OverlayTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
-    ui_text = "\nOverlay Layer";
-    ui_label = "Overlay Layer Geometric Transform Order";
-    ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_label = "Overlay Layer Geometric Transform Order";
+    ui_text = "\nOverlay Layer";
+    ui_type = "combo";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the overlay layer.";
 > = 0;
 
@@ -101,10 +101,10 @@ uniform float2 _OverlayScale <
 
 uniform int _OverlayMaskTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
-    ui_text = "\nOverlay Mask";
-    ui_label = "Overlay Mask Geometric Transform Order";
-    ui_type = "combo";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
+    ui_label = "Overlay Mask Geometric Transform Order";
+    ui_text = "\nOverlay Mask";
+    ui_type = "combo";
     ui_tooltip = "Defines the order in which geometric transformations are applied to the overlay mask.";
 > = 0;
 
@@ -138,27 +138,27 @@ uniform float2 _OverlayMaskCutoff <
 
 uniform int _ColorOperationsOrder <
     ui_category = "Main Shader / Color Transform";
+    ui_items = "Multiply > Add\0Add > Multiply\0";
     ui_label = "Color Transformation Order";
     ui_type = "combo";
-    ui_items = "Multiply > Add\0Add > Multiply\0";
     ui_tooltip = "Defines the order in which color multiplication and addition operations are applied.";
 > = 0;
 
 uniform float4 _Multiply <
     ui_category = "Main Shader / Color Transform";
     ui_label = "Color Multiplication Factor";
-    ui_type = "slider";
-    ui_min = -2.0;
     ui_max = 2.0;
+    ui_min = -2.0;
+    ui_type = "slider";
     ui_tooltip = "Applies a multiplication factor to the RGB color channels, affecting brightness and saturation.";
 > = 1.0;
 
 uniform float4 _Addition <
     ui_category = "Main Shader / Color Transform";
     ui_label = "Color Addition Factor";
-    ui_type = "slider";
-    ui_min = -2.0;
     ui_max = 2.0;
+    ui_min = -2.0;
+    ui_type = "slider";
     ui_tooltip = "Applies an addition factor to the RGB color channels, shifting the overall brightness.";
 > = 0.0;
 
@@ -167,10 +167,10 @@ uniform float4 _Addition <
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR\n\n";
     ui_category_closed = false;
+    ui_label = " ";
+    ui_text = "\nSHADER_BACKBUFFER_ADDRESSU - How the shader renders pixels outside the texture's boundaries (U).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSV - How the shader renders pixels outside the texture's boundaries (V).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_ADDRESSW - How the shader renders pixels outside the texture's boundaries (W).\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_BACKBUFFER_SAMPLING - How the shader samples pixels from the backbuffer texture.\n\n\tOptions: POINT, LINEAR\n\n";
+    ui_type = "radio";
 > = 0;
 
 CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, SHADER_BACKBUFFER_SAMPLING, SHADER_BACKBUFFER_SAMPLING, LINEAR, SHADER_BACKBUFFER_ADDRESSU, SHADER_BACKBUFFER_ADDRESSV, SHADER_BACKBUFFER_ADDRESSW)

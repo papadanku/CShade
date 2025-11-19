@@ -70,18 +70,18 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
+    ui_items = "Image\0Mask\0";
     ui_label = "Display Mode";
     ui_type = "combo";
-    ui_items = "Image\0Mask\0";
     ui_tooltip = "Controls how the Robust Contrast Adaptive Sharpening (RCAS) effect is displayed, showing either the sharpened image or the sharpening mask.";
 > = 0;
 
 uniform float _Sharpening <
     ui_category = "Main Shader";
     ui_label = "Sharpening Intensity";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls the intensity of the Robust Contrast Adaptive Sharpening (RCAS) effect.";
 > = 0.5;
 

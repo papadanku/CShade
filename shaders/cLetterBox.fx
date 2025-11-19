@@ -9,28 +9,28 @@
 uniform float2 _Offset <
     ui_category = "Main Shader";
     ui_label = "Letterbox Position Offset";
-    ui_tooltip = "Adjusts the horizontal and vertical position of the letterbox effect on the screen.";
-    ui_type = "slider";
-    ui_min = -1.0;
     ui_max = 1.0;
+    ui_min = -1.0;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the horizontal and vertical position of the letterbox effect on the screen.";
 > = float2(0.0, 0.0);
 
 uniform float2 _Scale <
     ui_category = "Main Shader";
     ui_label = "Letterbox Size Scale";
-    ui_tooltip = "Controls the size of the letterbox, making it larger or smaller.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Controls the size of the letterbox, making it larger or smaller.";
 > = float2(1.0, 1.0);
 
 uniform float2 _Cutoff <
     ui_category = "Main Shader";
     ui_label = "Letterbox Edge Sharpness";
-    ui_tooltip = "Determines the sharpness of the letterbox edges. Lower values create a softer transition.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Determines the sharpness of the letterbox edges. Lower values create a softer transition.";
 > = 1.0;
 
 #include "shared/cShade.fxh"

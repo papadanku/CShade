@@ -9,33 +9,33 @@
 uniform bool _InvertCheckerboard <
     ui_category = "Main Shader";
     ui_label = "Invert Pattern";
-    ui_tooltip = "Reverses the pattern of the checkerboard, swapping the positions of Color 1 and Color 2.";
     ui_type = "radio";
+    ui_tooltip = "Reverses the pattern of the checkerboard, swapping the positions of Color 1 and Color 2.";
 > = false;
 
 uniform int _Width <
     ui_category = "Main Shader";
     ui_label = "Grid Size";
-    ui_tooltip = "Sets the size of each square in the checkerboard pattern. Smaller values create more squares.";
-    ui_type = "slider";
-    ui_min = 1;
     ui_max = 16;
+    ui_min = 1;
+    ui_type = "slider";
+    ui_tooltip = "Sets the size of each square in the checkerboard pattern. Smaller values create more squares.";
 > = 4;
 
 uniform float3 _Color1 <
     ui_category = "Main Shader";
     ui_label = "First Color";
-    ui_tooltip = "Defines the first color used in the checkerboard pattern.";
-    ui_type = "color";
     ui_min = 0.0;
+    ui_type = "color";
+    ui_tooltip = "Defines the first color used in the checkerboard pattern.";
 > = 1.0;
 
 uniform float3 _Color2 <
     ui_category = "Main Shader";
     ui_label = "Second Color";
-    ui_tooltip = "Defines the second color used in the checkerboard pattern.";
-    ui_type = "color";
     ui_min = 0.0;
+    ui_type = "color";
+    ui_tooltip = "Defines the second color used in the checkerboard pattern.";
 > = 0.0;
 
 #include "shared/cShade.fxh"

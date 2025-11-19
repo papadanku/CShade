@@ -40,61 +40,61 @@ uniform float _Time < source = "timer"; >;
 uniform bool _UseTimeSeed <
     ui_category = "Main Shader";
     ui_label = "Use Time for Seed";
-    ui_tooltip = "When enabled, the grain effect's randomness is influenced by the shader's elapsed time, creating a dynamic, evolving pattern.";
     ui_type = "radio";
+    ui_tooltip = "When enabled, the grain effect's randomness is influenced by the shader's elapsed time, creating a dynamic, evolving pattern.";
 > = true;
 
 uniform float _GrainSeed <
     ui_category = "Main Shader";
     ui_label = "Grain Seed Offset";
-    ui_tooltip = "Provides an offset to the random seed used for generating film grain, allowing for different grain patterns.";
     ui_type = "drag";
+    ui_tooltip = "Provides an offset to the random seed used for generating film grain, allowing for different grain patterns.";
 > = 0.0;
 
 uniform float _GrainSeedSpeed <
     ui_category = "Main Shader";
     ui_label = "Grain Seed Speed";
-    ui_tooltip = "Controls how quickly the film grain pattern changes over time when 'Enable Time Seed' is active.";
-    ui_type = "slider";
-    ui_min = 0.1;
     ui_max = 1.0;
+    ui_min = 0.1;
+    ui_type = "slider";
+    ui_tooltip = "Controls how quickly the film grain pattern changes over time when 'Enable Time Seed' is active.";
 > = 0.5;
 
 uniform float _GrainScale <
     ui_category = "Main Shader";
-    ui_text = " ";
     ui_label = "Grain Size";
-    ui_tooltip = "Adjusts the size of the individual grain particles. Smaller values result in finer grain.";
-    ui_type = "slider";
-    ui_min = 0.01;
     ui_max = 20.0;
+    ui_min = 0.01;
+    ui_text = " ";
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the size of the individual grain particles. Smaller values result in finer grain.";
 > = 0.01;
 
 uniform float _GrainAmount <
     ui_category = "Main Shader";
     ui_label = "Grain Intensity";
-    ui_tooltip = "Determines the visibility and intensity of the film grain effect.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 20.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Determines the visibility and intensity of the film grain effect.";
 > = 0.35;
 
 uniform float _ChromAb <
     ui_category = "Main Shader";
     ui_label = "Chromatic Aberration Strength";
-    ui_tooltip = "Controls the strength of chromatic aberration, which creates color fringing around high-contrast edges.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 20.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Controls the strength of chromatic aberration, which creates color fringing around high-contrast edges.";
 > = 1.65;
 
 uniform float _Vignette <
     ui_category = "Main Shader";
     ui_label = "Vignette Intensity";
-    ui_tooltip = "Adjusts the intensity of the vignette effect, darkening the edges of the screen.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 2.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the intensity of the vignette effect, darkening the edges of the screen.";
 > = 0.6;
 
 #include "shared/cShadeHDR.fxh"

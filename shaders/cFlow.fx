@@ -10,28 +10,28 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
-    ui_label = "Display Mode";
-    ui_tooltip = "Selects the visual output mode for optical flow, including normalized or renormalized shading, and different Line Integral Convolution (LIC) visualizations.";
-    ui_type = "combo";
     ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
+    ui_label = "Display Mode";
+    ui_type = "combo";
+    ui_tooltip = "Selects the visual output mode for optical flow, including normalized or renormalized shading, and different Line Integral Convolution (LIC) visualizations.";
 > = 0;
 
 uniform float _MipBias <
     ui_category = "Main Shader";
     ui_label = "Optical Flow Mipmap Level";
-    ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 7.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
 > = 0.0;
 
 uniform float _BlendFactor <
     ui_category = "Main Shader";
     ui_label = "Flow Temporal Smoothing";
-    ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 0.9;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
 > = 0.45;
 
 #include "shared/cShadeHDR.fxh"
@@ -43,10 +43,10 @@ uniform float _BlendFactor <
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\n";
     ui_category_closed = false;
+    ui_label = " ";
+    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_type = "radio";
 > = 0;
 
 /*

@@ -53,6 +53,7 @@ uniform float _Roll <
 uniform bool _Symmetry <
     ui_category = "Main Shader";
     ui_label = "Symmetrical Mirroring";
+    ui_type = "radio";
     ui_tooltip = "When enabled, the mirrored pattern will be symmetrical; otherwise, it will be a repeating pattern.";
 > = true;
 

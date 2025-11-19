@@ -35,62 +35,62 @@
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
+    ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
     ui_label = "Display Mode";
     ui_type = "combo";
-    ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
     ui_tooltip = "Controls how the contour effect is displayed, including various debug visualizations of gradients and magnitudes.";
 > = 0;
 
 uniform int _WeightMode <
     ui_category = "Main Shader";
+    ui_items = "Color\0Luma\0";
     ui_label = "Edge Detection Method";
     ui_type = "combo";
-    ui_items = "Color\0Luma\0";
     ui_tooltip = "Selects whether edge detection is based on color differences or luminance differences.";
 > = 0;
 
 uniform float _LowerThreshold <
     ui_category = "Main Shader";
     ui_label = "Lower Edge Threshold";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Sets the minimum gradient magnitude required for a pixel to be considered part of a contour.";
 > = 0.05;
 
 uniform float _UpperThreshold <
     ui_category = "Main Shader";
     ui_label = "Upper Edge Threshold";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Sets the maximum gradient magnitude for a pixel to be considered part of a contour, used in conjunction with the lower threshold.";
 > = 0.5;
 
 uniform float _ColorSensitivity <
     ui_category = "Main Shader";
     ui_label = "Color Difference Sensitivity";
-    ui_type = "slider";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "slider";
     ui_tooltip = "Controls how sensitive the edge detection algorithm is to color differences when determining contours.";
 > = 0.5;
 
 uniform float4 _FrontColor <
     ui_category = "Main Shader";
     ui_label = "Contour Line Color";
-    ui_type = "color";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "color";
     ui_tooltip = "Sets the color of the detected contour lines.";
 > = float4(1.0, 1.0, 1.0, 1.0);
 
 uniform float4 _BackColor <
     ui_category = "Main Shader";
     ui_label = "Background Color";
-    ui_type = "color";
-    ui_min = 0.0;
     ui_max = 1.0;
+    ui_min = 0.0;
+    ui_type = "color";
     ui_tooltip = "Sets the background color that appears behind the contour lines.";
 > = float4(0.0, 0.0, 0.0, 0.0);
 
@@ -101,10 +101,10 @@ uniform float4 _BackColor <
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nEDGE_DETECTION_KERNEL - Edge Detection Kernel.\n\n\tOptions:\n\n\t\t0 (ddx, ddy)\n\t\t1 (Sobel Bilinear 3x3)\n\t\t2 (Prewitt Bilinear 5x5)\n\t\t3 (Sobel Bilinear 5x5)\n\t\t4 (Prewitt Bilinear 3x3)\n\t\t5 (Scharr Bilinear 3x3)\n\t\t6 (Frei-Chen)\n\n";
     ui_category_closed = false;
+    ui_label = " ";
+    ui_text = "\nEDGE_DETECTION_KERNEL - Edge Detection Kernel.\n\n\tOptions:\n\n\t\t0 (ddx, ddy)\n\t\t1 (Sobel Bilinear 3x3)\n\t\t2 (Prewitt Bilinear 5x5)\n\t\t3 (Sobel Bilinear 5x5)\n\t\t4 (Prewitt Bilinear 3x3)\n\t\t5 (Scharr Bilinear 3x3)\n\t\t6 (Frei-Chen)\n\n";
+    ui_type = "radio";
 > = 0;
 
 /*

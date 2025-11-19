@@ -8,32 +8,32 @@
 
 uniform int _ColorBlend <
     ui_category = "Main Shader";
-    ui_label = "Color Blending Mode";
-    ui_tooltip = "Selects the blending mode to combine colors from the source and destination. This affects how colors interact.";
-    ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
+    ui_label = "Color Blending Mode";
+    ui_type = "combo";
+    ui_tooltip = "Selects the blending mode to combine colors from the source and destination. This affects how colors interact.";
 > = 0;
 
 uniform int _AlphaBlend <
     ui_category = "Main Shader";
-    ui_label = "Alpha Blending Mode";
-    ui_tooltip = "Selects the blending mode to combine alpha (transparency) values from the source and destination. This affects how transparency interacts.";
-    ui_type = "combo";
     ui_items = "Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0";
+    ui_label = "Alpha Blending Mode";
+    ui_type = "combo";
+    ui_tooltip = "Selects the blending mode to combine alpha (transparency) values from the source and destination. This affects how transparency interacts.";
 > = 0;
 
 uniform float3 _SrcFactor <
     ui_category = "Main Shader";
     ui_label = "Source Color Influence";
-    ui_tooltip = "Adjusts the influence of the source color (the color being applied) during blending. Higher values mean more of the source color is used.";
     ui_type = "drag";
+    ui_tooltip = "Adjusts the influence of the source color (the color being applied) during blending. Higher values mean more of the source color is used.";
 > = 1.0;
 
 uniform float3 _DestFactor <
     ui_category = "Main Shader";
     ui_label = "Destination Color Influence";
-    ui_tooltip = "Adjusts the influence of the destination color (the color already present) during blending. Higher values mean more of the existing color is retained.";
     ui_type = "drag";
+    ui_tooltip = "Adjusts the influence of the destination color (the color already present) during blending. Higher values mean more of the existing color is retained.";
 > = 1.0;
 
 #include "shared/cShadeHDR.fxh"
