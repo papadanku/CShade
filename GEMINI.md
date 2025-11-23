@@ -53,12 +53,12 @@ To "run" these shaders:
 
 ## Instructions
 
-@./gemini/Instructions.md
+@./.gemini/Instructions.md
 
 ## Knowledge
 
-@./gemini/Examples.txt
+@./.gemini/Examples.txt
 
-@./gemini/REFERENCE.md
+@./.gemini/REFERENCE.md
 
-@./gemini/ReShade.fxh
+@./.gemini/ReShade.fxh
