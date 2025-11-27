@@ -182,7 +182,7 @@ CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPLING, SH
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -264,7 +264,7 @@ float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
     const float Pi2 = CMath_GetPi() * 2.0;
     CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale, true);
 
-    return CShadeHDR_Tex2D_InvTonemap(SampleStableTex, StableTex);
+    return CShadeHDR_GetBackBuffer(SampleStableTex, StableTex);
 }
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -280,7 +280,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
     float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
 
-    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float4 Image = tex2Dlod(SampleCosmeticTex, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
     float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);

@@ -113,7 +113,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
 // Bloom-specific functions
 void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float Luminance = 1.0;
 
     // Apply auto exposure to the backbuffer
@@ -121,7 +121,7 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         // Store log luminance in the alpha channel
         if (_CCamera_MeteringType == 1)
         {
-            float3 ColorArea = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, CCamera_GetSpotMeterTex(Input.Tex0)).rgb;
+            float3 ColorArea = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, CCamera_GetSpotMeterTex(Input.Tex0)).rgb;
             Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
         }
         else
@@ -183,7 +183,7 @@ CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 BaseColor = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 BaseColor = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color

@@ -154,7 +154,7 @@ CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING, SHADER
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -318,7 +318,7 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
     float Disp = tex2D(SampleAccumTex, Tex).r;
 
     // Color from the original image
-    float4 Work = CShadeHDR_Tex2D_InvTonemap(SampleFeedbackTex, Tex + MV);
+    float4 Work = CShadeHDR_GetBackBuffer(SampleFeedbackTex, Tex + MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
@@ -344,7 +344,7 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 TexSize = fwidth(Input.Tex0);
-    float4 Base = CShadeHDR_Tex2D_InvTonemap(SampleSourceTex, Input.Tex0);
+    float4 Base = CShadeHDR_GetBackBuffer(SampleSourceTex, Input.Tex0);
     float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
 

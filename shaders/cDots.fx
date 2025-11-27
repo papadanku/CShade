@@ -254,7 +254,7 @@ float GetTileCircleLength(Tile Input)
 
 void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    Output = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
 
     #if SHADER_TOGGLE_MONO
         switch(_Select)

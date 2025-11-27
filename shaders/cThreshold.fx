@@ -42,7 +42,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5f);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
 
     // Under-threshold
     float Brightness = CColor_RGBtoLuma(Color.rgb, 3);

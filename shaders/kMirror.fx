@@ -84,7 +84,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Reflection at the border of the screen.
     Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
-    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
 
     Output = CBlend_OutputChannels(Base.rgb, _CShade_AlphaFactor);
 }

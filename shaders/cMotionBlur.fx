@@ -111,7 +111,7 @@ CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAM
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -199,7 +199,7 @@ float3 GetMotionBlur(CShade_VS2PS_Quad Input, float2 MotionVectors)
         float Random = (_BlurDirection == 1) ? CMath_UNORMtoSNORM_FLT1(Noise) : Noise;
         float MotionMultiplier = (float(i) + Random) / float(Samples - 1);
         float2 LocalTex = Input.Tex0 - (ScaledMotionVectors * MotionMultiplier);
-        float4 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, LocalTex);
+        float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, LocalTex);
         if (_BlurAccumuation == 1)
         {
             OutputColor = max(Color, OutputColor);
@@ -222,7 +222,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Input.Tex0 = Grid.Frac;
     }
 
-    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     float3 ShaderOutput = GetMotionBlur(Input, MotionVectors);
 
