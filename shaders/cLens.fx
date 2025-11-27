@@ -146,7 +146,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Lens
 <
-    ui_label = "CShade · AMD FidelityFX · Lens";
+    ui_label = "CShade / AMD FidelityFX / Lens";
     ui_tooltip = "AMD FidelityFX Lens.";
 >
 {

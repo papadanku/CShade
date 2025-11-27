@@ -270,7 +270,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposure
 <
-    ui_label = "CShade · Auto Exposure";
+    ui_label = "CShade / Auto Exposure";
     ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.";
 >
 {

@@ -317,7 +317,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_MotionStabilization
 <
-    ui_label = "CShade · Motion Stabilization";
+    ui_label = "CShade / Motion Stabilization";
     ui_tooltip = "Motion stabilization effect.";
 >
 {

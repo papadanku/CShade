@@ -234,7 +234,7 @@ technique GenerateNoise <
 
 technique CShade_Flow
 <
-    ui_label = "CShade · Optical Flow";
+    ui_label = "CShade / Optical Flow";
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {

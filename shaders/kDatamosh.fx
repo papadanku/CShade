@@ -366,7 +366,7 @@ void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_KinoDatamosh
 <
-    ui_label = "CShade · Keijiro Takahashi · KinoDatamosh";
+    ui_label = "CShade / Keijiro Takahashi / KinoDatamosh";
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
