@@ -23,7 +23,7 @@ uniform int _Select <
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 Color = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
 
     // Initialize

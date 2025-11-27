@@ -168,7 +168,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     // Initialize variables for Output
-    float4 Base = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0.xy);
+    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0.xy);
     float4 OutputColor = Base;
 
     switch (_DisplayMode)

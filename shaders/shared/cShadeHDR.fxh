@@ -14,7 +14,7 @@
         ui_items = "None\0Reinhard [Inverse]\0Reinhard Squared [Inverse]\0AMD Resolve [Inverse]\0Logarithmic C [Decode]\0";
     > = 0;
 
-    float4 CShadeHDR_Tex2D_InvTonemap(sampler Source, float2 Tex)
+    float4 CShadeHDR_GetBackBuffer(sampler Source, float2 Tex)
     {
         return CColor_ApplyInverseTonemap(tex2D(Source, Tex), _CShade_InverseTonemapper);
     }

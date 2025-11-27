@@ -56,7 +56,7 @@ CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAM
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Input.Tex0);
+    Output = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
 }
 
 void PS_Blend(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)

@@ -74,11 +74,11 @@ CAS GetDiamondCAS(float2 Tex, float2 Delta)
 
     float4 Tex0 = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
     float4 Tex1 = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-    O.Sample[0] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex);
-    O.Sample[1] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.xy);
-    O.Sample[2] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex0.zw);
-    O.Sample[3] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xy);
-    O.Sample[4] = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.zw);
+    O.Sample[0] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex);
+    O.Sample[1] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.xy);
+    O.Sample[2] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.zw);
+    O.Sample[3] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xy);
+    O.Sample[4] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.zw);
 
     // Get polar min/max
     O.MinRGB = min(O.Sample[0], min(min(O.Sample[1], O.Sample[2]), min(O.Sample[3], O.Sample[4])));
@@ -100,15 +100,15 @@ CAS GetBoxCAS(float2 Tex, float2 Delta)
         4 5 6
         7 8 9
     */
-    float4 Sample1 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xy);
-    float4 Sample2 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xz);
-    float4 Sample3 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex1.xw);
-    float4 Sample4 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xy);
-    float4 Sample5 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xz);
-    float4 Sample6 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex2.xw);
-    float4 Sample7 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xy);
-    float4 Sample8 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xz);
-    float4 Sample9 = CShadeHDR_Tex2D_InvTonemap(CShade_SampleColorTex, Tex3.xw);
+    float4 Sample1 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xy);
+    float4 Sample2 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xz);
+    float4 Sample3 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xw);
+    float4 Sample4 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xy);
+    float4 Sample5 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xz);
+    float4 Sample6 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xw);
+    float4 Sample7 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xy);
+    float4 Sample8 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xz);
+    float4 Sample9 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xw);
 
     // Get polar min/max
     float4 Min1 = min(Sample5, min(min(Sample2, Sample4), min(Sample6, Sample8)));
