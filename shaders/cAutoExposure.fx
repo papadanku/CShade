@@ -230,6 +230,7 @@ void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
     Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
+    Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
 }
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -270,7 +271,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposure
 <
-    ui_label = "CShade · Auto Exposure";
+    ui_label = "CShade / Auto Exposure";
     ui_tooltip = "Adjustable, lightweight auto exposure with optional color-grading.";
 >
 {

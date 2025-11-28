@@ -107,6 +107,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
     {
         float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
         Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
+        Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
     }
 #endif
 
@@ -226,7 +227,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade · Auto Exposure & Bloom";
+    ui_label = "CShade / Auto Exposure & Bloom";
     ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.";
 >
 {

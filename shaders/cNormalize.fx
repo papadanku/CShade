@@ -100,7 +100,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Normalize
 <
-    ui_label = "CShade · Normalize";
+    ui_label = "CShade / Normalize";
     ui_tooltip = "Local normalization algorithms.";
 >
 {
