@@ -107,6 +107,7 @@ CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, 
     {
         float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
         Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
+        Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
     }
 #endif
 
