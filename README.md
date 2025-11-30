@@ -68,15 +68,15 @@ This project supports AI-assisted programming through the Gemini CLI. The Gemini
 
 #### How to Use
 
-1.  **Install Gemini CLI:** Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
-2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
+1. **Install Gemini CLI**: Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
+2. **Navigate to Project Root**: Open your terminal or command prompt and navigate to the root directory of the CShade project:
 
     ```bash
     cd C:\Users\papadanku\Documents\GitHub\CShade
     ```
 
-3.  **Start Gemini CLI:** Launch the Gemini CLI.
-4.  **Interact with the AI:** You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
+3. **Start Gemini CLI**: Launch the Gemini CLI.
+4. **Interact with the AI**: You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
 
     - "Explain the `cMotionBlur.fx` shader."
     - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
@@ -120,10 +120,10 @@ For more detailed information on Gemini CLI capabilities and usage, refer to the
 
 #### GitHub Contributors
 
-- **Overall:** 0CCULTIST
-- **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
-- **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
-- **Asked Questions:** R0nBurgandy, lapsio
+- **Overall**: 0CCULTIST
+- **Reported Bugs**: Jakey757, simonedibilio, WardedPredator
+- **Submitted Ideas**: mrjoshisattvablack, liuxd17thu, Maximus961
+- **Asked Questions**: R0nBurgandy, lapsio
 
 ## Coding Convention
 
@@ -237,7 +237,7 @@ uniform float _CShadeExposureSmoothingSpeed <
 
 ### Virtual-Key Codes
 
-> **See also:** https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+> **See also**: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
 Constant | Value | Description
 -------- | ----- | -----------

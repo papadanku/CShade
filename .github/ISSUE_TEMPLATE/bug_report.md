@@ -20,7 +20,7 @@ Steps to reproduce the behavior:
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Information (please complete the following information):**
+**Information (please complete the following information)**:
  - Game: [e.g. Battlefield 2]
  - API: [e.g. DX9]
  - ReShade Version: [e.g. 1.0]
