@@ -1,4 +1,4 @@
-#define CSHADE_SIGHT
+#define CSHADE_LAYER
 
 #include "cLayer.fxh"
 
