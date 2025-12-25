@@ -9,11 +9,11 @@
 #endif
 
 // Output in cCopyBuffer
-CREATE_TEXTURE_POOLED(SrcTex, BUFFER_SIZE_0, FORMAT, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SrcTex, CSHADE_BUFFER_SIZE_0, FORMAT, 1)
 
 // Inputs in cBlendBuffer
-CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 struct InstanceSettings
 {
@@ -92,13 +92,13 @@ void PS_Blend(
 #define CLAYER_CREATE_SHADER_COPY(index) \
     technique cLayer_CopyLayer##index \
     < \
-        ui_label = TO_STRING(CShade / Copy Layer index); \
+        ui_label = CSHADE_TO_STRING(CShade / Copy Layer index); \
         ui_tooltip = "Writes the current output into a temporary, RGBA8 texture for blending with a cLayer_BlendLayer shader.\n\n[!] Required for cLayer_BlendLayer shader."; \
     > \
     { \
         pass \
         { \
-            SRGBWriteEnable = WRITE_SRGB; \
+            SRGBWriteEnable = CSHADE_WRITE_SRGB; \
             \
             VertexShader = CShade_VS_Quad; \
             PixelShader = PS_Copy; \
@@ -109,7 +109,7 @@ void PS_Blend(
 #define CLAYER_CREATE_SHADER_BLEND(index) \
     uniform int _AlphaType_##index < \
         ui_category_closed = true; \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_text = "Blending Settings"; \
         ui_items = "Existing Alpha\0Constant (0.5)\0"; \
         ui_label = "Alpha Mode"; \
@@ -118,7 +118,7 @@ void PS_Blend(
     > = 0; \
     \
     uniform int _ColorBlendType_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_items = "None\0Alpha Weighted\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0"; \
         ui_label = "Color Blending Mode"; \
         ui_type = "combo"; \
@@ -126,7 +126,7 @@ void PS_Blend(
     > = 0; \
     \
     uniform int _AlphaBlendType_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_items = "None\0Normal\0Multiply\0Screen\0Overlay\0Darken\0Lighten\0Color Dodge\0Color Burn\0Hard Light\0Soft Light\0Difference\0Exclusion\0"; \
         ui_label = "Alpha Blending Mode"; \
         ui_type = "combo"; \
@@ -134,21 +134,21 @@ void PS_Blend(
     > = 0; \
     \
     uniform float4 _SrcFactor_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Source RGBA Influence"; \
         ui_type = "drag"; \
         ui_tooltip = "Adjusts the influence of the source RGBA (the RGBA being applied) during blending. Higher values mean more of the source RGBA is used."; \
     > = 1.0; \
     \
     uniform float4 _DestFactor_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Destination RGBA Influence"; \
         ui_type = "drag"; \
         ui_tooltip = "Adjusts the influence of the destination RGBA (the RGBA already present) during blending. Higher values mean more of the existing RGBA is retained."; \
     > = 1.0; \
     \
     uniform int _SrcTransformOrder_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_text = "Transformation Settings / Source Image"; \
         ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0"; \
         ui_label = "Transform Order"; \
@@ -157,28 +157,28 @@ void PS_Blend(
     > = 0; \
     \
     uniform float _SrcAngle_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Rotation Angle"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the rotation of the mask around its center."; \
     > = 0.0; \
     \
     uniform float2 _SrcTranslate_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Translation"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the horizontal and vertical translation (position) of the mask."; \
     > = 0.0; \
     \
     uniform float2 _SrcScale_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Scale"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the horizontal and vertical scaling of the mask."; \
     > = 1.0; \
     \
     uniform int _DestTransformOrder_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_text = "Transformation Settings / Destination Image"; \
         ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0"; \
         ui_label = "Transform Order"; \
@@ -187,21 +187,21 @@ void PS_Blend(
     > = 0; \
     \
     uniform float _DestAngle_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Rotation Angle"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the rotation of the mask around its center."; \
     > = 0.0; \
     \
     uniform float2 _DestTranslate_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Translation"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the horizontal and vertical translation (position) of the mask."; \
     > = 0.0; \
     \
     uniform float2 _DestScale_##index < \
-        ui_category = TO_STRING(Blend Layer index); \
+        ui_category = CSHADE_TO_STRING(Blend Layer index); \
         ui_label = "Scale"; \
         ui_type = "drag"; \
         ui_tooltip = "Controls the horizontal and vertical scaling of the mask."; \
@@ -228,13 +228,13 @@ void PS_Blend(
     \
     technique cLayer_BlendLayer##index \
     < \
-        ui_label = TO_STRING(CShade / Blend Layer index); \
+        ui_label = CSHADE_TO_STRING(CShade / Blend Layer index); \
         ui_tooltip = "Blend with CBlend's copy texture."; \
     > \
     { \
         pass \
         { \
-            SRGBWriteEnable = WRITE_SRGB; \
+            SRGBWriteEnable = CSHADE_WRITE_SRGB; \
             \
             VertexShader = CShade_VS_Quad; \
             PixelShader = PS_Blend_##index; \
