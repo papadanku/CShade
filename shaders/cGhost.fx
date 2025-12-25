@@ -27,8 +27,8 @@ uniform float _BlendFactor <
     [Textures & Samplers]
 */
 
-CREATE_TEXTURE(PreviousFrame, BUFFER_SIZE_0, FORMAT, 1)
-CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_TEXTURE(PreviousFrame, CSHADE_BUFFER_SIZE_0, FORMAT, 1)
+CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [Pixel Shaders]
@@ -58,7 +58,7 @@ technique CShade_Ghosting
 {
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
@@ -67,7 +67,7 @@ technique CShade_Ghosting
 
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;

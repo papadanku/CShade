@@ -52,7 +52,7 @@ uniform float _Threshold <
 #include "shared/cShadeHDR.fxh"
 #include "shared/cBlend.fxh"
 
-CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
+CSHADE_CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
 
 sampler2D SampleTempTex0
 {
@@ -63,7 +63,7 @@ sampler2D SampleTempTex0
     AddressU = MIRROR;
     AddressV = MIRROR;
     AddressW = MIRROR;
-    SRGBTexture = READ_SRGB;
+    SRGBTexture = CSHADE_READ_SRGB;
 };
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
@@ -161,7 +161,7 @@ technique CShade_Censor
 {
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
@@ -170,7 +170,7 @@ technique CShade_Censor
 
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;

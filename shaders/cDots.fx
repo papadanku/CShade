@@ -171,8 +171,8 @@ uniform int _ShaderPreprocessorGuide <
     [Textures and Samplers]
 */
 
-CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, BUFFER_SIZE_0, RGBA8, 8)
-CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CSHADE_CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
+CSHADE_CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 sampler2D CShade_SampleColorTexMirror
 {
@@ -182,7 +182,7 @@ sampler2D CShade_SampleColorTexMirror
     MipFilter = LINEAR;
     AddressU = MIRROR;
     AddressV = MIRROR;
-    SRGBTexture = READ_SRGB;
+    SRGBTexture = CSHADE_READ_SRGB;
 };
 
 /*
@@ -228,9 +228,9 @@ float GetTileCircleLength(Tile Input)
     float2 CircleTiles = CMath_UNORMtoSNORM_FLT2(Input.Frac);
     // Shrink the UV so [-1, 1] fills a square
     #if BUFFER_WIDTH > BUFFER_HEIGHT
-        CircleTiles.x *= ASPECT_RATIO;
+        CircleTiles.x *= CSHADE_ASPECT_RATIO;
     #else
-        CircleTiles.y *= ASPECT_RATIO;
+        CircleTiles.y *= CSHADE_ASPECT_RATIO;
     #endif
 
     return length(CircleTiles);
@@ -383,7 +383,7 @@ technique CShade_Dots
 
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;

@@ -198,9 +198,9 @@
 
         // Expand the UV so [-1, 1] fills the shape of its input texture instead of output
         #if BUFFER_WIDTH > BUFFER_HEIGHT
-            SpotMeterTex.x /= ASPECT_RATIO;
+            SpotMeterTex.x /= CSHADE_ASPECT_RATIO;
         #else
-            SpotMeterTex.y /= ASPECT_RATIO;
+            SpotMeterTex.y /= CSHADE_ASPECT_RATIO;
         #endif
 
         SpotMeterTex *= _CCamera_SpotMeterScale;
@@ -226,9 +226,9 @@
 
             // Shrink the UV so [-1, 1] fills a square
             #if BUFFER_WIDTH > BUFFER_HEIGHT
-                OverlayPos.x *= ASPECT_RATIO;
+                OverlayPos.x *= CSHADE_ASPECT_RATIO;
             #else
-                OverlayPos.y *= ASPECT_RATIO;
+                OverlayPos.y *= CSHADE_ASPECT_RATIO;
             #endif
 
             // Create the needed mask; output 1 if the texcoord is within square range
@@ -236,9 +236,9 @@
 
             // Shrink the UV so [-1, 1] fills a square
             #if BUFFER_WIDTH > BUFFER_HEIGHT
-                DotPos.x *= ASPECT_RATIO;
+                DotPos.x *= CSHADE_ASPECT_RATIO;
             #else
-                DotPos.y *= ASPECT_RATIO;
+                DotPos.y *= CSHADE_ASPECT_RATIO;
             #endif
             float DotMask = CMath_GetAntiAliasShape(length(DotPos), 0.1);
 

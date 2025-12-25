@@ -1,8 +1,8 @@
 
 #include "cColor.fxh"
 
-#if !defined(INCLUDE_CColor_OUTPUT)
-    #define INCLUDE_CColor_OUTPUT
+#if !defined(INCLUDE_CCOLOR_OUTPUT)
+    #define INCLUDE_CCOLOR_OUTPUT
 
     #ifndef CCOMPOSITE_TOGGLE_GRADING
         #define CCOMPOSITE_TOGGLE_GRADING 1
