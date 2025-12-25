@@ -55,7 +55,6 @@
     #ifndef CBLEND_BLENDENABLE
         #define CBLEND_BLENDENABLE CBLEND_BLENDENABLE_VALUE
     #endif
-
     #ifndef CBLEND_BLENDOP
         #define CBLEND_BLENDOP CBLEND_BLENDOP_VALUE
     #endif
@@ -74,7 +73,6 @@
     #ifndef CBLEND_DESTBLENDALPHA
         #define CBLEND_DESTBLENDALPHA CBLEND_DESTBLENDALPHA_VALUE
     #endif
-
     #ifndef CBLEND_WRITEMASK
         #define CBLEND_WRITEMASK RED + GREEN + BLUE + ALPHA
     #endif

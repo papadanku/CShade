@@ -16,7 +16,7 @@ technique CShade_VerticalBlur
 {
     pass
     {
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;

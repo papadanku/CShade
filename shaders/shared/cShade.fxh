@@ -8,36 +8,37 @@
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 
-    #define GET_EVEN(X) (X + (X & 1))
-    #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
-    #define GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))
+    #define CSHADE_TO_STRING(X) #X
+    #define CSHADE_GET_EVEN(X) (X + (X & 1))
+    #define CSHADE_GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
+    #define CSHADE_GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))
 
-    #define FLT16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
+    #define CSHADE_FLT16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
 
-    #define ASPECT_RATIO float(BUFFER_WIDTH * (1.0 / BUFFER_HEIGHT))
-    #define BUFFER_SIZE_0 int2(BUFFER_WIDTH, BUFFER_HEIGHT)
-    #define BUFFER_SIZE_1 int2(BUFFER_SIZE_0 >> 1)
-    #define BUFFER_SIZE_2 int2(BUFFER_SIZE_0 >> 2)
-    #define BUFFER_SIZE_3 int2(BUFFER_SIZE_0 >> 3)
-    #define BUFFER_SIZE_4 int2(BUFFER_SIZE_0 >> 4)
-    #define BUFFER_SIZE_5 int2(BUFFER_SIZE_0 >> 5)
-    #define BUFFER_SIZE_6 int2(BUFFER_SIZE_0 >> 6)
-    #define BUFFER_SIZE_7 int2(BUFFER_SIZE_0 >> 7)
-    #define BUFFER_SIZE_8 int2(BUFFER_SIZE_0 >> 8)
+    #define CSHADE_ASPECT_RATIO float(BUFFER_WIDTH * (1.0 / BUFFER_HEIGHT))
+    #define CSHADE_BUFFER_SIZE_0 int2(BUFFER_WIDTH, BUFFER_HEIGHT)
+    #define CSHADE_BUFFER_SIZE_1 int2(CSHADE_BUFFER_SIZE_0 >> 1)
+    #define CSHADE_BUFFER_SIZE_2 int2(CSHADE_BUFFER_SIZE_0 >> 2)
+    #define CSHADE_BUFFER_SIZE_3 int2(CSHADE_BUFFER_SIZE_0 >> 3)
+    #define CSHADE_BUFFER_SIZE_4 int2(CSHADE_BUFFER_SIZE_0 >> 4)
+    #define CSHADE_BUFFER_SIZE_5 int2(CSHADE_BUFFER_SIZE_0 >> 5)
+    #define CSHADE_BUFFER_SIZE_6 int2(CSHADE_BUFFER_SIZE_0 >> 6)
+    #define CSHADE_BUFFER_SIZE_7 int2(CSHADE_BUFFER_SIZE_0 >> 7)
+    #define CSHADE_BUFFER_SIZE_8 int2(CSHADE_BUFFER_SIZE_0 >> 8)
 
     #ifndef CSHADE_SRGB_RENDERING
         #define CSHADE_SRGB_RENDERING 1
     #endif
 
     #if CSHADE_SRGB_RENDERING && (BUFFER_COLOR_BIT_DEPTH == 8)
-        #define READ_SRGB TRUE
-        #define WRITE_SRGB TRUE
+        #define CSHADE_READ_SRGB TRUE
+        #define CSHADE_WRITE_SRGB TRUE
     #else
-        #define READ_SRGB FALSE
-        #define WRITE_SRGB FALSE
+        #define CSHADE_READ_SRGB FALSE
+        #define CSHADE_WRITE_SRGB FALSE
     #endif
 
-    #define CREATE_OPTION(DATATYPE, NAME, CATEGORY, LABEL, TYPE, MAXIMUM, DEFAULT) \
+    #define CSHADE_CREATE_OPTION(DATATYPE, NAME, CATEGORY, LABEL, TYPE, MAXIMUM, DEFAULT) \
         uniform DATATYPE NAME < \
             ui_category = CATEGORY; \
             ui_label = LABEL; \
@@ -46,7 +47,7 @@
             ui_max = MAXIMUM; \
         > = DEFAULT;
 
-    #define CREATE_TEXTURE(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
+    #define CSHADE_CREATE_TEXTURE(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
         texture2D TEXTURE_NAME < pooled = false; > \
         { \
             Width = SIZE.x; \
@@ -55,7 +56,7 @@
             MipLevels = LEVELS; \
         };
 
-    #define CREATE_TEXTURE_POOLED(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
+    #define CSHADE_CREATE_TEXTURE_POOLED(TEXTURE_NAME, SIZE, FORMAT, LEVELS) \
         texture2D TEXTURE_NAME < pooled = true; > \
         { \
             Width = SIZE.x; \
@@ -64,7 +65,7 @@
             MipLevels = LEVELS; \
         };
 
-    #define CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+    #define CSHADE_CREATE_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
         { \
             Texture = TEXTURE; \
@@ -76,7 +77,7 @@
             AddressW = ADDRESSW; \
         };
 
-    #define CREATE_SAMPLER_LODBIAS(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW, BIAS) \
+    #define CSHADE_CREATE_SAMPLER_LODBIAS(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW, BIAS) \
         sampler2D SAMPLER_NAME \
         { \
             Texture = TEXTURE; \
@@ -89,7 +90,7 @@
             MipLODBias = BIAS; \
         };
 
-    #define CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
+    #define CSHADE_CREATE_SRGB_SAMPLER(SAMPLER_NAME, TEXTURE, MAGFILTER, MINFILTER, MIPFILTER, ADDRESSU, ADDRESSV, ADDRESSW) \
         sampler2D SAMPLER_NAME \
         { \
             Texture = TEXTURE; \
@@ -99,7 +100,7 @@
             AddressU = ADDRESSU; \
             AddressV = ADDRESSV; \
             AddressW = ADDRESSW; \
-            SRGBTexture = READ_SRGB; \
+            SRGBTexture = CSHADE_READ_SRGB; \
         };
 
     /*
@@ -114,7 +115,7 @@
         MagFilter = LINEAR;
         MinFilter = LINEAR;
         MipFilter = LINEAR;
-        SRGBTexture = READ_SRGB;
+        SRGBTexture = CSHADE_READ_SRGB;
     };
 
     sampler2D CShade_SampleGammaTex

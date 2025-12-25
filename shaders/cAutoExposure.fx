@@ -213,8 +213,8 @@ uniform int _ShaderPreprocessorGuide <
     [ Textures & Samplers ]
 */
 
-CREATE_TEXTURE(ExposureTex, int2(256, 256), R16F, 9)
-CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_TEXTURE(ExposureTex, int2(256, 256), R16F, 9)
+CSHADE_CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /*
     [ Pixel Shaders ]
@@ -291,7 +291,7 @@ technique CShade_AutoExposure
     pass Composition
     {
         ClearRenderTargets = FALSE;
-        SRGBWriteEnable = WRITE_SRGB;
+        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
