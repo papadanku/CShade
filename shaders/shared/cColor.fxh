@@ -26,9 +26,9 @@
         https://printtechnologies.org/standards/files/pdf-reference-1.6-addendum-blend-modes.pdf
     */
 
-    float3 CColor_BlendNormal(float3 B, float3 S)
+    float3 CColor_BlendAlpha(float4 B, float4 S)
     {
-        return S;
+        return (B.rgb * B.a) + (S.rgb * S.a);
     }
 
     float3 CColor_BlendMultiply(float3 B, float3 S)
@@ -95,36 +95,36 @@
         return B + S - 2.0 * B * S;
     }
 
-    float3 CColor_Blend(float3 B, float3 S, int Blend)
+    float3 CColor_Blend(float4 B, float4 S, int Blend)
     {
         switch (Blend)
         {
-            case 0: // Normal
-                return CColor_BlendNormal(B, S);
-            case 1: // Multiply
-                return CColor_BlendMultiply(B, S);
-            case 2: // Screen
-                return CColor_BlendScreen(B, S);
-            case 3: // Overlay
-                return CColor_BlendOverlay(B, S);
-            case 4: // Darken
-                return CColor_BlendDarken(B, S);
-            case 5: // Lighten
-                return CColor_BlendLighten(B, S);
-            case 6: // Color Dodge
-                return CColor_BlendColorDodge(B, S);
-            case 7: // Color Burn
-                return CColor_BlendColorBurn(B, S);
-            case 8: // Hard Light
-                return CColor_BlendHardLight(B, S);
-            case 9: // Soft Light
-                return CColor_BlendSoftLight(B, S);
-            case 10: // Difference
-                return CColor_BlendDifference(B, S);
-            case 11: // Exclusion
-                return CColor_BlendExclusion(B, S);
+            case 1: // Normal
+                return CColor_BlendAlpha(B, S);
+            case 2: // Multiply
+                return CColor_BlendMultiply(B.rgb, S.rgb);
+            case 3: // Screen
+                return CColor_BlendScreen(B.rgb, S.rgb);
+            case 4: // Overlay
+                return CColor_BlendOverlay(B.rgb, S.rgb);
+            case 5: // Darken
+                return CColor_BlendDarken(B.rgb, S.rgb);
+            case 6: // Lighten
+                return CColor_BlendLighten(B.rgb, S.rgb);
+            case 7: // Color Dodge
+                return CColor_BlendColorDodge(B.rgb, S.rgb);
+            case 8: // Color Burn
+                return CColor_BlendColorBurn(B.rgb, S.rgb);
+            case 9: // Hard Light
+                return CColor_BlendHardLight(B.rgb, S.rgb);
+            case 10: // Soft Light
+                return CColor_BlendSoftLight(B.rgb, S.rgb);
+            case 11: // Difference
+                return CColor_BlendDifference(B.rgb, S.rgb);
+            case 12: // Exclusion
+                return CColor_BlendExclusion(B.rgb, S.rgb);
             default:
-                return CColor_BlendNormal(B, S);
+                return S.rgb;
         }
     }
 

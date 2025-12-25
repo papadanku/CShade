@@ -8,6 +8,7 @@
         https://graphics.stanford.edu/~seander/bithacks.html
     */
 
+    #define TO_STRING(X) #X
     #define GET_EVEN(X) (X + (X & 1))
     #define GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
     #define GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))
