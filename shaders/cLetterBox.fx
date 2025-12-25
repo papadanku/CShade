@@ -62,6 +62,9 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 #ifndef CBLEND_BLENDOP
     #define CBLEND_BLENDOP ADD
 #endif
+#ifndef CBLEND_BLENDOPALPHA
+    #define CBLEND_BLENDOPALPHA ADD
+#endif
 #ifndef CBLEND_SRCBLEND
     #define CBLEND_SRCBLEND DESTCOLOR
 #endif

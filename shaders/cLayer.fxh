@@ -2,10 +2,8 @@
 #include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 
-#if BUFFER_COLOR_BIT_DEPTH == 8
+#ifndef CLAYER_BUFFER_FORMAT
     #define FORMAT RGBA8
-#else
-    #define FORMAT RGB10A2
 #endif
 
 // Output in cCopyBuffer
@@ -34,7 +32,7 @@ struct InstanceSettings
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2D(CShade_SampleGammaTex, Input.Tex0);
 }
 
 void PS_Blend(
@@ -98,8 +96,6 @@ void PS_Blend(
     { \
         pass \
         { \
-            SRGBWriteEnable = CSHADE_WRITE_SRGB; \
-            \
             VertexShader = CShade_VS_Quad; \
             PixelShader = PS_Copy; \
             RenderTarget0 = SrcTex; \
