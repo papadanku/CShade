@@ -36,7 +36,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 technique CShade_Grading
 <
     ui_label = "CShade / Color Grade";
-    ui_tooltip = "Adjustable standalone color grading effect.";
+    ui_tooltip = "Standalone, adjustable color grading effect.";
 >
 {
     pass

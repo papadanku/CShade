@@ -6,10 +6,31 @@
     [Shader Options]
 */
 
-uniform int _Select <
-    ui_category = "Main Shader";
+uniform int _DisplayMode <
+    ui_items = "Chrominance | Luminance\0Luminance | Chrominance\0Chrominance Only\0Luminance Only\0";
+    ui_label = "Displayed Space";
+    ui_type = "combo";
+    ui_tooltip = "Selects the output mode: either the chrominance or luminance planes.";
+> = 0;
+
+uniform float _SplitBias <
+    ui_label = "Split Bias";
+    ui_type = "slider";
+    ui_min = 0.0;
+    ui_max = 1.0;
+    ui_tooltip = "Adjusts the split bias for certain display modes.";
+> = 0.5;
+
+uniform int _GraySpace <
+    ui_items = "Average\0Min\0Median\0Max\0Length\0Min+Max\0None\0";
+    ui_label = "Luminance Space";
+    ui_type = "combo";
+    ui_tooltip = "Chooses the method used to convert the color image to grayscale, based on different luminance calculation techniques.";
+> = 0;
+
+uniform int _ChromaSpace <
     ui_items = "Length / XY\0Length / XYZ\0Average / XY\0Average / XYZ\0Sum / XY\0Sum / XYZ\0Max / XY\0Max / XYZ\0Ratio / XY\0Spherical / XY\0Hue-Saturation / HSI\0Hue-Saturation / HSL\0Hue-Saturation / HSV\0YCoCg / XY\0OKLab / AB\0OKLch / CH\0";
-    ui_label = "Chromaticity Calculation Method";
+    ui_label = "Chromaticity Space";
     ui_type = "combo";
     ui_tooltip = "Chooses the method for calculating and displaying chromaticity, which represents the color's purity and hue independent of brightness.";
 > = 0;
@@ -21,15 +42,11 @@ uniform int _Select <
     [Pixel Shaders]
 */
 
-void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+float3 DiplayChromaSpace(float4 Color, float4 Gamma)
 {
-    float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
-    float3 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0).rgb;
+    float3 Output = float3(0.0, 0.0, 0.0);
 
-    // Initialize
-    Output = float4(0.0, 0.0, 0.0, 1.0);
-
-    switch(_Select)
+    switch(_ChromaSpace)
     {
         case 0: // Length (XY)
             Output.rg = CColor_RGBtoChromaticityRGB(Color, 0).rg;
@@ -88,13 +105,44 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
+    return Output;
+}
+
+void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+{
+    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0);
+
+    // Initialize
+    Output = float4(0.0, 0.0, 0.0, 1.0);
+
+    // Precalculate this to avoid branching overload in lower-optimization levels
+    float3 Chroma = DiplayChromaSpace(Color, Gamma);
+    float3 Luma = CColor_RGBtoLuma(Color.rgb, _GraySpace);
+
+    switch (_DisplayMode)
+    {
+        case 0:
+            Output.rgb = lerp(Chroma, Luma, Input.Tex0.x >= _SplitBias);
+            break;
+        case 1:
+            Output.rgb = lerp(Luma, Chroma, Input.Tex0.x >= _SplitBias);
+            break;
+        case 2:
+            Output.rgb = Chroma;
+            break;
+        case 3:
+            Output.rgb = Luma;
+            break;
+    }
+
     Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
 }
 
 technique CShade_Chromaticity
 <
-    ui_label = "CShade / Chromaticity";
-    ui_tooltip = "Adjustable chromaticity effect.";
+    ui_label = "CShade / Display Color Spaces";
+    ui_tooltip = "Effect displays various grayscale or chromaticity spaces.";
 >
 {
     pass
