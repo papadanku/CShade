@@ -370,7 +370,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Dots
 <
-    ui_label = "CShade / Dots";
+    ui_label = "CShade / Dots [+]";
     ui_tooltip = "Creates circles based on image features.\n\n[+] This shader has a monotone version (SHADER_TOGGLE_MONO).";
 >
 {

@@ -7,6 +7,19 @@ CShade is an HLSL shader collection for ReShade. CShade introduces conventional 
 
 CShade also includes `.fxh` files that contain algorithms used in the collection or have potential use.
 
+## Important Note 
+
+CShade shaders have markers that signify important notes about the shader.
+
+* [D] **Depth Buffer**: Needs depth access.
+* [&] **Linked**: Needs another shader enabled first.
+* [+] **Preprocessor**: Extra features via **`Preprocessor definitions`**.
+* [!] **Caution**: Major limitations or breaking changes.
+* [?] **Info**: General notes or tips.
+* [$] **Expensive**: High performance demand.
+
+For example, if you see `CShade / Extremely Expensive Shader [D] [!]`, it means this shader requires access to the depth buffer and has critical limitations. The included markers provide quick reference to these specific requirements and cautions.
+
 ## Features
 
 ### Inter-Shader Merging
@@ -25,21 +38,10 @@ CShade features shaders that deal with getting information about an image.
     - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
     - [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/)
     - [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
-- Anti-aliasing
-    - [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing)
-    - [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
-- Color conversions
-    - Chromaticity spaces
-    - Cylindrical color spaces
-    - Polar color spaces
-    - Grayscale
-- Convolutions
-    - Gaussian blur
-    - Edge detection
-    - Hierarchical (joint) bilateral upsampling
-- Local normalization
-    - Census transform
-    - Local contrast normalization
+- **Anti-aliasing**: [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing), [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
+- **Color conversions**: Chromaticity Spaces, Cylindrical Color Spaces, Polar Color Spaces, Grayscale
+- **Convolutions**: Gaussian Blur, Edge Detection, Hierarchical (Joint) Bilateral Upsampling
+- **Local normalization**: Census Transform, Local Contrast Normalization
 
 ### Video Processing
 
@@ -68,15 +70,15 @@ This project supports AI-assisted programming through the Gemini CLI. The Gemini
 
 #### How to Use
 
-1.  **Install Gemini CLI:** Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
-2.  **Navigate to Project Root:** Open your terminal or command prompt and navigate to the root directory of the CShade project:
+1.  **Install Gemini CLI**: Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
+2.  **Navigate to Project Root**: Open your terminal or command prompt and navigate to the root directory of the CShade project:
 
     ```bash
     cd C:\Users\papadanku\Documents\GitHub\CShade
     ```
 
-3.  **Start Gemini CLI:** Launch the Gemini CLI.
-4.  **Interact with the AI:** You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
+3.  **Start Gemini CLI**: Launch the Gemini CLI.
+4.  **Interact with the AI**: You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
 
     - "Explain the `cMotionBlur.fx` shader."
     - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
@@ -124,6 +126,8 @@ For more detailed information on Gemini CLI capabilities and usage, refer to the
 - **Reported Bugs:** Jakey757, simonedibilio, WardedPredator
 - **Submitted Ideas:** mrjoshisattvablack, liuxd17thu, Maximus961
 - **Asked Questions:** R0nBurgandy, lapsio
+
+# Advanced Documentation
 
 ## Coding Convention
 

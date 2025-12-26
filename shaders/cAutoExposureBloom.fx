@@ -8,10 +8,6 @@
     [ Shader Options ]
 */
 
-#ifndef SHADER_TOGGLE_AUTOEXPOSURE
-    #define SHADER_TOGGLE_AUTOEXPOSURE 1
-#endif
-
 // Bloom-specific settings
 uniform int _BloomRenderMode <
     ui_category = "Main Shader";
@@ -50,10 +46,18 @@ uniform float _BloomIntensity <
 > = 0.5;
 
 #include "shared/cShadeHDR.fxh"
-#if SHADER_TOGGLE_AUTOEXPOSURE
-    uniform float _Frametime < source = "frametime"; >;
-    #include "shared/cCamera.fxh"
+
+#ifndef CCAMERA_TOGGLE_AUTO_EXPOSURE
+    #define CCAMERA_TOGGLE_AUTO_EXPOSURE 1
+
+    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        uniform float _Frametime < source = "frametime"; >;
+
+        #define CCAMERA_TOGGLE_EXPOSURE_PEAKING 1
+        #include "shared/cCamera.fxh"
+    #endif
 #endif
+
 #include "shared/cComposite.fxh"
 #include "shared/cBlend.fxh"
 
@@ -61,7 +65,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
     ui_category_closed = false;
     ui_label = " ";
-    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
+    ui_text = "\nCCAMERA_TOGGLE_AUTO_EXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_type = "radio";
 > = 0;
 
@@ -90,7 +94,7 @@ CSHADE_CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, LINEAR, LINEAR, 
 CSHADE_CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-#if SHADER_TOGGLE_AUTOEXPOSURE
+#if CCAMERA_TOGGLE_AUTO_EXPOSURE
     CSHADE_CREATE_TEXTURE(BloomExposureTex, int2(1, 1), R16F, 0)
     CSHADE_CREATE_SAMPLER(SampleBloomExposureTex, BloomExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
@@ -102,7 +106,7 @@ CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, 
     Tonemapping | https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */
 
-#if SHADER_TOGGLE_AUTOEXPOSURE
+#if CCAMERA_TOGGLE_AUTO_EXPOSURE
     void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
@@ -118,7 +122,7 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Luminance = 1.0;
 
     // Apply auto exposure to the backbuffer
-    #if SHADER_TOGGLE_AUTOEXPOSURE
+    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         // Store log luminance in the alpha channel
         if (_CCamera_MeteringType == 1)
         {
@@ -188,7 +192,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color
-    #if SHADER_TOGGLE_AUTOEXPOSURE
+    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
         Exposure ExposureData = CCamera_GetExposureData(Luma);
         BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
@@ -202,7 +206,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CComposite_ApplyOutput(BaseColor.rgb);
 
     // Apply overlays
-    #if SHADER_TOGGLE_AUTOEXPOSURE
+    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
         CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
         CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
@@ -228,7 +232,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 technique CShade_AutoExposureBloom
 <
     ui_label = "CShade / Auto Exposure & Bloom [+]";
-    ui_tooltip = "Adjustable bloom, auto exposure, and color-grading.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).";
+    ui_tooltip = "Adjustable bloom with auto-exposure.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).";
 >
 {
     // Prefilter
@@ -270,7 +274,7 @@ technique CShade_AutoExposureBloom
         Store the coarsest level of the log luminance pyramid in an accumulation texture.
         We store the coarsest level here to synchronize the auto exposure Luma texture in the PS_Prefilter and PS_Main passes.
     */
-    #if SHADER_TOGGLE_AUTOEXPOSURE
+    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         pass CCamera_CreateExposureTex
         {
             ClearRenderTargets = FALSE;
