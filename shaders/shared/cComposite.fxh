@@ -101,10 +101,12 @@
         > = 2;
     #endif
 
-    float3 CComposite_ApplyOutputTonemap(float3 HDR)
-    {
-        return CColor_ApplyTonemap(HDR, _CComposite_Tonemapper);
-    }
+    #if CCOMPOSITE_TOGGLE_TONEMAP
+        float3 CComposite_ApplyOutputTonemap(float3 HDR)
+        {
+            return CColor_ApplyTonemap(HDR, _CComposite_Tonemapper);
+        }
+    #endif
 
     /*
         John Hable's Minimal Color Grading
@@ -153,77 +155,79 @@
             d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
     */
 
-    void CComposite_ApplyColorGrading(
-        inout float3 Color,
-        in float ExposureBias,
-        in float3 ColorFilter,
-        in float Saturation,
-        in float Contrast,
-        in float3 ShadowColor,
-        in float3 MidtoneColor,
-        in float3 HighlightColor,
-        in float ShadowOffset,
-        in float MidtoneOffset,
-        in float HighlightOffset
-    )
-    {
-        // Constants
-        const float ACEScc_MIDGRAY = 0.4135884;
+    #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
+        void CComposite_ApplyColorGrading(
+            inout float3 Color,
+            in float ExposureBias,
+            in float3 ColorFilter,
+            in float Saturation,
+            in float Contrast,
+            in float3 ShadowColor,
+            in float3 MidtoneColor,
+            in float3 HighlightColor,
+            in float ShadowOffset,
+            in float MidtoneOffset,
+            in float HighlightOffset
+        )
+        {
+            // Constants
+            const float ACEScc_MIDGRAY = 0.4135884;
 
-        // Create controls for Lift/Gamma/Gain
-        float3 LiftC = ShadowColor;
-        float3 GammaC = MidtoneColor;
-        float3 GainC = HighlightColor;
+            // Create controls for Lift/Gamma/Gain
+            float3 LiftC = ShadowColor;
+            float3 GammaC = MidtoneColor;
+            float3 GainC = HighlightColor;
 
-        float AverageLift = dot(LiftC, 1.0 / 3.0);
-        float AverageGamma = dot(GammaC, 1.0 / 3.0);
-        float AverageGain = dot(GainC, 1.0 / 3.0);
+            float AverageLift = dot(LiftC, 1.0 / 3.0);
+            float AverageGamma = dot(GammaC, 1.0 / 3.0);
+            float AverageGain = dot(GainC, 1.0 / 3.0);
 
-        LiftC = LiftC - AverageLift;
-        GammaC = GammaC - AverageGamma;
-        GainC = GainC - AverageGain;
+            LiftC = LiftC - AverageLift;
+            GammaC = GammaC - AverageGamma;
+            GainC = GainC - AverageGain;
 
-        float3 LiftAdjust = 0.0 + (LiftC + ShadowOffset);
-        float3 GainAdjust = 1.0 + (GainC + HighlightOffset);
+            float3 LiftAdjust = 0.0 + (LiftC + ShadowOffset);
+            float3 GainAdjust = 1.0 + (GainC + HighlightOffset);
 
-        float3 MidGrey = 0.5 + (GammaC + MidtoneOffset);
-        float3 H = GainAdjust;
-        float3 S = LiftAdjust;
+            float3 MidGrey = 0.5 + (GammaC + MidtoneOffset);
+            float3 H = GainAdjust;
+            float3 S = LiftAdjust;
 
-        float3 GammaAdjust = log((0.5 - S) / (H - S)) / log(MidGrey);
-        float3 InvGammaAdjust = 1.0 / GammaAdjust;
+            float3 GammaAdjust = log((0.5 - S) / (H - S)) / log(MidGrey);
+            float3 InvGammaAdjust = 1.0 / GammaAdjust;
 
-        // Exposure & Color Filter multiplier
-        float3 ExposureColorFilter = exp2(ExposureBias) * ColorFilter;
-        Color = Color * ExposureColorFilter;
-        
-        // Apply Saturation
-        float Gray = CColor_RGBtoLuma(Color.rgb, 3);
-        Color = Gray + Saturation * (Color - Gray);
+            // Exposure & Color Filter multiplier
+            float3 ExposureColorFilter = exp2(ExposureBias) * ColorFilter;
+            Color = Color * ExposureColorFilter;
 
-        // Apply Log Contrast
-        Color = CColor_EncodeLogC(Color);
-        Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
-        Color = CColor_DecodeLogC(Color);
-        Color = max(Color, 0.0);
+            // Apply Saturation
+            float Gray = CColor_RGBtoLuma(Color.rgb, 3);
+            Color = Gray + Saturation * (Color - Gray);
 
-        // Apply Filmic Curve
-        Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
+            // Apply Log Contrast
+            Color = CColor_EncodeLogC(Color);
+            Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
+            Color = CColor_DecodeLogC(Color);
+            Color = max(Color, 0.0);
 
-        // Apply Display Gamma
-        Color = CColor_RGBtoSRGB(float4(Color, 0.0)).rgb;
+            // Apply Filmic Curve
+            Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
 
-        // Apply Lift-Gamma-Gain
-        float3 Weight = pow(abs(Color), InvGammaAdjust);
-        Color = lerp(LiftAdjust, GainAdjust, Weight);
+            // Apply Display Gamma
+            Color = CColor_RGBtoSRGB(float4(Color, 0.0)).rgb;
 
-        // Apply Linear Gamma
-        Color = CColor_SRGBtoRGB(float4(Color, 0.0)).rgb;
-    }
+            // Apply Lift-Gamma-Gain
+            float3 Weight = pow(abs(Color), InvGammaAdjust);
+            Color = lerp(LiftAdjust, GainAdjust, Weight);
+
+            // Apply Linear Gamma
+            Color = CColor_SRGBtoRGB(float4(Color, 0.0)).rgb;
+        }
+    #endif
 
     void CComposite_ApplyOutput(inout float3 Color)
     {
-        #if CCOMPOSITE_TOGGLE_GRADING
+        #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
             CComposite_ApplyColorGrading(
                 Color,
                 _CComposite_ExposureBias,

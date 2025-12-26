@@ -119,6 +119,6 @@
 technique cLayer
 <
     ui_label = "CShade / Setup Layer Copy & Blend [!]";
-    ui_tooltip = "Blend with CBlend's copy texture.\n\n[!] Enable to access copy/blend layer shaders.\n[!] Supports up to 8 copy and blend operations.";
+    ui_tooltip = "Blend with CBlend's copy texture.\n\n[!] Enable to access copy/blend layer shaders.\n[!] Supports up to 16 copy and blend operations.";
 >
-{ } 
+{ }
