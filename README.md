@@ -38,12 +38,12 @@ CShade features shaders that deal with getting information about images and vide
 
 CShade shaders have markers that signify important notes about the shader.
 
-* `[D]` **Depth Buffer**: Needs depth access.
-* `[&]` **Linked**: Needs another shader enabled first.
-* `[+]` **Preprocessor**: Extra features via **`Preprocessor definitions`**.
-* `[!]` **Caution**: Major limitations or breaking changes.
-* `[?]` **Info**: General notes or tips.
-* `[$]` **Expensive**: High performance demand.
+- `[D]` **Depth Buffer**: Needs depth access.
+- `[&]` **Linked**: Needs another shader enabled first.
+- `[+]` **Preprocessor**: Extra features via **`Preprocessor definitions`**.
+- `[!]` **Caution**: Major limitations or breaking changes.
+- `[?]` **Info**: General notes or tips.
+- `[$]` **Expensive**: High performance demand.
 
 For example, if you see `CShade / Extremely Expensive Shader [D] [!]`, it means this shader requires access to the depth buffer and has critical limitations. The included markers provide quick reference to these specific requirements and cautions.
 
