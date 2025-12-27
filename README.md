@@ -18,21 +18,25 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 ### Image, Video, and Post Processing
 
-CShade features shaders that deal with getting information about images and video.
-
-- **Image Processing**
+- **Image Processing**: CShade features shaders that deal with getting information about images.
     - **Sharpening**: [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/), [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
-    - **Anti-aliasing**: [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing), [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
-    - **Color conversions**: Chromaticity Spaces, Cylindrical Color Spaces, Polar Color Spaces, Grayscale
+    - **Anti-Aliasing**: [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing), [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
+    - **Color Conversions**: Chromaticity Spaces, Cylindrical Color Spaces, Polar Color Spaces, Grayscale
     - **Convolutions**: Gaussian Blur, Edge Detection, Hierarchical (Joint) Bilateral Upsampling
-    - **Local normalization**: Census Transform, Local Contrast Normalization
-- **Video Processing**: Auto Exposure, Datamoshing, Motion Blur, Motion Stabilization, Vector Lines
-
-    CShade features real-time motion estimation and feature-matching shaders through hierarchal Lucas-Kanade optical flow.
-
-- **Post Processing**: Backbuffer Blending, Bloom, Color Grading, [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/), Letterbox
-
-    CShade features shaders that filter images for aesthetics.
+    - **Local Normalization**: Census Transform, Local Contrast Normalization
+- **Video Processing**: CShade features real-time motion shaders.
+    - Auto Exposure
+    - Hierarchal Lucas-Kanade Optical Flow
+    - Datamoshing
+    - Motion Blur
+    - Motion Stabilization
+    - Vector Lines
+- **Post Processing**: CShade features shaders that filter images for aesthetics.
+    - Backbuffer Blending
+    - Dual-Kawase Bloom
+    - Color Grading
+    - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
+    - Letterbox
 
 ## Important Note
 
