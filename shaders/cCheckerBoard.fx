@@ -1,5 +1,9 @@
 #define CSHADE_CHECKERBOARD
 
+/*
+    This shader generates a customizable checkerboard pattern. Users can define the size of the squares, invert the pattern, and select two distinct colors for the checkerboard.
+*/
+
 #include "shared/cMath.fxh"
 
 /*

@@ -1,5 +1,9 @@
 #define CSHADE_THRESHOLD
 
+/*
+    This shader applies a threshold effect to the image, isolating and emphasizing areas based on their luminance. Users can define a luminance level threshold to control which pixels are affected. The shader also provides a smoothness parameter to soften the transition between affected and unaffected areas, and an intensity control for the overall strength of the effect. This can be used for effects such as bloom extraction, posterization, or creating high-contrast visuals.
+*/
+
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 

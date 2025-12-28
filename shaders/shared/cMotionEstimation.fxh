@@ -1,4 +1,8 @@
 
+/*
+    This header file provides functions for real-time motion estimation, primarily utilizing the Lucas-Kanade optical flow algorithm. It includes utilities for sparse pyramid upsampling, calculating motion vectors between frames, and encoding/decoding these vectors to a specific FLT16 format. Additionally, it offers debug visualization functions to display motion vector direction, magnitude, and quadrant information. This file is crucial for implementing motion-dependent effects such as motion blur, motion stabilization, or datamoshing.
+*/
+
 #include "cBlur.fxh"
 #include "cShade.fxh"
 #include "cMath.fxh"

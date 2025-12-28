@@ -1,5 +1,9 @@
 #define CSHADE_AUTOEXPOSUREBLOOM
 
+/*
+    This shader combines an auto-exposure effect with a bloom effect. It dynamically adjusts image brightness and adds a radiant glow to bright areas. The shader prefilters the scene, performs iterative downsampling and upsampling to create the bloom, and then composes the final image, optionally applying auto-exposure and color grading.
+*/
+
 #include "shared/cBlur.fxh"
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"

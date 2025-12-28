@@ -1,4 +1,8 @@
 
+/*
+    This header file defines macros, blend states, and functions for managing color and alpha blending operations within ReShade shaders. It provides a standardized way to configure render target blending, including blend enable/disable, blend operators, source and destination blend factors, and render target write masks. Additionally, it includes functionality for channel swizzling and debug output of individual color channels.
+*/
+
 #if !defined(INCLUDE_CBLENDOP)
     #define INCLUDE_CBLENDOP
 

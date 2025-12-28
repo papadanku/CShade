@@ -1,6 +1,10 @@
 #define CSHADE_CONTOUR
 
 /*
+    This shader implements Keijiro Takahashi's KinoContour effect, which draws contour lines on the image by detecting edges based on gradients. It offers various edge detection methods (e.g., Sobel, Prewitt, Scharr) and allows weighting detection by color or luma. Users can adjust lower and upper thresholds for gradient magnitude, customize the color of contour lines and the background, and utilize multiple debug display modes to visualize gradients and magnitudes.
+*/
+
+/*
     MIT License
 
     Copyright (C) 2015-2017 Keijiro Takahashi

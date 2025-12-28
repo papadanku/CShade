@@ -1,5 +1,9 @@
 #define CSHADE_CENSOR
 
+/*
+    This shader applies a pixelation effect, commonly used for censorship, by detecting specific image features. Users can adjust the pixelation block size, select a feature detection method (color or various HSV/HSL/HSI channels), and set a threshold with a comparison operator to control which areas are pixelated. The shader also includes a display mode to visualize the generated pixelation mask.
+*/
+
 #include "shared/cColor.fxh"
 
 /*

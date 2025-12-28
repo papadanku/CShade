@@ -1,4 +1,8 @@
 
+/*
+    This header file manages the conversion of SDR (Standard Dynamic Range) input colors back to HDR (High Dynamic Range) for consistent processing within the CShade pipeline. It provides a configurable inverse tonemapping operator, allowing shaders to correctly interpret and handle color data from the backbuffer, especially when the original scene was rendered in SDR. This ensures that HDR-aware effects can operate on an appropriate dynamic range, preventing clipping or incorrect color reproduction.
+*/
+
 #include "cShade.fxh"
 #include "cColor.fxh"
 

@@ -1,6 +1,10 @@
 #define CSHADE_FXAA
 
 /*
+    This shader implements Fast Approximate Anti-Aliasing (FXAA) to reduce jagged edges in images. Operating in a single pass, it detects edges based on luma contrast and then blends pixels along those edges for a smoothing effect. The shader offers adjustable parameters for relative contrast threshold, edge contrast threshold, and subpixel blending strength, allowing users to fine-tune the anti-aliasing. It also includes a debug display mode to visualize detected edge directions.
+*/
+
+/*
     Single-Pass FXAA modification of:
         - https://bitbucket.org/catlikecodingunitytutorials/custom-srp-17-fxaa/src
         - https://catlikecoding.com/unity/tutorials/custom-srp/fxaa/

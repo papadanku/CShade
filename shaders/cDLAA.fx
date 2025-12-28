@@ -1,6 +1,10 @@
 #define CSHADE_DLAA
 
 /*
+    This shader implements Directionally Localized Anti-Aliasing (DLAA). It reduces aliasing artifacts by detecting and smoothing edges while preserving fine details. The shader differentiates between short and long edges, applying specialized processing based on configurable contrast thresholds. It also includes an option to retain high frequencies and display edge masks for visualization.
+*/
+
+/*
     Directionally Localized Anti-Aliasing (DLAA)
     http://www.and.intercon.ru/releases/talks/dlaagdc2011/
 

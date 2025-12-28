@@ -1,5 +1,9 @@
 #define CSHADE_QUANTIZE
 
+/*
+    This shader applies an artificial quantization effect to the image, reducing the number of distinct colors and creating a posterized or pixel art aesthetic. It includes options for pixelation, which renders the image with larger, blocky pixels, and dithering, which minimizes color banding by introducing controlled noise. Users can customize the pixelation resolution, the number of quantization levels for each color channel, and the dithering algorithm.
+*/
+
 #include "shared/cMath.fxh"
 
 /*

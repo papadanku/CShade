@@ -1,5 +1,11 @@
 #define CSHADE_AUTOEXPOSURE
 
+/*
+    This shader implements an auto-exposure effect. It dynamically adjusts the image brightness to simulate the human eye adapting to different lighting conditions. The shader calculates the scene's average luminance and adjusts the brightness accordingly.
+
+    This effect also provides spot metering to calculate exposure from a specific screen area and exposure peaking to visualize currently exposed areas.
+*/
+
 #include "shared/cColor.fxh"
 
 /*

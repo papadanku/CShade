@@ -1,4 +1,8 @@
 
+/*
+    This header file provides a comprehensive library of color manipulation functions. It includes utilities for sRGB and linear RGB conversion, various blend modes (e.g., Multiply, Screen, Overlay, Difference), and color space conversions (e.g., RGB to Chromaticity, YCoCg-R, HSV, HSL, HSI, Spherical RGB, OKLab, OKLch, YIQ). Additionally, it offers several luminance calculation methods and a range of tonemapping operators (Reinhard, Reinhard Squared, AMD Resolve, Logarithmic C) with their inverse functions, enabling flexible color processing and HDR management.
+*/
+
 #include "cMath.fxh"
 
 #if !defined(INCLUDE_CCOLOR)

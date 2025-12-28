@@ -1,6 +1,10 @@
 #define CSHADE_CAS
 
 /*
+    This shader implements AMD FidelityFX Contrast Adaptive Sharpening (CAS). It sharpens the image by analyzing and adapting to local contrast, enhancing details without over-sharpening. The shader provides options for different sharpening kernel shapes (Diamond, Box) and allows users to adjust the sharpening contrast. Additionally, it can display a mask to visualize the areas where sharpening is applied.
+*/
+
+/*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/cas/ffx_cas.h
 

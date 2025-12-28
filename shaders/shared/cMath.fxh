@@ -1,5 +1,9 @@
 
 /*
+    This header file provides a comprehensive library of mathematical functions and utilities essential for shader programming. It includes functions for common vector and scalar operations (min, max, median, modulus), conversions between normalized and signed-normalized ranges, and handling floating-point precision. The file also offers advanced features such as geometric transformations (scaling, rotation, translation) with configurable order, screen-space utilities (pixel size, grid generation), and various noise functions (hash-based, Golden Ratio, Interleaved Gradient, Value, and Gradient noise) for procedural generation and dithering. Additionally, it contains functions for encoding/decoding velocity vectors and mapping UV coordinates to a concentric disk.
+*/
+
+/*
     The MIT License (MIT)
 
     https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/DoFMedianFilterCS.hlsl
@@ -322,7 +326,13 @@
 
         The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-        THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+        THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
 
     */
 

@@ -1,4 +1,8 @@
 
+/*
+    This header file serves as a core utility and macro definition library for the CShade project. It provides fundamental macros for handling preprocessor directives, bitwise operations, and defining common buffer sizes. Crucially, it defines macros for creating and managing textures and samplers with various filtering and addressing modes, including specific handling for sRGB. It also includes global texture declarations for the backbuffer (CShade_ColorTex) and corresponding samplers, along with a standard vertex shader (CShade_VS_Quad) for full-screen quad rendering. This file ensures consistency and simplifies common tasks across CShade shaders.
+*/
+
 #if !defined(INCLUDE_CSHADE)
     #define INCLUDE_CSHADE
 

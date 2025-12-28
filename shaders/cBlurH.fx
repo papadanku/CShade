@@ -1,5 +1,9 @@
 #define CSHADE_HORIZONTALBLUR
 
+/*
+    This shader applies a horizontal Gaussian blur to the image. It smoothes the image along the horizontal axis, reducing sharp details and creating a softening effect.
+*/
+
 #include "cBlur.fxh"
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)

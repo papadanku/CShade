@@ -1,5 +1,9 @@
 #define CSHADE_LAYER
 
+/*
+    This shader establishes a framework for layering and blending multiple shader effects. It does not apply direct visual effects but enables the use of up to 16 copy and 16 blend operations between different shader passes. This functionality facilitates complex multi-pass effects, allowing outputs from earlier shader passes to be copied and integrated with subsequent ones.
+*/
+
 #include "cLayer.fxh"
 
 #ifndef CLAYER_COPY_SHADERS

@@ -1,6 +1,10 @@
 #define CSHADE_MIRROR
 
 /*
+    This shader creates mirroring and kaleidoscope-like effects. It transforms the image by converting texture coordinates to polar coordinates, applying angular repetition, and then converting back. Users can adjust the angular division and offset to control the repetition pattern, apply a rotational roll, and enable symmetrical mirroring, resulting in visually complex and artistic distortions of the input image.
+*/
+
+/*
     MIT License
 
     Copyright (C) 2015 Keijiro Takahashi

@@ -1,6 +1,10 @@
 #define CSHADE_GRADING
 
 /*
+    This shader implements a standalone color grading effect. It applies various color transformations and adjustments to the backbuffer color, allowing users to modify the overall color and tone of the image. The shader can also optionally apply exposure peaking.
+*/
+
+/*
     [Shader Options]
 */
 

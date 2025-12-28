@@ -27,6 +27,10 @@
     THE SOFTWARE.
 */
 
+/*
+    This header file provides a set of functions for applying lens-related visual effects, building upon AMD's FidelityFX Lens algorithm. It primarily focuses on simulating film grain, chromatic aberration, and vignetting. The file includes functions to calculate chromatic aberration offsets, apply film grain using simplex noise, and generate a vignette mask. This header enables the creation of realistic or stylized camera lens imperfections within shaders.
+*/
+
 #include "shared/cMath.fxh"
 
 #if !defined(INCLUDE_FIDELITYFX_LENS)

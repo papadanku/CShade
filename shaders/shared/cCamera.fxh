@@ -1,4 +1,8 @@
 
+/*
+    This header file provides functions and UI controls for camera-related post-processing effects, primarily focusing on auto-exposure and exposure peaking. It allows shaders to dynamically adjust scene brightness, implement different metering methods (average or spot metering), and visualize luminance levels and spot metering areas. Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
+*/
+
 #include "cMath.fxh"
 
 #if !defined(INCLUDE_CCAMERA_OUTPUT)

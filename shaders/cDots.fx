@@ -1,5 +1,9 @@
 #define CSHADE_DOTS
 
+/*
+    This shader creates a stylized dot pattern based on image features, converting the image into a halftone-like representation using circles. It supports monochrome processing, where users can select specific HSV/HSL/HSI channels to influence the dot pattern, or color processing, allowing independent offset and cropping for each RGB channel. The size of the circles is determined by the input color data, and the shader provides extensive controls for dot density, input multipliers and bias, and foreground/background colors.
+*/
+
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 

@@ -1,6 +1,10 @@
 #define CSHADE_GHOSTING
 
 /*
+    This shader creates a ghosting effect by blending the current frame with a temporally smoothed previous frame. This produces a trailing visual artifact, simulating motion blur or an ethereal appearance. Users can adjust the blend factor to control the intensity of the ghosting effect.
+*/
+
+/*
     [Shader Options]
 */
 

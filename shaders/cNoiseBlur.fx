@@ -1,6 +1,10 @@
 #define CSHADE_NOISEBLUR
 
 /*
+    This shader applies a noise-based blur effect, creating a diffused, noisy blur by sampling multiple points around each pixel in a randomized disk pattern. It offers controls for blur strength and an optional falloff effect that adjusts blur intensity towards the screen edges. The falloff can also be inverted to increase blur intensity at the edges.
+*/
+
+/*
     MIT License
 
     Copyright (C) 2015 Keijiro Takahashi

@@ -1,4 +1,8 @@
 
+/*
+    This header file provides a collection of blur-related functions and algorithms. It includes implementations for linear Gaussian blur, various downsampling techniques (Dual Kawase, Box, 6x6 with Karis optimization), an upsampling tent filter, and a 3x3 median filter. Additionally, it features an optimized, self-guided version of Joint Bilateral Upsampling. This file serves as a utility library for applying different types of blurring and resampling effects to textures.
+*/
+
 #include "cMath.fxh"
 
 #if !defined(INCLUDE_CBLUR)

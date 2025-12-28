@@ -1,6 +1,10 @@
 #define CSHADE_TRANSFORM
 
 /*
+    This shader provides comprehensive geometric and color transformations for an image, allowing users to translate, scale, and rotate the base image. It also supports an overlay system, enabling a separate texture to be transformed and composited onto the base. Both the base layer and the overlay have independent controls for geometric transformations (scale, rotate, translate) and their order of application. Additionally, the shader offers color transformations (multiplication and addition) and an overlay mask for controlled blending.
+*/
+
+/*
     Geometric and color transform shader with a single-texture overlay system.
 */
 

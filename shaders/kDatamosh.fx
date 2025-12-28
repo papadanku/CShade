@@ -1,6 +1,10 @@
 #define CSHADE_DATAMOSH
 
 /*
+    This shader implements a datamoshing effect, inspired by Keijiro Takahashi's work, to simulate video compression artifacts. It distorts and glithes the image by manipulating motion vectors and introducing calculated noise. The shader uses optical flow (Lucas-Kanade) to track movement and then applies controlled displacement, random pixel diffusion, and noise patterns resembling DCT bases. Users can adjust parameters such as block size, entropy (randomness), noise contrast, motion vector scale, and diffusion strength to customize the glitch aesthetic.
+*/
+
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or

@@ -1,5 +1,9 @@
 #define CSHADE_LETTERBOX
 
+/*
+    This shader creates a letterbox effect, adding customizable black bars to the screen to achieve cinematic aspect ratios. Users can adjust the position offset, size scale, and edge sharpness of these letterbox bars.
+*/
+
 #include "shared/cMath.fxh"
 
 /*

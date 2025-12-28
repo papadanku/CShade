@@ -1,5 +1,9 @@
 #define CSHADE_CHROMATICITY
 
+/*
+    This shader visualizes various color spaces, focusing on the luminance and chromaticity representations of an image. It offers multiple display modes, allowing users to view chrominance, luminance, or a split view of both. The shader provides numerous algorithms for calculating grayscale luminance and chromaticity, including options like HSV, HSL, HSI, YCoCg, OKLab, and OKLch. This effect primarily serves as a diagnostic and analytical tool for understanding color data.
+*/
+
 #include "shared/cColor.fxh"
 
 /*

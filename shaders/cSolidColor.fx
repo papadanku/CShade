@@ -1,6 +1,10 @@
 #define CSHADE_SOLIDCOLOR
 
 /*
+    This shader outputs a user-defined solid color across the entire screen. It provides controls for customizing the output color and includes an option to blend this solid color with the computed alpha channel from the texture. This shader is useful for creating simple overlays, background fills, or for debugging purposes.
+*/
+
+/*
     [Shader Options]
 */
 

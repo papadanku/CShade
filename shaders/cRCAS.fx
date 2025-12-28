@@ -1,6 +1,10 @@
 #define CSHADE_RCAS
 
 /*
+    This shader implements AMD FidelityFX Robust Contrast Adaptive Sharpening (RCAS). It enhances image details while minimizing artifacts and noise by using a robust mechanism to determine the maximum local sharpness without introducing clipping. The shader also includes a built-in process to detect and limit sharpening on noise. Users can adjust the overall sharpening intensity and visualize the sharpening mask.
+*/
+
+/*
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
     https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/fsr1/ffx_fsr1.h
 

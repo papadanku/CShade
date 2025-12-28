@@ -1,5 +1,9 @@
 #define CSHADE_NORMALIZE
 
+/*
+    This shader applies local normalization algorithms, including Local Contrast Normalization and Census Transform. These algorithms process image data to enhance local features, reduce illumination variations, or convert intensity values into a more robust representation. Users can select the desired normalization filter to apply.
+*/
+
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 

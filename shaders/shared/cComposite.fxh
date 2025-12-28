@@ -1,4 +1,8 @@
 
+/*
+    This header file provides a comprehensive color grading and tonemapping pipeline for post-processing effects. It allows shaders to apply a series of adjustments to the image, including exposure bias, color filtering, saturation, and contrast. It also implements advanced color controls such as Lift/Gamma/Gain for shadows, midtones, and highlights, with corresponding offset adjustments. A selection of tonemapping operators is available to manage HDR to SDR conversion. This file is crucial for achieving professional-grade color correction and stylized looks.
+*/
+
 #include "cColor.fxh"
 
 #if !defined(INCLUDE_CCOLOR_OUTPUT)

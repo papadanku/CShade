@@ -1,5 +1,9 @@
 #define CSHADE_MOTIONSTABILIZATION
 
+/*
+    This shader implements a motion stabilization effect, using optical flow to counter camera shake or unwanted movement in the image. It calculates motion vectors via the Lucas-Kanade method and applies a reverse warp to stabilize the scene. Users can invert stabilization along X or Y axes, choose global or local stabilization, adjust warp strength, and apply temporal smoothing. The shader also includes cosmetic geometric transformations like scaling, rotation, and translation, along with image-based scaling options and debug views for motion vectors.
+*/
+
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"

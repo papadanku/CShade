@@ -1,4 +1,8 @@
 
+/*
+    This header file provides a comprehensive set of edge detection filters and related utility functions. It includes common edge detection algorithms such as Sobel, Prewitt, and Scharr, implemented with bilinear sampling for improved quality. Additionally, it features the more advanced Frei-Chen edge detector and a function to calculate the magnitude of RGB gradients. This file serves as a reusable library for extracting edge information from images, essential for many post-processing effects like outlining, sharpening, or stylistic rendering.
+*/
+
 #if !defined(INCLUDE_CEDGE)
     #define INCLUDE_CEDGE
 
