@@ -4,7 +4,7 @@
 
     Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
 
-    Exposed Preprocessor Definitions: CCOMPOSITE_TOGGLE_GRADING, CCOMPOSITE_TOGGLE_TONEMAP, CCOMPOSITE_TOGGLE_PEAKING
+    Abstracted Preprocessor Definitions: CCOMPOSITE_TOGGLE_GRADING, CCOMPOSITE_TOGGLE_TONEMAP, CCOMPOSITE_TOGGLE_PEAKING
 */
 
 #include "cColor.fxh"
@@ -15,30 +15,30 @@
     #if CCOMPOSITE_TOGGLE_GRADING
         // Primary Adjustments
         uniform float _CComposite_ExposureBias <
-            ui_category = "Pipeline / Output / Color Grade";
-            ui_text = "Exposure & Color Filter";
+            ui_category = "Output / Color Grade";
+            ui_text = "EXPOSURE & COLOR FILTERING";
             ui_label = "Exposure Adjustment (f-stops)";
             ui_type = "slider";
             ui_tooltip = "Adjusts the overall exposure of the scene in f-stops, making it brighter or darker.";
         > = 0.0;
 
         uniform float3 _CComposite_ColorFilter <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Color Filter (Tint)";
             ui_type = "color";
             ui_tooltip = "Applies a color tint to the scene, useful for adjusting white balance or creating stylistic looks.";
         > = 1.0;
 
         uniform float _CComposite_Saturation <
-            ui_category = "Pipeline / Output / Color Grade";
-            ui_text = "\nSaturation & Contrast";
+            ui_category = "Output / Color Grade";
+            ui_text = "SATURATION & CONTRAST";
             ui_label = "Color Saturation";
             ui_type = "slider";
             ui_tooltip = "Adjusts the intensity of colors in the scene; higher values make colors more vibrant, lower values desaturate them.";
         > = 1.0;
 
         uniform float _CComposite_Contrast <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Image Contrast";
             ui_type = "slider";
             ui_tooltip = "Adjusts the difference between the brightest and darkest parts of the image, affecting perceived depth and richness.";
@@ -46,22 +46,22 @@
 
         // Lift/Gamma/Gain - Color Controls
         uniform float3 _CComposite_ShadowColor <
-            ui_category = "Pipeline / Output / Color Grade";
-            ui_text = "\nLift/Gamma/Gain";
+            ui_category = "Output / Color Grade";
+            ui_text = "LIFT, GAMMA, GAIN";
             ui_label = "Shadow Tint (Lift)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the darkest areas (shadows) of the image.";
         > = 1.0;
 
         uniform float3 _CComposite_MidtoneColor <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Midtone Tint (Gamma)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the mid-range tones (midtones) of the image.";
         > = 1.0;
 
         uniform float3 _CComposite_HighlightColor <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Highlight Tint (Gain)";
             ui_type = "color";
             ui_tooltip = "Adjusts the color tint applied to the brightest areas (highlights) of the image.";
@@ -69,31 +69,31 @@
 
         // Lift/Gamma/Gain - Offset Controls
         uniform float _CComposite_ShadowOffset <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Shadow Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for shadow values, making dark areas brighter or darker.";
         > = 0.0;
 
         uniform float _CComposite_MidtoneOffset <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Midtone Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for midtone values, affecting the brightness of mid-range tones.";
         > = 0.0;
 
         uniform float _CComposite_HighlightOffset <
-            ui_category = "Pipeline / Output / Color Grade";
+            ui_category = "Output / Color Grade";
             ui_label = "Highlight Level Offset";
             ui_type = "slider";
             ui_tooltip = "Adjusts the offset for highlight values, making bright areas brighter or darker.";
         > = 0.0;
     #endif
 
-    #if CCOMPOSITE_TOGGLE_GRADING || CCOMPOSITE_TOGGLE_TONEMAP
+    #if CCOMPOSITE_TOGGLE_TONEMAP
         uniform int _CComposite_Tonemapper <
             ui_category_closed = true;
-            ui_category = "Pipeline / Output / Tonemap";
+            ui_category = "Output / Tonemap";
             ui_label = "Tonemapping Operator";
             ui_tooltip = "Selects a tonemap operator to map HDR colors to SDR, affecting how bright areas are compressed.";
             ui_type = "combo";
@@ -171,7 +171,7 @@
         in float HighlightOffset
     )
     {
-        #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
+        #if CCOMPOSITE_TOGGLE_GRADING
             // Constants
             const float ACEScc_MIDGRAY = 0.4135884;
 
@@ -213,7 +213,9 @@
             Color = max(Color, 0.0);
 
             // Apply Filmic Curve
-            Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
+            #if CCOMPOSITE_TOGGLE_TONEMAP
+                Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
+            #endif
 
             // Apply Display Gamma
             Color = CColor_RGBtoSRGB(float4(Color, 0.0)).rgb;
@@ -229,7 +231,7 @@
 
     void CComposite_ApplyOutput(inout float3 Color)
     {
-        #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
+        #if CCOMPOSITE_TOGGLE_GRADING
             CComposite_ApplyColorGrading(
                 Color,
                 _CComposite_ExposureBias,
@@ -252,15 +254,15 @@
 
     #if CCOMPOSITE_TOGGLE_PEAKING
         uniform bool _CCamera_ExposurePeaking <
-            ui_text = "[Tools] Exposure Peaking";
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_text = "TOOLS - EXPOSURE PEAKING";
+            ui_category = "Output / Peaking";
             ui_label = "Show Exposure Peaking Overlay";
             ui_type = "radio";
             ui_tooltip = "When enabled, displays an overlay that highlights areas within a specified exposure threshold.";
         > = false;
 
         uniform int _CCamera_ExposurePeakingDitherType <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Peaking";
             ui_label = "Exposure Peaking Dither Algorithm";
             ui_type = "combo";
             ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
@@ -268,7 +270,7 @@
         > = 0;
 
         uniform float3 _CCamera_ExposurePeakingThreshold <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Peaking";
             ui_label = "Exposure Peaking Luminance Threshold";
             ui_type = "slider";
             ui_min = 0.0;
@@ -277,7 +279,7 @@
         > = float3(1.0, 1.0, 1.0);
 
         uniform int _CCamera_ExposurePeakingCellWidth <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Peaking";
             ui_label = "Exposure Peaking Cell Size";
             ui_type = "slider";
             ui_min = 1;

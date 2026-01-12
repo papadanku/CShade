@@ -32,126 +32,90 @@
     THE SOFTWARE.
 */
 
-#include "shared/cMath.fxh"
-#include "shared/cLens.fxh"
 
 /*
     [Shader Options]
 */
 
-uniform float _Time < source = "timer"; >;
-
-uniform bool _UseTimeSeed <
-    ui_category = "Main Shader";
-    ui_label = "Use Time for Seed";
-    ui_type = "radio";
-    ui_tooltip = "When enabled, the grain effect's randomness is influenced by the shader's elapsed time, creating a dynamic, evolving pattern.";
-> = true;
-
-uniform float _GrainSeed <
-    ui_category = "Main Shader";
-    ui_label = "Grain Seed Offset";
-    ui_type = "drag";
-    ui_tooltip = "Provides an offset to the random seed used for generating film grain, allowing for different grain patterns.";
-> = 0.0;
-
-uniform float _GrainSeedSpeed <
-    ui_category = "Main Shader";
-    ui_label = "Grain Seed Speed";
-    ui_max = 1.0;
-    ui_min = 0.1;
-    ui_type = "slider";
-    ui_tooltip = "Controls how quickly the film grain pattern changes over time when 'Enable Time Seed' is active.";
-> = 0.5;
-
-uniform float _GrainScale <
-    ui_category = "Main Shader";
-    ui_label = "Grain Size";
-    ui_max = 20.0;
-    ui_min = 0.01;
-    ui_text = " ";
-    ui_type = "slider";
-    ui_tooltip = "Adjusts the size of the individual grain particles. Smaller values result in finer grain.";
-> = 0.01;
-
-uniform float _GrainAmount <
-    ui_category = "Main Shader";
-    ui_label = "Grain Intensity";
-    ui_max = 20.0;
-    ui_min = 0.0;
-    ui_type = "slider";
-    ui_tooltip = "Determines the visibility and intensity of the film grain effect.";
-> = 0.35;
-
-uniform float _ChromAb <
-    ui_category = "Main Shader";
-    ui_label = "Chromatic Aberration Strength";
-    ui_max = 20.0;
-    ui_min = 0.0;
-    ui_type = "slider";
-    ui_tooltip = "Controls the strength of chromatic aberration, which creates color fringing around high-contrast edges.";
-> = 1.65;
-
-uniform float _Vignette <
-    ui_category = "Main Shader";
-    ui_label = "Vignette Intensity";
-    ui_max = 2.0;
-    ui_min = 0.0;
-    ui_type = "slider";
-    ui_tooltip = "Adjusts the intensity of the vignette effect, darkening the edges of the screen.";
-> = 0.6;
-
+#include "shared/cColor.fxh"
 #include "shared/cShadeHDR.fxh"
+
+// Inject cLens.fxh
+#ifndef SHADER_TOGGLE_ABBERATION
+    #define SHADER_TOGGLE_ABBERATION 1
+#endif
+#ifndef SHADER_TOGGLE_VIGNETTE
+    #define SHADER_TOGGLE_VIGNETTE 1
+#endif
+#ifndef SHADER_TOGGLE_GRAIN
+    #define SHADER_TOGGLE_GRAIN 1
+#endif
+#define CLENS_TOGGLE_ABBERATION SHADER_TOGGLE_ABBERATION
+#define CLENS_TOGGLE_VIGNETTE SHADER_TOGGLE_VIGNETTE
+#define CLENS_TOGGLE_GRAIN SHADER_TOGGLE_GRAIN
+#include "shared/cLens.fxh"
+
+// Inject cComposite.fxh
+#ifndef SHADER_TOGGLE_GRADING
+    #define SHADER_TOGGLE_GRADING 0
+#endif
+#ifndef SHADER_TOGGLE_TONEMAP
+    #define SHADER_TOGGLE_TONEMAP 0
+#endif
+#ifndef SHADER_TOGGLE_PEAKING
+    #define SHADER_TOGGLE_PEAKING 0
+#endif
+#define CCOMPOSITE_TOGGLE_GRADING SHADER_TOGGLE_GRADING
+#define CCOMPOSITE_TOGGLE_TONEMAP SHADER_TOGGLE_TONEMAP
+#define CCOMPOSITE_TOGGLE_PEAKING SHADER_TOGGLE_PEAKING
+#include "shared/cComposite.fxh"
+
 #include "shared/cBlend.fxh"
 
-// Lens pass entry point.
-void FFX_Lens(
-    inout float3 Color,
-    in float2 HPos,
-    in float2 Tex,
-    in float GrainScale,
-    in float GrainAmount,
-    in float ChromAb,
-    in float Vignette,
-    in float GrainSeed
-)
-{
-    float2 RGMag = FFX_Lens_GetRGMag(ChromAb);
-    FFX_Lens_ChromaticAberrationTex ChromaticAberrationTex = FFX_Lens_GetChromaticAberrationTex(Tex, 0.5, RGMag.r, RGMag.g);
-    float2 UNormTex = Tex - 0.5;
-
-    // Run Lens
-    Color = 1.0;
-    Color.r = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
-    Color.g = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
-    Color.b = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
-    FFX_Lens_ApplyVignette(UNormTex, 0.0, Color, Vignette);
-    FFX_Lens_ApplyFilmGrain(HPos, Color, GrainScale, GrainAmount, GrainSeed);
-}
+/*
+    [Pixel Shaders]
+*/
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 OutputColor = 1.0;
-    float Seed = _GrainSeed;
-    Seed = (_UseTimeSeed) ? Seed + (rcp(1e+3 / _Time) * _GrainSeedSpeed) : Seed;
-    FFX_Lens(
-        OutputColor.rgb,
-        Input.HPos.xy,
-        Input.Tex0,
-        _GrainScale,
-        _GrainAmount,
-        _ChromAb,
-        _Vignette,
-        Seed
-    );
+    // Get backbuffer
+    #if CLENS_TOGGLE_ABBERATION
+        float2 RGMag = CLens_GetRGMag(_CLens_ChromAb);
+        CLens_ChromaticAberrationTex ChromaticAberrationTex = CLens_GetChromaticAberrationTex(Input.Tex0, 0.5, RGMag.r, RGMag.g);
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
+        float3 Color = 1.0;
+        Color.r = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
+        Color.g = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
+        Color.b = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
+    #else
+        float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
+    #endif
+
+    // Apply (optional) vignette
+    #if CLENS_TOGGLE_VIGNETTE
+        float2 UNormTex = Input.Tex0 - 0.5;
+        CLens_ApplyVignette(Color, UNormTex, 0.0, _CLens_Vignette);
+    #endif
+
+    // Apply (optional) film grain
+    #if CLENS_TOGGLE_GRAIN
+        CLens_ApplyFilmGrain(Color, Input.HPos, _CLens_GrainScale, _CLens_GrainAmount, _CLens_GrainSeed);
+    #endif
+
+    // Apply color grading
+    CComposite_ApplyOutput(Color.rgb);
+
+    // Apply exposure peaking to areas that need it
+    CComposite_ApplyExposurePeaking(Color, Input.HPos.xy);
+
+    // Our epic output
+    Output = CBlend_OutputChannels(Color, _CShade_AlphaFactor);
 }
 
 technique CShade_Lens
 <
-    ui_label = "CShade / AMD FidelityFX / Lens";
-    ui_tooltip = "AMD FidelityFX Lens.";
+    ui_label = "CShade / AMD FidelityFX / Lens [+?]";
+    ui_tooltip = "Adjustable lens effect with optional color grading.\n\n[+] This shader has optional color grading (SHADER_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
 >
 {
     pass

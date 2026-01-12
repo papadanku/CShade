@@ -18,7 +18,7 @@ uniform int _DisplayMode <
     ui_category = "Main Shader";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
     ui_label = "Display Mode";
-    ui_text = "Optical Flow";
+    ui_text = "OPTICAL FLOW";
     ui_type = "combo";
     ui_tooltip = "Controls how the optical flow information is displayed, including different debug views.";
 > = 0;
@@ -44,7 +44,7 @@ uniform float _BlendFactor <
 uniform bool _FrameRateScaling <
     ui_category = "Main Shader";
     ui_label = "Scale Blur with Frame Rate";
-    ui_text = "\nMotion Blur";
+    ui_text = "MOTION BLUR";
     ui_type = "radio";
     ui_tooltip = "When enabled, the motion blur effect will adjust its intensity based on the current frame rate.";
 > = false;

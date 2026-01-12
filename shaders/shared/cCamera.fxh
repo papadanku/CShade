@@ -4,7 +4,7 @@
 
     It allows shaders to dynamically adjust scene brightness, implement different metering methods (average or spot metering), and visualize luminance levels and spot metering areas.
 
-    Exposed Preprocessor Definitions: CCAMERA_TOGGLE_AUTO_EXPOSURE
+    Abstracted Preprocessor Definitions: CCAMERA_TOGGLE_AUTO_EXPOSURE
 */
 
 #include "cMath.fxh"
@@ -15,9 +15,9 @@
     #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         uniform float _CCamera_ExposureSmoothingSpeed <
             ui_category_closed = true;
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_text = "Exposure Settings";
-            ui_label = "Auto Exposure Smoothing Speed";
+            ui_category = "Output / Auto Exposure";
+            ui_text = "AUTO EXPOSURE SETTINGS";
+            ui_label = "Smoothing Speed";
             ui_type = "slider";
             ui_min = 0.1;
             ui_max = 1.0;
@@ -25,8 +25,8 @@
         > = 0.25;
 
         uniform float _CCamera_ExposureBias <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Auto Exposure Compensation Bias";
+            ui_category = "Output / Auto Exposure";
+            ui_label = "Compensation Bias";
             ui_type = "slider";
             ui_step = 0.001;
             ui_min = -4.0;
@@ -35,8 +35,8 @@
         > = 1.0;
 
         uniform float _CCamera_ExposureRange <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Auto Exposure Compensation Range";
+            ui_category = "Output / Auto Exposure";
+            ui_label = "Compensation Range";
             ui_type = "slider";
             ui_step = 0.001;
             ui_min = 1.0;
@@ -46,23 +46,23 @@
 
         uniform int _CCamera_MeteringType <
             ui_category_closed = true;
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Auto Exposure Adaptation Method";
+            ui_category = "Output / Auto Exposure";
+            ui_label = "Adaptation Method";
             ui_type = "combo";
             ui_items = "Average Metering\0Spot Metering\0";
             ui_tooltip = "Selects the method for auto-exposure adaptation: either average metering across the whole scene or spot metering on a specific area.";
         > = 0;
 
         uniform bool _CCamera_LumaMeter <
-            ui_text = "\n[Tools] Luminance Metering";
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_text = "TOOLS - LUMINANCE METERING ";
+            ui_category = "Output / Auto Exposure";
             ui_label = "Show Luminance Meter Overlay";
             ui_type = "radio";
             ui_tooltip = "When enabled, displays an overlay that visualizes the scene's luminance levels.";
         > = false;
 
         uniform float _CCamera_LumaMeterScale <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Auto Exposure";
             ui_label = "Scale";
             ui_type = "slider";
             ui_min = 1e-3;
@@ -71,7 +71,7 @@
         > = 0.75;
 
         uniform float2 _CCamera_LumaMeterOffset <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Auto Exposure";
             ui_label = "Offset";
             ui_type = "slider";
             ui_min = -1.0;
@@ -80,15 +80,15 @@
         > = float2(0.0, -0.25);
 
         uniform bool _CCamera_ShowSpotMeterOverlay <
-            ui_text = "\n[Tools] Spot Metering";
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_text = "TOOLS - SPOT METERING";
+            ui_category = "Output / Auto Exposure";
             ui_label = "Show Spot Meter Area Overlay";
             ui_type = "radio";
             ui_tooltip = "When enabled, displays an overlay indicating the area used for spot metering.";
         > = false;
 
         uniform float _CCamera_SpotMeterScale <
-            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_category = "Output / Auto Exposure";
             ui_label = "Scale";
             ui_type = "slider";
             ui_min = 1e-3;
@@ -97,8 +97,8 @@
         > = 0.5;
 
         uniform float2 _CCamera_SpotMeterOffset <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Spot Meter Area Position Offset";
+            ui_category = "Output / Auto Exposure";
+            ui_label = "Position Offset";
             ui_type = "slider";
             ui_min = -1.0;
             ui_max = 1.0;

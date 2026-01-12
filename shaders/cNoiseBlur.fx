@@ -105,7 +105,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Falloff = 1.0;
     if (_EnableFalloff)
     {
-        Falloff = FFX_Lens_GetVignetteMask(UNormTex + _FalloffOffset, 0.0, _FalloffAmount);
+        Falloff = CLens_GetVignetteMask(UNormTex + _FalloffOffset, 0.0, _FalloffAmount);
         Falloff = _InvertFalloff ? Falloff : 1.0 - Falloff;
     }
 

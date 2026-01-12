@@ -40,7 +40,7 @@ uniform int _DisplayMode <
 uniform bool _InvertWarpX <
     ui_category = "Main Shader";
     ui_label = "Invert Horizontal Stabilization";
-    ui_text = "Motion Stabilization";
+    ui_text = "MOTION STABILIZATION";
     ui_type = "radio";
     ui_tooltip = "Inverts the motion stabilization effect along the horizontal (X) axis.";
 > = false;
@@ -90,7 +90,7 @@ uniform int _GeometricTransformOrder <
     ui_category = "Main Shader";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Geometric Transform Order";
-    ui_text = "\nGeometric Transform";
+    ui_text = "GEOMETRIC TRANSFORMATION";
     ui_type = "combo";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the image.";
 > = 0;
@@ -120,7 +120,7 @@ uniform int _ScaleByImage <
     ui_category = "Main Shader";
     ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
     ui_label = "Cosmetic Scaling Method";
-    ui_text = "\n[Cosmetic] Image-Based Scaling";
+    ui_text = "COSMETIC - SCALE BY COLOR";
     ui_type = "combo";
     ui_tooltip = "Selects a color channel from the image to use as a scalar for cosmetic scaling effects.";
 > = 3;

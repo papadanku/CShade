@@ -67,7 +67,7 @@ uniform float _InputBias <
         ui_label = " ";
         ui_max = 100.0;
         ui_min = -100.0;
-        ui_text = "Offset (Horizontal, Vertical)";
+        ui_text = "OFFSET (X, Y)";
         ui_type = "slider";
         ui_tooltip = "Adjusts the horizontal and vertical position of the dot pattern on the screen.";
     > = 0.0;
@@ -77,7 +77,7 @@ uniform float _InputBias <
         ui_label = " ";
         ui_max = 10;
         ui_min = 0;
-        ui_text = "Crop (Left, Right, Top, Bottom)";
+        ui_text = "CROP (N, S, E, W)";
         ui_type = "slider";
         ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the dot pattern, effectively trimming the effect from the edges.";
     > = 0;
@@ -88,7 +88,7 @@ uniform float _InputBias <
         ui_max = 10.0;
         ui_min = -10.0;
         ui_step = 0.1;
-        ui_text = "Offset (Horizontal, Vertical)";
+        ui_text = "OFFSET (X, Y)";
         ui_type = "slider";
         ui_tooltip = "Adjusts the horizontal and vertical offset for the red channel's dot pattern.";
     > = 0.0;
@@ -118,7 +118,7 @@ uniform float _InputBias <
         ui_label = "Red Channel Crop";
         ui_max = 10;
         ui_min = 0;
-        ui_text = "Crop (Left, Right, Top, Bottom)";
+        ui_text = "CROP (N, S, E, W)";
         ui_type = "slider";
         ui_tooltip = "Defines the cropping boundaries (left, right, top, bottom) for the red channel's dot pattern.";
     > = 0;

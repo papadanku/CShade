@@ -18,16 +18,31 @@
 #include "shared/cCamera.fxh"
 
 // Inject cComposite
-#ifndef CCOMPOSITE_TOGGLE_GRADING
-    #define CCOMPOSITE_TOGGLE_GRADING 0
+#ifndef SHADER_TOGGLE_GRADING
+    #define SHADER_TOGGLE_GRADING 0
 #endif
-#ifndef CCOMPOSITE_TOGGLE_TONEMAP
-    #define CCOMPOSITE_TOGGLE_TONEMAP 0
+#ifndef SHADER_TOGGLE_TONEMAP
+    #define SHADER_TOGGLE_TONEMAP 0
 #endif
-#ifndef CCOMPOSITE_TOGGLE_PEAKING
-    #define CCOMPOSITE_TOGGLE_PEAKING 1
+#ifndef SHADER_TOGGLE_PEAKING
+    #define SHADER_TOGGLE_PEAKING 1
 #endif
+#define CCOMPOSITE_TOGGLE_GRADING SHADER_TOGGLE_GRADING
+#define CCOMPOSITE_TOGGLE_TONEMAP SHADER_TOGGLE_TONEMAP
+#define CCOMPOSITE_TOGGLE_PEAKING SHADER_TOGGLE_PEAKING
 #include "shared/cComposite.fxh"
+
+// Inject cLens.fxh
+#ifndef SHADER_TOGGLE_VIGNETTE
+    #define SHADER_TOGGLE_VIGNETTE 0
+#endif
+#ifndef SHADER_TOGGLE_GRAIN
+    #define SHADER_TOGGLE_GRAIN 0
+#endif
+#define CLENS_TOGGLE_ABBERATION 0
+#define CLENS_TOGGLE_VIGNETTE SHADER_TOGGLE_VIGNETTE
+#define CLENS_TOGGLE_GRAIN SHADER_TOGGLE_GRAIN
+#include "shared/cLens.fxh"
 
 #include "shared/cBlend.fxh"
 
@@ -36,7 +51,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_category = "CShade / Preprocessor Guide";
     ui_label = " ";
     ui_type = "radio";
-    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nCCOMPOSITE_TOGGLE_PEAKING - Enables the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
+    ui_text = "\nSHADER_TOGGLE_GRADING - Toggles color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_PEAKING - Toggles the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_AUTO_EXPOSURE - Toggles auto exposure.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
 >;
 
 /*
@@ -76,6 +91,17 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float3 ExposedColor = BaseColor;
     CComposite_ApplyOutput(BaseColor.rgb);
 
+    // Apply (optional) lens
+    #if SHADER_TOGGLE_VIGNETTE
+        float2 UNormTex = Input.Tex0 - 0.5;
+        CLens_ApplyVignette(BaseColor, UNormTex, 0.0, _CLens_Vignette);
+    #endif
+
+    // Apply (optional) vignette
+    #if SHADER_TOGGLE_GRAIN
+        CLens_ApplyFilmGrain(BaseColor, Input.HPos.xy, _CLens_GrainScale, _CLens_GrainAmount, _CLens_GrainSeed);
+    #endif
+
     // Apply (optional) exposure-peaking 
     CComposite_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
 
@@ -84,7 +110,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
     CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
-    Output = CBlend_OutputChannels(BaseColor.rgb, _CShade_AlphaFactor);
+    Output = CBlend_OutputChannels(BaseColor, _CShade_AlphaFactor);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -103,7 +129,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 technique CShade_AutoExposure
 <
     ui_label = "CShade / Auto Exposure [+?]";
-    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (CCOMPOSITE_TOGGLE_PEAKING).";
+    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (SHADER_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
 >
 {
     pass CCamera_CreateExposureTex

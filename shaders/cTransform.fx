@@ -47,7 +47,7 @@ uniform int _BaseGeometricTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
-    ui_text = "Base Layer";
+    ui_text = "BASE LAYER";
     ui_type = "combo";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the base layer.";
 > = 0;
@@ -77,7 +77,7 @@ uniform int _OverlayTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
-    ui_text = "\nOverlay Layer";
+    ui_text = "OVERLAY LAYER";
     ui_type = "combo";
     ui_tooltip = "Defines the order in which scaling, rotation, and translation operations are applied to the overlay layer.";
 > = 0;
@@ -107,7 +107,7 @@ uniform int _OverlayMaskTransformOrder <
     ui_category = "Main Shader / Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
-    ui_text = "\nOverlay Mask";
+    ui_text = "OVERLAY MASK";
     ui_type = "combo";
     ui_tooltip = "Defines the order in which geometric transformations are applied to the overlay mask.";
 > = 0;

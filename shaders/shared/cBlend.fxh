@@ -93,8 +93,8 @@
 
     uniform float _CShade_AlphaFactor <
         ui_category_closed = true;
-        ui_category = "Pipeline / Output / Merge";
-        ui_text = "Alpha Blend";
+        ui_category = "Output / Blending";
+        ui_text = "ALPHA BLEND";
         ui_label = "Alpha Blend Weight";
         ui_tooltip = "Adjusts the blending weight when using source alpha (SRCALPHA) or inverse source alpha (INVSRCALPHA) blend modes.";
         ui_type = "slider";
@@ -104,8 +104,8 @@
 
     uniform int _CShade_SwizzleRed <
         ui_category_closed = true;
-        ui_category = "Pipeline / Output / Merge";
-        ui_text = "\nColor Write Mask";
+        ui_category = "Output / Blending";
+        ui_text = "COLOR WRITE MASK";
         ui_label = "Map Red Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
@@ -113,7 +113,7 @@
     > = 0;
 
     uniform int _CShade_SwizzleGreen <
-        ui_category = "Pipeline / Output / Merge";
+        ui_category = "Output / Blending";
         ui_label = "Map Green Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
@@ -121,7 +121,7 @@
     > = 1;
 
     uniform int _CShade_SwizzleBlue <
-        ui_category = "Pipeline / Output / Merge";
+        ui_category = "Output / Blending";
         ui_label = "Map Blue Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
@@ -129,7 +129,7 @@
     > = 2;
 
     uniform int _CShade_SwizzleAlpha <
-        ui_category = "Pipeline / Output / Merge";
+        ui_category = "Output / Blending";
         ui_label = "Map Alpha Channel To";
         ui_type = "combo";
         ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
@@ -137,9 +137,9 @@
     > = 3;
 
     uniform int _CShade_OutputMode <
-        ui_category = "Pipeline / Output / Merge";
+        ui_category = "Output / Blending";
         ui_label = " ";
-        ui_text = "\n[Debug] Show Channel";
+        ui_text = "DEBUG";
         ui_tooltip = "Displays a specific color channel (Red, Green, Blue, or Alpha) for debugging purposes. Remember to reset this option when done.";
         ui_type = "combo";
         ui_items = "All\0Red\0Green\0Blue\0Alpha\0";

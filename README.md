@@ -83,11 +83,11 @@ For more detailed information on Gemini CLI capabilities and usage, refer to the
 
 #### UI
 
-In `ui_category`/`ui_label`, use `·` to separate between subcategories, if needed
+In `ui_category`/`ui_label`, use `/` to separate between subcategories, if needed
 
 ```hlsl
 uniform float _Level1Weight <
-    ui_category = "Bloom · Level Weights";
+    ui_category = "Bloom / Level Weights";
     ui_label = "Level 1";
     ui_type = "slider";
     ui_min = 0.0;
@@ -95,7 +95,7 @@ uniform float _Level1Weight <
 > = 1.0;
 
 uniform float _CShadeExposureSmoothingSpeed <
-    ui_category = "Pipeline · Output · Auto Exposure";
+    ui_category = "Output / Auto Exposure";
     ui_label = "Smoothing Speed";
     ui_type = "slider";
     ui_min = 0.1;
