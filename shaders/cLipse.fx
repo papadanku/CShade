@@ -11,11 +11,14 @@
 #include "shared/cShadeHDR.fxh"
 #include "shared/cColor.fxh"
 
-#define CCAMERA_TOGGLE_AUTO_EXPOSURE 0
-#define CCAMERA_TOGGLE_EXPOSURE_PEAKING 1
-#include "shared/cCamera.fxh"
-
+// Inject cComposite.fxh
+#define CCOMPOSITE_TOGGLE_GRADING 1
+#define CCOMPOSITE_TOGGLE_TONEMAP 1
+#ifndef CCOMPOSITE_TOGGLE_PEAKING
+    #define CCOMPOSITE_TOGGLE_PEAKING 0
+#endif
 #include "shared/cComposite.fxh"
+
 #include "shared/cBlend.fxh"
 
 /*
@@ -31,7 +34,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CComposite_ApplyOutput(Color.rgb);
 
     // Apply exposure peaking to areas that need it
-    CCAmera_ApplyExposurePeaking(Color, Input.HPos.xy);
+    CComposite_ApplyExposurePeaking(Color, Input.HPos.xy);
 
     // Our epic output
     Output = CBlend_OutputChannels(Color, _CShade_AlphaFactor);
@@ -39,8 +42,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Grading
 <
-    ui_label = "CShade / Color Grade";
-    ui_tooltip = "Standalone, adjustable color grading effect.";
+    ui_label = "CShade / Color Grade [?]";
+    ui_tooltip = "Standalone, adjustable color grading effect.\n\n[?] This shader has optional exposure peaking display (CCOMPOSITE_TOGGLE_PEAKING).";
 >
 {
     pass

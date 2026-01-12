@@ -6,31 +6,38 @@
     This effect also provides spot metering to calculate exposure from a specific screen area and exposure peaking to visualize currently exposed areas.
 */
 
-#include "shared/cColor.fxh"
-
 /*
     [ Shader Options ]
 */
 
-// Exposure-specific settings
-uniform float _Frametime < source = "frametime"; >;
-
 #include "shared/cShadeHDR.fxh"
+#include "shared/cColor.fxh"
 
+// Inject cCamera
 #define CCAMERA_TOGGLE_AUTO_EXPOSURE 1
-#define CCAMERA_TOGGLE_EXPOSURE_PEAKING 1
 #include "shared/cCamera.fxh"
 
+// Inject cComposite
+#ifndef CCOMPOSITE_TOGGLE_GRADING
+    #define CCOMPOSITE_TOGGLE_GRADING 0
+#endif
+#ifndef CCOMPOSITE_TOGGLE_TONEMAP
+    #define CCOMPOSITE_TOGGLE_TONEMAP 0
+#endif
+#ifndef CCOMPOSITE_TOGGLE_PEAKING
+    #define CCOMPOSITE_TOGGLE_PEAKING 1
+#endif
 #include "shared/cComposite.fxh"
+
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide / Shader";
-    ui_category_closed = false;
+    ui_category_closed = true;
+    ui_category = "CShade / Preprocessor Guide";
     ui_label = " ";
-    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_type = "radio";
-> = 0;
+    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nCCOMPOSITE_TOGGLE_PEAKING - Enables the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
+>;
 
 /*
     [ Textures & Samplers ]
@@ -51,7 +58,7 @@ void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 Tex = (_CCamera_MeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
     float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
-    Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
+    Output = CCamera_CreateExposureTex(LogLuminance);
     Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
 }
 
@@ -62,16 +69,18 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Apply auto exposure to base-color
     float Luma = tex2Dlod(SampleExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
-    Exposure ExposureData = CCamera_GetExposureData(Luma);
+    CCamera_Exposure ExposureData = CCamera_GetExposureData(Luma);
     BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
 
     // Store the exposed color here for checkerboard check
     float3 ExposedColor = BaseColor;
     CComposite_ApplyOutput(BaseColor.rgb);
 
-    // Apply overlays
+    // Apply (optional) exposure-peaking 
+    CComposite_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
+
+    // Apply (optional) overlays
     float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
-    CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
     CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
     CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
@@ -93,8 +102,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposure
 <
-    ui_label = "CShade / Auto Exposure [+]";
-    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).";
+    ui_label = "CShade / Auto Exposure [+?]";
+    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (CCOMPOSITE_TOGGLE_PEAKING).";
 >
 {
     pass CCamera_CreateExposureTex

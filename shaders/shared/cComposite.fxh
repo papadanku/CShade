@@ -1,20 +1,16 @@
 
 /*
     This header file provides a comprehensive color grading and tonemapping pipeline for post-processing effects. It allows shaders to apply a series of adjustments to the image, including exposure bias, color filtering, saturation, and contrast. It also implements advanced color controls such as Lift/Gamma/Gain for shadows, midtones, and highlights, with corresponding offset adjustments. A selection of tonemapping operators is available to manage HDR to SDR conversion. This file is crucial for achieving professional-grade color correction and stylized looks.
+
+    Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
+
+    Exposed Preprocessor Definitions: CCOMPOSITE_TOGGLE_GRADING, CCOMPOSITE_TOGGLE_TONEMAP, CCOMPOSITE_TOGGLE_PEAKING
 */
 
 #include "cColor.fxh"
 
 #if !defined(INCLUDE_CCOLOR_OUTPUT)
     #define INCLUDE_CCOLOR_OUTPUT
-
-    #ifndef CCOMPOSITE_TOGGLE_GRADING
-        #define CCOMPOSITE_TOGGLE_GRADING 1
-    #endif
-
-    #ifndef CCOMPOSITE_TOGGLE_TONEMAP
-        #define CCOMPOSITE_TOGGLE_TONEMAP 1
-    #endif
 
     #if CCOMPOSITE_TOGGLE_GRADING
         // Primary Adjustments
@@ -105,12 +101,14 @@
         > = 2;
     #endif
 
-    #if CCOMPOSITE_TOGGLE_TONEMAP
-        float3 CComposite_ApplyOutputTonemap(float3 HDR)
-        {
+    float3 CComposite_ApplyOutputTonemap(float3 HDR)
+    {
+        #if CCOMPOSITE_TOGGLE_TONEMAP
             return CColor_ApplyTonemap(HDR, _CComposite_Tonemapper);
-        }
-    #endif
+        #else
+            return HDR;
+        #endif
+    }
 
     /*
         John Hable's Minimal Color Grading
@@ -159,21 +157,21 @@
             d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
     */
 
-    #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
-        void CComposite_ApplyColorGrading(
-            inout float3 Color,
-            in float ExposureBias,
-            in float3 ColorFilter,
-            in float Saturation,
-            in float Contrast,
-            in float3 ShadowColor,
-            in float3 MidtoneColor,
-            in float3 HighlightColor,
-            in float ShadowOffset,
-            in float MidtoneOffset,
-            in float HighlightOffset
-        )
-        {
+    void CComposite_ApplyColorGrading(
+        inout float3 Color,
+        in float ExposureBias,
+        in float3 ColorFilter,
+        in float Saturation,
+        in float Contrast,
+        in float3 ShadowColor,
+        in float3 MidtoneColor,
+        in float3 HighlightColor,
+        in float ShadowOffset,
+        in float MidtoneOffset,
+        in float HighlightOffset
+    )
+    {
+        #if CCOMPOSITE_TOGGLE_GRADING && CCOMPOSITE_TOGGLE_TONEMAP
             // Constants
             const float ACEScc_MIDGRAY = 0.4135884;
 
@@ -226,8 +224,8 @@
 
             // Apply Linear Gamma
             Color = CColor_SRGBtoRGB(float4(Color, 0.0)).rgb;
-        }
-    #endif
+        #endif
+    }
 
     void CComposite_ApplyOutput(inout float3 Color)
     {
@@ -249,6 +247,76 @@
             Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
         #else
             Color = Color;
+        #endif
+    }
+
+    #if CCOMPOSITE_TOGGLE_PEAKING
+        uniform bool _CCamera_ExposurePeaking <
+            ui_text = "[Tools] Exposure Peaking";
+            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_label = "Show Exposure Peaking Overlay";
+            ui_type = "radio";
+            ui_tooltip = "When enabled, displays an overlay that highlights areas within a specified exposure threshold.";
+        > = false;
+
+        uniform int _CCamera_ExposurePeakingDitherType <
+            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_label = "Exposure Peaking Dither Algorithm";
+            ui_type = "combo";
+            ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
+            ui_tooltip = "Selects the dither algorithm used for the exposure peaking overlay.";
+        > = 0;
+
+        uniform float3 _CCamera_ExposurePeakingThreshold <
+            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_label = "Exposure Peaking Luminance Threshold";
+            ui_type = "slider";
+            ui_min = 0.0;
+            ui_max = 1.0;
+            ui_tooltip = "Sets the luminance threshold for exposure peaking, highlighting areas above this level.";
+        > = float3(1.0, 1.0, 1.0);
+
+        uniform int _CCamera_ExposurePeakingCellWidth <
+            ui_category = "Pipeline / Output / Auto Exposure";
+            ui_label = "Exposure Peaking Cell Size";
+            ui_type = "slider";
+            ui_min = 1;
+            ui_max = 16;
+            ui_tooltip = "Sets the width of the cells in the checkerboard pattern used for exposure peaking.";
+        > = 8;
+    #endif
+
+    void CComposite_ApplyExposurePeaking(inout float3 Color, in float2 Pos)
+    {
+        #if CCOMPOSITE_TOGGLE_PEAKING
+            if (_CCamera_ExposurePeaking)
+            {
+                // Create the checkerboard
+                float2 Grid = Pos / _CCamera_ExposurePeakingCellWidth;
+                float3 Checkerboard = frac(dot(floor(Grid), 0.5)) * 2.0;
+
+                // Compute our dithered thresholds
+                float Hash = 0.0;
+
+                switch (_CCamera_ExposurePeakingDitherType)
+                {
+                    case 0:
+                        Hash = CMath_GetGoldenRatioNoise(Pos);
+                        break;
+                    case 1:
+                        Hash = CMath_GetInterleavedGradientNoise(Pos);
+                        break;
+                    case 2:
+                        Hash = CMath_GetHash_FLT1(Pos, 0.0);
+                        break;
+                    default:
+                        Hash = 0.0;
+                        break;
+                }
+
+                float3 Threshold = _CCamera_ExposurePeakingThreshold + Hash;
+                Color = lerp(Color, Checkerboard, Color > Threshold);
+            }
         #endif
     }
 

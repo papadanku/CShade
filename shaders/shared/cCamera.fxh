@@ -1,6 +1,10 @@
 
 /*
-    This header file provides functions and UI controls for camera-related post-processing effects, primarily focusing on auto-exposure and exposure peaking. It allows shaders to dynamically adjust scene brightness, implement different metering methods (average or spot metering), and visualize luminance levels and spot metering areas. Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
+    This header file provides functions and UI controls for camera-related post-processing effects, primarily focusing on auto-exposure and exposure peaking.
+
+    It allows shaders to dynamically adjust scene brightness, implement different metering methods (average or spot metering), and visualize luminance levels and spot metering areas.
+
+    Exposed Preprocessor Definitions: CCAMERA_TOGGLE_AUTO_EXPOSURE
 */
 
 #include "cMath.fxh"
@@ -100,47 +104,67 @@
             ui_max = 1.0;
             ui_tooltip = "Adjusts the horizontal and vertical position of the spot metering area.";
         > = 0.0;
+    #endif
 
-        // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
-        float CCamera_GetLogLuminance(float3 Color)
-        {
+    uniform float _CCamera_Frametime < source = "frametime"; >;
+
+    struct CCamera_Exposure
+    {
+        float ExpLuma;
+        float Ev100;
+        float Value;
+    };
+
+    // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
+    float CCamera_GetLogLuminance(float3 Color)
+    {
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             float Luminance = max(max(Color.r, Color.g), Color.b);
             return log(max(Luminance, 1e-2));
-        }
+        #else
+            return Color;
+        #endif
+    }
 
-        float4 CCamera_CreateExposureTex(float Luminance, float FrameTime)
-        {
-            // .rgb = Output the highest brightness out of red/green/blue component
-            // .a = Output the weight for Temporal Smoothing
-            float Delay = 1e-3 * FrameTime;
+    float4 CCamera_CreateExposureTex(float Luminance)
+    {
+        // .rgb = Output the highest brightness out of red/green/blue component
+        // .a = Output the weight for Temporal Smoothing
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+            float Delay = 1e-3 * _CCamera_Frametime;
             return float4((float3)Luminance, saturate(Delay * _CCamera_ExposureSmoothingSpeed));
-        }
+        #else
+            return (float4)Luminance;
+        #endif
+    }
 
-        struct Exposure
-        {
-            float ExpLuma;
-            float Ev100;
-            float Value;
-        };
-
-        Exposure CCamera_GetExposureData(float LumaTex)
-        {
-            Exposure Output;
+    CCamera_Exposure CCamera_GetExposureData(float LumaTex)
+    {
+        CCamera_Exposure Output;
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             Output.ExpLuma = exp(LumaTex);
             Output.Ev100 = log2(Output.ExpLuma * 100.0 / 12.5);
             Output.Ev100 -= _CCamera_ExposureBias; // optional manual bias
             Output.Ev100 = clamp(Output.Ev100, -_CCamera_ExposureRange, _CCamera_ExposureRange);
             Output.Value = 1.0 / (1.2 * exp2(Output.Ev100));
             return Output;
-        }
+        #else
+            return Output;
+        #endif
+    }
 
-        float3 CCamera_ApplyAutoExposure(float3 Color, Exposure Input)
-        {
+    float3 CCamera_ApplyAutoExposure(float3 Color, CCamera_Exposure Input)
+    {
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             return Color * Input.Value;
-        }
+        #else
+            return Color;
+        #endif
+    }
 
-        void CCamera_ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in Exposure E)
-        {
+    void CCamera_ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in CCamera_Exposure E)
+    {
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             if (_CCamera_LumaMeter)
             {
                 // Maps texture coordinates less-than/equal to the brightness.
@@ -159,11 +183,13 @@
                 // Composite
                 Color = lerp(Color, AEMask, CropMask);
             }
-        }
+        #endif
+    }
 
-        // Exposure-specific functions
-        float2 CCamera_GetSpotMeterTex(float2 Tex)
-        {
+    // Exposure-specific functions
+    float2 CCamera_GetSpotMeterTex(float2 Tex)
+    {
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             // For spot-metering, we fill the target square texture with the region only
             float2 SpotMeterTex = CMath_UNORMtoSNORM_FLT2(Tex);
 
@@ -179,10 +205,14 @@
             SpotMeterTex = CMath_SNORMtoUNORM_FLT2(SpotMeterTex);
 
             return SpotMeterTex;
-        }
+        #else
+            return Tex;
+        #endif
+    }
 
-        void CCamera_ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 NonExposedColor)
-        {
+    void CCamera_ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 NonExposedColor)
+    {
+        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
             if ((_CCamera_MeteringType == 1) && _CCamera_ShowSpotMeterOverlay)
             {
                 /*
@@ -218,74 +248,6 @@
                 // Apply dot mask to output
                 Color = lerp(1.0, Color, DotMask);
             }
-        }
-    #endif
-
-    #if CCAMERA_TOGGLE_EXPOSURE_PEAKING
-        uniform bool _CCamera_ExposurePeaking <
-            ui_text = "\n[Tools] Exposure Peaking";
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Show Exposure Peaking Overlay";
-            ui_type = "radio";
-            ui_tooltip = "When enabled, displays an overlay that highlights areas within a specified exposure threshold.";
-        > = false;
-
-        uniform int _CCamera_ExposurePeakingDitherType <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Exposure Peaking Dither Algorithm";
-            ui_type = "combo";
-            ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0Disabled\0";
-            ui_tooltip = "Selects the dither algorithm used for the exposure peaking overlay.";
-        > = 0;
-
-        uniform float3 _CCamera_ExposurePeakingThreshold <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Exposure Peaking Luminance Threshold";
-            ui_type = "slider";
-            ui_min = 0.0;
-            ui_max = 1.0;
-            ui_tooltip = "Sets the luminance threshold for exposure peaking, highlighting areas above this level.";
-        > = float3(1.0, 1.0, 1.0);
-
-        uniform int _CCamera_ExposurePeakingCellWidth <
-            ui_category = "Pipeline / Output / Auto Exposure";
-            ui_label = "Exposure Peaking Cell Size";
-            ui_type = "slider";
-            ui_min = 1;
-            ui_max = 16;
-            ui_tooltip = "Sets the width of the cells in the checkerboard pattern used for exposure peaking.";
-        > = 8;
-
-        void CCAmera_ApplyExposurePeaking(inout float3 Color, in float2 Pos)
-        {
-            if (_CCamera_ExposurePeaking)
-            {
-                // Create the checkerboard
-                float2 Grid = Pos / _CCamera_ExposurePeakingCellWidth;
-                float3 Checkerboard = frac(dot(floor(Grid), 0.5)) * 2.0;
-
-                // Compute our dithered thresholds
-                float Hash = 0.0;
-
-                switch (_CCamera_ExposurePeakingDitherType)
-                {
-                    case 0:
-                        Hash = CMath_GetGoldenRatioNoise(Pos);
-                        break;
-                    case 1:
-                        Hash = CMath_GetInterleavedGradientNoise(Pos);
-                        break;
-                    case 2:
-                        Hash = CMath_GetHash_FLT1(Pos, 0.0);
-                        break;
-                    default:
-                        Hash = 0.0;
-                        break;
-                }
-
-                float3 Threshold = _CCamera_ExposurePeakingThreshold + Hash;
-                Color = lerp(Color, Checkerboard, Color > Threshold);
-            }
-        }
-    #endif
+        #endif
+    }
 #endif

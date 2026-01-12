@@ -51,27 +51,33 @@ uniform float _BloomIntensity <
 
 #include "shared/cShadeHDR.fxh"
 
+// Inject cCamera.fxh
 #ifndef CCAMERA_TOGGLE_AUTO_EXPOSURE
     #define CCAMERA_TOGGLE_AUTO_EXPOSURE 1
-
-    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
-        uniform float _Frametime < source = "frametime"; >;
-
-        #define CCAMERA_TOGGLE_EXPOSURE_PEAKING 1
-        #include "shared/cCamera.fxh"
-    #endif
 #endif
+#include "shared/cCamera.fxh"
 
+// Inject cComposite.fxh
+#ifndef CCOMPOSITE_TOGGLE_GRADING
+    #define CCOMPOSITE_TOGGLE_GRADING 0
+#endif
+#ifndef CCOMPOSITE_TOGGLE_TONEMAP
+    #define CCOMPOSITE_TOGGLE_TONEMAP 1
+#endif
+#ifndef CCOMPOSITE_TOGGLE_PEAKING
+    #define CCOMPOSITE_TOGGLE_PEAKING 0
+#endif
 #include "shared/cComposite.fxh"
+
 #include "shared/cBlend.fxh"
 
 uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide / Shader";
-    ui_category_closed = false;
+    ui_category_closed = true;
+    ui_category = "CShade / Preprocessor Guide";
     ui_label = " ";
-    ui_text = "\nCCAMERA_TOGGLE_AUTO_EXPOSURE - Enables auto exposure.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\nCCOMPOSITE_TOGGLE_GRADING - Enables color grading.\n\n\tOptions: 0 (disabled), 1 (enabled)\n\n";
     ui_type = "radio";
-> = 0;
+    ui_text = "\nCCOMPOSITE_TOGGLE_GRADING - Toggles color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nCCOMPOSITE_TOGGLE_PEAKING - Toggles the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nCCAMERA_TOGGLE_AUTO_EXPOSURE - Toggles auto exposure.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
+>;
 
 /*
     [ Textures & Samplers ]
@@ -114,7 +120,7 @@ CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, 
     void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
-        Output = CCamera_CreateExposureTex(LogLuminance, _Frametime);
+        Output = CCamera_CreateExposureTex(LogLuminance);
         Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
     }
 #endif
@@ -140,7 +146,7 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
         // Apply auto exposure to input
         float Luma = tex2D(SampleBloomExposureTex, Input.Tex0).r;
-        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        CCamera_Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
     #endif
 
@@ -198,7 +204,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Apply auto exposure to base-color
     #if CCAMERA_TOGGLE_AUTO_EXPOSURE
         float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 99.0)).r;
-        Exposure ExposureData = CCamera_GetExposureData(Luma);
+        CCamera_Exposure ExposureData = CCamera_GetExposureData(Luma);
         BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
     #endif
 
@@ -209,13 +215,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Apply color-grading
     CComposite_ApplyOutput(BaseColor.rgb);
 
-    // Apply overlays
-    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
-        float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
-        CCAmera_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
-        CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
-        CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
-    #endif
+    // Apply (optional) exposure-peaking 
+    CComposite_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
+
+    // Apply (optional) overlays
+    float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+    CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
+    CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
 
     Output = CBlend_OutputChannels(BaseColor.rgb, _CShade_AlphaFactor);
 }
@@ -235,8 +241,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade / Auto Exposure & Bloom [+]";
-    ui_tooltip = "Adjustable bloom with auto-exposure.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).";
+    ui_label = "CShade / Auto Exposure & Bloom [+?]";
+    ui_tooltip = "Adjustable bloom with auto-exposure.\n\n[+] This shader has optional color grading (CCOMPOSITE_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (CCOMPOSITE_TOGGLE_PEAKING).";
 >
 {
     // Prefilter

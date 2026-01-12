@@ -42,6 +42,7 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 CShade shaders have markers that signify important notes about the shader.
 
+- **Available Markers**: `[D, &, +, !, ?, $]`.
 - `[D]` **Depth Buffer**: Needs depth access.
 - `[&]` **Linked**: Needs another shader enabled first.
 - `[+]` **Preprocessor**: Extra features via **`Preprocessor definitions`**.
@@ -49,7 +50,7 @@ CShade shaders have markers that signify important notes about the shader.
 - `[?]` **Info**: General notes or tips.
 - `[$]` **Expensive**: High performance demand.
 
-For example, if you see `CShade / Extremely Expensive Shader [D] [!]`, it means this shader requires access to the depth buffer and has critical limitations. The included markers provide quick reference to these specific requirements and cautions.
+For example, if you see `CShade / Extremely Expensive Shader [D, !]`, it means this shader requires access to the depth buffer and has critical limitations. The included markers provide quick reference to these specific requirements and cautions.
 
 ## Advanced Documentation
 
