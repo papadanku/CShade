@@ -89,8 +89,9 @@ uniform float _Sharpening <
     ui_tooltip = "Controls the intensity of the Robust Contrast Adaptive Sharpening (RCAS) effect.";
 > = 0.5;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 #define FSR_RCAS_LIMIT (0.25 - (1.0 / 16.0))
 
@@ -107,11 +108,11 @@ void FFX_RCAS(
     TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
 
     float4 Sample[5];
-    Sample[0] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex);
-    Sample[1] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, TexArray[0].xy);
-    Sample[2] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, TexArray[0].zw);
-    Sample[3] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, TexArray[1].xy);
-    Sample[4] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, TexArray[1].zw);
+    Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+    Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
+    Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
+    Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
+    Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
 
     // Luma times 2.
     float Luma[5];
@@ -178,7 +179,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         OutputColor = OutputMask;
     }
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(OutputColor.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_RCAS
@@ -187,7 +194,7 @@ technique CShade_RCAS
     ui_tooltip = "AMD FidelityFX Robust Contrast Adaptive Sharpening (RCAS).";
 >
 {
-    pass
+    pass RobustContrastAdaptiveSharpening
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

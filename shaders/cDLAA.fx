@@ -18,7 +18,6 @@
     [Shader Options]
 */
 
-
 uniform bool _PreserveFrequencies <
     ui_category = "Main Shader";
     ui_label = "Retain Fine Details";
@@ -64,8 +63,9 @@ static const float ContrastThresholds[6] =
     0.0, 1.0 / 16.0, 1.0 / 8.0, 1.0 / 6.0, 1.0 / 4.0, 1.0 / 3.0
 };
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8, CSHADE_BUFFER_SIZE_0, RGBA8, 0)
 CSHADE_CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -250,7 +250,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Color.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Color.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Color.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_DLAA
@@ -259,14 +265,14 @@ technique CShade_DLAA
     ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA).";
 >
 {
-    pass PreFilter
+    pass Prefilter
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Prefilter;
         RenderTarget0 = TempTex0_RGBA8;
     }
 
-    pass DLAA
+    pass DirectionallyLocalizedAntiAliasing
     {
         CBLEND_CREATE_STATES()
 

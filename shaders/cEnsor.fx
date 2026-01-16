@@ -53,8 +53,9 @@ uniform float _Threshold <
     ui_tooltip = "Sets the value that the detected feature is compared against. Areas meeting the comparison criteria with this threshold will be pixelated.";
 > = 0.1;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
 
@@ -72,7 +73,7 @@ sampler2D SampleTempTex0
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     switch(_DetectionMode)
     {
@@ -116,7 +117,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Blocks = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
 
     // Initialize variables
@@ -154,7 +155,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Output.rgb = lerp(Color.rgb, Blocks.rgb, Mask);
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_Censor
@@ -163,7 +170,7 @@ technique CShade_Censor
     ui_tooltip = "Pixelates the screen based on features.";
 >
 {
-    pass
+    pass Blit
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
 
@@ -172,7 +179,7 @@ technique CShade_Censor
         RenderTarget = TempTex0_RGBA8_8;
     }
 
-    pass
+    pass Censor
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

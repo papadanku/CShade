@@ -67,8 +67,9 @@ static const float SubpixelBlendings[5] =
     1.0, 3.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0, 0.0
 };
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
@@ -290,13 +291,19 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
     }
 
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(FXAA.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(FXAA.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
+
     if (_DisplayMode == 1)
     {
-        FXAA = float3(Input.Tex0 - BlendTex, 0.0);
-        FXAA.xy = CMath_SNORMtoUNORM_FLT2(normalize(FXAA.xy));
+        Output.rgb = float3(Input.Tex0 - BlendTex, 0.0);
+        Output.rg = CMath_SNORMtoUNORM_FLT2(normalize(Output.rg));
     }
-
-    Output = CBlend_OutputChannels(FXAA, _CShade_AlphaFactor);
 }
 
 technique CShade_FXAA
@@ -305,7 +312,7 @@ technique CShade_FXAA
     ui_tooltip = "Fast Approximate Anti-Aliasing (FXAA).";
 >
 {
-    pass FXAA
+    pass FastApproximateAntiAliasing
     {
         CBLEND_CREATE_STATES()
 

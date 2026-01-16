@@ -160,8 +160,9 @@ uniform float3 _BackColor <
     ui_tooltip = "Sets the background color behind the dots in the pattern.";
 > = float3(1.0, 1.0, 1.0);
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
@@ -258,7 +259,7 @@ float GetTileCircleLength(Tile Input)
 
 void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     #if SHADER_TOGGLE_MONO
         switch(_Select)
@@ -369,7 +370,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         CropChannel(OutputColor.b, 2, BlueChannel_Tiles, _BlueChannelCrop);
     #endif
 
-    Output = CBlend_OutputChannels(OutputColor, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(OutputColor.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_Dots
@@ -378,14 +385,14 @@ technique CShade_Dots
     ui_tooltip = "Creates circles based on image features.\n\n[+] This shader has a monotone version (SHADER_TOGGLE_MONO).";
 >
 {
-    pass
+    pass Blit
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
         RenderTarget = TempTex0_RGBA8_8;
     }
 
-    pass
+    pass Dots
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

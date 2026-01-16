@@ -141,8 +141,9 @@ uniform float _ScaleByImageIntensity <
     ui_tooltip = "Controls the intensity of the cosmetic scaling effect driven by image content.";
 > = 1.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
@@ -186,7 +187,7 @@ CSHADE_CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPL
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -268,7 +269,7 @@ float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
     const float Pi2 = CMath_GetPi() * 2.0;
     CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale, true);
 
-    return CShadeHDR_GetBackBuffer(SampleStableTex, StableTex);
+    return tex2D(SampleStableTex, StableTex);
 }
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -284,7 +285,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
     float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
 
-    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Image = tex2Dlod(SampleCosmeticTex, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
     float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);
@@ -308,11 +309,17 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
-    pass \
+#define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
+    pass NAME \
     { \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
@@ -325,13 +332,11 @@ technique CShade_MotionStabilization
     ui_tooltip = "Motion stabilization effect.";
 >
 {
-    // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
+    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
-    // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
+    CREATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+    CREATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+    CREATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -345,7 +350,7 @@ technique CShade_MotionStabilization
         RenderTarget0 = FlowTex;
     }
 
-    pass Copy
+    pass CopyFrame
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
@@ -359,21 +364,21 @@ technique CShade_MotionStabilization
         RenderTarget0 = TempTex5_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
         RenderTarget0 = TempTex4_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
         RenderTarget0 = TempTex3_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;

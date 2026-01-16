@@ -8,8 +8,15 @@
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output.rgb = GetGaussianBlur(Input.Tex0, false).rgb;
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    float3 BlurColor = GetGaussianBlur(Input.Tex0, false).rgb;
+
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(BlurColor, _CShade_AlphaFactor);
+    #else
+        Output = float4(BlurColor, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_VerticalBlur
@@ -18,7 +25,7 @@ technique CShade_VerticalBlur
     ui_tooltip = "Horizonal Gaussian blur effect.";
 >
 {
-    pass
+    pass VerticalBlur
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

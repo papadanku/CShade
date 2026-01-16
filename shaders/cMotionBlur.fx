@@ -83,8 +83,9 @@ uniform float _TargetFrameRate <
     ui_tooltip = "Sets the target frame rate used for scaling the motion blur effect, especially when 'Enable Frame Rate Scaling' is active.";
 > = 60.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Textures & Samplers]
@@ -115,7 +116,7 @@ CSHADE_CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAM
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -203,7 +204,7 @@ float3 GetMotionBlur(CShade_VS2PS_Quad Input, float2 MotionVectors)
         float Random = (_BlurDirection == 1) ? CMath_UNORMtoSNORM_FLT1(Noise) : Noise;
         float MotionMultiplier = (float(i) + Random) / float(Samples - 1);
         float2 LocalTex = Input.Tex0 - (ScaledMotionVectors * MotionMultiplier);
-        float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, LocalTex);
+        float4 Color = tex2D(CShade_SampleColorTex, LocalTex);
         if (_BlurAccumuation == 1)
         {
             OutputColor = max(Color, OutputColor);
@@ -226,7 +227,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Input.Tex0 = Grid.Frac;
     }
 
-    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     float3 ShaderOutput = GetMotionBlur(Input, MotionVectors);
 
@@ -249,11 +250,17 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
-    pass \
+#define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
+    pass NAME \
     { \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
@@ -266,13 +273,11 @@ technique CShade_MotionBlur
     ui_tooltip = "Motion blur effect.";
 >
 {
-    // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
+    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
-    // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
+    CREATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+    CREATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+    CREATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -286,7 +291,7 @@ technique CShade_MotionBlur
         RenderTarget0 = FlowTex;
     }
 
-    pass Copy
+    pass CopyFrame
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
@@ -300,29 +305,28 @@ technique CShade_MotionBlur
         RenderTarget0 = TempTex5_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
         RenderTarget0 = TempTex4_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
         RenderTarget0 = TempTex3_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;
         RenderTarget0 = TempTex2_RG16F;
     }
 
-    // Motion blur
-    pass
+    pass MotionBlur
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

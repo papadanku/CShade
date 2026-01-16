@@ -3,6 +3,8 @@
     [Shader Options]
 */
 
+#include "shared/cBlur.fxh"
+
 uniform float _Sigma <
     ui_category = "Main Shader";
     ui_label = "Blur Strength";
@@ -12,10 +14,9 @@ uniform float _Sigma <
     ui_tooltip = "Controls the spread of the Gaussian blur. Higher values result in a wider and more intense blur.";
 > = 1.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
-
-#include "shared/cBlur.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -29,13 +30,13 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 
     if (_Sigma == 0.0)
     {
-        return CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
+        return tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
     }
     else
     {
         // Sample and weight center first to get even number sides
         float TotalWeight = CBlur_GetGaussianWeight1D(0.0, _Sigma);
-        float4 OutputColor = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex) * TotalWeight;
+        float4 OutputColor = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0)) * TotalWeight;
 
         for (float i = 1.0; i < KernelSize; i += 2.0)
         {
@@ -43,8 +44,8 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
             float LinearOffset = CBlur_GetGaussianOffset(i, _Sigma, LinearWeight);
             float4 TexA = float4(Tex - LinearOffset * PixelSize, 0.0, 0.0);
             float4 TexB = float4(Tex + LinearOffset * PixelSize, 0.0, 0.0);
-            OutputColor += CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, TexA) * LinearWeight;
-            OutputColor += CShadeHDR_Tex2Dlod_TonemapToRGB(CShade_SampleColorTex, TexB) * LinearWeight;
+            OutputColor += tex2Dlod(CShade_SampleColorTex, TexA) * LinearWeight;
+            OutputColor += tex2Dlod(CShade_SampleColorTex, TexB) * LinearWeight;
             TotalWeight += LinearWeight * 2.0;
         }
 

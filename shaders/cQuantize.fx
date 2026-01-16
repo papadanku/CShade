@@ -50,8 +50,9 @@ uniform int3 _Range <
     ui_tooltip = "Defines the number of distinct color bands available for each color channel, creating a quantized or posterized look.";
 > = 8;
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
@@ -99,7 +100,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     ColorMap.rgb += (Dither / _Range);
     ColorMap.rgb = floor(ColorMap.rgb * _Range) / _Range;
 
-    Output = CBlend_OutputChannels(ColorMap.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(ColorMap.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(ColorMap.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_Quantize
@@ -108,7 +115,7 @@ technique CShade_Quantize
     ui_tooltip = "Artificial quantization effect.";
 >
 {
-    pass
+    pass Quantize
     {
         CBLEND_CREATE_STATES()
 

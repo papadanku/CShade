@@ -19,8 +19,9 @@ uniform int _Select <
     ui_tooltip = "Selects the normalization algorithm to apply, such as Local Contrast Normalization or Census Transform.";
 > = 0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -37,15 +38,15 @@ float4 GetCensusTransform(float2 Tex)
 
     const int Neighbors = 8;
     float4 SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.xy);
-    SampleNeighbor[1] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xy);
-    SampleNeighbor[2] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xy);
-    SampleNeighbor[3] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.xz);
-    SampleNeighbor[4] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xz);
-    SampleNeighbor[5] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.xw);
-    SampleNeighbor[6] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xw);
-    SampleNeighbor[7] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xw);
-    float4 CenterSample = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xz);
+    SampleNeighbor[0] = tex2D(CShade_SampleColorTex, Tex0.xy);
+    SampleNeighbor[1] = tex2D(CShade_SampleColorTex, Tex1.xy);
+    SampleNeighbor[2] = tex2D(CShade_SampleColorTex, Tex2.xy);
+    SampleNeighbor[3] = tex2D(CShade_SampleColorTex, Tex0.xz);
+    SampleNeighbor[4] = tex2D(CShade_SampleColorTex, Tex2.xz);
+    SampleNeighbor[5] = tex2D(CShade_SampleColorTex, Tex0.xw);
+    SampleNeighbor[6] = tex2D(CShade_SampleColorTex, Tex1.xw);
+    SampleNeighbor[7] = tex2D(CShade_SampleColorTex, Tex2.xw);
+    float4 CenterSample = tex2D(CShade_SampleColorTex, Tex1.xz);
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for (int i = 0; i < Neighbors; i++)
@@ -63,11 +64,11 @@ float4 GetLocalContrastNormalization(float2 Tex)
     float2 Delta = fwidth(Tex);
 
     float4 S[5];
-    S[0] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex);
-    S[1] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex + (float2(-1.5, 0.0) * Delta));
-    S[2] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex + (float2(1.5, 0.0) * Delta));
-    S[3] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex + (float2(0.0, -1.5) * Delta));
-    S[4] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex + (float2(0.0, 1.5) * Delta));
+    S[0] = tex2D(CShade_SampleColorTex, Tex);
+    S[1] = tex2D(CShade_SampleColorTex, Tex + (float2(-1.5, 0.0) * Delta));
+    S[2] = tex2D(CShade_SampleColorTex, Tex + (float2(1.5, 0.0) * Delta));
+    S[3] = tex2D(CShade_SampleColorTex, Tex + (float2(0.0, -1.5) * Delta));
+    S[4] = tex2D(CShade_SampleColorTex, Tex + (float2(0.0, 1.5) * Delta));
     float4 Mean = (S[0] + S[1] + S[2] + S[3] + S[4]) / 5.0;
 
     // Calculate standard deviation
@@ -99,7 +100,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_Normalize
@@ -108,7 +115,7 @@ technique CShade_Normalize
     ui_tooltip = "Local normalization algorithms.";
 >
 {
-    pass
+    pass Normalize
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

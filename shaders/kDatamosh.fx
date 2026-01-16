@@ -112,8 +112,9 @@ uniform float _Diffusion <
     ui_tooltip = "Controls the amount of random displacement applied to pixels, contributing to the glitch effect.";
 > = 2.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
@@ -158,7 +159,7 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING,
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -322,7 +323,7 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
     float Disp = tex2D(SampleAccumTex, Tex).r;
 
     // Color from the original image
-    float4 Work = CShadeHDR_GetBackBuffer(SampleFeedbackTex, Tex + MV);
+    float4 Work = tex2D(SampleFeedbackTex, Tex + MV);
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
@@ -348,11 +349,17 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 TexSize = fwidth(Input.Tex0);
-    float4 Base = CShadeHDR_GetBackBuffer(SampleSourceTex, Input.Tex0);
+    float4 Base = tex2D(SampleSourceTex, Input.Tex0);
     float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
 
-    Output = CBlend_OutputChannels(Datamosh.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Datamosh.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Datamosh.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -360,8 +367,8 @@ void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output = tex2D(CShade_SampleColorTex, Input.Tex0);
 }
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
-    pass \
+#define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
+    pass NAME \
     { \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
@@ -374,13 +381,11 @@ technique CShade_KinoDatamosh
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
-    // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
+    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
-    // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
+    CREATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+    CREATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+    CREATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -394,7 +399,7 @@ technique CShade_KinoDatamosh
         RenderTarget0 = FlowTex;
     }
 
-    pass Copy
+    pass CopyFrame
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
@@ -408,21 +413,21 @@ technique CShade_KinoDatamosh
         RenderTarget0 = TempTex5_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
         RenderTarget0 = TempTex4_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
         RenderTarget0 = TempTex3_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;
@@ -430,7 +435,7 @@ technique CShade_KinoDatamosh
     }
 
     // Datamoshing
-    pass
+    pass Accumulate
     {
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;
@@ -443,7 +448,7 @@ technique CShade_KinoDatamosh
         RenderTarget0 = AccumTex;
     }
 
-    pass
+    pass Datamosh
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
@@ -453,7 +458,7 @@ technique CShade_KinoDatamosh
     }
 
     // Copy frame for feedback
-    pass
+    pass CopyBackbuffer
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
 

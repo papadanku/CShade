@@ -30,16 +30,27 @@
 /*
     This header file provides a set of functions for applying lens-related visual effects, building upon AMD's FidelityFX Lens algorithm. It primarily focuses on simulating film grain, chromatic aberration, and vignetting. The file includes functions to calculate chromatic aberration offsets, apply film grain using simplex noise, and generate a vignette mask. This header enables the creation of realistic or stylized camera lens imperfections within shaders.
 
-    Abstracted Preprocessor Definitions: CLENS_TOGGLE_ABBERATION, CLENS_TOGGLE_GRAIN, CLENS_TOGGLE_VIGNETTE
+    Abstracted Preprocessor Definitions: CSHADE_APPLY_ABBERATION, CSHADE_APPLY_GRAIN, CSHADE_APPLY_VIGNETTE
 */
 
-#include "shared/cMath.fxh"
-#include "shared/cShadeHDR.fxh"
+#include "cMath.fxh"
 
-#if !defined(INCLUDE_FIDELITYFX_LENS)
-    #define INCLUDE_FIDELITYFX_LENS
+#if !defined(CSHADE_FIDELITYFX_LENS)
+    #define CSHADE_FIDELITYFX_LENS
 
-    #if CLENS_TOGGLE_ABBERATION
+    #ifndef CSHADE_APPLY_ABBERATION
+        #define CSHADE_APPLY_ABBERATION 0
+    #endif
+
+    #ifndef CSHADE_APPLY_GRAIN
+        #define CSHADE_APPLY_GRAIN 0
+    #endif
+
+    #ifndef CSHADE_APPLY_VIGNETTE
+        #define CSHADE_APPLY_VIGNETTE 0
+    #endif
+
+    #if CSHADE_APPLY_ABBERATION
         uniform float _CLens_ChromAb <
             ui_category = "Output / Lens";
             ui_text = "CHROMATIC ABBERATION";
@@ -51,7 +62,7 @@
         > = 1.65;
     #endif
 
-    #if CLENS_TOGGLE_VIGNETTE
+    #if CSHADE_APPLY_VIGNETTE
         uniform float _CLens_Vignette <
             ui_category = "Output / Lens";
             ui_text = "VIGNETTE";
@@ -63,7 +74,7 @@
         > = 0.6;
     #endif
 
-    #if CLENS_TOGGLE_GRAIN
+    #if CSHADE_APPLY_GRAIN
         uniform float _CLens_Time < source = "timer"; >;
 
         uniform bool _CLens_UseTimeSeed <
@@ -240,9 +251,9 @@
         float2 UNormTex = Tex - 0.5;
 
         // Run Lens
-        Color.r = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
-        Color.g = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
-        Color.b = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
+        Color.r = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
+        Color.g = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
+        Color.b = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
         CLens_ApplyVignette(Color, UNormTex, 0.0, Vignette);
         CLens_ApplyFilmGrain(Color, HPos, GrainScale, GrainAmount, GrainSeed);
     }

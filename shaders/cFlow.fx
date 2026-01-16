@@ -38,8 +38,9 @@ uniform float _BlendFactor <
     ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
 > = 0.45;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 #ifndef SHADER_OPTICAL_FLOW_SAMPLING
     #define SHADER_OPTICAL_FLOW_SAMPLING POINT
@@ -92,7 +93,7 @@ void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float3 LogColor = CColor_EncodeLogC(Color.rgb) / CColor_EncodeLogC(1.0);
 
     float Sum = dot(LogColor, 1.0);
@@ -192,30 +193,37 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     LIC /= WeightSum;
 
     // Conditional output
+    float3 OutputColor = 0.0;
     switch (_DisplayMode)
     {
         case 0:
-            Output.rgb = VectorColors;
+            OutputColor = VectorColors;
             break;
         case 1:
-            Output.rgb = RenormalizedVectorColors;
+            OutputColor = RenormalizedVectorColors;
             break;
         case 2:
-            Output.rgb = LIC;
+            OutputColor = LIC;
             break;
         case 3:
-            Output.rgb = LIC * RenormalizedVectorColors;
+            OutputColor = LIC * RenormalizedVectorColors;
             break;
         default:
-            Output.rgb = 0.0;
+            OutputColor = 0.0;
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(OutputColor.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
-    pass \
+#define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
+    pass NAME \
     { \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
@@ -228,7 +236,7 @@ technique GenerateNoise <
     hidden = true;
 >
 {
-    pass
+    pass GenerateNoise
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_GenerateNoise;
@@ -242,13 +250,11 @@ technique CShade_Flow
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
-    // Normalize current frame
-    CREATE_PASS(CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
+    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
-    // Bilinear Lucas-Kanade Optical Flow
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
-    CREATE_PASS(CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
+    CREATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
+    CREATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
+    CREATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -262,7 +268,7 @@ technique CShade_Flow
         RenderTarget0 = FlowTex;
     }
 
-    pass Copy
+    pass CopyFrame
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
@@ -276,28 +282,28 @@ technique CShade_Flow
         RenderTarget0 = TempTex5_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
         RenderTarget0 = TempTex4_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
         RenderTarget0 = TempTex3_RG16F;
     }
 
-    pass BilateralUpsample
+    pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;
         RenderTarget0 = TempTex2_RG16F;
     }
 
-    pass
+    pass Main
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

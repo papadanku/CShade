@@ -23,8 +23,9 @@ uniform float4 _Color <
     ui_tooltip = "Sets the solid color that the shader will output.";
 > = 0.5;
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
@@ -32,13 +33,14 @@ uniform float4 _Color <
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
+    // RENDER
     #if (CBLEND_BLENDENABLE == TRUE)
         float Alpha = _BlendWithAlpha ? _Color.a * _CShade_AlphaFactor : _CShade_AlphaFactor;
+        Output = float4(_Color.rgb, Alpha);
     #else
-        float Alpha = _Color.a;
+        Output = _Color;
     #endif
-
-    Output = CBlend_OutputChannels(_Color.rgb, Alpha);
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_SolidColor
@@ -47,7 +49,7 @@ technique CShade_SolidColor
     ui_tooltip = "Output a solid color.";
 >
 {
-    pass
+    pass SolidColor
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

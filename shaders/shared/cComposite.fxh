@@ -4,15 +4,31 @@
 
     Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
 
-    Abstracted Preprocessor Definitions: CCOMPOSITE_TOGGLE_GRADING, CCOMPOSITE_TOGGLE_TONEMAP, CCOMPOSITE_TOGGLE_PEAKING
+    Abstracted Preprocessor Definitions: CSHADE_APPLY_GRADING, CSHADE_APPLY_TONEMAP, CSHADE_APPLY_PEAKING, CSHADE_APPLY_SWIZZLE
 */
 
 #include "cColor.fxh"
 
-#if !defined(INCLUDE_CCOLOR_OUTPUT)
-    #define INCLUDE_CCOLOR_OUTPUT
+#if !defined(CSHADE_COMPOSITE)
+    #define CSHADE_COMPOSITE
 
-    #if CCOMPOSITE_TOGGLE_GRADING
+    #ifndef CSHADE_APPLY_GRADING
+        #define CSHADE_APPLY_GRADING 0
+    #endif
+
+    #ifndef CSHADE_APPLY_TONEMAP
+        #define CSHADE_APPLY_TONEMAP 0
+    #endif
+
+    #ifndef CSHADE_APPLY_PEAKING
+        #define CSHADE_APPLY_PEAKING 0
+    #endif
+
+    #ifndef CSHADE_APPLY_SWIZZLE
+        #define CSHADE_APPLY_SWIZZLE 0
+    #endif
+
+    #if CSHADE_APPLY_GRADING
         // Primary Adjustments
         uniform float _CComposite_ExposureBias <
             ui_category = "Output / Color Grade";
@@ -90,7 +106,7 @@
         > = 0.0;
     #endif
 
-    #if CCOMPOSITE_TOGGLE_TONEMAP
+    #if CSHADE_APPLY_TONEMAP
         uniform int _CComposite_Tonemapper <
             ui_category_closed = true;
             ui_category = "Output / Tonemap";
@@ -101,9 +117,54 @@
         > = 2;
     #endif
 
+    #if CSHADE_APPLY_SWIZZLE
+        uniform int _CShade_SwizzleRed <
+            ui_category_closed = true;
+            ui_category = "Output / Swizzle";
+            ui_text = "COLOR WRITE MASK";
+            ui_label = "Map Red Channel To";
+            ui_type = "combo";
+            ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+            ui_tooltip = "Maps the red output channel to one of the source color or alpha channels, or disables it.";
+        > = 0;
+
+        uniform int _CShade_SwizzleGreen <
+            ui_category = "Output / Swizzle";
+            ui_label = "Map Green Channel To";
+            ui_type = "combo";
+            ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+            ui_tooltip = "Maps the green output channel to one of the source color or alpha channels, or disables it.";
+        > = 1;
+
+        uniform int _CShade_SwizzleBlue <
+            ui_category = "Output / Swizzle";
+            ui_label = "Map Blue Channel To";
+            ui_type = "combo";
+            ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+            ui_tooltip = "Maps the blue output channel to one of the source color or alpha channels, or disables it.";
+        > = 2;
+
+        uniform int _CShade_SwizzleAlpha <
+            ui_category = "Output / Swizzle";
+            ui_label = "Map Alpha Channel To";
+            ui_type = "combo";
+            ui_items = "Red\0Green\0Blue\0Alpha\0None\0";
+            ui_tooltip = "Maps the alpha output channel to one of the source color or alpha channels, or disables it.";
+        > = 3;
+
+        uniform int _CShade_OutputMode <
+            ui_category = "Output / Swizzle";
+            ui_label = " ";
+            ui_text = "DEBUG";
+            ui_tooltip = "Displays a specific color channel (Red, Green, Blue, or Alpha) for debugging purposes. Remember to reset this option when done.";
+            ui_type = "combo";
+            ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
+        > = 0;
+    #endif
+
     float3 CComposite_ApplyOutputTonemap(float3 HDR)
     {
-        #if CCOMPOSITE_TOGGLE_TONEMAP
+        #if CSHADE_APPLY_TONEMAP
             return CColor_ApplyTonemap(HDR, _CComposite_Tonemapper);
         #else
             return HDR;
@@ -171,7 +232,7 @@
         in float HighlightOffset
     )
     {
-        #if CCOMPOSITE_TOGGLE_GRADING
+        #if CSHADE_APPLY_GRADING
             // Constants
             const float ACEScc_MIDGRAY = 0.4135884;
 
@@ -213,7 +274,7 @@
             Color = max(Color, 0.0);
 
             // Apply Filmic Curve
-            #if CCOMPOSITE_TOGGLE_TONEMAP
+            #if CSHADE_APPLY_TONEMAP
                 Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
             #endif
 
@@ -231,7 +292,7 @@
 
     void CComposite_ApplyOutput(inout float3 Color)
     {
-        #if CCOMPOSITE_TOGGLE_GRADING
+        #if CSHADE_APPLY_GRADING
             CComposite_ApplyColorGrading(
                 Color,
                 _CComposite_ExposureBias,
@@ -245,14 +306,14 @@
                 _CComposite_MidtoneOffset,
                 _CComposite_HighlightOffset
             );
-        #elif CCOMPOSITE_TOGGLE_TONEMAP
+        #elif CSHADE_APPLY_TONEMAP
             Color = CColor_ApplyTonemap(Color, _CComposite_Tonemapper);
         #else
             Color = Color;
         #endif
     }
 
-    #if CCOMPOSITE_TOGGLE_PEAKING
+    #if CSHADE_APPLY_PEAKING
         uniform bool _CCamera_ExposurePeaking <
             ui_text = "TOOLS - EXPOSURE PEAKING";
             ui_category = "Output / Peaking";
@@ -288,9 +349,72 @@
         > = 8;
     #endif
 
+    void CComposite_SwapChannels(inout float Color, in float4 Cache, in int Parameter)
+    {
+        switch (Parameter)
+        {
+            case 0:
+                Color = Cache.r;
+                break;
+            case 1:
+                Color = Cache.g;
+                break;
+            case 2:
+                Color = Cache.b;
+                break;
+            case 3:
+                Color = Cache.a;
+                break;
+            default:
+                Color = 0.0;
+                break;
+        }
+    }
+
+    float4 CComposite_OutputChannels(float3 Color, float Alpha)
+    {
+        #if CSHADE_APPLY_SWIZZLE
+            float4 Cache = float4(Color, Alpha);
+            float4 Channels = Cache;
+            CComposite_SwapChannels(Channels.r, Cache, _CShade_SwizzleRed);
+            CComposite_SwapChannels(Channels.g, Cache, _CShade_SwizzleGreen);
+            CComposite_SwapChannels(Channels.b, Cache, _CShade_SwizzleBlue);
+            CComposite_SwapChannels(Channels.a, Cache, _CShade_SwizzleAlpha);
+
+            // Process OutputColor
+            float4 OutputColor = 0.0;
+            switch (_CShade_OutputMode)
+            {
+                case 1:
+                    OutputColor.r = Channels.r;
+                    OutputColor.a = 1.0;
+                    break;
+                case 2:
+                    OutputColor.g = Channels.g;
+                    OutputColor.a = 1.0;
+                    break;
+                case 3:
+                    OutputColor.b = Channels.b;
+                    OutputColor.a = 1.0;
+                    break;
+                case 4: // Write to all channels for alpha, so people can see it
+                    OutputColor.rgb = Channels.a;
+                    OutputColor.a = 1.0;
+                    break;
+                default: // No Debug
+                    OutputColor = Channels;
+                    break;
+            }
+
+            return OutputColor;
+        #else
+            return float4(Color, Alpha);
+        #endif
+    }
+
     void CComposite_ApplyExposurePeaking(inout float3 Color, in float2 Pos)
     {
-        #if CCOMPOSITE_TOGGLE_PEAKING
+        #if CSHADE_APPLY_PEAKING
             if (_CCamera_ExposurePeaking)
             {
                 // Create the checkerboard

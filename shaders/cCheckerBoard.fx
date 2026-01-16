@@ -42,8 +42,9 @@ uniform float3 _Color2 <
     ui_tooltip = "Defines the second color used in the checkerboard pattern.";
 > = 0.0;
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
@@ -55,7 +56,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Checkerboard = _InvertCheckerboard ? 1.0 - Checkerboard : Checkerboard;
     Checkerboard = Checkerboard == 1.0 ? _Color1 : _Color2;
 
-    Output = CBlend_OutputChannels(Checkerboard, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Checkerboard, _CShade_AlphaFactor);
+    #else
+        Output = float4(Checkerboard, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_CheckerBoard
@@ -64,7 +71,7 @@ technique CShade_CheckerBoard
     ui_tooltip = "Adjustable checkerboard effect.";
 >
 {
-    pass
+    pass Checkerboard
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

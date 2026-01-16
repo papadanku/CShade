@@ -11,18 +11,13 @@
 */
 
 #include "shared/cColor.fxh"
-#include "shared/cShadeHDR.fxh"
 
-// Inject cComposite.fxh
-#ifndef SHADER_TOGGLE_PEAKING
-    #define SHADER_TOGGLE_PEAKING 0
-#endif
-#define CCOMPOSITE_TOGGLE_GRADING 1
-#define CCOMPOSITE_TOGGLE_TONEMAP 1
-#define CCOMPOSITE_TOGGLE_PEAKING SHADER_TOGGLE_PEAKING
-#include "shared/cComposite.fxh"
-
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#define CSHADE_APPLY_GRADING 1
+#define CSHADE_APPLY_TONEMAP 1
+#define CSHADE_APPLY_PEAKING 1
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -31,25 +26,24 @@
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     // Get backbuffer
-    float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
 
-    // Apply color grading
-    CComposite_ApplyOutput(Color.rgb);
-
-    // Apply exposure peaking to areas that need it
-    CComposite_ApplyExposurePeaking(Color, Input.HPos.xy);
-
-    // Our epic output
-    Output = CBlend_OutputChannels(Color, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Color.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Color.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
-technique CShade_Grading
+technique CShade_ColorGrade
 <
     ui_label = "CShade / Color Grade [?]";
     ui_tooltip = "Standalone, adjustable color grading.\n\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
 >
 {
-    pass
+    pass ColorGrade
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

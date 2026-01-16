@@ -35,8 +35,9 @@ uniform float _Intensity <
     ui_tooltip = "Controls the overall intensity or strength of the threshold effect.";
 > = 1.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -46,7 +47,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5f);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     // Under-threshold
     float Brightness = CColor_RGBtoLuma(Color.rgb, 3);
@@ -55,8 +56,15 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Combine and apply the brightness response curve
     Color = Color * max(ResponseCurve, Brightness - _Threshold) / max(Brightness, 1e-10);
+    Color.rgb = saturate(Color.rgb * _Intensity);
 
-    Output = CBlend_OutputChannels(saturate(Color.rgb * _Intensity), _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Color.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Color.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_Threshold
@@ -65,7 +73,7 @@ technique CShade_Threshold
     ui_tooltip = "Threshold the image.";
 >
 {
-    pass
+    pass Threshold
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

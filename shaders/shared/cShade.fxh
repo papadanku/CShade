@@ -155,4 +155,38 @@
         return Output;
     }
 
+    // Include respective modules
+    #include "cCamera.fxh"
+    #include "cComposite.fxh"
+    #include "cLens.fxh"
+    #include "cBlend.fxh"
+
+    void CShade_Render(inout float4 Output, in float2 HPos, in float2 Tex)
+    {
+        // Apply (optional) color grading
+        #if defined(CSHADE_COMPOSITE)
+            CComposite_ApplyOutput(Output.rgb);
+        #endif
+
+        // Apply (optional) lens
+        #if CSHADE_APPLY_VIGNETTE
+            float2 UNormTex = Tex - 0.5;
+            CLens_ApplyVignette(Output.rgb, UNormTex, 0.0, _CLens_Vignette);
+        #endif
+
+        // Apply (optional) vignette
+        #if CSHADE_APPLY_GRAIN
+            CLens_ApplyFilmGrain(Output.rgb, HPos, _CLens_GrainScale, _CLens_GrainAmount, _CLens_GrainSeed);
+        #endif
+
+        // Apply (optional) exposure-peaking 
+        #if defined(CSHADE_APPLY_PEAKING)
+            CComposite_ApplyExposurePeaking(Output.rgb, HPos);
+        #endif
+
+        #if defined(CSHADE_BLENDING)
+            Output = CComposite_OutputChannels(Output.rgb, Output.a);
+        #endif
+    }
+
 #endif

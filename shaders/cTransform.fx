@@ -166,8 +166,9 @@ uniform float4 _Addition <
     ui_tooltip = "Applies an addition factor to the RGB color channels, shifting the overall brightness.";
 > = 0.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
@@ -240,29 +241,31 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     // Sample the texture and apply the color transform
-    float4 Texture = CShadeHDR_Tex2Dlod_TonemapToRGB(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Texture = tex2D(SampleTransformTex, float4(Input.Tex0, 0.0, 0.0));
     ApplyColorTransform(Texture);
 
+    // RENDER
     #if (CBLEND_BLENDENABLE == TRUE)
         float Alpha = _CShade_AlphaFactor;
         if (_BlendWithAlpha)
         {
             Alpha *= Texture.a;
         }
+        Output = float4(Texture.rgb, Alpha);
     #else
         float Alpha = 1.0;
+        Output = float4(Texture.rgb, Alpha);
     #endif
-
-    Output = CBlend_OutputChannels(Texture.rgb, Alpha);
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
-technique CShade_SolidColor
+technique CShade_Transform
 <
     ui_label = "CShade / Geometric & Color Transform";
     ui_tooltip = "Translate, scale, and/or rotate the backbuffer.";
 >
 {
-    pass
+    pass Transform
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

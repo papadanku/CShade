@@ -10,41 +10,11 @@
     [ Shader Options ]
 */
 
-#include "shared/cShadeHDR.fxh"
 #include "shared/cColor.fxh"
 
-// Inject cCamera
-#define CCAMERA_TOGGLE_AUTO_EXPOSURE 1
-#include "shared/cCamera.fxh"
-
-// Inject cComposite
-#ifndef SHADER_TOGGLE_GRADING
-    #define SHADER_TOGGLE_GRADING 0
-#endif
-#ifndef SHADER_TOGGLE_TONEMAP
-    #define SHADER_TOGGLE_TONEMAP 0
-#endif
-#ifndef SHADER_TOGGLE_PEAKING
-    #define SHADER_TOGGLE_PEAKING 1
-#endif
-#define CCOMPOSITE_TOGGLE_GRADING SHADER_TOGGLE_GRADING
-#define CCOMPOSITE_TOGGLE_TONEMAP SHADER_TOGGLE_TONEMAP
-#define CCOMPOSITE_TOGGLE_PEAKING SHADER_TOGGLE_PEAKING
-#include "shared/cComposite.fxh"
-
-// Inject cLens.fxh
-#ifndef SHADER_TOGGLE_VIGNETTE
-    #define SHADER_TOGGLE_VIGNETTE 0
-#endif
-#ifndef SHADER_TOGGLE_GRAIN
-    #define SHADER_TOGGLE_GRAIN 0
-#endif
-#define CLENS_TOGGLE_ABBERATION 0
-#define CLENS_TOGGLE_VIGNETTE SHADER_TOGGLE_VIGNETTE
-#define CLENS_TOGGLE_GRAIN SHADER_TOGGLE_GRAIN
-#include "shared/cLens.fxh"
-
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 1
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category_closed = true;
@@ -71,7 +41,7 @@ CSHADE_CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CL
 void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Tex = (_CCamera_MeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
-    float3 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex).rgb;
+    float3 Color = tex2D(CShade_SampleColorTex, Tex).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
     Output = CCamera_CreateExposureTex(LogLuminance);
     Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
@@ -79,7 +49,7 @@ void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 BaseColor = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color
@@ -87,30 +57,18 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CCamera_Exposure ExposureData = CCamera_GetExposureData(Luma);
     BaseColor = CCamera_ApplyAutoExposure(BaseColor.rgb, ExposureData);
 
-    // Store the exposed color here for checkerboard check
-    float3 ExposedColor = BaseColor;
-    CComposite_ApplyOutput(BaseColor.rgb);
-
-    // Apply (optional) lens
-    #if SHADER_TOGGLE_VIGNETTE
-        float2 UNormTex = Input.Tex0 - 0.5;
-        CLens_ApplyVignette(BaseColor, UNormTex, 0.0, _CLens_Vignette);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(BaseColor, _CShade_AlphaFactor);
+    #else
+        Output = float4(BaseColor, 1.0);
     #endif
-
-    // Apply (optional) vignette
-    #if SHADER_TOGGLE_GRAIN
-        CLens_ApplyFilmGrain(BaseColor, Input.HPos.xy, _CLens_GrainScale, _CLens_GrainAmount, _CLens_GrainSeed);
-    #endif
-
-    // Apply (optional) exposure-peaking 
-    CComposite_ApplyExposurePeaking(BaseColor, Input.HPos.xy);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 
     // Apply (optional) overlays
     float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
-    CCamera_ApplySpotMeterOverlay(BaseColor, UnormTex, NonExposedColor);
-    CCamera_ApplyAverageLumaOverlay(BaseColor, UnormTex, ExposureData);
-
-    Output = CBlend_OutputChannels(BaseColor, _CShade_AlphaFactor);
+    CCamera_ApplySpotMeterOverlay(Output.rgb, UnormTex, NonExposedColor);
+    CCamera_ApplyAverageLumaOverlay(Output.rgb, UnormTex, ExposureData);
 }
 
 #define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
@@ -132,7 +90,7 @@ technique CShade_AutoExposure
     ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (SHADER_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
 >
 {
-    pass CCamera_CreateExposureTex
+    pass CreateExposureTexture
     {
         ClearRenderTargets = FALSE;
         BlendEnable = TRUE;

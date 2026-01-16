@@ -4,15 +4,19 @@
 
     It allows shaders to dynamically adjust scene brightness, implement different metering methods (average or spot metering), and visualize luminance levels and spot metering areas.
 
-    Abstracted Preprocessor Definitions: CCAMERA_TOGGLE_AUTO_EXPOSURE
+    Abstracted Preprocessor Definitions: CSHADE_APPLY_AUTO_EXPOSURE
 */
 
 #include "cMath.fxh"
 
-#if !defined(INCLUDE_CCAMERA_OUTPUT)
-    #define INCLUDE_CCAMERA_OUTPUT
+#if !defined(CSHADE_CAMERA)
+    #define CSHADE_CAMERA
 
-    #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+    #ifndef CSHADE_APPLY_AUTO_EXPOSURE
+        #define CSHADE_APPLY_AUTO_EXPOSURE 0
+    #endif
+
+    #if CSHADE_APPLY_AUTO_EXPOSURE
         uniform float _CCamera_ExposureSmoothingSpeed <
             ui_category_closed = true;
             ui_category = "Output / Auto Exposure";
@@ -118,19 +122,15 @@
     // AutoExposure(): https://john-chapman.github.io/2017/08/23/dynamic-local-exposure.html
     float CCamera_GetLogLuminance(float3 Color)
     {
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
-            float Luminance = max(max(Color.r, Color.g), Color.b);
-            return log(max(Luminance, 1e-2));
-        #else
-            return Color;
-        #endif
+        float Luminance = max(max(Color.r, Color.g), Color.b);
+        return log(max(Luminance, 1e-3));
     }
 
     float4 CCamera_CreateExposureTex(float Luminance)
     {
         // .rgb = Output the highest brightness out of red/green/blue component
         // .a = Output the weight for Temporal Smoothing
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             float Delay = 1e-3 * _CCamera_Frametime;
             return float4((float3)Luminance, saturate(Delay * _CCamera_ExposureSmoothingSpeed));
         #else
@@ -141,7 +141,7 @@
     CCamera_Exposure CCamera_GetExposureData(float LumaTex)
     {
         CCamera_Exposure Output;
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             Output.ExpLuma = exp(LumaTex);
             Output.Ev100 = log2(Output.ExpLuma * 100.0 / 12.5);
             Output.Ev100 -= _CCamera_ExposureBias; // optional manual bias
@@ -155,7 +155,7 @@
 
     float3 CCamera_ApplyAutoExposure(float3 Color, CCamera_Exposure Input)
     {
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             return Color * Input.Value;
         #else
             return Color;
@@ -164,7 +164,7 @@
 
     void CCamera_ApplyAverageLumaOverlay(inout float3 Color, in float2 UnormTex, in CCamera_Exposure E)
     {
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             if (_CCamera_LumaMeter)
             {
                 // Maps texture coordinates less-than/equal to the brightness.
@@ -189,7 +189,7 @@
     // Exposure-specific functions
     float2 CCamera_GetSpotMeterTex(float2 Tex)
     {
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             // For spot-metering, we fill the target square texture with the region only
             float2 SpotMeterTex = CMath_UNORMtoSNORM_FLT2(Tex);
 
@@ -212,7 +212,7 @@
 
     void CCamera_ApplySpotMeterOverlay(inout float3 Color, in float2 UnormTex, in float3 NonExposedColor)
     {
-        #if CCAMERA_TOGGLE_AUTO_EXPOSURE
+        #if CSHADE_APPLY_AUTO_EXPOSURE
             if ((_CCamera_MeteringType == 1) && _CCamera_ShowSpotMeterOverlay)
             {
                 /*

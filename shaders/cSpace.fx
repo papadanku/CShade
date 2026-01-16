@@ -39,8 +39,9 @@ uniform int _ChromaSpace <
     ui_tooltip = "Chooses the method for calculating and displaying chromaticity, which represents the color's purity and hue independent of brightness.";
 > = 0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -114,7 +115,7 @@ float3 DiplayChromaSpace(float4 Color, float4 Gamma)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Gamma = tex2D(CShade_SampleGammaTex, Input.Tex0);
 
     // Initialize
@@ -140,7 +141,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_Chromaticity
@@ -149,7 +156,7 @@ technique CShade_Chromaticity
     ui_tooltip = "Effect displays various grayscale or chromaticity spaces.";
 >
 {
-    pass
+    pass ColorSpace
     {
         CBLEND_CREATE_STATES()
 

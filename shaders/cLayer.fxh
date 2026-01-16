@@ -1,17 +1,36 @@
 
-#include "shared/cShade.fxh"
 #include "shared/cColor.fxh"
 
-#ifndef CLAYER_BUFFER_FORMAT
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#define CSHADE_APPLY_BLENDING 0
+#define CSHADE_APPLY_GRAIN 0
+#define CSHADE_APPLY_VIGNETTE 0
+#define CSHADE_APPLY_GRADING 0
+#define CSHADE_APPLY_TONEMAP 0
+#define CSHADE_APPLY_PEAKING 0
+#define CSHADE_APPLY_SWIZZLE 0
+#define CBLEND_BLENDENABLE FALSE
+#define CBLEND_BLENDOP ADD
+#define CBLEND_BLENDOPALPHA ADD
+#define CBLEND_SRCBLEND ONE
+#define CBLEND_SRCBLENDALPHA ONE
+#define CBLEND_DESTBLEND ZERO
+#define CBLEND_DESTBLENDALPHA ZERO
+#include "shared/cShade.fxh"
+
+#if BUFFER_COLOR_BIT_DEPTH == 8
     #define FORMAT RGBA8
+#else
+    #define FORMAT RGB10A2
 #endif
 
 // Output in cCopyBuffer
 CSHADE_CREATE_TEXTURE_POOLED(SrcTex, CSHADE_BUFFER_SIZE_0, FORMAT, 1)
 
 // Inputs in cBlendBuffer
-CSHADE_CREATE_SRGB_SAMPLER(SampleSrcTex, SrcTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SRGB_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSrcTex, SrcTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleDestTex, CShade_ColorTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 struct InstanceSettings
 {
@@ -66,8 +85,15 @@ void PS_Blend(
     );
 
     // Grab our textures.
-    float4 Src = tex2D(SampleSrcTex, SrcTex);
-    float4 Dest = tex2D(SampleDestTex, DestTex);
+    #if (CSHADE_READ_SRGB == TRUE)
+        float4 Src = tex2D(SampleSrcTex, SrcTex);
+        float4 Dest = tex2D(SampleDestTex, DestTex);
+        Src = CColor_SRGBtoRGB(Src);
+        Dest = CColor_SRGBtoRGB(Dest);
+    #else
+        float4 Src = tex2D(SampleSrcTex, SrcTex);
+        float4 Dest = tex2D(SampleDestTex, DestTex);
+    #endif
 
     // Set our alpha to constant
     if (Settings.AlphaType == 1)
@@ -85,6 +111,10 @@ void PS_Blend(
     float AlphaBlend = CColor_Blend((float4)Dest, (float4)Src, Settings.AlphaBlendType).r;
 
     Output = float4(ColorBlend, AlphaBlend);
+
+    #if (CSHADE_WRITE_SRGB == TRUE)
+        Output = CColor_RGBtoSRGB(Output);
+    #endif
 }
 
 #define CLAYER_CREATE_SHADER_COPY(index) \
@@ -94,7 +124,7 @@ void PS_Blend(
         ui_tooltip = "Writes the current output into a temporary, RGBA8 texture for blending with a cLayer_BlendLayer shader.\n\n[&] You need to enable and put at least 1 of these shaders above 'CShade / Blend Layer N' for blending to work."; \
     > \
     { \
-        pass \
+        pass Copy \
         { \
             VertexShader = CShade_VS_Quad; \
             PixelShader = PS_Copy; \
@@ -106,7 +136,7 @@ void PS_Blend(
     uniform int _AlphaType_##index < \
         ui_category_closed = true; \
         ui_category = CSHADE_TO_STRING(Blend Layer index); \
-        ui_text = "Blending Settings"; \
+        ui_text = "BLENDING SETTINGS"; \
         ui_items = "Existing Alpha\0Constant (0.5)\0"; \
         ui_label = "Alpha Mode"; \
         ui_type = "combo"; \
@@ -145,7 +175,7 @@ void PS_Blend(
     \
     uniform int _SrcTransformOrder_##index < \
         ui_category = CSHADE_TO_STRING(Blend Layer index); \
-        ui_text = "Transformation Settings / Source Image"; \
+        ui_text = "GEOMETRIC TRANSFORM / SOURCE IMAGE"; \
         ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0"; \
         ui_label = "Transform Order"; \
         ui_type = "combo"; \
@@ -175,7 +205,7 @@ void PS_Blend(
     \
     uniform int _DestTransformOrder_##index < \
         ui_category = CSHADE_TO_STRING(Blend Layer index); \
-        ui_text = "Transformation Settings / Destination Image"; \
+        ui_text = "GEOMETRIC TRANSFORM / DESTINATION IMAGE"; \
         ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0"; \
         ui_label = "Transform Order"; \
         ui_type = "combo"; \
@@ -228,10 +258,8 @@ void PS_Blend(
         ui_tooltip = "Blend with CBlend's copy texture.\n\n[&] You need to enable at least 1 'CShade / Copy Layer N' above this shader to work."; \
     > \
     { \
-        pass \
+        pass Blend \
         { \
-            SRGBWriteEnable = CSHADE_WRITE_SRGB; \
-            \
             VertexShader = CShade_VS_Quad; \
             PixelShader = PS_Blend_##index; \
         } \

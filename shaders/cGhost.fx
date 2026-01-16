@@ -14,6 +14,8 @@
     #define FORMAT RGB10A2
 #endif
 
+#include "shared/cColor.fxh"
+
 uniform float _BlendFactor <
     ui_category = "Main Shader";
     ui_label = "Ghosting Temporal Smoothing";
@@ -23,10 +25,9 @@ uniform float _BlendFactor <
     ui_tooltip = "Controls the strength of the temporal smoothing, determining how much of the previous frame is blended with the current frame to create the ghosting effect.";
 > = 0.5;
 
-#include "shared/cColor.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
-
 /*
     [Textures & Samplers]
 */
@@ -41,17 +42,35 @@ CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LIN
 // Display the buffer
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 CurrentFrame = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 PreviousFrame = CColor_SRGBtoRGB(tex2D(SamplePreviousFrameTex, Input.Tex0));
+    #if (CSHADE_WRITE_SRGB == TRUE)
+        float4 CurrentFrame = tex2D(CShade_SampleGammaTex, Input.Tex0);
+        float4 PreviousFrame = tex2D(SamplePreviousFrameTex, Input.Tex0);
+        CurrentFrame = CColor_SRGBtoRGB(CurrentFrame);
+        PreviousFrame = CColor_SRGBtoRGB(PreviousFrame);
+    #else
+        float4 CurrentFrame = tex2D(CShade_SampleGammaTex, Input.Tex0);
+        float4 PreviousFrame = tex2D(SamplePreviousFrameTex, Input.Tex0);
+    #endif
+
     float3 BlendColor = lerp(CurrentFrame.rgb, PreviousFrame.rgb, _BlendFactor);
 
-    Output = CBlend_OutputChannels(BlendColor, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(BlendColor, _CShade_AlphaFactor);
+    #else
+        Output = float4(BlendColor, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
+
+    #if (CSHADE_WRITE_SRGB == TRUE)
+        Output = CColor_RGBtoSRGB(Output);
+    #endif
 }
 
 // Copy backbuffer to a that continuously blends with its previous result
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2D(CShade_SampleGammaTex, Input.Tex0);
 }
 
 technique CShade_Ghosting
@@ -60,19 +79,16 @@ technique CShade_Ghosting
     ui_tooltip = "A ghosting effect through frame-blending.";
 >
 {
-    pass
+    pass Ghosting
     {
-        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Main;
     }
 
-    pass
+    pass CopyFrame
     {
-        SRGBWriteEnable = CSHADE_WRITE_SRGB;
-
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
         RenderTarget0 = PreviousFrame;

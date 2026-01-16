@@ -61,8 +61,9 @@ uniform bool _Symmetry <
     ui_tooltip = "When enabled, the mirrored pattern will be symmetrical; otherwise, it will be a repeating pattern.";
 > = true;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -84,13 +85,19 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Convert back to the texture coordinate.
     float2 PhiSinCos;
     sincos(Phi, PhiSinCos.x, PhiSinCos.y);
-    Input.Tex0 = CMath_SNORMtoUNORM_FLT2(PhiSinCos.yx * Radius);
+    float2 MirrorTex = CMath_SNORMtoUNORM_FLT2(PhiSinCos.yx * Radius);
 
     // Reflection at the border of the screen.
-    Input.Tex0 = max(min(Input.Tex0, 2.0 - Input.Tex0), -Input.Tex0);
-    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0);
+    MirrorTex = max(min(MirrorTex, 2.0 - MirrorTex), -MirrorTex);
+    float4 Base = tex2D(CShade_SampleColorTex, MirrorTex);
 
-    Output = CBlend_OutputChannels(Base.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Base.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Base.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_KinoMirror
@@ -99,7 +106,7 @@ technique CShade_KinoMirror
     ui_tooltip = "Keijiro Takahashi's mirroring and kaleidoscope effect.";
 >
 {
-    pass
+    pass Mirror
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

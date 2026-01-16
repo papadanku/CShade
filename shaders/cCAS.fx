@@ -62,8 +62,9 @@ uniform float _Contrast <
     ui_tooltip = "Adjusts the intensity of the sharpening effect based on local contrast. Higher values lead to more pronounced sharpening.";
 > = 0.0;
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 struct CAS
 {
@@ -78,11 +79,11 @@ CAS GetDiamondCAS(float2 Tex, float2 Delta)
 
     float4 Tex0 = Tex.xyxy + (Delta.xyxy * float4(-1.0, 0.0, 1.0, 0.0));
     float4 Tex1 = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
-    O.Sample[0] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex);
-    O.Sample[1] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.xy);
-    O.Sample[2] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex0.zw);
-    O.Sample[3] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xy);
-    O.Sample[4] = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.zw);
+    O.Sample[0] = tex2D(CShade_SampleColorTex, Tex);
+    O.Sample[1] = tex2D(CShade_SampleColorTex, Tex0.xy);
+    O.Sample[2] = tex2D(CShade_SampleColorTex, Tex0.zw);
+    O.Sample[3] = tex2D(CShade_SampleColorTex, Tex1.xy);
+    O.Sample[4] = tex2D(CShade_SampleColorTex, Tex1.zw);
 
     // Get polar min/max
     O.MinRGB = min(O.Sample[0], min(min(O.Sample[1], O.Sample[2]), min(O.Sample[3], O.Sample[4])));
@@ -104,15 +105,15 @@ CAS GetBoxCAS(float2 Tex, float2 Delta)
         4 5 6
         7 8 9
     */
-    float4 Sample1 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xy);
-    float4 Sample2 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xz);
-    float4 Sample3 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex1.xw);
-    float4 Sample4 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xy);
-    float4 Sample5 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xz);
-    float4 Sample6 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex2.xw);
-    float4 Sample7 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xy);
-    float4 Sample8 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xz);
-    float4 Sample9 = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Tex3.xw);
+    float4 Sample1 = tex2D(CShade_SampleColorTex, Tex1.xy);
+    float4 Sample2 = tex2D(CShade_SampleColorTex, Tex1.xz);
+    float4 Sample3 = tex2D(CShade_SampleColorTex, Tex1.xw);
+    float4 Sample4 = tex2D(CShade_SampleColorTex, Tex2.xy);
+    float4 Sample5 = tex2D(CShade_SampleColorTex, Tex2.xz);
+    float4 Sample6 = tex2D(CShade_SampleColorTex, Tex2.xw);
+    float4 Sample7 = tex2D(CShade_SampleColorTex, Tex3.xy);
+    float4 Sample8 = tex2D(CShade_SampleColorTex, Tex3.xz);
+    float4 Sample9 = tex2D(CShade_SampleColorTex, Tex3.xw);
 
     // Get polar min/max
     float4 Min1 = min(Sample5, min(min(Sample2, Sample4), min(Sample6, Sample8)));
@@ -197,7 +198,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Output = OutputMask;
     }
 
-    Output = CBlend_OutputChannels(Output.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_CAS
@@ -206,7 +213,7 @@ technique CShade_CAS
     ui_tooltip = "AMD FidelityFX Contrast Adaptive Sharpening (CAS).";
 >
 {
-    pass
+    pass ContrastAdaptiveSharpening
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

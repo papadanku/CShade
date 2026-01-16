@@ -28,6 +28,7 @@
 */
 
 #include "shared/cColor.fxh"
+#include "shared/cEdge.fxh"
 
 /*
     [Shader Options]
@@ -98,10 +99,9 @@ uniform float4 _BackColor <
     ui_tooltip = "Sets the background color that appears behind the contour lines.";
 > = float4(0.0, 0.0, 0.0, 0.0);
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
-
-#include "shared/cEdge.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
@@ -152,14 +152,14 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CMath_TexGrid Grid = CMath_GetTexGrid(Input.Tex0, 2);
 
     // If we are debugging, sampling in a quadrant.
-    Input.Tex0 = (_DisplayMode == 1) ? Grid.Frac : Input.Tex0;
+    float2 EdgeTex = (_DisplayMode == 1) ? Grid.Frac : Input.Tex0;
 
     // Get gradient information
-    CEdge_Filter F = GetGradient(Input.Tex0, Delta);
+    CEdge_Filter F = GetGradient(EdgeTex, Delta);
 
     // Exception for non-directional methods such as Frei-Chen
     #if SHADER_EDGE_DETECTION == 6
-        float3 I = CEdge_GetFreiChen(CShade_SampleColorTex, Input.Tex0, Delta).rgb;
+        float3 I = CEdge_GetFreiChen(CShade_SampleColorTex, EdgeTex, Delta).rgb;
     #else
         float3 I = CEdge_GetMagnitudeRGB(F.Gx.rgb, F.Gy.rgb);
     #endif
@@ -172,7 +172,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     // Initialize variables for Output
-    float4 Base = CShadeHDR_GetBackBuffer(CShade_SampleColorTex, Input.Tex0.xy);
+    float4 Base = tex2D(CShade_SampleColorTex, EdgeTex);
     float4 OutputColor = Base;
 
     switch (_DisplayMode)
@@ -201,7 +201,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             break;
     }
 
-    Output = CBlend_OutputChannels(OutputColor.rgb, _CShade_AlphaFactor);
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(OutputColor.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_KinoContour
@@ -210,7 +216,7 @@ technique CShade_KinoContour
     ui_tooltip = "Keijiro Takahashi's contour line filter.";
 >
 {
-    pass
+    pass Contour
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

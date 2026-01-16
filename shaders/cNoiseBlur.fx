@@ -27,7 +27,6 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "shared/cLens.fxh"
 #include "shared/cMath.fxh"
 
 /*
@@ -76,8 +75,9 @@ uniform float2 _FalloffOffset <
     ui_tooltip = "Adjusts the center point of the blur radius falloff effect.";
 > = float2(0.0, 0.0);
 
-#include "shared/cShadeHDR.fxh"
-#include "shared/cBlend.fxh"
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0
+#include "shared/cShade.fxh"
 
 /*
     [Pixel Shaders]
@@ -133,7 +133,16 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         }
     }
 
-    Output = CBlend_OutputChannels(Output.rgb / Weight, _CShade_AlphaFactor);
+    // Normalize result
+    Output.rgb /= Weight;
+
+    // RENDER
+    #if defined(CSHADE_BLENDING)
+        Output = float4(Output.rgb, _CShade_AlphaFactor);
+    #else
+        Output = float4(Output.rgb, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 technique CShade_NoiseBlur
@@ -142,7 +151,7 @@ technique CShade_NoiseBlur
     ui_tooltip = "Adjustable noise blur effect.";
 >
 {
-    pass
+    pass NoiseBlur
     {
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()

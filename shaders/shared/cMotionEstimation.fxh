@@ -4,7 +4,6 @@
 */
 
 #include "cBlur.fxh"
-#include "cShade.fxh"
 #include "cMath.fxh"
 
 #if !defined(INCLUDE_CMOTIONESTIMATION)

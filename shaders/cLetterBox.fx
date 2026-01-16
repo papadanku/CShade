@@ -12,7 +12,7 @@
 
 uniform float2 _Offset <
     ui_category = "Main Shader";
-    ui_label = "Letterbox Position Offset";
+    ui_label = "Offset";
     ui_max = 1.0;
     ui_min = -1.0;
     ui_type = "slider";
@@ -21,7 +21,7 @@ uniform float2 _Offset <
 
 uniform float2 _Scale <
     ui_category = "Main Shader";
-    ui_label = "Letterbox Size Scale";
+    ui_label = "Scale";
     ui_max = 1.0;
     ui_min = 0.0;
     ui_type = "slider";
@@ -30,15 +30,16 @@ uniform float2 _Scale <
 
 uniform float2 _Cutoff <
     ui_category = "Main Shader";
-    ui_label = "Letterbox Edge Sharpness";
+    ui_label = "Cutoff";
     ui_max = 1.0;
     ui_min = 0.0;
     ui_type = "slider";
     ui_tooltip = "Determines the sharpness of the letterbox edges. Lower values create a softer transition.";
-> = 1.0;
+> = float2(1.0, 0.8);
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
+#define CSHADE_APPLY_ABBERATION 0 
 #include "shared/cShade.fxh"
-#include "shared/cBlend.fxh"
 
 /*
     [Pixel Shaders]
@@ -47,11 +48,19 @@ uniform float2 _Cutoff <
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     // Output a rectangle
-    Input.Tex0 = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
-    Input.Tex0 = (Input.Tex0 * _Scale) + _Offset;
-    float2 Shaper = step(abs(Input.Tex0), _Cutoff);
+    float2 ShapeTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+    ShapeTex = (ShapeTex * _Scale) + _Offset;
+    float2 Shaper = step(abs(ShapeTex), _Cutoff);
 
-    Output = CBlend_OutputChannels(Shaper.xxx * Shaper.yyy, _CShade_AlphaFactor);
+    // RENDER
+    float Shape = Shaper.xxx * Shaper.yyy;
+
+    #if defined(CSHADE_BLENDING)
+        Output = float4((float3)Shape, _CShade_AlphaFactor);
+    #else
+        Output = float4((float3)Shape, 1.0);
+    #endif
+    CShade_Render(Output, Input.HPos, Input.Tex0);
 }
 
 #undef CBLEND_BLENDENABLE
@@ -88,7 +97,7 @@ technique CShade_LetterBox
     ui_tooltip = "Adjustable letterboxing effect.";
 >
 {
-    pass
+    pass Letterbox
     {
         // Blend the rectangle with the backbuffer
         SRGBWriteEnable = CSHADE_WRITE_SRGB;
