@@ -8,9 +8,7 @@
     Geometric and color transform shader with a single-texture overlay system.
 */
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #include "shared/cMath.fxh"
 
@@ -180,9 +178,7 @@ uniform int _ShaderPreprocessorGuide <
 
 CSHADE_CREATE_SRGB_SAMPLER(SampleTransformTex, CShade_ColorTex, SHADER_BACKBUFFER_SAMPLING, SHADER_BACKBUFFER_SAMPLING, LINEAR, SHADER_BACKBUFFER_ADDRESSU, SHADER_BACKBUFFER_ADDRESSV, SHADER_BACKBUFFER_ADDRESSW)
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void ApplyColorTransform(inout float4 Texture)
 {

@@ -6,9 +6,7 @@
 
 #include "shared/cMath.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform bool _Pixelate <
     ui_category = "Main Shader";
@@ -54,9 +52,7 @@ uniform int3 _Range <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

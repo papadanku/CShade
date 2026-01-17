@@ -8,9 +8,7 @@
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
-/*
-    [ Shader Options ]
-*/
+/*  Shader Options  */
 
 // Bloom-specific settings
 uniform int _BloomRenderMode <
@@ -92,9 +90,9 @@ CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, 
     CSHADE_CREATE_SAMPLER(SampleBloomExposureTex, BloomExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
-/*
-    [ Pixel Shaders ]
+/* Pixel Shaders */
 
+/*
     Thresholding | https://github.com/keijiro/Kino [MIT]
     Tonemapping | https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */

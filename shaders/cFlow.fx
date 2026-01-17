@@ -8,9 +8,7 @@
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";
@@ -54,9 +52,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_type = "radio";
 > = 0;
 
-/*
-    [Textures & Samplers]
-*/
+/* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
@@ -82,9 +78,7 @@ CSHADE_CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, 
 CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
 CSHADE_CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
 {

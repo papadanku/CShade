@@ -30,9 +30,7 @@
 #include "shared/cColor.fxh"
 #include "shared/cEdge.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #ifndef SHADER_EDGE_DETECTION
     #define SHADER_EDGE_DETECTION 1
@@ -111,9 +109,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_type = "radio";
 > = 0;
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 float3 GetColorFromGradient(CEdge_Filter Input)
 {

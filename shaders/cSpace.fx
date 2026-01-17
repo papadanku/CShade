@@ -6,9 +6,7 @@
 
 #include "shared/cColor.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform int _DisplayMode <
     ui_items = "Chrominance | Luminance\0Luminance | Chrominance\0Chrominance Only\0Luminance Only\0";
@@ -43,9 +41,7 @@ uniform int _ChromaSpace <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 float3 DiplayChromaSpace(float4 Color, float4 Gamma)
 {

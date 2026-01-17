@@ -29,9 +29,7 @@
 
 #include "shared/cMath.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform float _Divisor <
     ui_category = "Main Shader";
@@ -65,9 +63,7 @@ uniform bool _Symmetry <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

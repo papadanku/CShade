@@ -14,9 +14,7 @@
 
 #include "shared/cColor.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform bool _PreserveFrequencies <
     ui_category = "Main Shader";

@@ -35,9 +35,7 @@
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #ifndef SHADER_DISPLACEMENT_SAMPLING
     #define SHADER_DISPLACEMENT_SAMPLING POINT
@@ -153,9 +151,7 @@ CSHADE_CREATE_SAMPLER(SampleAccumTex, AccumTex, SHADER_DISPLACEMENT_SAMPLING, SH
 CSHADE_CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

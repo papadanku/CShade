@@ -6,9 +6,7 @@
     This effect also provides spot metering to calculate exposure from a specific screen area and exposure peaking to visualize currently exposed areas.
 */
 
-/*
-    [ Shader Options ]
-*/
+/* Shader Options */
 
 #include "shared/cColor.fxh"
 
@@ -24,16 +22,14 @@ uniform int _ShaderPreprocessorGuide <
     ui_text = "\nSHADER_TOGGLE_GRADING - Toggles color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_PEAKING - Toggles the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_AUTO_EXPOSURE - Toggles auto exposure.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
 >;
 
-/*
-    [ Textures & Samplers ]
-*/
+/* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE(ExposureTex, int2(256, 256), R16F, 9)
 CSHADE_CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-/*
-    [ Pixel Shaders ]
+/* Pixel Shaders */
 
+/*
     Thresholding | https://github.com/keijiro/Kino [MIT]
     Tonemapping | https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */

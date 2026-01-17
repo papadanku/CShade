@@ -1,7 +1,5 @@
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #include "shared/cBlur.fxh"
 
@@ -17,9 +15,7 @@ uniform float _Sigma <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
 {

@@ -4,9 +4,7 @@
     This shader creates a ghosting effect by blending the current frame with a temporally smoothed previous frame. This produces a trailing visual artifact, simulating motion blur or an ethereal appearance. Users can adjust the blend factor to control the intensity of the ghosting effect.
 */
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #if BUFFER_COLOR_BIT_DEPTH == 8
     #define FORMAT RGBA8
@@ -28,16 +26,13 @@ uniform float _BlendFactor <
 #define CSHADE_APPLY_AUTO_EXPOSURE 0
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
-/*
-    [Textures & Samplers]
-*/
+
+/* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE(PreviousFrame, CSHADE_BUFFER_SIZE_0, FORMAT, 1)
 CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 // Display the buffer
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)

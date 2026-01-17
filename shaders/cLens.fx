@@ -32,9 +32,7 @@
     THE SOFTWARE.
 */
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #include "shared/cColor.fxh"
 
@@ -42,9 +40,7 @@
 #define CSHADE_APPLY_ABBERATION 1 
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

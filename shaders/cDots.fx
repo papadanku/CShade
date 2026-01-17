@@ -8,9 +8,7 @@
 #include "shared/cMath.fxh"
 #include "shared/cMacros.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 CSHADE_CREATE_INFO(
     "\n"
@@ -179,9 +177,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_type = "radio";
 > = 0;
 
-/*
-    [Textures and Samplers]
-*/
+/* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
 CSHADE_CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
@@ -197,9 +193,7 @@ sampler2D CShade_SampleColorTexMirror
     SRGBTexture = CSHADE_READ_SRGB;
 };
 
-/*
-    [Functions]
-*/
+/* Functions */
 
 struct Tile
 {
@@ -260,9 +254,7 @@ float GetTileCircleLength(Tile Input)
     }
 #endif
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

@@ -8,9 +8,7 @@
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #ifndef SHADER_BACKBUFFER_ADDRESS
     #define SHADER_BACKBUFFER_ADDRESS BORDER
@@ -153,9 +151,7 @@ uniform int _ShaderPreprocessorGuide <
     ui_type = "radio";
 > = 0;
 
-/*
-    [Textures & Samplers]
-*/
+/* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
@@ -181,9 +177,7 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_DISPLACEMENT
 
 CSHADE_CREATE_SAMPLER(SampleCosmeticTex, TempTex1_RGB10A2, SHADER_COSMETIC_SAMPLING, SHADER_COSMETIC_SAMPLING, SHADER_COSMETIC_SAMPLING, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS, SHADER_BACKBUFFER_ADDRESS)
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

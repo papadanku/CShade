@@ -6,9 +6,7 @@
     This shader also implements a standalone color grading effect. It applies various color transformations and adjustments to the backbuffer color, allowing users to modify the overall color and tone of the image. The shader can also optionally apply exposure peaking.
 */
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 #include "shared/cColor.fxh"
 
@@ -19,9 +17,7 @@
 #define CSHADE_APPLY_PEAKING 1
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

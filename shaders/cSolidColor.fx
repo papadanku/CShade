@@ -4,9 +4,7 @@
     This shader outputs a user-defined solid color across the entire screen. It provides controls for customizing the output color and includes an option to blend this solid color with the computed alpha channel from the texture. This shader is useful for creating simple overlays, background fills, or for debugging purposes.
 */
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform bool _BlendWithAlpha <
     ui_category = "Main Shader";
@@ -27,9 +25,7 @@ uniform float4 _Color <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {

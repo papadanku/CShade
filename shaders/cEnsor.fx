@@ -6,9 +6,7 @@
 
 #include "shared/cColor.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform int _DisplayMode <
     ui_category = "Main Shader";

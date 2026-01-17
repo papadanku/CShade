@@ -7,9 +7,7 @@
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
 
-/*
-    [Shader Options]
-*/
+/* Shader Options */
 
 uniform int _Select <
     ui_category = "Main Shader";
@@ -23,9 +21,7 @@ uniform int _Select <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-/*
-    [Pixel Shaders]
-*/
+/* Pixel Shaders */
 
 float4 GetCensusTransform(float2 Tex)
 {
