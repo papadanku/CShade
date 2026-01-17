@@ -6,7 +6,6 @@
 #include "shared/cBlur.fxh"
 
 uniform float _Sigma <
-    ui_category = "Main Shader";
     ui_label = "Blur Strength";
     ui_max = 16.0;
     ui_min = 0.0;

@@ -120,7 +120,7 @@ void PS_Blend(
 #define CLAYER_CREATE_SHADER_COPY(index) \
     technique cLayer_CopyLayer##index \
     < \
-        ui_label = CSHADE_TO_STRING(CShade / Copy Layer index [&]); \
+        ui_label = CSHADE_TO_STRING(CShade | Copy Layer index); \
         ui_tooltip = "Writes the current output into a temporary, RGBA8 texture for blending with a cLayer_BlendLayer shader.\n\n[&] You need to enable and put at least 1 of these shaders above 'CShade / Blend Layer N' for blending to work."; \
     > \
     { \
@@ -254,8 +254,8 @@ void PS_Blend(
     \
     technique cLayer_BlendLayer##index \
     < \
-        ui_label = CSHADE_TO_STRING(CShade / Blend Layer index [&]); \
-        ui_tooltip = "Blend with CBlend's copy texture.\n\n[&] You need to enable at least 1 'CShade / Copy Layer N' above this shader to work."; \
+        ui_label = CSHADE_TO_STRING(CShade | Blend Layer index); \
+        ui_tooltip = "Blend with CBlend's copy texture."; \
     > \
     { \
         pass Blend \

@@ -6,10 +6,17 @@
 
 #include "shared/cColor.fxh"
 #include "shared/cMath.fxh"
+#include "shared/cMacros.fxh"
 
 /*
     [Shader Options]
 */
+
+CSHADE_CREATE_INFO(
+    "\n"
+    "\t [+] This shader has a monotone version (SHADER_TOGGLE_MONO).\n"
+    "\n"
+)
 
 #ifndef SHADER_TOGGLE_MONO
     #define SHADER_TOGGLE_MONO 0
@@ -381,8 +388,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Dots
 <
-    ui_label = "CShade / Dots [+]";
-    ui_tooltip = "Creates circles based on image features.\n\n[+] This shader has a monotone version (SHADER_TOGGLE_MONO).";
+    ui_label = "CShade | Dots";
+    ui_tooltip = "Creates circles based on image features.";
 >
 {
     pass Blit

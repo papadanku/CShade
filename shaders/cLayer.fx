@@ -4,14 +4,25 @@
     This shader establishes a framework for layering and blending multiple shader effects. It does not apply direct visual effects but enables the use of up to 16 copy and 16 blend operations between different shader passes. This functionality facilitates complex multi-pass effects, allowing outputs from earlier shader passes to be copied and integrated with subsequent ones.
 */
 
+#include "shared/cMacros.fxh"
 #include "cLayer.fxh"
 
+CSHADE_CREATE_INFO(
+    "\n"
+    "\t [!] Enable to access copy/blend layer shaders.\n"
+    "\n"
+    "\t [!] Supports up to 16 copy and blend operations.\n"
+    "\n"
+    "\t [&] You need to enable at least 1 Copy technique above this shader to work.\n"
+    "\n"
+)
+
 #ifndef CLAYER_COPY_SHADERS
-	#define CLAYER_COPY_SHADERS 1
+    #define CLAYER_COPY_SHADERS 1
 #endif
 
 #ifndef CLAYER_BLEND_SHADERS
-	#define CLAYER_BLEND_SHADERS 1
+    #define CLAYER_BLEND_SHADERS 1
 #endif
 
 /*
@@ -122,7 +133,7 @@
 
 technique cLayer
 <
-    ui_label = "CShade / Setup Layer Copy & Blend [!]";
-    ui_tooltip = "Blend with CBlend's copy texture.\n\n[!] Enable to access copy/blend layer shaders.\n[!] Supports up to 16 copy and blend operations.";
+    ui_label = "CShade | Setup Layer Copy & Blend";
+    ui_tooltip = "Blend with CBlend's copy texture.";
 >
 { }

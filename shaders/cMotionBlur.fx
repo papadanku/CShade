@@ -269,7 +269,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_MotionBlur
 <
-    ui_label = "CShade / Motion Blur";
+    ui_label = "CShade | Motion Blur";
     ui_tooltip = "Motion blur effect.";
 >
 {

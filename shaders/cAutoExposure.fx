@@ -86,8 +86,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposure
 <
-    ui_label = "CShade / Auto Exposure [+?]";
-    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.\n\n[+] This shader has optional color grading (SHADER_TOGGLE_GRADING).\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
+    ui_label = "CShade | Auto Exposure";
+    ui_tooltip = "Standalone lightweight, adjustable, auto exposure with optional color-grading.";
 >
 {
     pass CreateExposureTexture

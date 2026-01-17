@@ -21,7 +21,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_HorizontalBlur
 <
-    ui_label = "CShade / Horizontal Blur";
+    ui_label = "CShade | Horizontal Blur";
     ui_tooltip = "Horizonal Gaussian blur effect.";
 >
 {

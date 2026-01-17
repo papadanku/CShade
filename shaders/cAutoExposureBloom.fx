@@ -14,7 +14,6 @@
 
 // Bloom-specific settings
 uniform int _BloomRenderMode <
-    ui_category = "Main Shader";
     ui_items = "Base + Bloom\0Bloom\0";
     ui_label = "Bloom Rendering Mode";
     ui_type = "combo";
@@ -22,7 +21,6 @@ uniform int _BloomRenderMode <
 > = 0;
 
 uniform float _BloomThreshold <
-    ui_category = "Main Shader";
     ui_label = "Bloom Threshold";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -31,7 +29,6 @@ uniform float _BloomThreshold <
 > = 0.8;
 
 uniform float _BloomSmoothing <
-    ui_category = "Main Shader";
     ui_label = "Bloom Smoothing";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -40,7 +37,6 @@ uniform float _BloomSmoothing <
 > = 0.5;
 
 uniform float _BloomIntensity <
-    ui_category = "Main Shader";
     ui_label = "Bloom Intensity";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -228,8 +224,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade / Auto Exposure & Bloom [+?]";
-    ui_tooltip = "Adjustable bloom with auto-exposure.\n\n[+] This shader has optional color grading (SHADER_TOGGLE_GRADING).\n[?] You can disable auto exposure by setting SHADER_TOGGLE_AUTO_EXPOSURE to 0.\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
+    ui_label = "CShade | Auto Exposure & Bloom";
+    ui_tooltip = "Adjustable bloom with auto-exposure.";
 >
 {
     CREATE_PASS(Prefilter, CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)

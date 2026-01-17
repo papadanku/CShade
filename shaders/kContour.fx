@@ -212,7 +212,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_KinoContour
 <
-    ui_label = "CShade / Keijiro Takahashi / KinoContour";
+    ui_label = "CShade | KinoContour";
     ui_tooltip = "Keijiro Takahashi's contour line filter.";
 >
 {

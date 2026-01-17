@@ -261,7 +261,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Transform
 <
-    ui_label = "CShade / Geometric & Color Transform";
+    ui_label = "CShade | Geometric & Color Transform";
     ui_tooltip = "Translate, scale, and/or rotate the backbuffer.";
 >
 {

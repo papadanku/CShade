@@ -45,7 +45,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_SolidColor
 <
-    ui_label = "CShade / Solid Color";
+    ui_label = "CShade | Solid Color";
     ui_tooltip = "Output a solid color.";
 >
 {

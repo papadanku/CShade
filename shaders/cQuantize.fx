@@ -111,7 +111,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Quantize
 <
-    ui_label = "CShade / Quantize";
+    ui_label = "CShade | Quantize";
     ui_tooltip = "Artificial quantization effect.";
 >
 {

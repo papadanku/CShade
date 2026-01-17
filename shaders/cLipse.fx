@@ -34,13 +34,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(Color.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_ColorGrade
 <
-    ui_label = "CShade / Color Grade [?]";
-    ui_tooltip = "Standalone, adjustable color grading.\n\n[?] This shader has optional exposure peaking display (SHADER_TOGGLE_PEAKING).";
+    ui_label = "CShade | Color Grade";
+    ui_tooltip = "Standalone, adjustable color grading.";
 >
 {
     pass ColorGrade

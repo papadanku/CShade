@@ -261,7 +261,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_DLAA
 <
-    ui_label = "CShade / Directionally Localized Anti-Aliasing";
+    ui_label = "CShade | Directionally Localized Anti-Aliasing";
     ui_tooltip = "Directionally Localized Anti-Aliasing (DLAA).";
 >
 {

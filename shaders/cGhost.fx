@@ -75,7 +75,7 @@ void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_Ghosting
 <
-    ui_label = "CShade / Ghosting";
+    ui_label = "CShade | Ghosting";
     ui_tooltip = "A ghosting effect through frame-blending.";
 >
 {

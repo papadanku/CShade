@@ -147,7 +147,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_NoiseBlur
 <
-    ui_label = "CShade / Noise Blur";
+    ui_label = "CShade | Noise Blur";
     ui_tooltip = "Adjustable noise blur effect.";
 >
 {
