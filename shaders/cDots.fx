@@ -12,7 +12,7 @@
 
 CSHADE_CREATE_INFO(
     "\n"
-    "\t [+] This shader has a monotone version (SHADER_TOGGLE_MONO).\n"
+    "\t"CSHADE_UI_PREPROCESSOR("This shader has a monotone version (SHADER_TOGGLE_MONO).")"\n"
     "\n"
 )
 

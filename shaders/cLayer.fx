@@ -9,11 +9,11 @@
 
 CSHADE_CREATE_INFO(
     "\n"
-    "\t [!] Enable to access copy/blend layer shaders.\n"
+    "\t"CSHADE_UI_CAUTION("Enable to access copy/blend layer shaders.")"\n"
     "\n"
-    "\t [!] Supports up to 16 copy and blend operations.\n"
+    "\t"CSHADE_UI_CAUTION("Supports up to 16 copy and blend operations.")"\n"
     "\n"
-    "\t [&] You need to enable at least 1 Copy technique above this shader to work.\n"
+    "\t"CSHADE_UI_LINKED("You need to enable at least 1 Copy technique above this shader to work.")"\n"
     "\n"
 )
 

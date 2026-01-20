@@ -26,6 +26,15 @@
     #define CSHADE_BUFFER_SIZE_7 int2(CSHADE_BUFFER_SIZE_0 >> 7)
     #define CSHADE_BUFFER_SIZE_8 int2(CSHADE_BUFFER_SIZE_0 >> 8)
 
+    /* ReShade Exclusive UI Macros */
+
+    #define CSHADE_UI_DEPTH() "[D] Requires Depth"
+    #define CSHADE_UI_LINKED(STRING) "[&] " STRING
+    #define CSHADE_UI_PREPROCESSOR(STRING) "[+] " STRING
+    #define CSHADE_UI_CAUTION(STRING) "[!] " STRING
+    #define CSHADE_UI_INFO(STRING) "[?] " STRING
+    #define CSHADE_UI_EXPENSIVE(STRING) "[$] " STRING
+
     #ifndef CSHADE_SRGB_RENDERING
         #define CSHADE_SRGB_RENDERING 1
     #endif
