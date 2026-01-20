@@ -4,7 +4,7 @@
 
     Additionally, it offers exposure peaking functionality to highlight over-exposed regions, with customizable dither algorithms and cell sizes. This file helps integrate realistic camera behaviors into rendering pipelines.
 
-    Abstracted Preprocessor Definitions: CSHADE_APPLY_GRADING, CSHADE_APPLY_TONEMAP, CSHADE_APPLY_PEAKING, CSHADE_APPLY_SWIZZLE
+    Abstracted Preprocessor Definitions: CSHADE_APPLY_GRADING, CSHADE_APPLY_TONEMAP, CSHADE_DEBUG_PEAKING, CSHADE_APPLY_SWIZZLE
 */
 
 #include "cColor.fxh"
@@ -24,8 +24,8 @@
         #define CSHADE_APPLY_DITHER 0
     #endif
 
-    #ifndef CSHADE_APPLY_PEAKING
-        #define CSHADE_APPLY_PEAKING 0
+    #ifndef CSHADE_DEBUG_PEAKING
+        #define CSHADE_DEBUG_PEAKING 0
     #endif
 
     #ifndef CSHADE_APPLY_SWIZZLE
@@ -339,7 +339,7 @@
         #endif
     }
 
-    #if CSHADE_APPLY_PEAKING
+    #if CSHADE_DEBUG_PEAKING
         uniform bool _CCamera_ExposurePeaking <
             ui_text = "TOOLS - EXPOSURE PEAKING";
             ui_category = "Output / Peaking";
@@ -478,7 +478,7 @@
 
     void CComposite_ApplyExposurePeaking(inout float3 Color, in float2 Pos)
     {
-        #if CSHADE_APPLY_PEAKING
+        #if CSHADE_DEBUG_PEAKING
             if (_CCamera_ExposurePeaking)
             {
                 // Create the checkerboard

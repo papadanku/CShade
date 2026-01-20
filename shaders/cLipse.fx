@@ -14,7 +14,7 @@
 #define CSHADE_APPLY_ABBERATION 0
 #define CSHADE_APPLY_GRADING 1
 #define CSHADE_APPLY_TONEMAP 1
-#define CSHADE_APPLY_PEAKING 1
+#define CSHADE_DEBUG_PEAKING 1
 #include "shared/cShade.fxh"
 
 /* Pixel Shaders */

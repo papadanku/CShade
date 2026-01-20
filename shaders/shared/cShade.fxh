@@ -83,7 +83,7 @@
         #endif
 
         // Apply (optional) exposure-peaking
-        #if CSHADE_APPLY_PEAKING
+        #if CSHADE_DEBUG_PEAKING
             CComposite_ApplyExposurePeaking(Output.rgb, HPos);
         #endif
 
