@@ -32,6 +32,8 @@
         #define CSHADE_APPLY_SWIZZLE 0
     #endif
 
+    /* cComposite Options */
+
     #if CSHADE_APPLY_GRADING
         // Primary Adjustments
         uniform float _CComposite_ExposureBias <
@@ -183,6 +185,8 @@
             ui_items = "All\0Red\0Green\0Blue\0Alpha\0";
         > = 0;
     #endif
+
+    /* cComposite Functions */
 
     float3 CComposite_ApplyOutputTonemap(float3 HDR)
     {

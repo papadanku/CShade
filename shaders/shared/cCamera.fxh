@@ -16,6 +16,8 @@
         #define CSHADE_APPLY_AUTO_EXPOSURE 0
     #endif
 
+    /* cCamera Options */
+
     #if CSHADE_APPLY_AUTO_EXPOSURE
         uniform float _CCamera_ExposureSmoothingSpeed <
             ui_category_closed = true;
@@ -111,6 +113,8 @@
     #endif
 
     uniform float _CCamera_Frametime < source = "frametime"; >;
+
+    /* cCamera Functions */
 
     struct CCamera_Exposure
     {

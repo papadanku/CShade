@@ -50,6 +50,8 @@
         #define CSHADE_APPLY_VIGNETTE 0
     #endif
 
+    /* cLens Options */
+
     #if CSHADE_APPLY_ABBERATION
         uniform float _CLens_ChromAb <
             ui_category = "Output / Lens";
@@ -119,6 +121,8 @@
             ui_tooltip = "Determines the visibility and intensity of the film grain effect.";
         > = 0.35;
     #endif
+
+    /* cLens Functions */
 
     // Simplex noise, transforms given position onto triangle grid
     // This logic should be kept at 32-bit floating point precision. 16 bits causes artifacting.
