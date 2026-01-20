@@ -10,7 +10,6 @@
 /* Shader Options */
 
 uniform float _Threshold <
-    ui_category = "Main Shader";
     ui_label = "Luminance Level Threshold";
     ui_min = 0.0;
     ui_type = "drag";
@@ -18,7 +17,6 @@ uniform float _Threshold <
 > = 0.8;
 
 uniform float _Smooth <
-    ui_category = "Main Shader";
     ui_label = "Threshold Transition Smoothness";
     ui_min = 0.0;
     ui_type = "drag";
@@ -26,7 +24,6 @@ uniform float _Smooth <
 > = 0.5;
 
 uniform float _Intensity <
-    ui_category = "Main Shader";
     ui_label = "Effect Strength";
     ui_min = 0.0;
     ui_type = "drag";
@@ -60,7 +57,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(Color.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_Threshold

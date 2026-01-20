@@ -13,7 +13,6 @@
 uniform float _FrameTime < source = "frametime"; > ;
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
     ui_label = "Display Mode";
     ui_text = "OPTICAL FLOW";
@@ -22,7 +21,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform float _MipBias <
-    ui_category = "Main Shader";
     ui_label = "Optical Flow Mipmap Level";
     ui_max = 7.0;
     ui_min = 0.0;
@@ -31,7 +29,6 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Main Shader";
     ui_label = "Motion Blur Temporal Smoothing";
     ui_max = 0.9;
     ui_min = 0.0;
@@ -40,7 +37,6 @@ uniform float _BlendFactor <
 > = 0.25;
 
 uniform bool _FrameRateScaling <
-    ui_category = "Main Shader";
     ui_label = "Scale Blur with Frame Rate";
     ui_text = "MOTION BLUR";
     ui_type = "radio";
@@ -48,7 +44,6 @@ uniform bool _FrameRateScaling <
 > = false;
 
 uniform int _BlurAccumuation <
-    ui_category = "Main Shader";
     ui_items = "Average\0Max\0";
     ui_label = "Blur Combination Method";
     ui_type = "combo";
@@ -56,7 +51,6 @@ uniform int _BlurAccumuation <
 > = 0;
 
 uniform int _BlurDirection <
-    ui_category = "Main Shader";
     ui_items = "Unidirectional\0Bidirectional\0";
     ui_label = "Motion Blur Direction";
     ui_type = "combo";
@@ -64,7 +58,6 @@ uniform int _BlurDirection <
 > = 0;
 
 uniform float _Scale <
-    ui_category = "Main Shader";
     ui_label = "Motion Blur Intensity";
     ui_max = 4.0;
     ui_min = 0.0;
@@ -73,7 +66,6 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _TargetFrameRate <
-    ui_category = "Main Shader";
     ui_label = "Target Frame Rate for Scaling";
     ui_max = 144.0;
     ui_min = 0.0;
@@ -250,7 +242,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(Output.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 #define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

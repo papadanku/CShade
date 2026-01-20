@@ -36,7 +36,6 @@
 /* Shader Options */
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Image\0Mask\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -44,7 +43,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _Kernel <
-    ui_category = "Main Shader";
     ui_items = "Diamond\0Box\0";
     ui_label = "Sharpening Kernel Shape";
     ui_type = "combo";
@@ -52,7 +50,6 @@ uniform int _Kernel <
 > = 0;
 
 uniform float _Contrast <
-    ui_category = "Main Shader";
     ui_label = "Sharpening Contrast";
     ui_max = 1.0;
     ui_min = 0.0;

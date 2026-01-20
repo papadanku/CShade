@@ -22,7 +22,6 @@ CSHADE_CREATE_INFO(
 
 #if !SHADER_TOGGLE_MONO
     uniform bool _InvertProcessing <
-        ui_category = "Main Shader";
         ui_label = "Invert Effect";
         ui_type = "radio";
         ui_tooltip = "Reverses the effect of the dot pattern, swapping foreground and background colors.";
@@ -31,7 +30,6 @@ CSHADE_CREATE_INFO(
 
 #if SHADER_TOGGLE_MONO
     uniform int _Select <
-        ui_category = "Main Shader";
         ui_items = "HSV: Hue\0HSV: Saturation\0HSV: Value\0HSL: Hue\0HSL: Saturation\0HSL: Lightness\0HSI: Hue\0HSI: Saturation\0HSI: Intensity\0";
         ui_label = "Monochrome Feature Selection";
         ui_type = "combo";
@@ -40,7 +38,6 @@ CSHADE_CREATE_INFO(
 #endif
 
 uniform int _CircleAmount <
-    ui_category = "Main Shader";
     ui_label = "Dot Density";
     ui_max = 256;
     ui_min = 1;
@@ -49,7 +46,7 @@ uniform int _CircleAmount <
 > = 128;
 
 uniform float _InputMultiplier <
-    ui_category = "Main Shader / Input Color";
+    ui_category = "Input Color";
     ui_label = "Input Color Influence";
     ui_max = 8.0;
     ui_min = 0.0;
@@ -58,7 +55,7 @@ uniform float _InputMultiplier <
 > = 4.0;
 
 uniform float _InputBias <
-    ui_category = "Main Shader / Input Color";
+    ui_category = "Input Color";
     ui_label = "Input Color Bias";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -68,7 +65,7 @@ uniform float _InputBias <
 
 #if SHADER_TOGGLE_MONO
     uniform float2 _Offset <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = " ";
         ui_max = 100.0;
         ui_min = -100.0;
@@ -78,7 +75,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _Crop <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = " ";
         ui_max = 10;
         ui_min = 0;
@@ -88,7 +85,7 @@ uniform float _InputBias <
     > = 0;
 #else
     uniform float2 _RedChannelOffset <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Red Channel Offset";
         ui_max = 10.0;
         ui_min = -10.0;
@@ -99,7 +96,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _GreenChannelOffset <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Green Channel Offset";
         ui_max = 10.0;
         ui_min = -10.0;
@@ -109,7 +106,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform float2 _BlueChannelOffset <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Blue";
         ui_max = 10.0;
         ui_min = -10.0;
@@ -119,7 +116,7 @@ uniform float _InputBias <
     > = 0.0;
 
     uniform int4 _RedChannelCrop <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Red Channel Crop";
         ui_max = 10;
         ui_min = 0;
@@ -129,7 +126,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _GreenChannelCrop <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Green Channel Crop";
         ui_max = 10;
         ui_min = 0;
@@ -138,7 +135,7 @@ uniform float _InputBias <
     > = 0;
 
     uniform int4 _BlueChannelCrop <
-        ui_category = "Main Shader / Geometry";
+        ui_category = "Geometry";
         ui_label = "Blue Channel Crop";
         ui_max = 10;
         ui_min = 0;
@@ -148,7 +145,7 @@ uniform float _InputBias <
 #endif
 
 uniform float3 _FrontColor <
-    ui_category = "Main Shader / Composition";
+    ui_category = "Composition";
     ui_label = "Dot Color";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -157,7 +154,7 @@ uniform float3 _FrontColor <
 > = float3(0.0, 0.0, 0.0);
 
 uniform float3 _BackColor <
-    ui_category = "Main Shader / Composition";
+    ui_category = "Composition";
     ui_label = "Background Color";
     ui_max = 1.0;
     ui_min = 0.0;

@@ -71,7 +71,6 @@
 /* Shader Options */
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Image\0Mask\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -79,7 +78,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform float _Sharpening <
-    ui_category = "Main Shader";
     ui_label = "Sharpening Intensity";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -183,7 +181,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(OutputColor.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_RCAS

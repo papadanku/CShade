@@ -20,6 +20,10 @@
         #define CSHADE_APPLY_TONEMAP 0
     #endif
 
+    #ifndef CSHADE_APPLY_DITHER
+        #define CSHADE_APPLY_DITHER 0
+    #endif
+
     #ifndef CSHADE_APPLY_PEAKING
         #define CSHADE_APPLY_PEAKING 0
     #endif
@@ -115,6 +119,24 @@
             ui_type = "combo";
             ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0Logarithmic C [Encode]\0";
         > = 2;
+    #endif
+
+    #if CSHADE_APPLY_DITHER
+        uniform bool _CShade_Dithering <
+            ui_category_closed = true;
+            ui_category = "Output / Dither";
+            ui_label = "Enable Dithering Effect";
+            ui_type = "radio";
+            ui_tooltip = "When enabled, dithering is applied to reduce color banding and create the illusion of more colors.";
+        > = false;
+
+        uniform int _CShade_DitherMethod <
+            ui_category = "Output / Dither";
+            ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
+            ui_label = "Dither Pattern Algorithm";
+            ui_type = "combo";
+            ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
+        > = 0;
     #endif
 
     #if CSHADE_APPLY_SWIZZLE
@@ -349,6 +371,44 @@
         > = 8;
     #endif
 
+    void CComposite_ApplyDither(inout float3 Color, in float2 HPos, in float2 Tex)
+    {
+        #if CSHADE_APPLY_DITHER
+            #if BUFFER_COLOR_BIT_DEPTH == 8
+                const float Bits = 1.0 / (exp2(8.0) - 1.0);
+            #else
+                const float Bits = 1.0 / (exp2(10.0) - 1.0);
+            #endif
+
+            float3 Dither = 0.0;
+
+            if (_CShade_Dithering)
+            {
+                switch (_CShade_DitherMethod)
+                {
+                    case 0:
+                        Dither = CMath_GetGoldenRatioNoise(HPos);
+                        break;
+                    case 1:
+                        Dither = CMath_GetInterleavedGradientNoise(HPos);
+                        break;
+                    case 2:
+                        Dither = CMath_GetHash_FLT1(HPos, 0.0);
+                        break;
+                    default:
+                        Dither = 0.0;
+                        break;
+                }
+
+                // Go from range [0, 1) to [0, 1)
+                Dither = (Dither * 2.0) - 1.0;
+
+                // Apply dithering
+                Color += (Dither * Bits);
+            }
+        #endif
+    }
+
     void CComposite_SwapChannels(inout float Color, in float4 Cache, in int Parameter)
     {
         switch (Parameter)
@@ -371,7 +431,7 @@
         }
     }
 
-    float4 CComposite_OutputChannels(float3 Color, float Alpha)
+    float4 CComposite_SwizzleChannels(float3 Color, float Alpha)
     {
         #if CSHADE_APPLY_SWIZZLE
             float4 Cache = float4(Color, Alpha);

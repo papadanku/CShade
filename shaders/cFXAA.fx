@@ -21,7 +21,6 @@
 #include "shared/cColor.fxh"
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Image\0Directions\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -29,7 +28,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _RelativeThreshold <
-    ui_category = "Main Shader";
     ui_items = "High\0Medium\0Low\0";
     ui_label = "Relative Contrast Threshold";
     ui_type = "combo";
@@ -42,7 +40,6 @@ static const float RelativeThresholds[3] =
 };
 
 uniform int _ContrastThreshold <
-    ui_category = "Main Shader";
     ui_items = "Very High\0High\0Medium\0Low\0Very Low\0";
     ui_label = "Contrast Threshold for Edges";
     ui_type = "combo";
@@ -55,7 +52,6 @@ static const float ContrastThresholds[5] =
 };
 
 uniform int _SubpixelBlending <
-    ui_category = "Main Shader";
     ui_items = "High\0Medium\0Low\0Very Low\0Off\0";
     ui_label = "Subpixel Smoothing Strength";
     ui_type = "combo";

@@ -48,7 +48,7 @@
 uniform float _Time < source = "timer"; ui_tooltip = "The shader's internal timer, used for time-based effects."; > ;
 
 uniform float _MipBias <
-    ui_category = "Main Shader / Optical Flow";
+    ui_category = "Optical Flow";
     ui_label = "Mipmap Level for Optical Flow";
     ui_max = 7.0;
     ui_min = 0.0;
@@ -57,7 +57,7 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Main Shader / Optical Flow";
+    ui_category = "Optical Flow";
     ui_label = "Temporal Smoothing Factor";
     ui_max = 0.9;
     ui_min = 0.0;
@@ -66,7 +66,7 @@ uniform float _BlendFactor <
 > = 0.25;
 
 uniform int _BlockSize <
-    ui_category = "Main Shader / Datamosh";
+    ui_category = "Datamosh";
     ui_label = "Datamosh Block Size";
     ui_max = 32;
     ui_min = 0;
@@ -75,7 +75,7 @@ uniform int _BlockSize <
 > = 4;
 
 uniform float _Entropy <
-    ui_category = "Main Shader / Datamosh";
+    ui_category = "Datamosh";
     ui_label = "Datamosh Randomness";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -84,7 +84,7 @@ uniform float _Entropy <
 > = 0.1;
 
 uniform float _Contrast <
-    ui_category = "Main Shader / Datamosh";
+    ui_category = "Datamosh";
     ui_label = "Datamosh Noise Contrast";
     ui_max = 4.0;
     ui_min = 0.0;
@@ -93,7 +93,7 @@ uniform float _Contrast <
 > = 0.1;
 
 uniform float _Scale <
-    ui_category = "Main Shader / Datamosh";
+    ui_category = "Datamosh";
     ui_label = "Motion Vector Scale";
     ui_max = 2.0;
     ui_min = 0.0;
@@ -102,7 +102,7 @@ uniform float _Scale <
 > = 1.0;
 
 uniform float _Diffusion <
-    ui_category = "Main Shader / Datamosh";
+    ui_category = "Datamosh";
     ui_label = "Random Pixel Displacement";
     ui_max = 4.0;
     ui_min = 0.0;
@@ -347,7 +347,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 TexSize = fwidth(Input.Tex0);
     float4 Base = tex2D(SampleSourceTex, Input.Tex0);
     float2 MV = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFilteredFlowTex, float4(Input.Tex0, 0.0, _MipBias)).xy);
-    float4 Datamosh = GetDataMosh(Base, MV, Input.HPos, Input.Tex0, TexSize);
+    float4 Datamosh = GetDataMosh(Base, MV, Input.HPos.xy, Input.Tex0, TexSize);
 
     // RENDER
     #if defined(CSHADE_BLENDING)
@@ -355,7 +355,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(Datamosh.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)

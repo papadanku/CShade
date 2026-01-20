@@ -7,14 +7,12 @@
 /* Shader Options */
 
 uniform bool _BlendWithAlpha <
-    ui_category = "Main Shader";
     ui_label = "Blend with Texture Alpha";
     ui_type = "radio";
     ui_tooltip = "When enabled, the output color will be blended with the computed alpha channel from the texture.";
 > = false;
 
 uniform float4 _Color <
-    ui_category = "Main Shader";
     ui_label = "Solid Color";
     ui_min = 0.0;
     ui_type = "color";
@@ -36,7 +34,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = _Color;
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_SolidColor

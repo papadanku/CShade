@@ -42,7 +42,7 @@ uniform int _RenderMode <
 > = 0;
 
 uniform int _BaseGeometricTransformOrder <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
     ui_text = "BASE LAYER";
@@ -51,28 +51,28 @@ uniform int _BaseGeometricTransformOrder <
 > = 0;
 
 uniform float _BaseAngle <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the base layer around its center.";
 > = 0.0;
 
 uniform float2 _BaseTranslate <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the base layer.";
 > = 0.0;
 
 uniform float2 _BaseScale <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the base layer.";
 > = 1.0;
 
 uniform int _OverlayTransformOrder <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
     ui_text = "OVERLAY LAYER";
@@ -81,28 +81,28 @@ uniform int _OverlayTransformOrder <
 > = 0;
 
 uniform float _OverlayAngle <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the overlay layer around its center.";
 > = 0.0;
 
 uniform float2 _OverlayTranslate <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay layer.";
 > = 0.0;
 
 uniform float2 _OverlayScale <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the overlay layer.";
 > = 0.5;
 
 uniform int _OverlayMaskTransformOrder <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_items = "Scale > Rotate > Translate\0Scale > Translate > Rotate\0Rotate > Scale > Translate\0Rotate > Translate > Scale\0Translate > Scale > Rotate\0Translate > Rotate > Scale\0";
     ui_label = "Transform Order";
     ui_text = "OVERLAY MASK";
@@ -111,35 +111,35 @@ uniform int _OverlayMaskTransformOrder <
 > = 0;
 
 uniform float _OverlayMaskAngle <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Rotation Angle";
     ui_type = "drag";
     ui_tooltip = "Controls the rotation of the overlay mask around its center.";
 > = 0.0;
 
 uniform float2 _OverlayMaskTranslate <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Translation";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical translation (position) of the overlay mask.";
 > = 0.0;
 
 uniform float2 _OverlayMaskScale <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Scale";
     ui_type = "drag";
     ui_tooltip = "Controls the horizontal and vertical scaling of the overlay mask.";
 > = 1.0;
 
 uniform float2 _OverlayMaskCutoff <
-    ui_category = "Main Shader / Geometric Transform";
+    ui_category = "Geometric Transform";
     ui_label = "Cutoff Values";
     ui_type = "drag";
     ui_tooltip = "Defines the cutoff values for the overlay mask, determining which parts of the overlay are visible.";
 > = 0.5;
 
 uniform int _ColorOperationsOrder <
-    ui_category = "Main Shader / Color Transform";
+    ui_category = "Color Transform";
     ui_items = "Multiply > Add\0Add > Multiply\0";
     ui_label = "Transform Order";
     ui_type = "combo";
@@ -147,7 +147,7 @@ uniform int _ColorOperationsOrder <
 > = 0;
 
 uniform float4 _Multiply <
-    ui_category = "Main Shader / Color Transform";
+    ui_category = "Color Transform";
     ui_label = "Multiplication Factor";
     ui_max = 2.0;
     ui_min = -2.0;
@@ -156,7 +156,7 @@ uniform float4 _Multiply <
 > = 1.0;
 
 uniform float4 _Addition <
-    ui_category = "Main Shader / Color Transform";
+    ui_category = "Color Transform";
     ui_label = "Addition Factor";
     ui_max = 2.0;
     ui_min = -2.0;
@@ -252,7 +252,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         float Alpha = 1.0;
         Output = float4(Texture.rgb, Alpha);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_Transform

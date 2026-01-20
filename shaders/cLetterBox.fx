@@ -9,7 +9,6 @@
 /* Shader Options */
 
 uniform float2 _Offset <
-    ui_category = "Main Shader";
     ui_label = "Offset";
     ui_max = 1.0;
     ui_min = -1.0;
@@ -18,7 +17,6 @@ uniform float2 _Offset <
 > = float2(0.0, 0.0);
 
 uniform float2 _Scale <
-    ui_category = "Main Shader";
     ui_label = "Scale";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -27,7 +25,6 @@ uniform float2 _Scale <
 > = float2(1.0, 1.0);
 
 uniform float2 _Cutoff <
-    ui_category = "Main Shader";
     ui_label = "Cutoff";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -56,7 +53,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4((float3)Shape, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 #undef CBLEND_BLENDENABLE

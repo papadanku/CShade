@@ -17,14 +17,12 @@
 /* Shader Options */
 
 uniform bool _PreserveFrequencies <
-    ui_category = "Main Shader";
     ui_label = "Retain Fine Details";
     ui_type = "radio";
     ui_tooltip = "When enabled, the shader attempts to retain fine details and high-frequency information in the image, preventing them from being blurred by the anti-aliasing process.";
 > = true;
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Image\0Short Edge Mask\0Long Edge Mask\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -32,7 +30,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _ShortEdgesScale <
-    ui_category = "Main Shader";
     ui_label = "Short Edges Scale";
     ui_max = 4.0;
     ui_min = 0.0;
@@ -41,7 +38,6 @@ uniform int _ShortEdgesScale <
 > = 3.0;
 
 uniform int _ShortEdgesContrastThreshold <
-    ui_category = "Main Shader";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
     ui_label = "Short Edges Contrast Threshold";
     ui_type = "combo";
@@ -49,7 +45,6 @@ uniform int _ShortEdgesContrastThreshold <
 > = 2;
 
 uniform int _LongEdgesContrastThreshold <
-    ui_category = "Main Shader";
     ui_items = "\0Very Low\0Low\0Medium\0High\0Very High\0";
     ui_label = "Long Edges Contrast Threshold";
     ui_type = "combo";

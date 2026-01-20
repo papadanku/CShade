@@ -32,21 +32,18 @@
 /* Shader Options */
 
 uniform bool _EnableFalloff <
-    ui_category = "Main Shader";
     ui_label = "Enable Edge Falloff";
     ui_tooltip = "When enabled, the blur intensity will decrease towards the edges of the screen.";
     ui_type = "radio";
 > = true;
 
 uniform bool _InvertFalloff <
-    ui_category = "Main Shader";
     ui_label = "Invert Edge Falloff";
     ui_type = "radio";
     ui_tooltip = "When enabled, the blur intensity will be higher at the edges and lower in the center.";
 > = false;
 
 uniform float _Radius <
-    ui_category = "Main Shader";
     ui_label = "Blur Strength";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -55,7 +52,6 @@ uniform float _Radius <
 > = 0.5;
 
 uniform float _FalloffAmount <
-    ui_category = "Main Shader";
     ui_label = "Falloff Intensity";
     ui_max = 2.0;
     ui_min = 0.0;
@@ -64,7 +60,6 @@ uniform float _FalloffAmount <
 > = 0.6;
 
 uniform float2 _FalloffOffset <
-    ui_category = "Main Shader";
     ui_label = "Falloff Center Offset";
     ui_max = 1.0;
     ui_min = -1.0;
@@ -138,7 +133,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(Output.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_NoiseBlur

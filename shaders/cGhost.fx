@@ -15,7 +15,6 @@
 #include "shared/cColor.fxh"
 
 uniform float _BlendFactor <
-    ui_category = "Main Shader";
     ui_label = "Ghosting Temporal Smoothing";
     ui_max = 0.9;
     ui_min = 0.1;

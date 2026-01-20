@@ -9,29 +9,14 @@
 /* Shader Options */
 
 uniform bool _Pixelate <
-    ui_category = "Main Shader";
+    ui_category = "Pixelation";
     ui_label = "Enable Pixelated Effect";
     ui_type = "radio";
     ui_tooltip = "When enabled, the image will be rendered with a blocky, pixelated appearance.";
 > = false;
 
-uniform bool _Dithering <
-    ui_category = "Main Shader";
-    ui_label = "Enable Dithering Effect";
-    ui_type = "radio";
-    ui_tooltip = "When enabled, dithering is applied to reduce color banding and create the illusion of more colors.";
-> = false;
-
-uniform int _DitherMethod <
-    ui_category = "Main Shader";
-    ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
-    ui_label = "Dither Pattern Algorithm";
-    ui_type = "combo";
-    ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
-> = 0;
-
 uniform int2 _Resolution <
-    ui_category = "Main Shader";
+    ui_category = "Pixelation";
     ui_label = "Pixelation Block Resolution";
     ui_max = 256;
     ui_min = 16;
@@ -39,8 +24,23 @@ uniform int2 _Resolution <
     ui_tooltip = "Sets the number of pixels horizontally and vertically when pixelation is enabled, controlling the block size.";
 > = int2(128, 128);
 
+uniform bool _Dithering <
+    ui_category = "Color Quantization";
+    ui_label = "Enable Dithering Effect";
+    ui_type = "radio";
+    ui_tooltip = "When enabled, dithering is applied to reduce color banding and create the illusion of more colors.";
+> = false;
+
+uniform int _DitherMethod <
+    ui_category = "Color Quantization";
+    ui_items = "Golden Ratio Noise\0Interleaved Gradient Noise\0White Noise\0";
+    ui_label = "Dither Pattern Algorithm";
+    ui_type = "combo";
+    ui_tooltip = "Selects the algorithm used to generate the dither pattern, such as Golden Ratio Noise or White Noise.";
+> = 0;
+
 uniform int3 _Range <
-    ui_category = "Main Shader";
+    ui_category = "Color Quantization";
     ui_label = "Quantization Levels";
     ui_max = 32.0;
     ui_min = 1.0;
@@ -78,18 +78,21 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         switch (_DitherMethod)
         {
             case 0:
-                Dither = CMath_GetGoldenRatioNoise(HashPos) / _Range;
+                Dither = CMath_GetGoldenRatioNoise(HashPos);
                 break;
             case 1:
-                Dither = CMath_GetInterleavedGradientNoise(HashPos) / _Range;
+                Dither = CMath_GetInterleavedGradientNoise(HashPos);
                 break;
             case 2:
-                Dither = CMath_GetHash_FLT1(HashPos, 0.0) / _Range;
+                Dither = CMath_GetHash_FLT1(HashPos, 0.0);
                 break;
             default:
                 Dither = 0.0;
                 break;
         }
+
+        // Go from range [0, 1) to [0, 1)
+        Dither = (Dither * 2.0) - 1.0;
     }
 
     // Color quantization
@@ -102,7 +105,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(ColorMap.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_Quantize

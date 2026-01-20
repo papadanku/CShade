@@ -11,7 +11,6 @@
 /* Shader Options */
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -19,7 +18,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform float _MipBias <
-    ui_category = "Main Shader";
     ui_label = "Optical Flow Mipmap Level";
     ui_max = 7.0;
     ui_min = 0.0;
@@ -28,7 +26,6 @@ uniform float _MipBias <
 > = 0.0;
 
 uniform float _BlendFactor <
-    ui_category = "Main Shader";
     ui_label = "Flow Temporal Smoothing";
     ui_max = 0.9;
     ui_min = 0.0;

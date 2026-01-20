@@ -37,7 +37,6 @@
 #endif
 
 uniform int _DisplayMode <
-    ui_category = "Main Shader";
     ui_items = "Output\0Debug · Quadrant\0Debug · Magnitude\0Debug · X Gradient\0Debug · Y Gradient\0";
     ui_label = "Display Mode";
     ui_type = "combo";
@@ -45,7 +44,6 @@ uniform int _DisplayMode <
 > = 0;
 
 uniform int _WeightMode <
-    ui_category = "Main Shader";
     ui_items = "Color\0Luma\0";
     ui_label = "Edge Detection Method";
     ui_type = "combo";
@@ -53,7 +51,6 @@ uniform int _WeightMode <
 > = 0;
 
 uniform float _LowerThreshold <
-    ui_category = "Main Shader";
     ui_label = "Lower Edge Threshold";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -62,7 +59,6 @@ uniform float _LowerThreshold <
 > = 0.05;
 
 uniform float _UpperThreshold <
-    ui_category = "Main Shader";
     ui_label = "Upper Edge Threshold";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -71,7 +67,6 @@ uniform float _UpperThreshold <
 > = 0.5;
 
 uniform float _ColorSensitivity <
-    ui_category = "Main Shader";
     ui_label = "Color Difference Sensitivity";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -80,7 +75,6 @@ uniform float _ColorSensitivity <
 > = 0.5;
 
 uniform float4 _FrontColor <
-    ui_category = "Main Shader";
     ui_label = "Contour Line Color";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -89,7 +83,6 @@ uniform float4 _FrontColor <
 > = float4(1.0, 1.0, 1.0, 1.0);
 
 uniform float4 _BackColor <
-    ui_category = "Main Shader";
     ui_label = "Background Color";
     ui_max = 1.0;
     ui_min = 0.0;
@@ -203,7 +196,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #else
         Output = float4(OutputColor.rgb, 1.0);
     #endif
-    CShade_Render(Output, Input.HPos, Input.Tex0);
+    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
 technique CShade_KinoContour

@@ -61,15 +61,15 @@
 
     void CShade_Render(inout float4 Output, in float2 HPos, in float2 Tex)
     {
-        // Apply (optional) color grading
-        #if defined(CSHADE_COMPOSITE)
-            CComposite_ApplyOutput(Output.rgb);
-        #endif
-
         // Apply (optional) lens
         #if CSHADE_APPLY_VIGNETTE
             float2 UNormTex = Tex - 0.5;
             CLens_ApplyVignette(Output.rgb, UNormTex, 0.0, _CLens_Vignette);
+        #endif
+
+        // Apply (optional) color grading
+        #if defined(CSHADE_COMPOSITE)
+            CComposite_ApplyOutput(Output.rgb);
         #endif
 
         // Apply (optional) vignette
@@ -77,13 +77,19 @@
             CLens_ApplyFilmGrain(Output.rgb, HPos, _CLens_GrainScale, _CLens_GrainAmount, _CLens_GrainSeed);
         #endif
 
+        // Apply (optional) dithering
+        #if CSHADE_APPLY_DITHER
+            CComposite_ApplyDither(Output.rgb, HPos, Tex);
+        #endif
+
         // Apply (optional) exposure-peaking
-        #if defined(CSHADE_APPLY_PEAKING)
+        #if CSHADE_APPLY_PEAKING
             CComposite_ApplyExposurePeaking(Output.rgb, HPos);
         #endif
 
-        #if defined(CSHADE_BLENDING)
-            Output = CComposite_OutputChannels(Output.rgb, Output.a);
+        // Apply (optional) swizzling
+        #if CSHADE_APPLY_SWIZZLE
+            Output = CComposite_SwizzleChannels(Output.rgb, Output.a);
         #endif
     }
 
