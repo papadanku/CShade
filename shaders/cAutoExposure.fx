@@ -14,14 +14,6 @@
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-uniform int _ShaderPreprocessorGuide <
-    ui_category_closed = true;
-    ui_category = "CShade / Preprocessor Guide";
-    ui_label = " ";
-    ui_type = "radio";
-    ui_text = "\nSHADER_TOGGLE_GRADING - Toggles color grading.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_PEAKING - Toggles the exposure peaking display.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 0.\n\nSHADER_TOGGLE_AUTO_EXPOSURE - Toggles auto exposure.\n\n\tOptions: 0 (off) or 1 (on).\n\tDefault: 1.\n\n";
->;
-
 /* Textures & Samplers */
 
 CSHADE_CREATE_TEXTURE(ExposureTex, int2(256, 256), R16F, 9)

@@ -109,7 +109,7 @@
 
         uniform int _CBlendPreprocessorGuidePreset <
             ui_category_closed = true;
-            ui_category = "Preprocessor Guide / Blending / Presets";
+            ui_category = "Preprocessor Guide / Blending Presets";
             ui_label = " ";
             ui_type = "radio";
             ui_text = "\nCBLEND_APPLY_PRESET 0 (Default):\n\n\tCBLEND_BLENDENABLE_VALUE FALSE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE ONE\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE ZERO\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\nCBLEND_APPLY_PRESET 1 (Enables Alpha Blending):\n\n\tCBLEND_BLENDENABLE_VALUE TRUE\n\tCBLEND_BLENDOP_VALUE ADD\n\tCBLEND_BLENDOPALPHA_VALUE ADD\n\tCBLEND_SRCBLEND_VALUE SRCALPHA\n\tCBLEND_SRCBLENDALPHA_VALUE ONE\n\tCBLEND_DESTBLEND_VALUE INVSRCALPHA\n\tCBLEND_DESTBLENDALPHA_VALUE ZERO\n\n";
