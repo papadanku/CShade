@@ -43,6 +43,7 @@ uniform float _BloomIntensity <
     ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
 > = 0.5;
 
+#define CSHADE_APPLY_AUTO_EXPOSURE 0
 #ifndef CSHADE_APPLY_AUTO_EXPOSURE
     #define CSHADE_APPLY_AUTO_EXPOSURE 1
 #endif
@@ -194,9 +195,11 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 
     // Apply (optional) overlays
-    float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
-    CCamera_ApplySpotMeterOverlay(Output.rgb, UnormTex, NonExposedColor);
-    CCamera_ApplyAverageLumaOverlay(Output.rgb, UnormTex, ExposureData);
+    #if CSHADE_APPLY_AUTO_EXPOSURE
+        float2 UnormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
+        CCamera_ApplySpotMeterOverlay(Output.rgb, UnormTex, NonExposedColor);
+        CCamera_ApplyAverageLumaOverlay(Output.rgb, UnormTex, ExposureData);
+    #endif
 }
 
 #define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
