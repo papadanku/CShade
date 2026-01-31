@@ -50,3 +50,15 @@ To "run" these shaders:
 * **Preprocessor Directives:** Extensively uses `#define` and `#if` directives for conditional compilation and feature toggling.
 * **Mathematical Utilities:** Leverages a rich set of mathematical functions provided in `cMath.fxh` for complex calculations.
 * **Texture and Sampler Management:** Utilizes custom macros (`CREATE_TEXTURE`, `CREATE_SAMPLER`, etc.) for consistent definition of textures and samplers.
+
+## Instructions
+
+@./.gemini/Instructions.md
+
+## Knowledge
+
+@./.gemini/Examples.txt
+
+@./.gemini/REFERENCE.md
+
+@./.gemini/ReShade.fxh
