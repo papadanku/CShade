@@ -34,16 +34,14 @@
 
 /* Shader Options */
 
-uniform int _DisplayMode <
-    ui_label = "Display Mode";
-    ui_type = "combo";
-    #if SHADER_VECTOR_STREAMING
-        ui_items = "Lines\0Circles\0";
-    #else
+#if !SHADER_VECTOR_STREAMING
+    uniform int _DisplayMode <
+        ui_label = "Display Mode";
+        ui_type = "combo";
         ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
-    #endif
-    ui_tooltip = "Selects the visual output mode for optical flow.";
-> = 0;
+        ui_tooltip = "Selects the visual output mode for optical flow.";
+    > = 0;
+#endif
 
 #if SHADER_VECTOR_STREAMING
     uniform float _StreamScaling <
@@ -118,18 +116,13 @@ CSHADE_CREATE_TEXTURE(FlowTex, CSHADE_BUFFER_SIZE_3, RG16F, 8)
 CSHADE_CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
 CSHADE_CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 
-// This is for LCI.
 #if !SHADER_VECTOR_STREAMING
     CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
     CSHADE_CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 #endif
 
-/* Pixel Shaders */
+/* Pixel Shaders: Pyramid */
 
-void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
-{
-    Output = CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
-}
 
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -146,7 +139,7 @@ void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output.w = 1.0;
 }
 
-/* Lucas-Kanade */
+/* Pixel Shaders: Lucas-Kanade */
 
 void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
@@ -173,7 +166,7 @@ void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output = float4(Flow, 0.0, _BlendFactor);
 }
 
-/* Filtering */
+/* Pixel Shaders: Filtering */
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -200,7 +193,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).xy;
 }
 
-/* Output Functions */
+/* Pixel Shaders: Output */
 
 #if SHADER_VECTOR_STREAMING
     struct VS2PS_Cell
@@ -248,19 +241,11 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // Initiate offset processing.
         float2 Offset = Vertex[VertexCell];
 
-        switch (_DisplayMode)
-        {
-            case 0:
-                // Scale across the adjacent side
-                Offset = (VertexCell == 1) ? float2(PolarDirection.x * _StreamScaling, 0.0) : Offset;
+        // Scale across the adjacent side
+        Offset = (VertexCell == 1) ? float2(PolarDirection.x * _StreamScaling, 0.0) : Offset;
 
-                // Rotate across the opposite and adjacent sides
-                Offset = (VertexCell != 0) ? mul(Offset, CMath_GetRotationMatrix(PolarDirection.y)) : Offset;
-                break;
-            case 1:
-                Offset *= PolarDirection.x;
-                break;
-        }
+        // Rotate across the opposite and adjacent sides
+        Offset = (VertexCell != 0) ? mul(Offset, CMath_GetRotationMatrix(PolarDirection.y)) : Offset;
 
         // 5. Calculate final NDC position
         float2 CellPosition = (CellOrigin + Offset) * CellSize;
@@ -282,18 +267,8 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         Output.rg = ((Velocity.xy * InverseMagnitude) * 0.5) + 0.5;
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
-        // Selective output mask
-        switch (_DisplayMode)
-        {
-            case 0:
-                // 2. Scale to create the Ellipse
-                float2 ScaledUV = UV * float2(0.5, 2.0) * 1.5;
-                Output.a = smoothstep(1.0, 0.0, length(ScaledUV));
-                break;
-            case 1:
-                Output.a = 1; // smoothstep(1.0, 0.0, length(UV));
-                break;
-        }
+        float2 ScaledUV = UV * float2(0.5, 2.0) * 1.5;
+        Output.a = smoothstep(1.0, 0.0, length(ScaledUV));
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -356,6 +331,13 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         CShade_Render(Output, Input.HPos.xy, Input.Tex0);
     }
 #endif
+
+void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
+{
+    Output = CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
+}
+
+/* Techniques */
 
 #define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
     pass NAME \
