@@ -210,7 +210,6 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void VS_VectorStreaming(in CShade_APP2VS Input, out VS2PS_Cell Output)
     {
         float Pi2 = CMath_GetPi() * 2.0;
-        float2 Vertex[3] = { float2(0.0, 0.0), float2(1.0, 0.0), float2(0.0, 1.0) };
 
         // 1. Identify which cell and which corner of the triangle we are on
         int CellID = Input.ID / VTX_PER_CELL;
@@ -241,6 +240,8 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // For fragmentshader ... coloring
         Output.Velocity = Direction;
 
+        float2 Vertex[3] = { float2(0.0, 0.0), float2(1.0, 0.0), float2(0.0, 1.0) };
+
         // Initiate offset processing.
         float2 Offset = Vertex[VertexCell];
 
@@ -263,15 +264,21 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         // 1. Get velocity
         float2 Velocity = Input.Velocity * float2(1.0, -1.0);
-        float InverseMagnitude = rsqrt(dot(Velocity, Velocity) + 1e-7);
-        float2 UV = (Input.Tex0.xy * 2.0) - 1.0;
+        float DotVV = dot(Velocity, Velocity);
+        float Magnitude = sqrt(DotVV);
+        float InverseMagnitude = rsqrt(DotVV + 1e-7);
 
         // Output color
-        Output.rg = ((Velocity.xy * InverseMagnitude) * 0.5) + 0.5;
+        // Calculate normalized velocity and map it to [0, 1] range for color output.
+        // InverseMagnitude includes a small epsilon for numerical stability.
+        Output.rg = (Velocity.xy * InverseMagnitude * 0.5) + 0.5;
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
-        float2 ScaledUV = UV * float2(0.5, 2.0) * 1.5;
+        // Combine constants for ScaledUV for minor optimization
+        float2 UV = (Input.Tex0.xy * 2.0) - 1.0;
+        float2 ScaledUV = UV * float2(0.75, 3.0);
         Output.a = smoothstep(1.0, 0.0, length(ScaledUV));
+        Output.a *= smoothstep(1e-3, 1e-2, Magnitude);
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
