@@ -112,7 +112,7 @@
     {
         return (X * 2.0) - 1.0;
     }
-    
+
     float4 CMath_UNORMtoSNORM_FLT4(float4 X)
     {
         return (X * 2.0) - 1.0;
@@ -132,7 +132,7 @@
     {
         return (X * 0.5) + 0.5;
     }
-    
+
     float4 CMath_SNORMtoUNORM_FLT4(float4 X)
     {
         return (X * 0.5) + 0.5;
@@ -202,6 +202,35 @@
     float4 CMath_SNORMtoFLT16_FLT4(float4 Value)
     {
         return Value * CMath_GetFLT16Max();
+    }
+
+    float2 CMath_CartesianToPolar(float2 Cartesian)
+    {
+        // r = magnitude of the vector
+        float R = length(Cartesian);
+
+        // Theta = angle in radians (-PI to PI)
+        float Theta = atan2(Cartesian.y, Cartesian.x);
+
+        return float2(R, Theta);
+    }
+
+    float3 CMath_CartesianToSpherical(float3 Cartesian)
+    {
+        // Precalculate (x*x + y*y)^0.5 and (x*x + y*y + z*z)^0.5
+        float L1 = rsqrt(dot(Cartesian.xyz, Cartesian.xyz));
+        float L2 = rsqrt(dot(Cartesian.xy, Cartesian.xy));
+
+        // .x = radius; .y = inclination; .z = azimuth
+        float3 RIA = 0.0;
+        RIA.x = L1;
+        RIA.y = Cartesian.z * L1;
+        RIA.z = Cartesian.x * L2;
+
+        // Calculate inclination and azimuth
+        RIA.yz = acos(RIA.yz);
+
+        return RIA;
     }
 
     void CMath_ApplyGeometricTransform(

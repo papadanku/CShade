@@ -8,14 +8,52 @@
 #include "shared/cBlur.fxh"
 #include "shared/cMotionEstimation.fxh"
 
+/* Preprocessor Definitions */
+
+#ifndef SHADER_OPTICAL_FLOW_SAMPLING
+    #define SHADER_OPTICAL_FLOW_SAMPLING POINT
+#endif
+
+#ifndef SHADER_VECTOR_STREAMING
+    #define SHADER_VECTOR_STREAMING 1
+#endif
+
+#if SHADER_VECTOR_STREAMING
+    #ifndef SHADER_VECTOR_STREAMING_ROWS
+        #define SHADER_VECTOR_STREAMING_ROWS 64
+    #endif
+
+    #ifndef SHADER_VECTOR_STREAMING_COLUMNS
+        #define SHADER_VECTOR_STREAMING_COLUMNS 64
+    #endif
+
+    #define VTX_COLUMNS SHADER_VECTOR_STREAMING_COLUMNS
+    #define VTX_ROWS SHADER_VECTOR_STREAMING_ROWS
+    #define VTX_PER_CELL 3
+#endif
+
 /* Shader Options */
 
 uniform int _DisplayMode <
-    ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
     ui_label = "Display Mode";
     ui_type = "combo";
-    ui_tooltip = "Selects the visual output mode for optical flow, including normalized or renormalized shading, and different Line Integral Convolution (LIC) visualizations.";
+    #if SHADER_VECTOR_STREAMING
+        ui_items = "Lines\0Circles\0";
+    #else
+        ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
+    #endif
+    ui_tooltip = "Selects the visual output mode for optical flow.";
 > = 0;
+
+#if SHADER_VECTOR_STREAMING
+    uniform float _StreamScaling <
+        ui_label = "Vector Scaling";
+        ui_max = 100.0;
+        ui_min = 0.1;
+        ui_type = "slider";
+        ui_tooltip = "Amount of scaling applied to the displayed vectors.";
+    > = 10.0;
+#endif
 
 uniform float _MipBias <
     ui_label = "Optical Flow Mipmap Level";
@@ -33,19 +71,28 @@ uniform float _BlendFactor <
     ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
 > = 0.45;
 
-#define CSHADE_APPLY_AUTO_EXPOSURE 0
-#define CSHADE_APPLY_ABBERATION 0
-#include "shared/cShade.fxh"
-
-#ifndef SHADER_OPTICAL_FLOW_SAMPLING
-    #define SHADER_OPTICAL_FLOW_SAMPLING POINT
+#if SHADER_VECTOR_STREAMING
+    #define CBLEND_APPLY_PRESET 1
+    #define CSHADE_APPLY_AUTO_EXPOSURE 0
+    #define CSHADE_APPLY_ABBERATION 0
+    #define CSHADE_APPLY_GRAIN 0
+    #define CSHADE_APPLY_VIGNETTE 0
+    #define CSHADE_APPLY_GRADING 0
+    #define CSHADE_APPLY_TONEMAP 0
+    #define CSHADE_APPLY_DITHER 0
+    #define CSHADE_DEBUG_PEAKING 0
+    #include "shared/cShade.fxh"
+#else
+    #define CSHADE_APPLY_AUTO_EXPOSURE 0
+    #define CSHADE_APPLY_ABBERATION 0
+    #include "shared/cShade.fxh"
 #endif
 
 uniform int _ShaderPreprocessorGuide <
     ui_category = "Preprocessor Guide / Shader";
     ui_category_closed = false;
     ui_label = " ";
-    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\n";
+    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\nSHADER_VECTOR_STREAMING - Enables vector streaming visualization instead of shading.\n\n\tOptions: 0 (Disabled), 1 (Enabled)\n\nSHADER_VECTOR_STREAMING_ROWS - The number of rows used for vector streaming.\n\n\tOptions: Any integer value.\n\nSHADER_VECTOR_STREAMING_COLUMNS - The number of columns used for vector streaming.\n\n\tOptions: Any integer value.\n\n";
     ui_type = "radio";
 > = 0;
 
@@ -72,8 +119,10 @@ CSHADE_CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAM
 CSHADE_CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 
 // This is for LCI.
-CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
-CSHADE_CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+#if !SHADER_VECTOR_STREAMING
+    CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
+    CSHADE_CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+#endif
 
 /* Pixel Shaders */
 
@@ -97,7 +146,7 @@ void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output.w = 1.0;
 }
 
-// Run Lucas-Kanade
+/* Lucas-Kanade */
 
 void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
@@ -124,9 +173,7 @@ void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output = float4(Flow, 0.0, _BlendFactor);
 }
 
-/*
-    Postfilter median
-*/
+/* Filtering */
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -153,65 +200,162 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     Output = CBlur_GetSelfBilateralUpsampleXY(SampleTempTex3, SampleGuide, Input.Tex0).xy;
 }
 
-void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+/* Output Functions */
 
-    // Encode vectors
-    float3 VectorColors = normalize(float3(Vectors, 1e-3));
-    VectorColors.xy = CMath_SNORMtoUNORM_FLT2(VectorColors.xy);
-    VectorColors.z = sqrt(1.0 - saturate(dot(VectorColors.xy, VectorColors.xy)));
-    VectorColors = normalize(VectorColors);
-
-    // Renormalize motion vectors to take advantage of intensity
-    float3 RenormalizedVectorColors = VectorColors / max(max(VectorColors.x, VectorColors.y), VectorColors.z);
-
-    // Line Integral Convolution (LIC)
-    float LIC = 0.0;
-    float WeightSum = 0.0;
-
-    [unroll]
-    for (float i = 1.0; i < 4.0; i += 0.5)
+#if SHADER_VECTOR_STREAMING
+    struct VS2PS_Cell
     {
-        float2 Offset = Vectors * i;
-        LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
-        LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
-        WeightSum += 2.0;
+        float4 HPos : SV_POSITION;
+        float2 Tex0 : TEXCOORD0;
+        float2 Velocity : TEXCOORD1;
+    };
+
+    void VS_VectorStreaming(in CShade_APP2VS Input, out VS2PS_Cell Output)
+    {
+        float Pi2 = CMath_GetPi() * 2.0;
+        float2 Vertex[3] = { float2(0.0, 0.0), float2(1.0, 0.0), float2(0.0, 1.0) };
+
+        // 1. Identify which cell and which corner of the triangle we are on
+        int CellID = Input.ID / VTX_PER_CELL;
+        int VertexCell = CMath_GetModulus_FLT1(Input.ID, VTX_PER_CELL);
+
+        // Column and Row information...
+        int Column = CMath_GetModulus_FLT1(CellID, VTX_COLUMNS);
+        int Row = CellID / VTX_COLUMNS;
+        int Odd = CMath_GetModulus_FLT1(Row, 2);
+
+        // 2. Define the size of each cell area
+        float2 CellSize = 1.0 / float2(max(int2(VTX_COLUMNS, VTX_ROWS), 1));
+        float Alternate = lerp(-0.25, 0.25, Odd);
+
+        // 3. Calculate the Cell Origin
+        // We append some offsets to make the grid look more dynamic
+        float2 CellOrigin = float2(Column, Row) + 0.25;
+        CellOrigin.x += Alternate;
+
+        // 4. Apply velocity to CellOffset
+        float4 MotionTex = float4((CellOrigin + 0.5) / float2(VTX_COLUMNS, VTX_ROWS), 0.0, _MipBias);
+        float2 Motion = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, MotionTex).xy);
+
+        // Scale velocity
+        Motion.y = -Motion.y;
+        float2 Direction = Motion * float2(VTX_COLUMNS, VTX_ROWS);
+        float2 PolarDirection = CMath_CartesianToPolar(Direction);
+
+        // For fragmentshader ... coloring
+        Output.Velocity = Direction;
+
+        // Initiate offset processing.
+        float2 Offset = Vertex[VertexCell];
+
+        switch (_DisplayMode)
+        {
+            case 0:
+                // Scale across the adjacent side
+                Offset = (VertexCell == 1) ? float2(PolarDirection.x * _StreamScaling, 0.0) : Offset;
+
+                // Rotate across the opposite and adjacent sides
+                Offset = (VertexCell != 0) ? mul(Offset, CMath_GetRotationMatrix(PolarDirection.y)) : Offset;
+                break;
+            case 1:
+                Offset *= PolarDirection.x;
+                break;
+        }
+
+        // 5. Calculate final NDC position
+        float2 CellPosition = (CellOrigin + Offset) * CellSize;
+        float2 FinalPos = CMath_UNORMtoSNORM_FLT2(CellPosition);
+
+        // Standard ReShade projection: Flip Y for top-down orientation
+        Output.HPos = float4(FinalPos.x, -FinalPos.y, 0.0, 1.0);
+        Output.Tex0 = Vertex[VertexCell] * 2.0;
     }
 
-    // Normalize LIC
-    LIC /= WeightSum;
-
-    // Conditional output
-    float3 OutputColor = 0.0;
-    switch (_DisplayMode)
+    void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
-        case 0:
-            OutputColor = VectorColors;
-            break;
-        case 1:
-            OutputColor = RenormalizedVectorColors;
-            break;
-        case 2:
-            OutputColor = LIC;
-            break;
-        case 3:
-            OutputColor = LIC * RenormalizedVectorColors;
-            break;
-        default:
-            OutputColor = 0.0;
-            break;
-    }
+        // 1. Get velocity
+        float2 Velocity = Input.Velocity;
+        float InverseMagnitude = rsqrt(dot(Velocity, Velocity) + 1e-7);
+        float2 UV = (Input.Tex0.xy * 2.0) - 1.0;
 
-    // RENDER
-    #if defined(CSHADE_BLENDING)
-        Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
-    #else
-        Output = float4(OutputColor.rgb, 1.0);
-    #endif
-    CShade_Render(Output, Input.HPos.xy, Input.Tex0);
-}
+        // Output color
+        Output.rg = ((Velocity.xy * InverseMagnitude) * 0.5) + 0.5;
+        Output.b = 1.0 - dot(Output.rg, 0.5);
+
+        // Selective output mask
+        switch (_DisplayMode)
+        {
+            case 0:
+                // 2. Scale to create the Ellipse
+                float2 ScaledUV = UV * float2(0.5, 2.0) * 1.5;
+                Output.a = smoothstep(1.0, 0.0, length(ScaledUV));
+                break;
+            case 1:
+                Output.a = 1; // smoothstep(1.0, 0.0, length(UV));
+                break;
+        }
+    }
+#else
+    void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0.xy);
+        float2 Vectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+
+        // Encode vectors
+        float3 VectorColors = normalize(float3(Vectors, 1e-3));
+        VectorColors.xy = CMath_SNORMtoUNORM_FLT2(VectorColors.xy);
+        VectorColors.z = sqrt(1.0 - saturate(dot(VectorColors.xy, VectorColors.xy)));
+        VectorColors = normalize(VectorColors);
+
+        // Renormalize motion vectors to take advantage of intensity
+        float3 RenormalizedVectorColors = VectorColors / max(max(VectorColors.x, VectorColors.y), VectorColors.z);
+
+        // Line Integral Convolution (LIC)
+        float LIC = 0.0;
+        float WeightSum = 0.0;
+
+        [unroll]
+        for (float i = 1.0; i < 4.0; i += 0.5)
+        {
+            float2 Offset = Vectors * i;
+            LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
+            LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
+            WeightSum += 2.0;
+        }
+
+        // Normalize LIC
+        LIC /= WeightSum;
+
+        // Conditional output
+        float3 OutputColor = 0.0;
+        switch (_DisplayMode)
+        {
+            case 0:
+                OutputColor = VectorColors;
+                break;
+            case 1:
+                OutputColor = RenormalizedVectorColors;
+                break;
+            case 2:
+                OutputColor = LIC;
+                break;
+            case 3:
+                OutputColor = LIC * RenormalizedVectorColors;
+                break;
+            default:
+                OutputColor = 0.0;
+                break;
+        }
+
+        // RENDER
+        #if defined(CSHADE_BLENDING)
+            Output = float4(OutputColor.rgb, _CShade_AlphaFactor);
+        #else
+            Output = float4(OutputColor.rgb, 1.0);
+        #endif
+        CShade_Render(Output, Input.HPos.xy, Input.Tex0);
+    }
+#endif
 
 #define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \
     pass NAME \
@@ -221,19 +365,21 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         RenderTarget0 = RENDER_TARGET; \
     }
 
-technique GenerateNoise <
-    enabled = true;
-    timeout = 1;
-    hidden = true;
->
-{
-    pass GenerateNoise
+#if !SHADER_VECTOR_STREAMING
+    technique GenerateNoise <
+        enabled = true;
+        timeout = 1;
+        hidden = true;
+    >
     {
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_GenerateNoise;
-        RenderTarget0 = NoiseTex;
+        pass GenerateNoise
+        {
+            VertexShader = CShade_VS_Quad;
+            PixelShader = PS_GenerateNoise;
+            RenderTarget0 = NoiseTex;
+        }
     }
-}
+#endif
 
 technique CShade_Flow
 <
@@ -296,10 +442,17 @@ technique CShade_Flow
 
     pass Main
     {
-        SRGBWriteEnable = CSHADE_WRITE_SRGB;
         CBLEND_CREATE_STATES()
 
-        VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Main;
+        #if SHADER_VECTOR_STREAMING
+            VertexCount = (VTX_ROWS * VTX_COLUMNS) * VTX_PER_CELL;
+            PrimitiveTopology = TRIANGLELIST;
+
+            VertexShader = VS_VectorStreaming;
+            PixelShader = PS_VectorStreaming;
+        #else
+            VertexShader = CShade_VS_Quad;
+            PixelShader = PS_VectorShading;
+        #endif
     }
 }
