@@ -33,7 +33,7 @@
 
     #define VTX_COLUMNS SHADER_VECTOR_STREAMING_COLUMNS
     #define VTX_ROWS SHADER_VECTOR_STREAMING_ROWS
-    #define VTX_PER_CELL 3
+    #define VTX_PER_TRIANGLE 3
 #endif
 
 /* Shader Options */
@@ -211,74 +211,104 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         float Pi2 = CMath_GetPi() * 2.0;
 
-        // 1. Identify which cell and which corner of the triangle we are on
-        int CellID = Input.ID / VTX_PER_CELL;
-        int VertexCell = CMath_GetModulus_FLT1(Input.ID, VTX_PER_CELL);
+        // Identify which triangle and which corner of the triangle we are on.
+        int TriangleID = Input.ID / VTX_PER_TRIANGLE;
+        int TriangleVertexID = CMath_GetModulus_FLT1(Input.ID, VTX_PER_TRIANGLE);
 
-        // Column and Row information...
-        int Column = CMath_GetModulus_FLT1(CellID, VTX_COLUMNS);
-        int Row = CellID / VTX_COLUMNS;
-        int Odd = CMath_GetModulus_FLT1(Row, 2);
+        // Column and Row information.
+        int Column = CMath_GetModulus_FLT1(TriangleID, VTX_COLUMNS);
+        int Row = TriangleID / VTX_COLUMNS;
+        int IsOddRow = CMath_GetModulus_FLT1(Row, 2);
 
-        // 2. Define the size of each cell area
-        float2 CellSize = 1.0 / float2(max(int2(VTX_COLUMNS, VTX_ROWS), 1));
-        float Alternate = lerp(-0.25, 0.25, Odd);
+        // Calculate our Grid size and Triangle size.
+        float2 GridSize = float2(VTX_COLUMNS, VTX_ROWS);
+        float2 TriangleSize = 1.0 / max(GridSize, 1.0);
 
-        // 3. Calculate the Cell Origin
-        // We append some offsets to make the grid look more dynamic
-        float2 CellOrigin = float2(Column, Row) + 0.25;
-        CellOrigin.x += Alternate;
+        // Calculate the Cell Origin.
+        float2 VtxBasePos = float2(Column, Row);
 
-        // 4. Apply velocity to CellOffset
-        float4 MotionTex = float4((CellOrigin + 0.5) / float2(VTX_COLUMNS, VTX_ROWS), 0.0, _MipBias);
-        float2 Motion = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, MotionTex).xy);
+        // We append some offsets to make the grid look more dynamic.
+        float ShiftOdds = lerp(-0.25, 0.25, IsOddRow);
+        VtxBasePos.x -= ShiftOdds;
 
-        // Scale velocity
-        float2 Direction = Motion * float2(VTX_COLUMNS, VTX_ROWS);
-        float2 PolarDirection = CMath_CartesianToPolar(-Direction);
+        // Apply velocity to CellOffset.
+        float4 VelocityTex = float4((VtxBasePos + 0.5) / GridSize, 0.0, _MipBias);
+        float2 Velocity = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, VelocityTex).xy);
 
-        // For fragmentshader ... coloring
-        Output.Velocity = Direction;
+        /*
+            Create our vertex offsets to make a triangle:
 
-        float2 Vertex[3] = { float2(0.0, 0.0), float2(1.0, 0.0), float2(0.0, 1.0) };
+            ID2 (0, 2)
+            · ·
+            · · ·
+            · · · ·
+            · · · · ·
+            · · · · · ·
+            · · · · · · ·
+            · · · · · · · ·
+            ID0 (0, 0) · · ID1 (2, 0)
 
-        // Initiate offset processing.
-        float2 Offset = Vertex[VertexCell];
+            NOTE: Scaled the texture coordinates by 2, so we can emulate quads with just 3 verticies in the pixel shader.
+        */
+        float2 Vertex;
+        Vertex.x = (TriangleVertexID == 1) ? 2.0 : 0.0;
+        Vertex.y = (TriangleVertexID == 2) ? 2.0 : 0.0;
+
+        // Initiate vertex processing.
+        float2 VtxOffset = Vertex;
+
+        // Calculate the vertex directional information.
+        float2 VtxDirection = Velocity * GridSize;
+        float2 VtxScaleRotation = CMath_CartesianToPolar(-VtxDirection);
 
         // Scale across the adjacent side
-        Offset = (VertexCell == 1) ? float2(PolarDirection.x * _StreamScaling, 0.0) : Offset;
+        VtxOffset = (TriangleVertexID == 1) ? float2(VtxScaleRotation.x * _StreamScaling, 0.0) : VtxOffset;
 
         // Rotate across the opposite and adjacent sides
-        Offset = (VertexCell != 0) ? mul(Offset, CMath_GetRotationMatrix(PolarDirection.y)) : Offset;
+        VtxOffset = (TriangleVertexID != 0) ? mul(VtxOffset, CMath_GetRotationMatrix(VtxScaleRotation.y)) : VtxOffset;
 
-        // 5. Calculate final NDC position
-        float2 CellPosition = (CellOrigin + Offset) * CellSize;
+        // Calculate final NDC position.
+        float2 CellPosition = (VtxBasePos + VtxOffset) * TriangleSize;
         float2 FinalPos = CMath_UNORMtoSNORM_FLT2(CellPosition);
 
-        // Standard ReShade projection: Flip Y for top-down orientation
+        /*
+            Standard ReShade projection: Flip Y for top-down orientation:
+
+            ID0 (0, 0) · · ID1 (1, 0)
+            · · · · · · · ·
+            · · · · · · ·
+            · · · · · ·
+            · · · · ·
+            · · · ·
+            · · ·
+            · ·
+            ID2 (0, 1)
+        */
         Output.HPos = float4(FinalPos.x, -FinalPos.y, 0.0, 1.0);
-        Output.Tex0 = Vertex[VertexCell] * 2.0;
+
+        // Output texture coordinates.
+        Output.Tex0 = Vertex;
+
+        // For coloring in the PixelShader
+        Output.Velocity = Velocity;
     }
 
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
-        // 1. Get velocity
+        // Get velocity.
         float2 Velocity = Input.Velocity * float2(1.0, -1.0);
         float DotVV = dot(Velocity, Velocity);
-        float Magnitude = sqrt(DotVV);
         float InverseMagnitude = rsqrt(DotVV + 1e-7);
 
-        // Output color
+        // Output color.
         // Calculate normalized velocity and map it to [0, 1] range for color output.
         // InverseMagnitude includes a small epsilon for numerical stability.
-        Output.rg = (Velocity.xy * InverseMagnitude * 0.5) + 0.5;
+        Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy * InverseMagnitude);
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
-        // Combine constants for ScaledUV for minor optimization
-        float2 UV = (Input.Tex0.xy * 2.0) - 1.0;
+        float2 UV = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
         float2 ScaledUV = UV * float2(0.75, 3.0);
-        Output.a = smoothstep(1.0, 0.0, length(ScaledUV));
-        Output.a *= smoothstep(1e-3, 1e-2, Magnitude);
+        Output.a = smoothstep(0.5, 0.0, length(ScaledUV));
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -437,7 +467,7 @@ technique CShade_Flow
         CBLEND_CREATE_STATES()
 
         #if SHADER_VECTOR_STREAMING
-            VertexCount = (VTX_ROWS * VTX_COLUMNS) * VTX_PER_CELL;
+            VertexCount = (VTX_ROWS * VTX_COLUMNS) * VTX_PER_TRIANGLE;
             PrimitiveTopology = TRIANGLELIST;
 
             // Optional
