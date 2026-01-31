@@ -235,9 +235,8 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         float2 Motion = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, MotionTex).xy);
 
         // Scale velocity
-        Motion.y = -Motion.y;
         float2 Direction = Motion * float2(VTX_COLUMNS, VTX_ROWS);
-        float2 PolarDirection = CMath_CartesianToPolar(Direction);
+        float2 PolarDirection = CMath_CartesianToPolar(-Direction);
 
         // For fragmentshader ... coloring
         Output.Velocity = Direction;
@@ -263,7 +262,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
         // 1. Get velocity
-        float2 Velocity = Input.Velocity;
+        float2 Velocity = Input.Velocity * float2(1.0, -1.0);
         float InverseMagnitude = rsqrt(dot(Velocity, Velocity) + 1e-7);
         float2 UV = (Input.Tex0.xy * 2.0) - 1.0;
 
