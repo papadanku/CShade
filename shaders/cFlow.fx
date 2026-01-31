@@ -19,6 +19,10 @@
 #endif
 
 #if SHADER_VECTOR_STREAMING
+    #ifndef SHADER_VECTOR_STREAMING_CLEAR
+        #define SHADER_VECTOR_STREAMING_CLEAR 0
+    #endif
+
     #ifndef SHADER_VECTOR_STREAMING_ROWS
         #define SHADER_VECTOR_STREAMING_ROWS 64
     #endif
@@ -429,6 +433,9 @@ technique CShade_Flow
         #if SHADER_VECTOR_STREAMING
             VertexCount = (VTX_ROWS * VTX_COLUMNS) * VTX_PER_CELL;
             PrimitiveTopology = TRIANGLELIST;
+
+            // Optional
+            ClearRenderTargets = SHADER_VECTOR_STREAMING_CLEAR;
 
             VertexShader = VS_VectorStreaming;
             PixelShader = PS_VectorStreaming;
