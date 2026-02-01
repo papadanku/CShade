@@ -333,8 +333,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
         float2 MaskUV = TexUNORM * float2(1.0, MaskSize);
-        Output.a = smoothstep(1.0, 0.0, length(MaskUV));
-        Output.a *= smoothstep(1e-7, 1e-4, sqrt(DotVV));
+        Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
