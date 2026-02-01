@@ -38,26 +38,8 @@
 
 /* Shader Options */
 
-#if !SHADER_VECTOR_STREAMING
-    uniform int _DisplayMode <
-        ui_label = "Display Mode";
-        ui_type = "combo";
-        ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
-        ui_tooltip = "Selects the visual output mode for optical flow.";
-    > = 0;
-#endif
-
-#if SHADER_VECTOR_STREAMING
-    uniform float _StreamScaling <
-        ui_label = "Vector Scaling";
-        ui_max = 100.0;
-        ui_min = 0.1;
-        ui_type = "slider";
-        ui_tooltip = "Amount of scaling applied to the displayed vectors.";
-    > = 10.0;
-#endif
-
 uniform float _MipBias <
+    ui_text = "OPTICAL FLOW";
     ui_label = "Optical Flow Mipmap Level";
     ui_max = 7.0;
     ui_min = 0.0;
@@ -71,7 +53,44 @@ uniform float _BlendFactor <
     ui_min = 0.0;
     ui_type = "slider";
     ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
-> = 0.45;
+> = 0.9;
+
+#if !SHADER_VECTOR_STREAMING
+    uniform int _DisplayMode <
+        ui_text = "VECTOR SHADING";
+        ui_label = "Display Mode";
+        ui_type = "combo";
+        ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
+        ui_tooltip = "Selects the visual output mode for optical flow.";
+    > = 0;
+#endif
+
+#if SHADER_VECTOR_STREAMING
+    uniform float _StreamScaling <
+        ui_text = "VECTOR STREAMING";
+        ui_label = "Vector Scaling";
+        ui_max = 100.0;
+        ui_min = 1.0;
+        ui_type = "slider";
+        ui_tooltip = "Amount of scaling applied to the displayed vectors.";
+    > = 50.0;
+
+    uniform float _MaskSize <
+        ui_label = "Vector Mask Size";
+        ui_max = 1.0;
+        ui_min = 0.0;
+        ui_type = "slider";
+        ui_tooltip = "Controls the size of the vector mask.";
+    > = 0.0;
+
+    uniform float _MaskSmoothing <
+        ui_label = "Vector Mask Smoothing";
+        ui_max = 1.0;
+        ui_min = 0.0;
+        ui_type = "slider";
+        ui_tooltip = "Controls the smoothing of the vector mask edges.";
+    > = 1.0;
+#endif
 
 #if SHADER_VECTOR_STREAMING
     #define CBLEND_APPLY_PRESET 1
@@ -295,7 +314,14 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
-        // Get velocity.
+        // Process vertex inputs.
+        float2 TexUNORM = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
+
+        // Process uniforms.
+        float MaskSize = lerp(5.0, 1.0, saturate(_MaskSize));
+        float MaskSmoothing = lerp(0.9, 0.0, saturate(_MaskSmoothing));
+
+        // Process velocity.
         float2 Velocity = Input.Velocity * float2(1.0, -1.0);
         float DotVV = dot(Velocity, Velocity);
         float InverseMagnitude = rsqrt(DotVV + 1e-7);
@@ -306,9 +332,9 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy * InverseMagnitude);
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
-        float2 UV = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
-        float2 ScaledUV = UV * float2(0.75, 3.0);
-        Output.a = smoothstep(0.5, 0.0, length(ScaledUV));
+        float2 MaskUV = TexUNORM * float2(1.0, MaskSize);
+        Output.a = smoothstep(1.0, 0.0, length(MaskUV));
+        Output.a *= smoothstep(1e-7, 1e-4, sqrt(DotVV));
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
