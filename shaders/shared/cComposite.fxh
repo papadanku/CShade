@@ -40,9 +40,9 @@
             ui_category = "Output / Color Grade";
             ui_text = "EXPOSURE & COLOR FILTERING";
             ui_label = "Exposure Adjustment (f-stops)";
-            ui_type = "slider";
+            ui_type = "drag";
             ui_tooltip = "Adjusts the overall exposure of the scene in f-stops, making it brighter or darker.";
-        > = 0.0;
+        > = 1.0;
 
         uniform float3 _CComposite_ColorFilter <
             ui_category = "Output / Color Grade";
@@ -119,8 +119,8 @@
             ui_label = "Tonemapping Operator";
             ui_tooltip = "Selects a tonemap operator to map HDR colors to SDR, affecting how bright areas are compressed.";
             ui_type = "combo";
-            ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0Logarithmic C [Encode]\0";
-        > = 2;
+            ui_items = "None\0Reinhard\0Reinhard Squared\0AMD Resolve\0ACES Fitted\0Logarithmic C [Encode]\0";
+        > = 4;
     #endif
 
     #if CSHADE_APPLY_DITHER

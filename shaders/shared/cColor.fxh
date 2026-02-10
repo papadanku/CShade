@@ -668,8 +668,8 @@
 
     float3 CColor_ApplyReinhardSquared(float3 HDR, float K)
     {
-        float3 reinhard = HDR / (HDR + K);
-        return reinhard * reinhard;
+        float3 SDR = HDR / (HDR + K);
+        return SDR * SDR;
     }
 
     float3 CColor_ApplyInverseReinhardSquared(float3 SDR, float K)
@@ -701,6 +701,49 @@
         return HDR / (1.0 - max(max(HDR.r, HDR.g), HDR.b));
     }
 
+    /*
+        Baking Lab
+        by MJP and David Neubelt
+        http://mynameismjp.wordpress.com/
+
+        All code licensed under the MIT license
+
+        The code in this file was originally written by Stephen Hill (@self_shadow), who deserves all credit for coming up with this fit and implementing it. Buy him a beer next time you see him. :)
+    */
+
+    float3 CColor_ApplyACESFittedTonemap(float3 HDR)
+    {
+        // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
+        float3x3 ACESInputMat = float3x3
+        (
+            float3(0.59719, 0.35458, 0.04823),
+            float3(0.07600, 0.90834, 0.01566),
+            float3(0.02840, 0.13383, 0.83777)
+        );
+
+        // ODT_SAT => XYZ => D60_2_D65 => sRGB
+        float3x3 ACESOutputMat = float3x3
+        (
+            float3( 1.60475, -0.53108, -0.07367),
+            float3(-0.10208,  1.10813, -0.00605),
+            float3(-0.00327, -0.07276,  1.07602)
+        );
+
+        HDR = mul(ACESInputMat, HDR);
+
+        // Apply RRT and ODT
+        float3 A = HDR * (HDR + 0.0245786f) - 0.000090537f;
+        float3 B = HDR * (0.983729f * HDR + 0.4329510f) + 0.238081f;
+        HDR = A / B;
+
+        HDR = mul(ACESOutputMat, HDR);
+
+        // Clamp to [0, 1]
+        HDR = saturate(HDR);
+
+        return HDR;
+    }
+
     float3 CColor_ApplyTonemap(float3 HDR, int Tonemapper)
     {
         switch (Tonemapper)
@@ -714,6 +757,8 @@
             case 3:
                 return CColor_ApplyAMDTonemap(HDR);
             case 4:
+                return CColor_ApplyACESFittedTonemap(HDR);
+            case 5:
                 return CColor_EncodeLogC(HDR);
             default:
                 return HDR;
