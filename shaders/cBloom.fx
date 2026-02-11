@@ -1,4 +1,4 @@
-#define CSHADE_AUTOEXPOSUREBLOOM
+#define CSHADE_BLOOM
 
 /*
     This shader combines an auto-exposure effect with a bloom effect. It dynamically adjusts image brightness and adds a radiant glow to bright areas. The shader prefilters the scene, performs iterative downsampling and upsampling to create the bloom, and then composes the final image, optionally applying auto-exposure and color grading.
@@ -43,7 +43,6 @@ uniform float _BloomIntensity <
     ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
 > = 0.5;
 
-#define CSHADE_APPLY_AUTO_EXPOSURE 0
 #ifndef CSHADE_APPLY_AUTO_EXPOSURE
     #define CSHADE_APPLY_AUTO_EXPOSURE 1
 #endif
