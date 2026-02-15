@@ -216,7 +216,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade | Auto Exposure & Bloom";
+    ui_label = "CShade | Bloom";
     ui_tooltip = "Adjustable bloom with auto-exposure.";
 >
 {
