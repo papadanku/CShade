@@ -84,6 +84,33 @@ This project integrates with the Gemini CLI for AI-assisted programming. The Gem
 
 For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in CShade's directory.
 
+### AI-Assisted Programming with Mistral Vibe
+
+This project also supports AI-assisted programming with Mistral Vibe, another powerful interactive command-line interface. Mistral Vibe leverages advanced language models and specialized capabilities to assist with software engineering tasks such as code analysis, bug fixing, feature development, and code explanation.
+
+#### How to Use
+
+1. **Install Mistral Vibe**: Follow the [Mistral Vibe installation instructions](https://mistral.ai/products/vibe).
+2. **Navigate to Project Root**: Open your terminal or command prompt and navigate to the root directory of the CShade project:
+
+    ```bash
+    cd C:\Users\papadanku\Documents\GitHub\CShade
+    ```
+
+3. **Start Mistral Vibe and Activate Skill (if applicable)**: Launch Mistral Vibe. If Mistral Vibe uses specific skills or agents for ReShadeFX, activate them here:
+
+    ```bash
+    mistralvibe activate skill reshadefx-agent
+    ```
+
+4. **Interact with the AI**: You can now interact with Mistral Vibe to get assistance with CShade's ReShadeFX development. Here are some examples of what you can ask:
+
+    - "Explain the `kDatamosh.fx` shader and its parameters."
+    - "Suggest optimizations for the `PS_Main` function in `cMotionBlur.fx`."
+    - "Generate a test case for the `CColor_RGBtoHSV` function in `shared/cColor.fxh`."
+
+For more detailed information on Mistral Vibe capabilities and usage, refer to its official documentation or relevant project files.
+
 ### Coding Convention
 
 #### UI
