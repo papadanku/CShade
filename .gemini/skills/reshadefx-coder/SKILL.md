@@ -1,5 +1,5 @@
 ---
-name: reshadefx
+name: reshadefx-coder
 description: Guides through writing custom post-processing shaders for ReShade, analyzing and debugging code, explaining concepts, and demonstrating ReShadeFX features.
 ---
 

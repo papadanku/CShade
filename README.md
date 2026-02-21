@@ -58,7 +58,7 @@ This section is intended for developers and contributors.
 
 ### AI-Assisted Programming with Gemini CLI
 
-This project supports AI-assisted programming through the Gemini CLI. The Gemini CLI is an interactive command-line interface that leverages large language models to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations.
+This project integrates with the Gemini CLI for AI-assisted programming. The Gemini CLI, an interactive command-line interface, utilizes large language models and specialized Agent Skills to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations. Specifically, it includes the `reshadefx-coder` Agent Skill, which provides expert guidance for ReShadeFX shader development.
 
 #### How to Use
 
@@ -69,8 +69,13 @@ This project supports AI-assisted programming through the Gemini CLI. The Gemini
     cd C:\Users\papadanku\Documents\GitHub\CShade
     ```
 
-3. **Start Gemini CLI**: Launch the Gemini CLI.
-4. **Interact with the AI**: You can now interact with the AI to get assistance with CShade. Here are some examples of what you can ask:
+3. **Start Gemini CLI and Activate Skill**: Launch the Gemini CLI and activate the `reshadefx-coder` skill to receive specialized assistance for ReShadeFX:
+
+    ```bash
+    gemini activate skill reshadefx-coder
+    ```
+
+4. **Interact with the AI**: You can now interact with the AI to get assistance with CShade's ReShadeFX development. Here are some examples of what you can ask:
 
     - "Explain the `cMotionBlur.fx` shader."
     - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
