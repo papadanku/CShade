@@ -212,7 +212,8 @@ uniform int debug_output <
     ui_category = "Debug";
     ui_items = "None\0Blurred (LPF) image\0Banding map\0";
     ui_label = "Debug view";
-    ui_tooltip = "Blurred (LPF) image: Useful when tweaking radius and iterations to make sure all banding regions are blurred enough.\nBanding map: Useful when tweaking analysis parameters, continuous green regions indicate flat (i.e. banding) regions.";
+    ui_tooltip = "Blurred (LPF) image: Useful when tweaking radius and iterations to make sure all banding regions are blurred enough.
+Banding map: Useful when tweaking analysis parameters, continuous green regions indicate flat (i.e. banding) regions.";
     ui_type = "combo";
 > = 0;
 
@@ -378,38 +379,62 @@ uniform int iUIPresentType <
 #else
     ui_text =
 #endif
-        "The right settings need to be set in the dialog that opens after clicking the \"Edit global preprocessor definitions\" button above.\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN is currently set to " TEXT_UPSIDE_DOWN ".\n"
-        "If the Depth map is shown upside down set it to " TEXT_UPSIDE_DOWN_ALTER ".\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_REVERSED is currently set to " TEXT_REVERSED ".\n"
-        "If close objects in the Depth map are bright and far ones are dark set it to " TEXT_REVERSED_ALTER ".\n"
-        "Also try this if you can see the normals, but the depth view is all black.\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC is currently set to " TEXT_LOGARITHMIC ".\n"
+        "The right settings need to be set in the dialog that opens after clicking the "Edit global preprocessor definitions" button above.
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN is currently set to " TEXT_UPSIDE_DOWN ".
+"
+        "If the Depth map is shown upside down set it to " TEXT_UPSIDE_DOWN_ALTER ".
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED is currently set to " TEXT_REVERSED ".
+"
+        "If close objects in the Depth map are bright and far ones are dark set it to " TEXT_REVERSED_ALTER ".
+"
+        "Also try this if you can see the normals, but the depth view is all black.
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC is currently set to " TEXT_LOGARITHMIC ".
+"
         "If the Normal map has banding artifacts (extra stripes) set it to " TEXT_LOGARITHMIC_ALTER ".";
     ui_text_ja_jp =
 #if ADDON_ADJUST_DEPTH
-        "Adjust Depthアドオンのインストールを検出しました。\n"
-        "'設定に保存して反映する'ボタンをクリックすると、このエフェクトで調節した全ての変数が共通設定に反映されます。\n"
+        "Adjust Depthアドオンのインストールを検出しました。
+"
+        "'設定に保存して反映する'ボタンをクリックすると、このエフェクトで調節した全ての変数が共通設定に反映されます。
+"
         "または、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログで直接編集する事もできます。";
 #else
-        "調節が終わったら、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力する必要があります。\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWNは現在" TEXT_UPSIDE_DOWN "に設定されています。\n"
-        "深度マップが上下逆さまに表示されている場合は" TEXT_UPSIDE_DOWN_ALTER "に変更して下さい。\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_REVERSEDは現在" TEXT_REVERSED "に設定されています。\n"
-        "画面効果が深度マップのとき、近くの形状がより白く、遠くの形状がより黒い場合は" TEXT_REVERSED_ALTER "に変更して下さい。\n"
-        "また、法線マップで形が判別出来るが、深度マップが真っ暗に見えるという場合も、この設定の変更を試して下さい。\n"
-        "\n"
-        "RESHADE_DEPTH_INPUT_IS_LOGARITHMICは現在" TEXT_LOGARITHMIC "に設定されています。\n"
+        "調節が終わったら、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力する必要があります。
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWNは現在" TEXT_UPSIDE_DOWN "に設定されています。
+"
+        "深度マップが上下逆さまに表示されている場合は" TEXT_UPSIDE_DOWN_ALTER "に変更して下さい。
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_REVERSEDは現在" TEXT_REVERSED "に設定されています。
+"
+        "画面効果が深度マップのとき、近くの形状がより白く、遠くの形状がより黒い場合は" TEXT_REVERSED_ALTER "に変更して下さい。
+"
+        "また、法線マップで形が判別出来るが、深度マップが真っ暗に見えるという場合も、この設定の変更を試して下さい。
+"
+        "
+"
+        "RESHADE_DEPTH_INPUT_IS_IS_LOGARITHMICは現在" TEXT_LOGARITHMIC "に設定されています。
+"
         "画面効果に実際のレンダリングと合致しない縞模様がある場合は" TEXT_LOGARITHMIC_ALTER "に変更して下さい。";
 #endif
     ui_tooltip_ja_jp =
-        "'深度マップ'は、形状の遠近を白黒で表現します。正しい見え方では、近くの形状ほど黒く、遠くの形状ほど白くなります。\n"
-        "'法線マップ'は、形状を滑らかに表現します。正しい見え方では、全体的に青緑風で、地平線を見たときに地面が緑掛かった色合いになります。\n"
+        "'深度マップ'は、形状の遠近を白黒で表現します。正しい見え方では、近くの形状ほど黒く、遠くの形状ほど白くなります。
+"
+        "'法線マップ'は、形状を滑らかに表現します。正しい見え方では、全体的に青緑風で、地平線を見たときに地面が緑掛かった色合いになります。
+"
         "'両方を表示 (左右分割)'が選択された場合は、左に法線マップ、右に深度マップを表示します。";
 > = 2;
 
@@ -431,13 +456,16 @@ uniform bool bUIUseLivePreview <
     ui_label_ja_jp = "プリプロセッサの定義を無視 (補正プレビューをオン)";
     ui_tooltip = "Enable this to preview with the current preset settings instead of the global preprocessor settings.";
     ui_tooltip_ja_jp =
-        "共通設定に保存されたプリプロセッサの定義ではなく、これより下のプレビュー設定を使用するには、これを有効にします。\n"
+        "共通設定に保存されたプリプロセッサの定義ではなく、これより下のプレビュー設定を使用するには、これを有効にします。
+"
 #if ADDON_ADJUST_DEPTH
         "設定の準備が出来たら、'設定に保存して反映する'ボタンをクリックしてから、このチェックボックスをオフにして下さい。"
 #else
         "設定の準備が出来たら、上の'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力して下さい。"
 #endif
-        "\n\n"
+        "
+
+"
         "プレビューをオンにした場合と比較して画面効果がまったく同じになれば、正しく設定が反映されています。";
 > = false;
 
@@ -454,7 +482,8 @@ uniform bool iUIUpsideDown <
     ui_items = "Off\0On\0";
 #endif
     ui_text_ja_jp =
-        "\n"
+        "
+"
 #if ADDON_ADJUST_DEPTH
         "項目にカーソルを合わせると、設定が必要な状況の説明が表示されます。"
 #else
@@ -464,11 +493,17 @@ uniform bool iUIUpsideDown <
     ui_tooltip_ja_jp =
         "深度マップが上下逆さまに表示されている場合は変更して下さい。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=値\n"
-        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
-        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=1\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=値
+"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。
+"
+        "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=1
+"
         "RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=0"
 #endif
         ;
@@ -487,14 +522,21 @@ uniform bool iUIReversed <
     ui_items = "Off\0On\0";
 #endif
     ui_tooltip_ja_jp =
-        "画面効果が深度マップのとき、近くの形状が明るく、遠くの形状が暗い場合は変更して下さい。\n"
+        "画面効果が深度マップのとき、近くの形状が明るく、遠くの形状が暗い場合は変更して下さい。
+"
         "また、法線マップで形が判別出来るが、深度マップが真っ暗に見えるという場合も、この設定の変更を試して下さい。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_INPUT_IS_REVERSED=値\n"
-        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
-        "RESHADE_DEPTH_INPUT_IS_REVERSED=1\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED=値
+"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。
+"
+        "RESHADE_DEPTH_INPUT_IS_REVERSED=1
+"
         "RESHADE_DEPTH_INPUT_IS_REVERSED=0"
 #endif
         ;
@@ -516,11 +558,17 @@ uniform bool iUILogarithmic <
     ui_tooltip_ja_jp =
         "画面効果に実際のゲーム画面と合致しない縞模様がある場合は変更して下さい。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=値\n"
-        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。\n"
-        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=1\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=値
+"
+        "定義値は次の通りです。オンの場合は1、オフの場合は0を指定して下さい。
+"
+        "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=1
+"
         "RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=0"
 #endif
         ;
@@ -534,41 +582,75 @@ uniform float2 fUIScale <
     ui_label_ja_jp = "拡大率";
     ui_type = "drag";
     ui_text =
-        "\n"
-        " * Advanced options\n"
-        "\n"
-        "The following settings also need to be set using \"Edit global preprocessor definitions\" above in order to take effect.\n"
-        "You can preview how they will affect the Depth map using the controls below.\n"
-        "\n"
-        "It is rarely necessary to change these though, as their defaults fit almost all games.\n\n";
+        "
+"
+        " * Advanced options
+"
+        "
+"
+        "The following settings also need to be set using "Edit global preprocessor definitions" above in order to take effect.
+"
+        "You can preview how they will affect the Depth map using the controls below.
+"
+        "
+"
+        "It is rarely necessary to change these though, as their defaults fit almost all games.
+
+";
     ui_text_ja_jp =
-        "\n"
-        " * その他の補正 (不定形またはその他)\n"
-        "\n"
-        "これより下は、深度バッファが不定形など、特別なケース向けの設定です。\n"
-        "通常はこれより上の'基本的な補正'のみでほとんどのゲームに適合します。\n"
-        "また、これらの設定は画質の向上にはまったく役に立ちません。\n\n";
+        "
+"
+        " * その他の補正 (不定形またはその他)
+"
+        "
+"
+        "これより下は、深度バッファが不定形など、特別なケース向けの設定です。
+"
+        "通常はこれより上の'基本的な補正'のみでほとんどのゲームに適合します。
+"
+        "また、これらの設定は画質の向上にはまったく役に立ちません。
+
+";
     ui_tooltip =
-        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the scale.\n"
-        "Use these values for:\nRESHADE_DEPTH_INPUT_X_SCALE=<left value>\nRESHADE_DEPTH_INPUT_Y_SCALE=<right value>\n"
-        "\n"
-        "If you know the right resolution of the games depth buffer then this scale value is simply the ratio\n"
-        "between the correct resolution and the resolution Reshade thinks it is.\n"
-        "For example:\n"
-        "If it thinks the resolution is 1920 x 1080, but it's really 1280 x 720 then the right scale is (1.5 , 1.5)\n"
+        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the scale.
+"
+        "Use these values for:
+RESHADE_DEPTH_INPUT_X_SCALE=<left value>
+RESHADE_DEPTH_INPUT_Y_SCALE=<right value>
+"
+        "
+"
+        "If you know the right resolution of the games depth buffer then this scale value is simply the ratio
+"
+        "between the correct resolution and the resolution Reshade thinks it is.
+"
+        "For example:
+"
+        "If it thinks the resolution is 1920 x 1080, but it's really 1280 x 720 then the right scale is (1.5 , 1.5)
+"
         "because 1920 / 1280 is 1.5 and 1080 / 720 is also 1.5, so 1.5 is the right scale for both the x and the y";
     ui_tooltip_ja_jp =
-        "深度バッファの解像度がクライアント解像度と異なる場合に変更して下さい。\n"
-        "このスケール値は、深度バッファの解像度とクライアント解像度との単純な比率になります。\n"
-        "深度バッファの解像度が1280×720でクライアント解像度が1920×1080の場合、横の比率が1920÷1280、縦の比率が1080÷720となります。\n"
+        "深度バッファの解像度がクライアント解像度と異なる場合に変更して下さい。
+"
+        "このスケール値は、深度バッファの解像度とクライアント解像度との単純な比率になります。
+"
+        "深度バッファの解像度が1280×720でクライアント解像度が1920×1080の場合、横の比率が1920÷1280、縦の比率が1080÷720となります。
+"
         "計算した結果を設定すると、値はそれぞれX_SCALE=1.5、Y_SCALE=1.5となります。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_INPUT_X_SCALE=横の値\n"
-        "RESHADE_DEPTH_INPUT_Y_SCALE=縦の値\n"
-        "定義値は次の通りです。横の値はX_SCALE、縦の値はY_SCALEに指定して下さい。\n"
-        "RESHADE_DEPTH_INPUT_X_SCALE=1.0\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_INPUT_X_SCALE=横の値
+"
+        "RESHADE_DEPTH_INPUT_Y_SCALE=縦の値
+"
+        "定義値は次の通りです。横の値はX_SCALE、縦の値はY_SCALEに指定して下さい。
+"
+        "RESHADE_DEPTH_INPUT_X_SCALE=1.0
+"
         "RESHADE_DEPTH_INPUT_Y_SCALE=1.0"
 #endif
         ;
@@ -582,18 +664,29 @@ uniform int2 iUIOffset <
     ui_label_ja_jp = "位置オフセット";
     ui_type = "slider";
     ui_tooltip =
-        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the offset in pixels.\n"
-        "Use these values for:\nRESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=<left value>\nRESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=<right value>";
+        "Best use 'Present type'->'Depth map' and enable 'Offset' in the options below to set the offset in pixels.
+"
+        "Use these values for:
+RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=<left value>
+RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=<right value>";
     ui_tooltip_ja_jp =
-        "深度バッファにレンダリングされた物体の形状が画面効果と重なり合っていない場合に変更して下さい。\n"
+        "深度バッファにレンダリングされた物体の形状が画面効果と重なり合っていない場合に変更して下さい。
+"
         "この値は、ピクセル単位で指定します。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=横の値\n"
-        "RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=縦の値\n"
-        "定義値は次の通りです。横の値はX_PIXEL_OFFSET、縦の値はY_PIXEL_OFFSETに指定して下さい。\n"
-        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=0.0\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=横の値
+"
+        "RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=縦の値
+"
+        "定義値は次の通りです。横の値はX_PIXEL_OFFSET、縦の値はY_PIXEL_OFFSETに指定して下さい。
+"
+        "RESHADE_DEPTH_INPUT_X_PIXEL_OFFSET=0.0
+"
         "RESHADE_DEPTH_INPUT_Y_PIXEL_OFFSET=0.0"
 #endif
         ;
@@ -608,18 +701,28 @@ uniform float fUIFarPlane <
     ui_label_ja_jp = "遠点距離";
     ui_type = "drag";
     ui_tooltip =
-        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=<value>\n"
+        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=<value>
+"
         "Changing this value is not necessary in most cases.";
     ui_tooltip_ja_jp =
-        "深度マップの色合いが距離感と合致しない、法線マップの表面が平面に見える、などの場合に変更して下さい。\n"
-        "遠点距離を1000に設定すると、ゲームの描画距離が1000メートルであると見なします。\n\n"
-        "このプレビュー画面はあくまでプレビューであり、ほとんどの場合、深度バッファは深度マップの色数より遥かに高い精度で表現されています。\n"
+        "深度マップの色合いが距離感と合致しない、法線マップの表面が平面に見える、などの場合に変更して下さい。
+"
+        "遠点距離を1000に設定すると、ゲームの描画距離が1000メートルであると見なします。
+
+"
+        "このプレビュー画面はあくまでプレビューであり、ほとんどの場合、深度バッファは深度マップの色数より遥かに高い精度で表現されています。
+"
         "例えば、10m前後の距離の形状が純粋な黒に見えるからという理由で値を変更しないで下さい。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=値\n"
-        "定義値は次の通りです。\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=値
+"
+        "定義値は次の通りです。
+"
         "RESHADE_DEPTH_LINEARIZATION_FAR_PLANE=1000.0"
 #endif
         ;
@@ -634,13 +737,19 @@ uniform float fUIDepthMultiplier <
     ui_type = "drag";
     ui_tooltip = "RESHADE_DEPTH_MULTIPLIER=<value>";
     ui_tooltip_ja_jp =
-        "特定のエミュレータソフトウェアにおける深度バッファを修正するため、特別に追加された変数です。\n"
+        "特定のエミュレータソフトウェアにおける深度バッファを修正するため、特別に追加された変数です。
+"
         "この値は僅かな変更でも計算式を破壊するため、設定すべき値を知らない場合は変更しないで下さい。"
 #if !ADDON_ADJUST_DEPTH
-        "\n\n"
-        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。\n"
-        "RESHADE_DEPTH_MULTIPLIER=値\n"
-        "定義値は次の通りです。\n"
+        "
+
+"
+        "定義名は次の通りです。文字は完全に一致する必要があり、半角大文字の英字とアンダーバーを用いなければなりません。
+"
+        "RESHADE_DEPTH_MULTIPLIER=値
+"
+        "定義値は次の通りです。
+"
         "RESHADE_DEPTH_MULTIPLIER=1.0"
 #endif
         ;
@@ -730,24 +839,39 @@ void PS_DisplayDepth(in float4 position : SV_Position, in float2 texcoord : TEXC
 
 technique DisplayDepth <
     ui_tooltip =
-        "This shader helps you set the right preprocessor settings for depth input.\n"
-        "To set the settings click on 'Edit global preprocessor definitions' and set them there - not in this shader.\n"
-        "The settings will then take effect for all shaders, including this one.\n"
-        "\n"
-        "By default calculated normals and depth are shown side by side.\n"
-        "Normals (on the left) should look smooth and the ground should be greenish when looking at the horizon.\n"
-        "Depth (on the right) should show close objects as dark and use gradually brighter shades the further away objects are.\n";
+        "This shader helps you set the right preprocessor settings for depth input.
+"
+        "To set the settings click on 'Edit global preprocessor definitions' and set them there - not in this shader.
+"
+        "The settings will then take effect for all shaders, including this one.
+"
+        "
+"
+        "By default calculated normals and depth are shown side by side.
+"
+        "Normals (on the left) should look smooth and the ground should be greenish when looking at the horizon.
+"
+        "Depth (on the right) should show close objects as dark and use gradually brighter shades the further away objects are.
+";
     ui_tooltip_ja_jp =
-        "これは、深度バッファの入力をReShade側の計算式に合わせる調節をするための、設定作業の支援に特化した特殊な扱いのエフェクトです。\n"
-        "初期状態では「両方を表示」が選択されており、左に法線マップ、右に深度マップが表示されます。\n"
-        "\n"
-        "法線マップ(左側)は、形状を滑らかに表現します。正しい設定では、全体的に青緑風で、地平線を見たときに地面が緑を帯びた色になります。\n"
-        "深度マップ(右側)は、形状の遠近を白黒で表現します。正しい設定では、近くの形状ほど黒く、遠くの形状ほど白くなります。\n"
-        "\n"
+        "これは、深度バッファの入力をReShade側の計算式に合わせる調節をするための、設定作業の支援に特化した特殊な扱いのエフェクトです。
+"
+        "初期状態では「両方を表示」が選択されており、左に法線マップ、右に深度マップが表示されます。
+"
+        "
+"
+        "法線マップ(左側)は、形状を滑らかに表現します。正しい設定では、全体的に青緑風で、地平線を見たときに地面が緑を帯びた色になります。
+"
+        "深度マップ(右側)は、形状の遠近を白黒で表現します。正しい設定では、近くの形状ほど黒く、遠くの形状ほど白くなります。
+"
+        "
+"
 #if ADDON_ADJUST_DEPTH
-        "設定を完了するには、DisplayDepth.fxエフェクトの変数の一覧にある'設定に保存して反映する'ボタンをクリックして下さい。\n"
+        "設定を完了するには、DisplayDepth.fxエフェクトの変数の一覧にある'設定に保存して反映する'ボタンをクリックして下さい。
+"
 #else
-        "設定を完了するには、エフェクト変数の編集画面にある'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力して下さい。\n"
+        "設定を完了するには、エフェクト変数の編集画面にある'プリプロセッサの定義を編集'ボタンをクリックした後に開くダイアログに入力して下さい。
+"
 #endif
         "すると、インストール先のゲームに対して共通の設定として保存され、他のプリセットでも正しく表示されるようになります。";
 >
@@ -888,28 +1012,44 @@ uniform int _Help
     ui_label = " ";
     ui_text =
         "For more detailed instructions, see the text at the top of this "
-        "effect's shader file (UIMask.fx).\n"
-        "\n"
-        "Available preprocessor definitions:\n"
-        "  UIMASK_MULTICHANNEL:\n"
+        "effect's shader file (UIMask.fx).
+"
+        "
+"
+        "Available preprocessor definitions:
+"
+        "  UIMASK_MULTICHANNEL:
+"
         "    If set to 1, each of the RGB color channels in the texture is "
-        "treated as a separate mask.\n"
-        "\n"
-        "How to create a mask:\n"
-        "\n"
-        "1. Take a screenshot with the game's UI appearing.\n"
+        "treated as a separate mask.
+"
+        "
+"
+        "How to create a mask:
+"
+        "
+"
+        "1. Take a screenshot with the game's UI appearing.
+"
         "2. Open the screenshot in an image editor, GIMP or Photoshop are "
-        "recommended.\n"
-        "3. Create a new layer over the screenshot layer, fill it with black.\n"
+        "recommended.
+"
+        "3. Create a new layer over the screenshot layer, fill it with black.
+"
         "4. Reduce the layer opacity so you can see the screenshot layer "
-        "below.\n"
+        "below.
+"
         "5. Cover the UI with white to mask it from effects. The stronger the "
-        "mask white color, the more opaque the mask will be.\n"
-        "6. Set the mask layer opacity back to 100%.\n"
+        "mask white color, the more opaque the mask will be.
+"
+        "6. Set the mask layer opacity back to 100%.
+"
         "7. Save the image in one of your texture folders, making sure to "
-        "use a unique name such as: \"MyUIMask.png\"\n"
+        "use a unique name such as: "MyUIMask.png"
+"
         "8. Set the preprocessor definition UIMASK_TEXTURE to the name of "
-        "your image, with quotes: \"MyUIMask.png\"\n"
+        "your image, with quotes: "MyUIMask.png"
+"
         ;
     ui_category = "Help";
     ui_category_closed = true;
@@ -922,8 +1062,10 @@ uniform float fMask_Intensity
 
     ui_label = "Mask Intensity";
     ui_tooltip =
-        "How much to mask effects from affecting the original image.\n"
-        "\nDefault: 1.0";
+        "How much to mask effects from affecting the original image.
+"
+        "
+Default: 1.0";
     ui_min = 0.0;
     ui_max = 1.0;
     ui_step = 0.001;
@@ -932,32 +1074,42 @@ uniform float fMask_Intensity
 uniform bool bDisplayMask <
     ui_label = "Display Mask";
     ui_tooltip =
-        "Display the mask texture.\n"
-        "Useful for testing multiple channels or simply the mask itself.\n"
-        "\nDefault: Off";
+        "Display the mask texture.
+"
+        "Useful for testing multiple channels or simply the mask itself.
+"
+        "
+Default: Off";
 > = false;
 
 #if UIMASK_MULTICHANNEL
 
 uniform bool bToggleRed <
     ui_label = "Toggle Red Channel";
-    ui_tooltip = "Toggle UI masking for the red channel.\n"
-             "Right click to assign a hotkey.\n"
-             "\nDefault: On";
+    ui_tooltip = "Toggle UI masking for the red channel.
+"
+             "Right click to assign a hotkey.
+"
+             "
+Default: On";
 > = true;
 
 uniform bool bToggleGreen <
     ui_label = "Toggle Green Channel";
-    ui_tooltip = "Toggle UI masking for the green channel.\n"
+    ui_tooltip = "Toggle UI masking for the green channel.
+"
              "Right click to assign a hotkey."
-             "\nDefault: On";
+             "
+Default: On";
 > = true;
 
 uniform bool bToggleBlue <
     ui_label = "Toggle Blue Channel";
-    ui_tooltip = "Toggle UI masking for the blue channel.\n"
+    ui_tooltip = "Toggle UI masking for the blue channel.
+"
              "Right click to assign a hotkey."
-             "\nDefault: On";
+             "
+Default: On";
 > = true;
 
 #endif
@@ -1037,7 +1189,8 @@ technique UIMask_Top
 technique UIMask_Bottom
 <
     ui_tooltip =
-        "Place this *below* the effects to be masked.\n"
+        "Place this *below* the effects to be masked.
+"
         "If you want to add a toggle key for the effect, set it to this one.";
 >
 {

@@ -469,7 +469,7 @@ void ExampleCS1(uint3 id : SV_DispatchThreadID, uint3 tid : SV_GroupThreadID)
 
 ## Intrinsic functions
 
-ReShade FX supports most of the standard HLSL intrinsics.\
+ReShade FX supports most of the standard HLSL intrinsics.
 Check out https://docs.microsoft.com/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions for reference on them:
 
 * abs
@@ -861,4 +861,3 @@ technique Example < ui_tooltip = "This is an example!"; >
         PixelShader = ExamplePS1;
     }
 }
-```
