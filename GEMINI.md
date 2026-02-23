@@ -74,7 +74,7 @@ uniform float _Level1Weight <
 
 ## AI-Assisted Programming with Gemini CLI
 
-This project is configured for AI-assisted programming using the Gemini CLI. A specialized skill for ReShadeFX is available within the `.gemini/skills/reshadefx` directory. This skill provides expert guidance and workflows for developing and debugging ReShadeFX shaders.
+This project is configured for AI-assisted programming using the Gemini CLI. A specialized skill for ReShadeFX is available within the `.agents/skills/reshadefx` directory. This skill provides expert guidance and workflows for developing and debugging ReShadeFX shaders.
 
 **To leverage AI assistance:**
 
