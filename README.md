@@ -56,61 +56,6 @@ For example, if you see `[D] Requires Depth`, it means this shader requires acce
 
 This section is intended for developers and contributors.
 
-### AI-Assisted Programming with Gemini CLI
-
-This project integrates with the Gemini CLI for AI-assisted programming. The Gemini CLI, an interactive command-line interface, utilizes large language models and specialized Agent Skills to help with various software engineering tasks, including bug fixes, feature additions, refactoring, and code explanations. Specifically, it includes the `reshadefx-coder` Agent Skill, which provides expert guidance for ReShadeFX shader development.
-
-#### How to Use
-
-1. **Install Gemini CLI**: Follow the [Gemini CLI installation instructions](https://www.geminicli.cc/docs/installation).
-2. **Navigate to Project Root**: Open your terminal or command prompt and navigate to the root directory of the CShade project:
-
-    ```bash
-    cd C:\Users\papadanku\Documents\GitHub\CShade
-    ```
-
-3. **Start Gemini CLI and Activate Skill**: Launch the Gemini CLI and activate the `reshadefx-coder` skill to receive specialized assistance for ReShadeFX:
-
-    ```bash
-    gemini activate skill reshadefx-coder
-    ```
-
-4. **Interact with the AI**: You can now interact with the AI to get assistance with CShade's ReShadeFX development. Here are some examples of what you can ask:
-
-    - "Explain the `cMotionBlur.fx` shader."
-    - "Refactor the `PS_DaltonizeFXmain` function in `Daltonize.fx` to use a more concise matrix multiplication for color conversion."
-    - "Add a new uniform variable to `cLens.fx` that controls the chromatic aberration strength."
-    - "Find all occurrences of `tex2Dlod` in the `shaders` directory."
-
-For more detailed information on Gemini CLI capabilities and usage, refer to the `GEMINI.md` file in CShade's directory.
-
-### AI-Assisted Programming with Mistral Vibe
-
-This project also supports AI-assisted programming with Mistral Vibe, another powerful interactive command-line interface. Mistral Vibe leverages advanced language models and specialized capabilities to assist with software engineering tasks such as code analysis, bug fixing, feature development, and code explanation.
-
-#### How to Use
-
-1. **Install Mistral Vibe**: Follow the [Mistral Vibe installation instructions](https://mistral.ai/products/vibe).
-2. **Navigate to Project Root**: Open your terminal or command prompt and navigate to the root directory of the CShade project:
-
-    ```bash
-    cd C:\Users\papadanku\Documents\GitHub\CShade
-    ```
-
-3. **Start Mistral Vibe and Activate Skill (if applicable)**: Launch Mistral Vibe. If Mistral Vibe uses specific skills or agents for ReShadeFX, activate them here:
-
-    ```bash
-    mistralvibe activate skill reshadefx-agent
-    ```
-
-4. **Interact with the AI**: You can now interact with Mistral Vibe to get assistance with CShade's ReShadeFX development. Here are some examples of what you can ask:
-
-    - "Explain the `kDatamosh.fx` shader and its parameters."
-    - "Suggest optimizations for the `PS_Main` function in `cMotionBlur.fx`."
-    - "Generate a test case for the `CColor_RGBtoHSV` function in `shared/cColor.fxh`."
-
-For more detailed information on Mistral Vibe capabilities and usage, refer to its official documentation or relevant project files.
-
 ### Coding Convention
 
 #### UI

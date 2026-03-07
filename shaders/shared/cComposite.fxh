@@ -294,10 +294,7 @@
             Color = Gray + Saturation * (Color - Gray);
 
             // Apply Log Contrast
-            Color = CColor_EncodeLogC(Color);
-            Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
-            Color = CColor_DecodeLogC(Color);
-            Color = max(Color, 0.0);
+            Color = CColor_ApplyLogContrast(Color, (float3)Contrast);
 
             // Apply Filmic Curve
             #if CSHADE_APPLY_TONEMAP

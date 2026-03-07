@@ -569,6 +569,16 @@
         return Output;
     }
 
+    float3 CColor_ApplyLogContrast(float3 Color, float3 Contrast)
+    {
+        const float ACEScc_MIDGRAY = 0.4135884;
+
+        Color = CColor_EncodeLogC(Color);
+        Color = (Color - ACEScc_MIDGRAY) * Contrast + ACEScc_MIDGRAY;
+        Color = CColor_DecodeLogC(Color);
+        return max(Color, 0.0);
+    }
+
     /*
         https://github.com/BradLarson/GPUImage3
 
