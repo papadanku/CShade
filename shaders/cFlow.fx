@@ -81,7 +81,7 @@ uniform float _BlendFactor <
         ui_min = 0.0;
         ui_type = "slider";
         ui_tooltip = "Controls the size of the vector mask.";
-    > = 0.0;
+    > = 0.5;
 
     uniform float _MaskSmoothing <
         ui_label = "Vector Mask Smoothing";
@@ -89,7 +89,7 @@ uniform float _BlendFactor <
         ui_min = 0.0;
         ui_type = "slider";
         ui_tooltip = "Controls the smoothing of the vector mask edges.";
-    > = 1.0;
+    > = 0.5;
 #endif
 
 #if SHADER_VECTOR_STREAMING
