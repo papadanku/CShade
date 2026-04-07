@@ -324,16 +324,18 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // Process velocity.
         float2 Velocity = Input.Velocity * float2(1.0, -1.0);
         float DotVV = dot(Velocity, Velocity);
-        float InverseMagnitude = rsqrt(DotVV + 1e-7);
+        float InverseMagnitude = sqrt(DotVV + 1e-7);
+        float FadeFactor = smoothstep(1e-5, 1e-3, InverseMagnitude);
 
         // Output color.
         // Calculate normalized velocity and map it to [0, 1] range for color output.
         // InverseMagnitude includes a small epsilon for numerical stability.
-        Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy * InverseMagnitude);
+        Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy / InverseMagnitude);
         Output.b = 1.0 - dot(Output.rg, 0.5);
 
         float2 MaskUV = TexUNORM * float2(1.0, MaskSize);
         Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
+        Output.a *= FadeFactor;
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
