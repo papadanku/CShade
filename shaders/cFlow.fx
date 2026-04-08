@@ -68,12 +68,20 @@ uniform float _BlendFactor <
 #if SHADER_VECTOR_STREAMING
     uniform float _StreamScaling <
         ui_text = "VECTOR STREAMING";
-        ui_label = "Vector Scaling";
+        ui_label = "Vector Motion Scaling";
         ui_max = 32.0;
         ui_min = 1.0;
         ui_type = "slider";
-        ui_tooltip = "Amount of scaling applied to the displayed vectors.";
+        ui_tooltip = "Amount of motion scaling applied to the displayed vectors.";
     > = 16.0;
+
+    uniform float _VertexSize <
+        ui_label = "Vector Vertex Size";
+        ui_max = 2.0;
+        ui_min = 0.0;
+        ui_type = "slider";
+        ui_tooltip = "Controls the size of the vector verticies.";
+    > = 1.0;
 
     uniform float _MaskSize <
         ui_label = "Vector Mask Size";
@@ -284,6 +292,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
         VtxOffset = CMath_UNORMtoSNORM_FLT2(VtxOffset);
         VtxOffset.x *= VtxScale;
+        VtxOffset *= _VertexSize;
         VtxOffset = mul(VtxOffset, VtxRotate);
         VtxOffset = CMath_SNORMtoUNORM_FLT2(VtxOffset);
 
@@ -335,7 +344,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
         float2 MaskUV = TexUNORM * float2(1.0, MaskSize);
         Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
-        Output.a *= FadeFactor;
+        Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
