@@ -69,11 +69,11 @@ uniform float _BlendFactor <
     uniform float _StreamScaling <
         ui_text = "VECTOR STREAMING";
         ui_label = "Vector Scaling";
-        ui_max = 100.0;
+        ui_max = 32.0;
         ui_min = 1.0;
         ui_type = "slider";
         ui_tooltip = "Amount of scaling applied to the displayed vectors.";
-    > = 50.0;
+    > = 16.0;
 
     uniform float _MaskSize <
         ui_label = "Vector Mask Size";
@@ -279,12 +279,13 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // Calculate the vertex directional information.
         float2 VtxDirection = Velocity * GridSize;
         float2 VtxScaleRotation = CMath_CartesianToPolar(-VtxDirection);
+        float VtxScale = (TriangleVertexID == 1) ? VtxScaleRotation.x * _StreamScaling : 1.0;
+        float2x2 VtxRotate = CMath_GetRotationMatrix(VtxScaleRotation.y);
 
-        // Scale across the adjacent side
-        VtxOffset = (TriangleVertexID == 1) ? float2(VtxScaleRotation.x * _StreamScaling, 0.0) : VtxOffset;
-
-        // Rotate across the opposite and adjacent sides
-        VtxOffset = (TriangleVertexID != 0) ? mul(VtxOffset, CMath_GetRotationMatrix(VtxScaleRotation.y)) : VtxOffset;
+        VtxOffset = CMath_UNORMtoSNORM_FLT2(VtxOffset);
+        VtxOffset.x *= VtxScale;
+        VtxOffset = mul(VtxOffset, VtxRotate);
+        VtxOffset = CMath_SNORMtoUNORM_FLT2(VtxOffset);
 
         // Calculate final NDC position.
         float2 CellPosition = (VtxBasePos + VtxOffset) * TriangleSize;
