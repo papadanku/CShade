@@ -251,7 +251,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         VtxBasePos.x -= ShiftOdds;
 
         // Apply velocity to CellOffset.
-        float4 VelocityTex = float4((VtxBasePos + 0.5) / GridSize, 0.0, _MipBias);
+        float4 VelocityTex = float4(VtxBasePos / GridSize, 0.0, _MipBias);
         float2 Velocity = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, VelocityTex).xy);
 
         /*
