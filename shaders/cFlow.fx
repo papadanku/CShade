@@ -248,8 +248,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         int IsOddRow = CMath_GetModulus_FLT1(Row, 2);
 
         // Calculate our Grid size and Triangle size.
-        float2 GridSize = float2(VTX_COLUMNS, VTX_ROWS);
-        float2 TriangleSize = 1.0 / max(GridSize, 1.0);
+        float2 GridSize = max(float2(VTX_COLUMNS, VTX_ROWS), 1.0);
 
         // Calculate the Cell Origin.
         float2 VtxBasePos = float2(Column, Row);
@@ -284,11 +283,19 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // Initiate vertex processing.
         float2 VtxOffset = Vertex;
 
+        // Calculate the direction vector (inverse of flow for pointing direction)
+        float2 VtxVector = -Velocity * GridSize;
+        float VtxMagnitude = length(VtxVector);
+
+        // Construct rotation matrix directly from normalized vector components
+        // If VtxMagnitude is 0, we default to identity rotation (pointing right)
+        float2 VtxVectorNormal = (VtxMagnitude > 0.0) ? VtxVector / VtxMagnitude : float2(1.0, 0.0);
+
+        // float2x2(cos, sin, -sin, cos) mapped to (x, y, -y, x)
+        float2x2 VtxRotate = float2x2(VtxVectorNormal.x, VtxVectorNormal.y, -VtxVectorNormal.y, VtxVectorNormal.x);
+
         // Calculate the vertex directional information.
-        float2 VtxDirection = Velocity * GridSize;
-        float2 VtxScaleRotation = CMath_CartesianToPolar(-VtxDirection);
-        float VtxScale = (TriangleVertexID == 1) ? VtxScaleRotation.x * _StreamScaling : 1.0;
-        float2x2 VtxRotate = CMath_GetRotationMatrix(VtxScaleRotation.y);
+        float VtxScale = (TriangleVertexID == 1) ? VtxMagnitude * _StreamScaling : 1.0;
 
         VtxOffset = CMath_UNORMtoSNORM_FLT2(VtxOffset);
         VtxOffset.x *= VtxScale;
