@@ -66,8 +66,15 @@ uniform float _BlendFactor <
 #endif
 
 #if SHADER_VECTOR_STREAMING
-    uniform float _StreamScaling <
+    uniform int _DisplayMode <
         ui_text = "VECTOR STREAMING";
+        ui_items = "Output\0Debug · Triangles\0";
+        ui_label = "Display Mode";
+        ui_type = "combo";
+        ui_tooltip = "Controls how the contour effect is displayed, including various debug visualizations of gradients and magnitudes.";
+    > = 0;
+
+    uniform float _StreamScaling <
         ui_label = "Vector Motion Scaling";
         ui_max = 32.0;
         ui_min = 1.0;
@@ -283,16 +290,31 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         // Initiate vertex processing.
         float2 VtxOffset = Vertex;
 
-        // Calculate the direction vector (inverse of flow for pointing direction)
+        /*
+            float2x2(cos, sin, -sin, cos) mapped to (x, y, -y, x)
+
+            Now, why this works:
+            - Normalizing the Motion Vector gives it a unit-length of 1, that moves around a 2D unit circle
+            - Doing a cross-product of the Normal, cross(Normal, float3(0.0, 0.0, 1.0)), should give us the Tangent
+            - We use the resulting Normal and Tangent vectors to construct a rotation matrix
+        */
+
+        // Calculate the Motion Vector's magnitude
         float2 VtxVector = -Velocity * GridSize;
         float VtxMagnitude = length(VtxVector);
 
-        // Construct rotation matrix directly from normalized vector components
+        // Calculate the Motion Vector's direction (normal)
         // If VtxMagnitude is 0, we default to identity rotation (pointing right)
-        float2 VtxVectorNormal = (VtxMagnitude > 0.0) ? VtxVector / VtxMagnitude : float2(1.0, 0.0);
+        float2 VtxNormal = (VtxMagnitude > 0.0) ? VtxVector / VtxMagnitude : float2(1.0, 0.0);
 
-        // float2x2(cos, sin, -sin, cos) mapped to (x, y, -y, x)
-        float2x2 VtxRotate = float2x2(VtxVectorNormal.x, VtxVectorNormal.y, -VtxVectorNormal.y, VtxVectorNormal.x);
+        // Initiate the rotation matrix
+        float2x2 VtxRotationMatrix;
+
+        // The matrix's Normal
+        VtxRotationMatrix[0] = float2(VtxNormal.x, VtxNormal.y);
+
+        // The matrix's Tangent
+        VtxRotationMatrix[1] = float2(-VtxNormal.y, VtxNormal.x);
 
         // Calculate the vertex directional information.
         float VtxScale = (TriangleVertexID == 1) ? VtxMagnitude * _StreamScaling : 1.0;
@@ -300,11 +322,11 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         VtxOffset = CMath_UNORMtoSNORM_FLT2(VtxOffset);
         VtxOffset.x *= VtxScale;
         VtxOffset *= _VertexSize;
-        VtxOffset = mul(VtxOffset, VtxRotate);
+        VtxOffset = mul(VtxOffset, VtxRotationMatrix);
         VtxOffset = CMath_SNORMtoUNORM_FLT2(VtxOffset);
 
         // Calculate final NDC position.
-        float2 CellPosition = (VtxBasePos + VtxOffset) * TriangleSize;
+        float2 CellPosition = (VtxBasePos + VtxOffset) / GridSize;
         float2 FinalPos = CMath_UNORMtoSNORM_FLT2(CellPosition);
 
         /*
@@ -332,7 +354,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
         // Process vertex inputs.
-        float2 TexUNORM = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
+        float2 TexSNORM = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
 
         // Process uniforms.
         float MaskSize = lerp(5.0, 1.0, saturate(_MaskSize));
@@ -344,14 +366,28 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         float SqrtDotVV = DotVV > 0.0 ? sqrt(DotVV) : 1.0;
         float FadeFactor = smoothstep(1e-5, 1e-3, SqrtDotVV);
 
-        // Output color.
-        // Calculate normalized velocity and map it to [0, 1] range for color output.
-        Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy / SqrtDotVV);
-        Output.b = 1.0 - dot(Output.rg, 0.5);
+        switch (_DisplayMode)
+        {
+            case 0: // Display: Normal Mode
+                // Calculate normalized velocity and map it to [0, 1] range for color output.
+                Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy / SqrtDotVV);
+                Output.b = 1.0 - dot(Output.rg, 0.5);
 
-        float2 MaskUV = TexUNORM * float2(1.0, MaskSize);
-        Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
-        Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
+                float2 MaskUV = TexSNORM * float2(1.0, MaskSize);
+                Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
+                Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
+                break;
+            case 1: // Display: Debug Triangle Mode
+                Output.rg = Input.Tex0.xy;
+                Output.b = 1.0 - dot(Output.rg, 0.5);
+                Output.a = 1.0;
+                Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
+                break;
+            default:
+                Output = float4(0.5, 0.5, 0.5, 0.5);
+                break;
+        }
+
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
