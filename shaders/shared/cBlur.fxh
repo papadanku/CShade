@@ -431,7 +431,7 @@
         int ImageIndex = 0;
 
         // Variables for Array textures
-        float4 Array[ArrayCount];
+        float2 Array[ArrayCount];
         float2 ImageArray[ArrayCount];
         float2 ImageCenter;
 
@@ -448,13 +448,14 @@
 
                 if ((x == 0) && (y == 0))
                 {
-                    Array[ID] = tex2D(Image, Tex);
+                    Array[ID] = tex2D(Image, Tex).xy;
+                    ImageCenter = Array[ID];
                 }
                 else
                 {
                     float2 Offset = float2(float(x), float(y));
                     float2 DiskShift = CMath_MapUVtoConcentricDisk(Offset);
-                    Array[ID] = tex2D(Image, Tex + (DiskShift * PixelSize));
+                    Array[ID] = tex2D(Image, Tex + (DiskShift * PixelSize)).xy;
                 }
 
                 ImageArray[ImageIndex] = Array[ID].xy;
@@ -462,17 +463,8 @@
             }
         }
 
-        // Starting with a subset of size 6, remove the min and max each time
-        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
-        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
-        MNMX4(Array[2], Array[3], Array[4], Array[7]);
-        MNMX3(Array[3], Array[4], Array[8]);
-
-        // Get median
-        float2 Median = Array[4].xy;
-
         // Store ImageCenter reference
-        float4 Reference = float4(tex2D(Guide, Tex).xy, Median);
+        float4 Reference = float4(tex2D(Guide, Tex).xy, ImageCenter);
 
         // Initialize variables to compute
         float2 ImageSum = 0.0;
@@ -484,10 +476,10 @@
         for (int i = 0; i < ArrayCount; i++)
         {
             // Calculate weight
-            float4 Delta = ImageArray[i].xyxy - Reference;
-            float MaxDot = rsqrt(dot(Delta, Delta) + 1.0);
-            float Weight = smoothstep(0.0, 1.0, MaxDot);
-            Weight *= Weight;
+            float4 D = ImageArray[i].xyxy - Reference;
+            float2 Dp = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
+            float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
+            float Weight = Weights[0] * Weights[1];
 
             // Accumulate sum
             ImageSum += ImageArray[i].xy;
