@@ -180,9 +180,9 @@
             // Calculate spatial weighting from temporal difference
             R0 -= CenterT;
             R1 -= CenterI;
-            float Weight = rsqrt(dot(R0, R0) + dot(R1, R1) + 1.0);
-            Weight = smoothstep(0.0, 1.0, Weight);
-            Weight *= Weight;
+            float2 Dp = float2(dot(R0, R0), dot(R1, R1));
+            float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
+            float Weight = Weights[0] * Weights[1];
 
             // Calculate spatial gradients without temporary registers
             float3 North = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];

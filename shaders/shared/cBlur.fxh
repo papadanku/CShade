@@ -491,7 +491,7 @@
             BilateralWeightSum += Weight;
         }
 
-        BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : Sum;
+        BilateralSum = BilateralSum / BilateralWeightSum;
 
         return BilateralSum;
     }
