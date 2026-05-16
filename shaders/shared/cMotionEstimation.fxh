@@ -168,28 +168,27 @@
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
-            bool Cached = (P[i].x == 0) && (P[i].y == 0);
-
-            // Get R0 and R1 to calculate temporal gradient
-            float3 R0 = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
-            float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
-
-            // Calculate temporal gradient
-            float3 It = R1 - R0;
-
-            // Calculate spatial weighting from temporal difference
-            R0 -= CenterT;
-            R1 -= CenterI;
-            float2 Dp = float2(dot(R0, R0), dot(R1, R1));
-            float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
-            float Weight = Weights[0] * Weights[1];
-
-            // Calculate spatial gradients without temporary registers
+            // Fetched cached data
             float3 North = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
             float3 South = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
             float3 East = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
             float3 West = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
 
+            // Get R0 and R1 to calculate temporal gradient
+            bool Cached = (P[i].x == 0) && (P[i].y == 0);
+            float3 R0 = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
+            float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
+
+            // Calculate spatial weighting from temporal difference
+            float2 Offset = float2(P[i].xy);
+            float Weight = rsqrt(dot(Offset, Offset) + 1.0);
+            R0 -= CenterT;
+            Weight *= rsqrt(dot(R0, R0) + 1.0);
+            R1 -= CenterI;
+            Weight *= rsqrt(dot(R1, R1) + 1.0);
+
+            // Calculate the gradients at the end
+            float3 It = R1 - R0;
             float3 Ix = (West * 0.5) - (East * 0.5);
             float3 Iy = (North * 0.5) - (South * 0.5);
 

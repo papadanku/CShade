@@ -433,6 +433,7 @@
         // Variables for Array textures
         float2 Array[ArrayCount];
         float2 ImageArray[ArrayCount];
+        float2 OffsetArray[ArrayCount];
         float2 ImageSum = 0.0;
         float ImageWeightSum = 0.0;
 
@@ -446,16 +447,18 @@
                 // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
                 // bottom right pixel of the window at pixel[N-1].
                 int ID = (x + 1) * 3 + (y + 1);
+                float2 Offset = float2(x, y);
 
                 if ((x == 0) && (y == 0))
                 {
                     Array[ID] = tex2D(Image, Tex).xy;
+                    OffsetArray[ID] = Offset;
                 }
                 else
                 {
-                    float2 Offset = float2(float(x), float(y));
-                    float2 DiskShift = CMath_MapUVtoConcentricDisk(Offset);
-                    Array[ID] = tex2D(Image, Tex + (DiskShift * PixelSize)).xy;
+                    float2 DiskOffset = CMath_MapUVtoConcentricDisk(Offset);
+                    Array[ID] = tex2D(Image, Tex + (DiskOffset * PixelSize)).xy;
+                    OffsetArray[ID] = DiskOffset;
                 }
 
                 ImageArray[ImageIndex] = Array[ID].xy;
@@ -484,7 +487,8 @@
             float4 D = ImageArray[i].xyxy - Reference;
             float2 Dp = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
             float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
-            float Weight = Weights[0] * Weights[1];
+            float WeightR = rsqrt(dot(OffsetArray[i], OffsetArray[i]) + 1.0);
+            float Weight = WeightR * Weights[0] * Weights[1];
 
             // Accumulate bilateral
             BilateralSum += (ImageArray[i].xy * Weight);
