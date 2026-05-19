@@ -470,11 +470,11 @@
             }
         }
 
-        // Get Sum
-        float2 Sum = ImageSum / ImageWeightSum;
+        // Get Mean
+        float2 Mean = ImageSum / ImageWeightSum;
 
         // Store ImageCenter reference
-        float4 Reference = float4(tex2D(Guide, Tex).xy, Sum);
+        float4 Reference = float4(tex2D(Guide, Tex).xy, Mean);
 
         // Initialize variables to compute
         float2 BilateralSum = 0.0;
@@ -485,10 +485,10 @@
         {
             // Calculate weight
             float4 D = ImageArray[i].xyxy - Reference;
-            float2 Dp = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
-            float2 Weights = smoothstep(0.0, 1.0, rsqrt(Dp + 1.0));
-            float WeightR = rsqrt(dot(OffsetArray[i], OffsetArray[i]) + 1.0);
-            float Weight = WeightR * Weights[0] * Weights[1];
+            float2 DotDD = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
+            float2 Weights = smoothstep(0.0, 1.0, rsqrt(DotDD + 1.0));
+            float Weight = rsqrt(dot(OffsetArray[i], OffsetArray[i]) + 1.0);
+            Weight *= Weights[0] * Weights[1];
 
             // Accumulate bilateral
             BilateralSum += (ImageArray[i].xy * Weight);
@@ -524,18 +524,19 @@
             for (int y = -1; y <= 1; y++)
             {
                 // Calculate offset
-                float2 Offset = float2(float(x), float(y));
+                float2 Offset = float2(x, y);
                 float2 OffsetTex = Tex + (Offset * PixelSize);
 
                 // Sample image and guide
-                float4 ImageSample = tex2Dlod(Image, float4(OffsetTex, 0.0, 0.0));
+                float4 ImageSample = tex2D(Image, OffsetTex);
                 float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
 
                 // Calculate weight
-                float4 Delta = GuideHighSample - GuideLowSample;
-                float Dot4 = rsqrt(dot(Delta, Delta) + 1.0);
-                float Weight = smoothstep(0.0, 1.0, Dot4);
-                Weight *= Weight;
+                float4 D = GuideHighSample - GuideLowSample;
+                float2 DotDD = float2(dot(D.xy, D.xy), dot(D.zw, D.zw));
+                float2 Weights = smoothstep(0.0, 1.0, rsqrt(DotDD + 1.0));
+                float Weight = rsqrt(dot(Offset, Offset) + 1.0);
+                Weight *= Weights[0] * Weights[1];
 
                 // Accumulate sum
                 ImageSum += ImageSample;
