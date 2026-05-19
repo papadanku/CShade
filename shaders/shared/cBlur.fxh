@@ -512,8 +512,6 @@
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
         float4 GuideHighSample = tex2D(GuideHigh, Tex);
 
-        float4 ImageSum = 0.0;
-        float ImageWeightSum = 0.0;
         float4 BilateralSum = 0.0;
         float BilateralWeightSum = 0.0;
 
@@ -538,18 +536,13 @@
                 float Weight = rsqrt(dot(Offset, Offset) + 1.0);
                 Weight *= Weights[0] * Weights[1];
 
-                // Accumulate sum
-                ImageSum += ImageSample;
-                ImageWeightSum += 1.0;
-
                 // Accumulate bilateral
                 BilateralSum += (ImageSample * Weight);
                 BilateralWeightSum += Weight;
             }
         }
 
-        ImageSum /= ImageWeightSum;
-        BilateralSum = (BilateralWeightSum > 0.0) ? BilateralSum / BilateralWeightSum : ImageSum;
+        BilateralSum = BilateralSum / BilateralWeightSum;
 
         return BilateralSum;
     }
