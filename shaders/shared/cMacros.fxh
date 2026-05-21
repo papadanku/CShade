@@ -34,6 +34,15 @@
     #define CSHADE_UI_CAUTION(STRING) "[!] " STRING
     #define CSHADE_UI_INFO(STRING) "[?] " STRING
     #define CSHADE_UI_EXPENSIVE(STRING) "[$] " STRING
+    #define CSHADE_UI_PREPROCESSOR_GUIDE(STRING) \
+        uniform int _ShaderPreprocessorGuide < \
+            ui_category = "Preprocessor Guide / Shader"; \
+            ui_category_closed = false; \
+            ui_label = " "; \
+            ui_text = STRING; \
+            ui_type = "radio"; \
+            ui_tooltip = "Provides access to preprocessor-based shader options."; \
+        > = 0; \
 
     #ifndef CSHADE_SRGB_RENDERING
         #define CSHADE_SRGB_RENDERING 1

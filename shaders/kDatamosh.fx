@@ -114,13 +114,9 @@ uniform float _Diffusion <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide / Shader";
-    ui_category_closed = false;
-    ui_label = " ";
-    ui_text = "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n";
-    ui_type = "radio";
-> = 0;
+CSHADE_UI_PREPROCESSOR_GUIDE(
+    "\nSHADER_DISPLACEMENT_SAMPLING - How the shader samples and processes displacement accumulation.\n\n\tOptions: LINEAR, POINT\n\nSHADER_WARP_SAMPLING - How the shader samples textures using in datamoshing's displacement pass.\n\n\tOptions: LINEAR, POINT\n\n"
+)
 
 /*
     [Textures and samplers]

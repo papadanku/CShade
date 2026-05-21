@@ -124,13 +124,9 @@ uniform float _BlendFactor <
     #include "shared/cShade.fxh"
 #endif
 
-uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide / Shader";
-    ui_category_closed = false;
-    ui_label = " ";
-    ui_text = "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\nSHADER_VECTOR_STREAMING - Enables vector streaming visualization instead of shading.\n\n\tOptions: 0 (Disabled), 1 (Enabled)\n\nSHADER_VECTOR_STREAMING_ROWS - The number of rows used for vector streaming.\n\n\tOptions: Any integer value.\n\nSHADER_VECTOR_STREAMING_COLUMNS - The number of columns used for vector streaming.\n\n\tOptions: Any integer value.\n\nSHADER_VECTOR_STREAMING_CLEAR - Clears the render target before drawing vector streams. (0 = Disabled, 1 = Enabled)\n\n\tOptions: 0 (Disabled), 1 (Enabled)\n\n";
-    ui_type = "radio";
-> = 0;
+CSHADE_UI_PREPROCESSOR_GUIDE(
+    "\nSHADER_OPTICAL_FLOW_SAMPLING - How the samples the optical flow map.\n\n\tOptions: LINEAR, POINT\n\nSHADER_VECTOR_STREAMING - Enables vector streaming visualization instead of shading.\n\n\tOptions: 0 (Disabled), 1 (Enabled)\n\nSHADER_VECTOR_STREAMING_ROWS - The number of rows used for vector streaming.\n\n\tOptions: Any integer value.\n\nSHADER_VECTOR_STREAMING_COLUMNS - The number of columns used for vector streaming.\n\n\tOptions: Any integer value.\n\nSHADER_VECTOR_STREAMING_CLEAR - Clears the render target before drawing vector streams. (0 = Disabled, 1 = Enabled)\n\n\tOptions: 0 (Disabled), 1 (Enabled)\n\n"
+)
 
 /* Textures & Samplers */
 
@@ -471,6 +467,7 @@ void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
         enabled = true;
         timeout = 1;
         hidden = true;
+        ui_tooltip = "Generates noise patterns for use in the shader.";
     >
     {
         pass GenerateNoise

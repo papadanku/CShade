@@ -10,7 +10,10 @@
 
 /* Shader Options */
 
-uniform float _FrameTime < source = "frametime"; > ;
+uniform float _FrameTime <
+    source = "frametime";
+    ui_tooltip = "The time elapsed since the last frame, used for time-based effects.";
+>;
 
 uniform int _DisplayMode <
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";

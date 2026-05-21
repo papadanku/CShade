@@ -26,7 +26,10 @@
     #define SHADER_COSMETIC_SAMPLING LINEAR
 #endif
 
-uniform float _FrameTime < source = "frametime"; > ;
+uniform float _FrameTime <
+    source = "frametime";
+    ui_tooltip = "The time elapsed since the last frame, used for time-based effects.";
+>;
 
 uniform int _DisplayMode <
     ui_items = "Output\0Debug · Quadrant\0Debug · Motion Vector Direction\0Debug · Motion Vector Magnitude\0";
@@ -130,13 +133,9 @@ uniform float _ScaleByImageIntensity <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-uniform int _ShaderPreprocessorGuide <
-    ui_category = "Preprocessor Guide / Shader";
-    ui_category_closed = false;
-    ui_label = " ";
-    ui_text = "\nSHADER_BACKBUFFER_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_MOTION_VECTORS_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\nSHADER_COSMETIC_SAMPLING - How the shader filters the image content texture used for color-based displacement.\n\n\tOptions: LINEAR, POINT\n\n";
-    ui_type = "radio";
-> = 0;
+CSHADE_UI_PREPROCESSOR_GUIDE(
+    "\nSHADER_BACKBUFFER_ADDRESS - How the shader renders pixels outside the texture's boundaries.\n\n\tOptions: CLAMP, MIRROR, WRAP/REPEAT, BORDER\n\nSHADER_MOTION_VECTORS_SAMPLING - How the shader filters the motion vectors used for stabilization.\n\n\tOptions: LINEAR, POINT\n\nSHADER_DISPLACEMENT_SAMPLING - How the shader filters warped pixels.\n\n\tOptions: LINEAR, POINT\n\nSHADER_COSMETIC_SAMPLING - How the shader filters the image content texture used for color-based displacement.\n\n\tOptions: LINEAR, POINT\n\n"
+)
 
 /* Textures & Samplers */
 
