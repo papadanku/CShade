@@ -431,7 +431,6 @@
         int ImageIndex = 0;
 
         // Variables for Array textures
-        float2 Array[ArrayCount];
         float2 ImageArray[ArrayCount];
         float2 OffsetArray[ArrayCount];
         float2 ImageSum = 0.0;
@@ -443,30 +442,26 @@
             [unroll]
             for (int y = -1; y <= 1; ++y)
             {
-                // If a pixel in the window is located at (x+x, y+y), put it at index (x + R)(2R + 1) + (y + R) of the
-                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
-                // bottom right pixel of the window at pixel[N-1].
-                int ID = (x + 1) * 3 + (y + 1);
                 float2 Offset = float2(x, y);
 
                 if ((x == 0) && (y == 0))
                 {
-                    Array[ID] = tex2D(Image, Tex).xy;
-                    OffsetArray[ID] = Offset;
+                    ImageArray[ImageIndex] = tex2D(Image, Tex).xy;
+                    OffsetArray[ImageIndex] = Offset;
                 }
                 else
                 {
                     float2 DiskOffset = CMath_MapUVtoConcentricDisk(Offset);
-                    Array[ID] = tex2D(Image, Tex + (DiskOffset * PixelSize)).xy;
-                    OffsetArray[ID] = DiskOffset;
+                    ImageArray[ImageIndex] = tex2D(Image, Tex + (DiskOffset * PixelSize)).xy;
+                    OffsetArray[ImageIndex] = DiskOffset;
                 }
 
-                ImageArray[ImageIndex] = Array[ID].xy;
-                ImageIndex += 1;
-
-                // Accumulate sum
-                ImageSum += Array[ID].xy;
+                // Accumulate mean
+                ImageSum += ImageArray[ImageIndex].xy;
                 ImageWeightSum += 1.0;
+
+                // Iterate
+                ImageIndex += 1;
             }
         }
 
