@@ -67,23 +67,6 @@
         sampler2D SampleI
     )
     {
-        // Initialize variables
-        float IxIx = 0.0;
-        float IyIy = 0.0;
-        float IxIy = 0.0;
-        float IxIt = 0.0;
-        float IyIt = 0.0;
-        float SumW = 0.0;
-
-        // Decode from FLT16
-        Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
-
-        // Calculate warped texture coordinates
-        float2 WarpTex = MainTex;
-        WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
-        WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-
         // Get gradient information
         float2 PixelSize = fwidth(MainTex);
 
@@ -161,6 +144,23 @@
             int4(int2(1, 1), int2(1, 3))
         };
 
+        // Initialize variables
+        float IxIx = 0.0;
+        float IyIy = 0.0;
+        float IxIy = 0.0;
+        float IxIt = 0.0;
+        float IyIt = 0.0;
+        float SumW = 0.0;
+
+        // Decode from FLT16
+        Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
+
+        // Calculate warped texture coordinates
+        float2 WarpTex = MainTex;
+        WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
+        WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
+        WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
+
         // Get center textures (this is for the spatial weighting)
         float3 CenterT = TemplateCache[CMath_Get1DIndexFrom2D(int2(2, 2), TemplateGridSize)];
         float3 CenterI = tex2D(SampleI, WarpTex).xyz;
@@ -178,17 +178,18 @@
             bool Cached = (P[i].x == 0) && (P[i].y == 0);
             float3 R0 = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
             float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
+            float3 It = 0.0;
 
             // Calculate spatial weighting from temporal difference
             float2 Offset = float2(P[i].xy);
             float Weight = rsqrt(dot(Offset, Offset) + 1.0);
-            R0 -= CenterT;
-            Weight *= rsqrt(dot(R0, R0) + 1.0);
-            R1 -= CenterI;
-            Weight *= rsqrt(dot(R1, R1) + 1.0);
+            It = R0 - CenterT;
+            Weight *= rsqrt(dot(It, It) + 1.0);
+            It = R1 - CenterI;
+            Weight *= rsqrt(dot(It, It) + 1.0);
 
             // Calculate the gradients at the end
-            float3 It = R1 - R0;
+            It = R1 - R0;
             float3 Ix = (West * 0.5) - (East * 0.5);
             float3 Iy = (North * 0.5) - (South * 0.5);
 
