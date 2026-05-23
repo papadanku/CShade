@@ -108,12 +108,12 @@ uniform float2 _Scale <
 > = 1.0;
 
 uniform int _ScaleByImage <
-    ui_items = "Radial (Luma)\0Polar Angle (Chroma 1)\0Azimuthal Angle (Chroma 2)\0Disabled\0";
+    ui_items = "Luminance\0Chromaticity\0Disabled\0";
     ui_label = "Cosmetic Scaling Method";
     ui_text = "COSMETIC - SCALE BY COLOR";
     ui_type = "combo";
     ui_tooltip = "Selects a color channel from the image to use as a scalar for cosmetic scaling effects.";
-> = 3;
+> = 0;
 
 uniform float _ScaleByImageLOD <
     ui_label = "Cosmetic Scaling Mipmap Level";
@@ -263,10 +263,14 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 StabilizationTex = _GlobalStabilization ? 0.5 : Input.Tex0;
     float StabilizationLOD = _GlobalStabilization ? 99.0 : _LocalStabilizationMipBias;
 
+    // Gather textures
     float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Image = tex2Dlod(SampleCosmeticTex, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
     float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
-    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * Image[_ScaleByImage] * _ScaleByImageIntensity);
+
+    // Compute motion vector masking
+    float ScaleMask = lerp(Image.a, distance(Image.xyz, float3(1.0, 1.0, 1.0)), _ScaleByImage);
+    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * ScaleMask * _ScaleByImageIntensity);
 
     switch (_DisplayMode)
     {
