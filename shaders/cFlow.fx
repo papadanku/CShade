@@ -167,7 +167,7 @@ void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
     float MaxColor = max(Color.r, max(Color.g, Color.b));
 
-    Output.rgb = MaxRatio > 0.0 ? Ratio / MaxRatio : 1.0;
+    Output.rgb = Ratio / MaxRatio;
     Output.a = CColor_EncodeLogC(MaxColor) / CColor_EncodeLogC(1.0);
 }
 
