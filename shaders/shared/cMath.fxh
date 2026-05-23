@@ -140,14 +140,14 @@
 
     /*
         Function to convert 2D row and column (0-indexed) to a 1D index.
-        ZeroIndexGridPos.x: The 0-indexed row number.
-        ZeroIndexGridPos.y: The 0-indexed column number.
+        GridPos.x: The 0-indexed row number.
+        GridPos.y: The 0-indexed column number.
         GridWidth: The total width of the grid (number of columns).
         Returns a 1D index.
     */
-    int CMath_Get1DIndexFrom2D(int2 ZeroIndexGridPos, int GridWidth)
+    int CMath_Get1DIndexFrom2D(int2 GridPos, int GridWidth)
     {
-        return (ZeroIndexGridPos.x * GridWidth) + ZeroIndexGridPos.y;
+        return GridPos.x + (GridPos.y * GridWidth);
     }
 
     // Get the Half format distribution of bits

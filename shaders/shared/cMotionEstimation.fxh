@@ -91,40 +91,40 @@
                 (0, 0) (0, 1) (0, 2) (0, 3) (0, 4)
         */
 
-        // Initiate TemplateCache
-        const int TemplateGridSize = 5;
-        const int TemplateCacheSize = TemplateGridSize * TemplateGridSize;
-        float3 TemplateCache[TemplateCacheSize];
+        // Initiate Cache
+        const int CacheWidth = 5;
+        const int CacheIndexSize = CacheWidth * CacheWidth;
+        float4 Cache[CacheIndexSize];
 
-        // Create TemplateCache
-        // This unrolled version samples and assigns to the TemplateCache array.
+        // Create Cache
+        // This unrolled version samples and assigns to the Cache array.
         // The four corners of the 5x5 grid are skipped in the original code,
         // so they are not included in this rewrite.
-        TemplateCache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize)).xyz;
-        TemplateCache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize)).xyz;
-        TemplateCache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize)).xyz;
+        Cache[1] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+        Cache[2] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
+        Cache[3] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
-        TemplateCache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize)).xyz;
-        TemplateCache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize)).xyz;
-        TemplateCache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize)).xyz;
-        TemplateCache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize)).xyz;
-        TemplateCache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize)).xyz;
+        Cache[5] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+        Cache[6] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+        Cache[7] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
+        Cache[8] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
+        Cache[9] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-        TemplateCache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize)).xyz;
-        TemplateCache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize)).xyz;
-        TemplateCache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize)).xyz;
-        TemplateCache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize)).xyz;
-        TemplateCache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize)).xyz;
+        Cache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+        Cache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+        Cache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize));
+        Cache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize));
+        Cache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-        TemplateCache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize)).xyz;
-        TemplateCache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize)).xyz;
-        TemplateCache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize)).xyz;
-        TemplateCache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize)).xyz;
-        TemplateCache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize)).xyz;
+        Cache[15] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+        Cache[16] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+        Cache[17] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
+        Cache[18] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
+        Cache[19] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-        TemplateCache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize)).xyz;
-        TemplateCache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize)).xyz;
-        TemplateCache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize)).xyz;
+        Cache[21] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+        Cache[22] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
+        Cache[23] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
         // Loop over the starred template areas
         const int FetchGridWidth = 3;
@@ -133,15 +133,15 @@
         // .xy = TemplateGridPos; .zw = FetchPos
         const int4 P[FetchGridSize] =
         {
-            int4(int2(-1, -1), int2(3, 1)),
-            int4(int2(0, -1), int2(3, 2)),
-            int4(int2(1, -1), int2(3, 3)),
-            int4(int2(-1, 0), int2(2, 1)),
-            int4(int2(0, 0), int2(2, 2)),
-            int4(int2(1, 0), int2(2, 3)),
             int4(int2(-1, 1), int2(1, 1)),
-            int4(int2(0, 1), int2(1, 2)),
-            int4(int2(1, 1), int2(1, 3))
+            int4(int2(0, 1), int2(2, 1)),
+            int4(int2(1, 1), int2(3, 1)),
+            int4(int2(-1, 0), int2(1, 2)),
+            int4(int2(0, 0), int2(2, 2)),
+            int4(int2(1, 0), int2(3, 2)),
+            int4(int2(-1, -1), int2(1, 3)),
+            int4(int2(0, -1), int2(2, 3)),
+            int4(int2(1, -1), int2(3, 3))
         };
 
         // Initialize variables
@@ -162,23 +162,23 @@
         WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
 
         // Get center textures (this is for the spatial weighting)
-        float3 CenterT = TemplateCache[CMath_Get1DIndexFrom2D(int2(2, 2), TemplateGridSize)];
-        float3 CenterI = tex2D(SampleI, WarpTex).xyz;
+        float4 CenterT = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+        float4 CenterI = tex2D(SampleI, WarpTex);
 
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
             // Fetched cached data
-            float3 North = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), TemplateGridSize)];
-            float3 South = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), TemplateGridSize)];
-            float3 East = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), TemplateGridSize)];
-            float3 West = TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), TemplateGridSize)];
+            float4 North = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+            float4 South = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+            float4 East = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+            float4 West = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
 
             // Get R0 and R1 to calculate temporal gradient
             bool Cached = (P[i].x == 0) && (P[i].y == 0);
-            float3 R0 = Cached ? CenterT : TemplateCache[CMath_Get1DIndexFrom2D(P[i].zw, TemplateGridSize)];
-            float3 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize)).xyz;
-            float3 It = 0.0;
+            float4 R0 = Cached ? CenterT : Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+            float4 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
+            float4 It = 0.0;
 
             // Calculate spatial weighting from temporal difference
             float2 Offset = float2(P[i].xy);
@@ -190,8 +190,8 @@
 
             // Calculate the gradients at the end
             It = R1 - R0;
-            float3 Ix = (West * 0.5) - (East * 0.5);
-            float3 Iy = (North * 0.5) - (South * 0.5);
+            float4 Ix = (East * 0.5) - (West * 0.5);
+            float4 Iy = (South * 0.5) - (North * 0.5);
 
             // Summate the weighted contributions
             IxIx += dot(Ix, Ix) * Weight;
