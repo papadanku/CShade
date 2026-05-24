@@ -168,37 +168,43 @@
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
-            // Fetched cached data
+            // Get cached data
             float4 North = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
             float4 South = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
             float4 East = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
             float4 West = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+            float4 R0 = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
-            // Get R0 and R1 to calculate temporal gradient
-            bool Cached = (P[i].x == 0) && (P[i].y == 0);
-            float4 R0 = Cached ? CenterT : Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
-            float4 R1 = Cached ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
+            // Get dynamic data
+            float4 R1 = tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
             float4 It = 0.0;
 
-            // Calculate spatial weighting from temporal difference
+            // Get R0 and R1 to calculate temporal gradient
+            bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
             float2 Offset = float2(P[i].xy);
+
+            // Calculate bilateral weighting
             float Weight = rsqrt(dot(Offset, Offset) + 1.0);
-            It = R0 - CenterT;
-            Weight *= rsqrt(dot(It, It) + 1.0);
-            It = R1 - CenterI;
-            Weight *= rsqrt(dot(It, It) + 1.0);
+
+            if (!IsCenter)
+            {
+                It = R0 - CenterT;
+                Weight *= rsqrt(dot(It, It) + 1.0);
+                It = R1 - CenterI;
+                Weight *= rsqrt(dot(It, It) + 1.0);
+            }
 
             // Calculate the gradients at the end
-            It = R1 - R0;
             float4 Ix = (East * 0.5) - (West * 0.5);
             float4 Iy = (South * 0.5) - (North * 0.5);
+            It = R1 - R0;
 
             // Summate the weighted contributions
-            IxIx += dot(Ix, Ix) * Weight;
-            IxIt += dot(Ix, It) * Weight;
-            IyIy += dot(Iy, Iy) * Weight;
-            IyIt += dot(Iy, It) * Weight;
-            IxIy += dot(Ix, Iy) * Weight;
+            IxIx += (dot(Ix, Ix) * Weight);
+            IxIt += (dot(Ix, It) * Weight);
+            IyIy += (dot(Iy, Iy) * Weight);
+            IyIt += (dot(Iy, It) * Weight);
+            IxIy += (dot(Ix, Iy) * Weight);
             SumW += Weight;
         }
 
