@@ -157,12 +157,11 @@ CSHADE_CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, 
 
 /* Pixel Shaders: Pyramid */
 
-
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
-    float Sum = dot(Color, 1.0);
+    float Sum = dot(Color.rgb, 1.0);
     float3 Ratio = abs(Sum) > 0.0 ? Color / Sum : 1.0 / 3.0;
     float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
     float MaxColor = max(Color.r, max(Color.g, Color.b));
