@@ -487,20 +487,21 @@
         [unroll]
         for (int i = 0; i < ArrayCount; i++)
         {
-            // Spatial Weight
-            float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
-            float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
+            float Weight = 1.0;
 
-            // Range Weight using dynamically computed variance scale
+            // Range weight
             float2 Delta = ImageArray[i] - GuideCenter;
             float DistSqRange = dot(Delta, Delta);
             float WeightRange = 1.0 / (DistSqRange + SigmaSq);
+            Weight *= WeightRange;
 
-            // Combined Weight
-            float TotalWeight = WeightSpatial * WeightRange;
+            // Spatial weight
+            float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
+            float WeightSpatial = rsqrt(DistSqSpatial + 1.0);
+            Weight *= WeightSpatial;
 
-            BilateralSum += (ImageArray[i] * TotalWeight);
-            BilateralWeightSum += TotalWeight;
+            BilateralSum += (ImageArray[i] * Weight);
+            BilateralWeightSum += Weight;
         }
 
         return (BilateralWeightSum > 0.0) ? (BilateralSum / BilateralWeightSum) : Mean;
