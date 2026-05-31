@@ -494,7 +494,7 @@
             // Range Weight using dynamically computed variance scale
             float2 Delta = ImageArray[i] - GuideCenter;
             float DistSqRange = dot(Delta, Delta);
-            float WeightRange = exp(-DistSqRange * SigmaSq);
+            float WeightRange = 1.0 / (DistSqRange + SigmaSq);
 
             // Combined Weight
             float TotalWeight = WeightSpatial * WeightRange;
