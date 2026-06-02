@@ -428,10 +428,6 @@
         const float ArrayN = 1.0 / float(ArrayCount);
         const float VarianceN = 1.0 / (float(ArrayCount) - 1.0);
 
-        // Constants: Sensitivity and regularize variance to prevent division by zero
-        const float BaseSigmaR = 0.0;
-        const float SensitivityMultiplier = 1.0;
-
         // Precompute (static)
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
         float2 GuideCenter = tex2D(Guide, Tex).xy;
