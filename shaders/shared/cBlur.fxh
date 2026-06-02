@@ -476,6 +476,13 @@
             Variance += (dot(Diff, Diff) * VarianceN);
         }
 
+        // Optimized 2D Gaussian parameters
+        // G1: 2.0 * sqrt(x) * sqrt(x) -> 2.0 * x
+        float G1 = 2.0 * Variance;
+        float RcpG1 = 1.0 / G1;
+        // G2: 2.0 * x * pi
+        float G2 = 1.0 / (G1 * CMath_GetPi());
+
         float2 BilateralSum = 0.0;
         float BilateralWeightSum = 0.0;
 
@@ -488,12 +495,12 @@
             // Range weight
             float2 Delta = ImageArray[i] - GuideCenter;
             float DistSqRange = dot(Delta, Delta);
-            float WeightRange = 1.0 / (DistSqRange + Variance);
+            float WeightRange = G2 * exp(-DistSqRange * RcpG1);
             Weight *= WeightRange;
 
             // Spatial weight
             float DistSqSpatial = dot(OffsetArray[i], OffsetArray[i]);
-            float WeightSpatial = 1.0 / (DistSqSpatial + 1.0);
+            float WeightSpatial = G2 * exp(-DistSqSpatial * RcpG1);
             Weight *= WeightSpatial;
 
             BilateralSum += (ImageArray[i] * Weight);
