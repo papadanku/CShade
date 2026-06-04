@@ -425,12 +425,17 @@
         int Size;
     };
 
-    void CBlur_ComputeSideBilateralWindow(
+    struct CBlur_SideWindowBilateral
+    {
+        float2 Sum;
+        float SumWeight;
+    };
+
+    void CBlur_GetSideWindowBilateral(
+        in CBlur_SideWindowKernel Kernel,
         in float2 Guide,
         in float2 ImageArray[9],
-        in CBlur_SideWindowKernel Kernel,
-        out float2 Sum,
-        out float SumWeight
+        out CBlur_SideWindowBilateral Output
     )
     {
         // Constants: Mean
@@ -462,8 +467,8 @@
 
         // Initialize output data
         int ImageIndex = 0;
-        Sum = 0.0;
-        SumWeight = 0.0;
+        Output.Sum = 0.0;
+        Output.SumWeight = 0.0;
 
         [unroll]
         for (int y = 1; y >= -1; y--)
@@ -478,12 +483,12 @@
 
                 // Compute Weight (Range)
                 float2 Delta = ImageArray[ImageIndex] - Guide;
-                float2 DistSqRange = dot(Delta, Delta);
+                float DistSqRange = dot(Delta, Delta);
                 float WeightR = 1.0 / (DistSqRange + 1.0);
 
                 float Weight = WeightS * WeightR;
-                Sum += (ImageArray[ImageIndex] * Weight);
-                SumWeight += Weight;
+                Output.Sum += (ImageArray[ImageIndex] * Weight);
+                Output.SumWeight += Weight;
 
                 ImageIndex += 1;
             }
@@ -503,31 +508,33 @@
 
         int ImageIndex = 0;
         float2 ImageArray[ArrayCount];
-        float2 OffsetArray[ArrayCount];
-
-        [unroll]
-        for (int y = 1; y >= -1; y--)
-        {
-            [unroll]
-            for (int x = 1; x >= -1; x--)
-            {
-                float2 Offset = Tex + (float2(x, y) * PixelSize);
-
-                // Remap index on-the-fly so texture samples align perfectly
-                // with your row-major 0-8 Kernel mask layout.
-                int StandardIndex = (1 - y) * 3 + (x + 1);
-                ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
-                ImageIndex += 1;
-            }
-        }
+        float2 Reference = 0.0;
 
         /*
-            Gather samples and calculate mean motion vector
+            Gather samples
 
             0 1 2   (North-West  |  North  |  North-East)
             3 4 5   (   West     |  Center |     East   )
             6 7 8   (South-West  |  South  |  South-East)
         */
+
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            [unroll]
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
+
+                if ((x == 0) && y == 0)
+                {
+                    Reference = ImageArray[ImageIndex];
+                }
+
+                ImageIndex += 1;
+            }
+        }
 
         // Construct array of kernels
         CBlur_SideWindowKernel Kernel[8];
@@ -549,32 +556,26 @@
         Kernel[7].Size = 4;
 
         // Calculate Side Winder filter
-        float2 Mean = 0.0;
-        float Variance = 1e10;
+        float2 Mean = Reference;
+        bool AVariance = false;
+        float Variance = 0.0;
 
         [unroll]
         for (int i = 0; i < 8; i++)
         {
-            float2 Sum = 0.0;
-            float SumWeight = 0.0;
-
-            CBlur_ComputeSideBilateralWindow(
-                GuideTexture,
-                ImageArray,
-                Kernel[i],
-                Sum,
-                SumWeight
-            );
+            CBlur_SideWindowBilateral SideWindow;
+            CBlur_GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
 
             // Avoid division by zero on empty/low weight regions
-            if (SumWeight > 0.0)
+            if (SideWindow.SumWeight > 0.0)
             {
-                float2 WindowMean = Sum / SumWeight;
-                float2 Delta = WindowMean - GuideTexture;
+                float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
+                float2 Delta = WindowMean - Reference;
                 float WindowVariance = dot(Delta, Delta);
 
-                if (WindowVariance < Variance)
+                if (!AVariance || (WindowVariance < Variance))
                 {
+                    AVariance = true;
                     Variance = WindowVariance;
                     Mean = WindowMean;
                 }
