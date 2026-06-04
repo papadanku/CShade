@@ -501,14 +501,18 @@
         float2 Tex
     )
     {
-        // Precompute (static)
+        // Precompute (constants)
         const int ArrayCount = 9;
+        const int KernelSizeSide = 6;
+        const int KernelSizeCorner = 4;
+
+        // Precompute (static)
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
         float2 GuideTexture = tex2D(Guide, Tex).xy;
 
-        int ImageIndex = 0;
         float2 ImageArray[ArrayCount];
         float2 Reference;
+        int ImageIndex = 0;
 
         /*
             Gather samples
@@ -539,21 +543,21 @@
         // Construct array of kernels
         CBlur_SideWindowKernel Kernel[8];
         Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
-        Kernel[0].Size = 6;
+        Kernel[0].Size = KernelSizeSide;
         Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
-        Kernel[1].Size = 6;
+        Kernel[1].Size = KernelSizeSide;
         Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
-        Kernel[2].Size = 6;
+        Kernel[2].Size = KernelSizeSide;
         Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
-        Kernel[3].Size = 6;
+        Kernel[3].Size = KernelSizeSide;
         Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
-        Kernel[4].Size = 4;
+        Kernel[4].Size = KernelSizeCorner;
         Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
-        Kernel[5].Size = 4;
+        Kernel[5].Size = KernelSizeCorner;
         Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
-        Kernel[6].Size = 4;
+        Kernel[6].Size = KernelSizeCorner;
         Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
-        Kernel[7].Size = 4;
+        Kernel[7].Size = KernelSizeCorner;
 
         // Calculate Side Winder filter
         float2 Mean = Reference;
