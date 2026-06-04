@@ -471,10 +471,10 @@
         Output.SumWeight = 0.0;
 
         [unroll]
-        for (int y = 1; y >= -1; y--)
+        for (int y = -1; y <= 1; y++)
         {
             [unroll]
-            for (int x = 1; x >= -1; x--)
+            for (int x = -1; x <= 1; x++)
             {
                 // Compute Weight (Spatial)
                 float2 Offset = float2(x, y);
