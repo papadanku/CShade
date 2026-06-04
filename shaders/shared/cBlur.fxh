@@ -508,7 +508,7 @@
 
         int ImageIndex = 0;
         float2 ImageArray[ArrayCount];
-        float2 Reference = 0.0;
+        float2 Reference;
 
         /*
             Gather samples
