@@ -515,11 +515,11 @@
         int ImageIndex = 0;
 
         /*
-            Gather samples
+            Gather samples:
 
-            0 1 2   (North-West  |  North  |  North-East)
-            3 4 5   (   West     |  Center |     East   )
-            6 7 8   (South-West  |  South  |  South-East)
+            0 1 2 [ North West | North  | North East ]
+            3 4 5 [    West    | Center |    East    ]
+            6 7 8 [ South West | South  | South East ]
         */
 
         [unroll]
@@ -540,7 +540,20 @@
             }
         }
 
-        // Construct array of kernels
+        /*
+            Construct array of kernels:
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
         CBlur_SideWindowKernel Kernel[8];
         Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
         Kernel[0].Size = KernelSizeSide;
