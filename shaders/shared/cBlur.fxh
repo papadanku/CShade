@@ -495,6 +495,111 @@
         }
     }
 
+    float2 CBlur_GetSideWindowBoxXY(sampler2D SampleSource, float2 Tex)
+    {
+        // Precompute (static)
+        const int ArrayCount = 9;
+        float2 PixelSize = fwidth(Tex.xy);
+
+        int ImageIndex = 0;
+        float2 ImageArray[ArrayCount];
+        float2 Reference;
+
+        /*
+            Gather samples:
+
+            0 1 2 [ North West | North  | North East ]
+            3 4 5 [    West    | Center |    East    ]
+            6 7 8 [ South West | South  | South East ]
+        */
+
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            [unroll]
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                ImageArray[ImageIndex] = tex2D(SampleSource, Offset).xy;
+
+                if ((x == 0) && y == 0)
+                {
+                    Reference = ImageArray[ImageIndex];
+                }
+
+                ImageIndex += 1;
+            }
+        }
+
+        /*
+            Construct array of kernels:
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
+        const int KernelSizeSide = 6;
+        const int KernelSizeCorner = 4;
+
+        CBlur_SideWindowKernel Kernel[8];
+        Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
+        Kernel[0].Size = KernelSizeSide;
+        Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
+        Kernel[1].Size = KernelSizeSide;
+        Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
+        Kernel[2].Size = KernelSizeSide;
+        Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
+        Kernel[3].Size = KernelSizeSide;
+        Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
+        Kernel[4].Size = KernelSizeCorner;
+        Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
+        Kernel[5].Size = KernelSizeCorner;
+        Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
+        Kernel[6].Size = KernelSizeCorner;
+        Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
+        Kernel[7].Size = KernelSizeCorner;
+
+        // Calculate Side Window filter
+        float2 Mean = Reference;
+        bool AVariance = false;
+        float Variance = 0.0;
+
+        [unroll]
+        for (int i = 0; i < 8; i++)
+        {
+            float2 WindowMean = 0.0;
+
+            [unroll]
+            for (int j = 0; j < ArrayCount; j++)
+            {
+                if (Kernel[i].Weights[j] == 1)
+                {
+                    float Weight = 1.0 / float(Kernel[i].Size);
+                    WindowMean += (ImageArray[j] * Weight);
+                }
+            }
+
+            float2 Delta = WindowMean - Reference;
+            float WindowVariance = dot(Delta, Delta);
+
+            if (!AVariance || (WindowVariance < Variance))
+            {
+                AVariance = true;
+                Variance = WindowVariance;
+                Mean = WindowMean;
+            }
+        }
+
+        return Mean;
+    }
+
     float2 CBlur_GetSelfBilateralUpsampleXY(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
