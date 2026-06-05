@@ -162,7 +162,7 @@ void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
 
     float Sum = dot(Color.rgb, 1.0);
-    float3 Ratio = abs(Sum) > 0.0 ? Color / Sum : 1.0 / 3.0;
+    float3 Ratio = abs(Sum) > 0.0 ? Color.rgb / Sum : 1.0 / 3.0;
     float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
     float MaxColor = max(Color.r, max(Color.g, Color.b));
 
@@ -204,9 +204,9 @@ void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output = tex2D(SampleTempTex1, Input.Tex0.xy);
 }
 
-void PS_Median(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+void PS_Upsample0(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetMedian(SampleGuide, Input.Tex0).xy;
+    Output = CBlur_GetSideWindowBoxXY(SampleGuide, Input.Tex0).xy;
 }
 
 void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
@@ -507,10 +507,10 @@ technique CShade_Flow
         RenderTarget0 = PreviousFrameTex;
     }
 
-    pass Median
+    pass BilateralUpsample0
     {
         VertexShader = CShade_VS_Quad;
-        PixelShader = PS_Median;
+        PixelShader = PS_Upsample0;
         RenderTarget0 = TempTex5_RG16F;
     }
 
