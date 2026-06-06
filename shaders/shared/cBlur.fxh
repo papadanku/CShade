@@ -484,7 +484,7 @@
                 // Compute Weight (Range)
                 float2 Delta = ImageArray[ImageIndex] - Guide;
                 float DistSqRange = dot(Delta, Delta);
-                float WeightR = 1.0 / (DistSqRange + 1.0);
+                float WeightR = 1.0 / (DistSqRange + Variance);
 
                 float Weight = WeightS * WeightR;
                 Output.Sum += (ImageArray[ImageIndex] * Weight);
