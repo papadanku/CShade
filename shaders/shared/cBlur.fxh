@@ -479,14 +479,22 @@
                 // Compute Weight (Spatial)
                 float2 Offset = float2(x, y);
                 float DistSqSpatial = dot(Offset, Offset);
-                float WeightS = 1.0 / (DistSqSpatial + Variance);
+                float WeightSpatial = DistSqSpatial + Variance;
 
                 // Compute Weight (Range)
                 float2 Delta = ImageArray[ImageIndex] - Guide;
                 float DistSqRange = dot(Delta, Delta);
-                float WeightR = 1.0 / (DistSqRange + Variance);
+                float WeightRange = DistSqRange + Variance;
 
-                float Weight = WeightS * WeightR;
+                /*
+                    Defer the reciprocal. The following are identical:
+
+                    (1 / a) * (1 / b)
+                    1 / (a * b)
+                */
+                float Weight = 1.0 / (WeightSpatial * WeightRange);
+
+                // Accumulate
                 Output.Sum += (ImageArray[ImageIndex] * Weight);
                 Output.SumWeight += Weight;
 
@@ -567,9 +575,9 @@
         Kernel[7].Size = KernelSizeCorner;
 
         // Calculate Side Window filter
-        float2 Mean = Reference;
         bool AVariance = false;
         float Variance = 0.0;
+        float2 Mean;
 
         [unroll]
         for (int i = 0; i < 8; i++)
