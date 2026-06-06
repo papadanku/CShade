@@ -184,7 +184,7 @@
             float4 It = 0.0;
 
             // Calculate bilateral weighting
-            float Weight = exp2(-(abs(P[i].x) + abs(P[i].y)));
+            float Weight = exp2(-(abs(Offset.x) + abs(Offset.y)));
 
             // Calculate range weights
             if (!IsCenter)
@@ -194,9 +194,6 @@
                 It = R1 - CenterI;
                 Weight *= (1.0 / (1.0 + dot(It, It)));
             }
-
-            // Immediately sum the weight
-            SumW += Weight;
 
             // Immediately calculate spatial gradients
             float4 Ix = (East * 0.5) - (West * 0.5);
@@ -209,6 +206,7 @@
             IyIy += (dot(Iy, Iy) * Weight);
             IyIt += (dot(Iy, It) * Weight);
             IxIy += (dot(Ix, Iy) * Weight);
+            SumW += Weight;
         }
 
         // Check if SumW is not 0
