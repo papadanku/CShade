@@ -180,7 +180,8 @@
             float2 Offset = float2(P[i].xy);
 
             // Get dynamic data
-            float4 R1 = IsCenter ? CenterI : tex2D(SampleI, WarpTex + (float2(P[i].xy) * PixelSize));
+            float2 R1Tex = WarpTex + (Offset * PixelSize);
+            float4 R1 = IsCenter ? CenterI : tex2D(SampleI, R1Tex);
             float4 It = 0.0;
 
             // Calculate bilateral weighting
