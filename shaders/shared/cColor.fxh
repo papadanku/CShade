@@ -246,7 +246,7 @@
         return SRGB;
     }
 
-    float3 CColor_RGBtoHSV(float3 RGB)
+    float3 CColor_RGBtoHSV(float3 RGB, bool NormalizeHue)
     {
         float MinRGB = min(min(RGB.r, RGB.g), RGB.b);
         float MaxRGB = max(max(RGB.r, RGB.g), RGB.b);
@@ -276,7 +276,7 @@
         }
 
         float3 Output = 0.0;
-        Output.x = Hue;
+        Output.x = NormalizeHue ? Hue / 360.0 : Hue;
         Output.y = Saturation;
         Output.z = MaxRGB;
         return Output;
