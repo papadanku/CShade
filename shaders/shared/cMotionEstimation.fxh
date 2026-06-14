@@ -150,7 +150,7 @@
         float IxIy = 0.0;
         float IxIt = 0.0;
         float IyIt = 0.0;
-        float WAcc = 0.0;
+        float WSum = 0.0;
 
         // Decode from FLT16
         Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
@@ -197,7 +197,7 @@
             }
 
             // Accumulate weight
-            WAcc += Weight;
+            WSum += Weight;
 
             // Immediately calculate spatial gradients
             float4 Ix = (West * 0.5) - (East * 0.5);
@@ -212,15 +212,15 @@
             IxIy += (dot(Ix, Iy) * Weight);
         }
 
-        // Check if WAcc is not 0
-        WAcc = (WAcc == 0.0) ? 0.0 : 1.0 / WAcc;
+        // Check if WSum is not 0
+        WSum = (WSum == 0.0) ? 0.0 : 1.0 / WSum;
 
         // Normalized weighted variables
-        IxIx *= WAcc;
-        IyIy *= WAcc;
-        IxIy *= WAcc;
-        IxIt *= WAcc;
-        IyIt *= WAcc;
+        IxIx *= WSum;
+        IyIy *= WSum;
+        IxIy *= WSum;
+        IxIt *= WSum;
+        IyIt *= WSum;
 
         /*
             Calculate Lucas-Kanade matrix
