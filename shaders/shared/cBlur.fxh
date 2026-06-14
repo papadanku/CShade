@@ -440,7 +440,7 @@
     {
         // Constants: Mean
         const int KernelSize = 9;
-        const float Epsilon = 1e-7;
+        const float Epsilon = 1.0;
         const float MeanN = 1.0 / Kernel.Size;
         const float VarianceN = 1.0 / (Kernel.Size - 1.0);
 
@@ -470,37 +470,151 @@
         Output.Sum = 0.0;
         Output.SumWeight = 0.0;
 
+        // Pre-compute Spatial distances
+        // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
+        float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
+
         [unroll]
         for (int y = -1; y <= 1; y++)
         {
             [unroll]
             for (int x = -1; x <= 1; x++)
             {
-                // Compute Weight (Spatial)
-                float2 Offset = float2(x, y);
-                float DistSqSpatial = dot(Offset, Offset);
-                float WeightSpatial = DistSqSpatial + Variance;
+                if (Kernel.Weights[ImageIndex] == 1)
+                {
 
-                // Compute Weight (Range)
-                float2 Delta = ImageArray[ImageIndex] - Guide;
-                float DistSqRange = dot(Delta, Delta);
-                float WeightRange = DistSqRange + Variance;
+                    // Compute Weight (Range)
+                    float2 Delta = ImageArray[ImageIndex] - Guide;
+                    float DistSqRange = dot(Delta, Delta);
+                    float WeightRange = 1.0 / (DistSqRange + Variance);
 
-                /*
-                    Defer the reciprocal. The following are identical:
+                    // Compute Weight (Spatial)
+                    int SpatialOffset = abs(x) + abs(y);
+                    float WeightSpatial = SpatialDistances[SpatialOffset];
 
-                    (1 / a) * (1 / b)
-                    1 / (a * b)
-                */
-                float Weight = 1.0 / (WeightSpatial * WeightRange);
+                    /*
+                        Defer the reciprocal. The following are identical:
 
-                // Accumulate
-                Output.Sum += (ImageArray[ImageIndex] * Weight);
-                Output.SumWeight += Weight;
+                        (1 / a) * (1 / b)
+                        1 / (a * b)
+                    */
+                    float Weight = WeightSpatial * WeightRange;
+
+                    // Accumulate
+                    Output.Sum += (ImageArray[ImageIndex] * Weight);
+                    Output.SumWeight += Weight;
+                }
 
                 ImageIndex += 1;
             }
         }
+    }
+
+    float2 CBlur_GetSelfBilateralUpsampleXY(
+        sampler Image, // Low-res motion vectors (e.g., 1/2 size)
+        sampler Guide, // High-res structural guide (e.g., full size)
+        float2 Tex
+    )
+    {
+        // Precompute (constants)
+        const int ArrayCount = 9;
+        const int KernelSizeSide = 6;
+        const int KernelSizeCorner = 4;
+
+        // Precompute (static)
+        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+        float2 GuideTexture = tex2D(Guide, Tex).xy;
+
+        float2 ImageArray[ArrayCount];
+        float2 Reference;
+        int ImageIndex = 0;
+
+        /*
+            Gather samples:
+
+            0 1 2 [ North West | North  | North East ]
+            3 4 5 [    West    | Center |    East    ]
+            6 7 8 [ South West | South  | South East ]
+        */
+
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            [unroll]
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
+
+                if ((x == 0) && y == 0)
+                {
+                    Reference = ImageArray[ImageIndex];
+                }
+
+                ImageIndex += 1;
+            }
+        }
+
+        /*
+            Construct array of kernels:
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
+        CBlur_SideWindowKernel Kernel[8];
+        Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
+        Kernel[0].Size = KernelSizeSide;
+        Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
+        Kernel[1].Size = KernelSizeSide;
+        Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
+        Kernel[2].Size = KernelSizeSide;
+        Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
+        Kernel[3].Size = KernelSizeSide;
+        Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
+        Kernel[4].Size = KernelSizeCorner;
+        Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
+        Kernel[5].Size = KernelSizeCorner;
+        Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
+        Kernel[6].Size = KernelSizeCorner;
+        Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
+        Kernel[7].Size = KernelSizeCorner;
+
+        // Calculate Side Winder filter
+        float2 NearestWindow;
+        bool AVariance = false;
+        float Variance = 0.0;
+
+        [unroll]
+        for (int i = 0; i < 8; i++)
+        {
+            CBlur_SideWindowBilateral SideWindow;
+            CBlur_GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
+
+            // Avoid division by zero on empty/low weight regions
+            if (SideWindow.SumWeight > 0.0)
+            {
+                float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
+                float2 Delta = WindowMean - GuideTexture;
+                float WindowVariance = dot(Delta, Delta);
+
+                if (!AVariance || (WindowVariance < Variance))
+                {
+                    AVariance = true;
+                    Variance = WindowVariance;
+                    NearestWindow = WindowMean;
+                }
+            }
+        }
+
+        return NearestWindow;
     }
 
     float2 CBlur_GetSideWindowBoxXY(sampler2D SampleSource, float2 Tex)
@@ -607,114 +721,6 @@
 
         return Mean;
     }
-
-    float2 CBlur_GetSelfBilateralUpsampleXY(
-        sampler Image, // Low-res motion vectors (e.g., 1/2 size)
-        sampler Guide, // High-res structural guide (e.g., full size)
-        float2 Tex
-    )
-    {
-        // Precompute (constants)
-        const int ArrayCount = 9;
-        const int KernelSizeSide = 6;
-        const int KernelSizeCorner = 4;
-
-        // Precompute (static)
-        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-        float2 GuideTexture = tex2D(Guide, Tex).xy;
-
-        float2 ImageArray[ArrayCount];
-        float2 Reference;
-        int ImageIndex = 0;
-
-        /*
-            Gather samples:
-
-            0 1 2 [ North West | North  | North East ]
-            3 4 5 [    West    | Center |    East    ]
-            6 7 8 [ South West | South  | South East ]
-        */
-
-        [unroll]
-        for (int y = -1; y <= 1; y++)
-        {
-            [unroll]
-            for (int x = -1; x <= 1; x++)
-            {
-                float2 Offset = Tex + (float2(x, y) * PixelSize);
-                ImageArray[ImageIndex] = tex2D(Image, Offset).xy;
-
-                if ((x == 0) && y == 0)
-                {
-                    Reference = ImageArray[ImageIndex];
-                }
-
-                ImageIndex += 1;
-            }
-        }
-
-        /*
-            Construct array of kernels:
-
-            NORTH   SOUTH   EAST    WEST
-            x x x   - - -   - x x   x x -
-            x x x   x x x   - x x   x x -
-            - - -   x x x   - x x   x x -
-
-            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            x x -       - x x       - - -       - - -
-            x x -       - x x       x x -       - x x
-            - - -       - - -       x x -       - x x
-        */
-
-        CBlur_SideWindowKernel Kernel[8];
-        Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
-        Kernel[0].Size = KernelSizeSide;
-        Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
-        Kernel[1].Size = KernelSizeSide;
-        Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
-        Kernel[2].Size = KernelSizeSide;
-        Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
-        Kernel[3].Size = KernelSizeSide;
-        Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
-        Kernel[4].Size = KernelSizeCorner;
-        Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
-        Kernel[5].Size = KernelSizeCorner;
-        Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
-        Kernel[6].Size = KernelSizeCorner;
-        Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
-        Kernel[7].Size = KernelSizeCorner;
-
-        // Calculate Side Winder filter
-        float2 Mean = Reference;
-        bool AVariance = false;
-        float Variance = 0.0;
-
-        [unroll]
-        for (int i = 0; i < 8; i++)
-        {
-            CBlur_SideWindowBilateral SideWindow;
-            CBlur_GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
-
-            // Avoid division by zero on empty/low weight regions
-            if (SideWindow.SumWeight > 0.0)
-            {
-                float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
-                float2 Delta = WindowMean - Reference;
-                float WindowVariance = dot(Delta, Delta);
-
-                if (!AVariance || (WindowVariance < Variance))
-                {
-                    AVariance = true;
-                    Variance = WindowVariance;
-                    Mean = WindowMean;
-                }
-            }
-        }
-
-        return Mean;
-    }
-
     // Initialize variables to compute
     float4 CBlur_GetJointBilateralUpsample(
         sampler Image, // This should be 1/2 the size as GuideHigh
