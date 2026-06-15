@@ -86,7 +86,7 @@ float3 DiplayChromaSpace(float4 Color, float4 Gamma)
             Output.rg = CColor_RGBtoHSL(Color).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Output.rg = CColor_RGBtoHSV(Color).rg;
+            Output.rg = CColor_RGBtoHSV(Color, true).rg;
             break;
         case 13: // CoCg (XY)
             Output.rg = CColor_SRGBtoYCOCGR(Gamma, true).yz;

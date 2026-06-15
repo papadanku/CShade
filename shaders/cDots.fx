@@ -250,13 +250,13 @@ void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         switch(_Select)
         {
             case 0:
-                Output.a = CColor_RGBtoHSV(Output.rgb).r;
+                Output.a = CColor_RGBtoHSV(Output.rgb, true).r;
                 break;
             case 1:
-                Output.a = CColor_RGBtoHSV(Output.rgb).g;
+                Output.a = CColor_RGBtoHSV(Output.rgb, true).g;
                 break;
             case 2:
-                Output.a = CColor_RGBtoHSV(Output.rgb).b;
+                Output.a = CColor_RGBtoHSV(Output.rgb, true).b;
                 break;
             case 3:
                 Output.a = CColor_RGBtoHSL(Output.rgb).r;

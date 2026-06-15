@@ -74,13 +74,13 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
             Color.a = 1.0;
             break;
         case 1:
-            Color.a = CColor_RGBtoHSV(Color.rgb).r;
+            Color.a = CColor_RGBtoHSV(Color.rgb, true).r;
             break;
         case 2:
-            Color.a = CColor_RGBtoHSV(Color.rgb).g;
+            Color.a = CColor_RGBtoHSV(Color.rgb, true).g;
             break;
         case 3:
-            Color.a = CColor_RGBtoHSV(Color.rgb).b;
+            Color.a = CColor_RGBtoHSV(Color.rgb, true).b;
             break;
         case 4:
             Color.a = CColor_RGBtoHSL(Color.rgb).r;
