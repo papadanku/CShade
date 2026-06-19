@@ -122,20 +122,20 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     [Textures and samplers]
 */
 
-CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGBA8, CSHADE_BUFFER_SIZE_1, RGBA8, 8)
+CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex3_RG16F, CSHADE_BUFFER_SIZE_4, RG16F, 1)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex4_RG16F, CSHADE_BUFFER_SIZE_5, RG16F, 1)
 CSHADE_CREATE_TEXTURE_POOLED(TempTex5_RG16F, CSHADE_BUFFER_SIZE_6, RG16F, 1)
 
-CSHADE_CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleTempTex1, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_TEXTURE(PreviousFrameTex, CSHADE_BUFFER_SIZE_1, RGBA8, 8)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
 CSHADE_CREATE_SAMPLER_LODBIAS(SamplePreviousFrameTex, PreviousFrameTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
-CSHADE_CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, TempTex1_RGBA8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CSHADE_CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
 
 CSHADE_CREATE_TEXTURE(FlowTex, CSHADE_BUFFER_SIZE_3, RG16F, 8)
 CSHADE_CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
@@ -152,14 +152,8 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex, SHADER_WARP_SAMPLING,
 void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-
-    float Sum = dot(Color.rgb, 1.0);
-    float3 Ratio = abs(Sum) > 0.0 ? Color.rgb / Sum : 1.0 / 3.0;
-    float MaxRatio = max(Ratio.r, max(Ratio.g, Ratio.b));
-    float MaxColor = max(Color.r, max(Color.g, Color.b));
-
-    Output.rgb = Ratio / MaxRatio;
-    Output.a = CColor_EncodeLogC(MaxColor) / CColor_EncodeLogC(1.0);
+    Output.rgb = sqrt(Color.rgb);
+    Output.a = 1.0;
 }
 
 // Run Lucas-Kanade
@@ -371,7 +365,7 @@ technique CShade_KinoDatamosh
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
-    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGBA8)
+    CREATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
 
     CREATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
     CREATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)

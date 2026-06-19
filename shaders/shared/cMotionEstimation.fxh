@@ -59,6 +59,14 @@
         Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
+    float3 CMotionExtimation_SRGBtoORGB(sampler2D Image, float2 Tex)
+    {
+        float3 Color = tex2D(Image, Tex).rgb;
+        Color *= Color;
+        Color = CColor_RGBtoORGB(Color);
+        return Color;
+    }
+
     float2 CMotionEstimation_GetLucasKanade(
         bool IsCoarse,
         float2 MainTex,
@@ -67,9 +75,6 @@
         sampler2D SampleI
     )
     {
-        // Get gradient information
-        float2 PixelSize = fwidth(MainTex);
-
         /*
             * = Indecies for calculating the temporal gradient (IT)
             - = Unused indecies
@@ -94,37 +99,7 @@
         // Initiate Cache
         const int CacheWidth = 5;
         const int CacheIndexSize = CacheWidth * CacheWidth;
-        float4 Cache[CacheIndexSize];
-
-        // Create Cache
-        // This unrolled version samples and assigns to the Cache array.
-        // The four corners of the 5x5 grid are skipped in the original code,
-        // so they are not included in this rewrite.
-        Cache[1] = tex2D(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-        Cache[2] = tex2D(SampleT, MainTex + (float2(0, -2) * PixelSize));
-        Cache[3] = tex2D(SampleT, MainTex + (float2(1, -2) * PixelSize));
-
-        Cache[5] = tex2D(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-        Cache[6] = tex2D(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-        Cache[7] = tex2D(SampleT, MainTex + (float2(0, -1) * PixelSize));
-        Cache[8] = tex2D(SampleT, MainTex + (float2(1, -1) * PixelSize));
-        Cache[9] = tex2D(SampleT, MainTex + (float2(2, -1) * PixelSize));
-
-        Cache[10] = tex2D(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-        Cache[11] = tex2D(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-        Cache[12] = tex2D(SampleT, MainTex + (float2(0, 0) * PixelSize));
-        Cache[13] = tex2D(SampleT, MainTex + (float2(1, 0) * PixelSize));
-        Cache[14] = tex2D(SampleT, MainTex + (float2(2, 0) * PixelSize));
-
-        Cache[15] = tex2D(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-        Cache[16] = tex2D(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-        Cache[17] = tex2D(SampleT, MainTex + (float2(0, 1) * PixelSize));
-        Cache[18] = tex2D(SampleT, MainTex + (float2(1, 1) * PixelSize));
-        Cache[19] = tex2D(SampleT, MainTex + (float2(2, 1) * PixelSize));
-
-        Cache[21] = tex2D(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-        Cache[22] = tex2D(SampleT, MainTex + (float2(0, 2) * PixelSize));
-        Cache[23] = tex2D(SampleT, MainTex + (float2(1, 2) * PixelSize));
+        float3 Cache[CacheIndexSize];
 
         // Loop over the starred template areas
         const int FetchGridWidth = 3;
@@ -133,16 +108,58 @@
         // .xy = TemplateGridPos; .zw = FetchPos
         const int4 P[FetchGridSize] =
         {
+            int4(int2(0, 0), int2(2, 2)),
             int4(int2(-1, -1), int2(1, 1)),
             int4(int2(0, -1), int2(2, 1)),
             int4(int2(1, -1), int2(3, 1)),
             int4(int2(-1, 0), int2(1, 2)),
-            int4(int2(0, 0), int2(2, 2)),
             int4(int2(1, 0), int2(3, 2)),
             int4(int2(-1, 1), int2(1, 3)),
             int4(int2(0, 1), int2(2, 3)),
             int4(int2(1, 1), int2(3, 3))
         };
+
+        const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
+
+        // Decode from FLT16
+        Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
+
+        // Calculate warped texture coordinates & gradient information
+        float2 WarpTex = 0.0;
+		WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
+        WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
+        WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
+        float2 PixelSize = fwidth(MainTex);
+
+        // Create Cache
+        // This unrolled version samples and assigns to the Cache array.
+        // The four corners of the 5x5 grid are skipped in the original code,
+        // so they are not included in this rewrite.
+        Cache[1] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+        Cache[2] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -2) * PixelSize));
+        Cache[3] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -2) * PixelSize));
+
+        Cache[5] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+        Cache[6] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+        Cache[7] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -1) * PixelSize));
+        Cache[8] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -1) * PixelSize));
+        Cache[9] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, -1) * PixelSize));
+
+        Cache[10] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+        Cache[11] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+        Cache[12] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 0) * PixelSize));
+        Cache[13] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 0) * PixelSize));
+        Cache[14] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 0) * PixelSize));
+
+        Cache[15] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+        Cache[16] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+        Cache[17] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 1) * PixelSize));
+        Cache[18] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 1) * PixelSize));
+        Cache[19] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 1) * PixelSize));
+
+        Cache[21] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+        Cache[22] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 2) * PixelSize));
+        Cache[23] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
         // Initialize variables
         float IxIx = 0.0;
@@ -152,56 +169,51 @@
         float IyIt = 0.0;
         float WSum = 0.0;
 
-        // Decode from FLT16
-        Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
-
-        // Calculate warped texture coordinates
-        float2 WarpTex = MainTex;
-        WarpTex -= 0.5; // Pull into [-0.5, 0.5) range
-        WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
-        WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-
         // Get center textures (this is for the spatial weighting)
-        float4 CenterT = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float4 CenterI = tex2D(SampleI, WarpTex);
+        float3 CenterT = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+        float3 CenterI = CMotionExtimation_SRGBtoORGB(SampleI, WarpTex);
 
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
             // Get cached data
-            float4 North = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
-            float4 South = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
-            float4 East = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
-            float4 West = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
-            float4 R0 = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+            float3 North = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+            float3 South = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+            float3 East = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+            float3 West = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+            float3 R0 = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
             // Get R0 and R1 to calculate temporal gradient
             bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
+            int OffsetID = abs(P[i].x) + abs(P[i].y);
             float2 Offset = float2(P[i].xy);
 
             // Get dynamic data
             float2 R1Tex = WarpTex + (Offset * PixelSize);
-            float4 R1 = IsCenter ? CenterI : tex2D(SampleI, R1Tex);
-            float4 It = 0.0;
+            float3 R1 = IsCenter ? CenterI : CMotionExtimation_SRGBtoORGB(SampleI, R1Tex);
+            float3 It = 0.0;
 
             // Calculate bilateral weighting
-            float Weight = exp2(-(abs(Offset.x) + abs(Offset.y)));
+            float Weight = 1.0;
 
             // Calculate range weights
             if (!IsCenter)
             {
+                float SumIT = 0.0;
                 It = R0 - CenterT;
-                Weight *= (1.0 / (1.0 + dot(It, It)));
+                SumIT += dot(It, It);
                 It = R1 - CenterI;
-                Weight *= (1.0 / (1.0 + dot(It, It)));
+                SumIT += dot(It, It);
+                SumIT = 1.0 / (1.0 + SumIT);
+                Weight *= SumIT;
             }
 
             // Accumulate weight
-            WSum += Weight;
+            WSum += (Weight * SWeights[OffsetID]);
 
             // Immediately calculate spatial gradients
-            float4 Ix = (West * 0.5) - (East * 0.5);
-            float4 Iy = (North * 0.5) - (South * 0.5);
+            float3 Ix = (West * 0.5) - (East * 0.5);
+            float3 Iy = (North * 0.5) - (South * 0.5);
             It = R1 - R0;
 
             // Summate the weighted contributions

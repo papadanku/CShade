@@ -491,13 +491,6 @@
                     // Compute Weight (Spatial)
                     int SpatialOffset = abs(x) + abs(y);
                     float WeightSpatial = SpatialDistances[SpatialOffset];
-
-                    /*
-                        Defer the reciprocal. The following are identical:
-
-                        (1 / a) * (1 / b)
-                        1 / (a * b)
-                    */
                     float Weight = WeightSpatial * WeightRange;
 
                     // Accumulate

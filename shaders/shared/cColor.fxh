@@ -194,6 +194,15 @@
         THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
     */
 
+    float3 CColor_RGBtoORGB(float3 RGB)
+    {
+        float T = RGB.r + RGB.g;
+        RGB.y = (RGB.r * 2.0) - T;
+        RGB.x = RGB.b + T;
+        RGB.z = T - (RGB.b * 2.0);
+        return RGB;
+    }
+
     /*
         "Recommendation T.832 (06/2019)". p. 185 Table D.6 – Pseudocode for function FwdColorFmtConvert1().
 
@@ -220,16 +229,20 @@
 
     float3 CColor_SRGBtoYCOCGR(float3 SRGB, bool NormalizeOutput)
     {
-        float3 YCoCgR;
-        float Temp;
+        float3 YCoCg;
+        float T;
 
-        YCoCgR.y = SRGB.r - SRGB.b;
-        Temp = SRGB.b + (YCoCgR.y * 0.5);
-        YCoCgR.z = SRGB.g - Temp;
-        YCoCgR.x = Temp + (YCoCgR.z * 0.5);
-        YCoCgR.yz = NormalizeOutput ? CMath_SNORMtoUNORM_FLT2(YCoCgR.yz) : YCoCgR.yz;
+        YCoCg[1] = SRGB.r - SRGB.b;
+        T = SRGB.b + (YCoCg[1] * 0.5);
+        YCoCg[2] = SRGB.g - T;
+        YCoCg[0] = T + (YCoCg[2] * 0.5);
 
-        return YCoCgR;
+        if (NormalizeOutput)
+        {
+            YCoCg.yz = saturate((YCoCg.yz * float2(0.5, 1.0)) + 0.5);
+        }
+
+        return YCoCg;
     }
 
     float3 CColor_YCOCGRtoSRGB(float3 YCoCgR, bool NormalizedInput)
