@@ -108,11 +108,11 @@
         // .xy = TemplateGridPos; .zw = FetchPos
         const int4 P[FetchGridSize] =
         {
-            int4(int2(0, 0), int2(2, 2)),
             int4(int2(-1, -1), int2(1, 1)),
             int4(int2(0, -1), int2(2, 1)),
             int4(int2(1, -1), int2(3, 1)),
             int4(int2(-1, 0), int2(1, 2)),
+            int4(int2(0, 0), int2(2, 2)),
             int4(int2(1, 0), int2(3, 2)),
             int4(int2(-1, 1), int2(1, 3)),
             int4(int2(0, 1), int2(2, 3)),
