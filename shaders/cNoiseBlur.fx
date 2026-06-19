@@ -82,7 +82,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     const int Taps = 4;
     const int Sum = Taps - 1;
 
-    float Noise = Pi2 * CMath_GetHash_FLT1(Input.HPos.xy, 0.0);
+    float Noise = Pi2 * CMath_GetInterleavedGradientNoise(Input.HPos.xy);
     float2 UNormTex = CMath_UNORMtoSNORM_FLT2(Input.Tex0);
 
     float2 Rotation = 0.0;
@@ -113,10 +113,10 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             Shift = CMath_UNORMtoSNORM_FLT2(Shift);
 
             float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
-            DiskShift = mul(DiskShift * 3.0, RotationMatrix);
             DiskShift *= Falloff;
             DiskShift *= _Radius;
             DiskShift.x *= AspectRatio;
+            DiskShift = mul(DiskShift * 3.0, RotationMatrix);
 
             float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
             Output += tex2D(CShade_SampleColorTex, FetchTex);

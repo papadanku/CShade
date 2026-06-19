@@ -387,6 +387,17 @@
     }
 
     /*
+        Interleaved Gradient Noise Dithering
+
+        http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
+    */
+
+    float CMath_GetInterleavedGradientNoise(float2 Position)
+    {
+        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
+    }
+
+    /*
         http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/
         https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
     */
@@ -438,17 +449,6 @@
 
         // Convert from polar to Cartesian coordinates
         return R * float2(cos(Theta), sin(Theta));
-    }
-
-    /*
-        Interleaved Gradient Noise Dithering
-
-        http://www.iryoku.com/downloads/Next-Generation-Post-Processing-in-Call-of-Duty-Advanced-Warfare-v18.pptx
-    */
-
-    float CMath_GetInterleavedGradientNoise(float2 Position)
-    {
-        return frac(52.9829189 * frac(dot(Position, float2(0.06711056, 0.00583715))));
     }
 
     /*

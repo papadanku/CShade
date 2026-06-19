@@ -14,14 +14,20 @@
         - Subsequent levels and the post-filter upsampling will address the undersampled regions.
         - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
     */
-    float4 CMotionEstimation_GetSparsePyramidUpsample(float2 Pos, float2 Tex, sampler2D SampleSource)
+    float2 CMotionEstimation_GetSparsePyramidUpsample(float2 HPos, float2 Tex, float2 PixelSize, sampler2D SampleSource)
     {
-        float SparseFactor = 4.0;
+        // Constants
         float Pi2 = CMath_GetPi() * 2.0;
-        float2 Delta = ldexp(fwidth(Tex), SparseFactor);
+        float SparseFactor = exp2(4.0);
+        float Weight = 1.0 / 16.0;
 
+        // Create Noise matrix
+        float2 Rotation;
+        sincos(Pi2 * CMath_GetInterleavedGradientNoise(HPos), Rotation.y, Rotation.x);
+        float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
+
+        // Initialize variables
         float4 Sum = 0.0;
-        float Weight = 0.0;
 
         [unroll]
         for (float x = -0.75; x <= 0.75; x += 0.5)
@@ -29,16 +35,16 @@
             [unroll]
             for (float y = -0.75; y <= 0.75; y += 0.5)
             {
-                float2 Shift = float2(float(x), float(y));
-                float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift);
+                float2 Shift = float2(x, y);
+                float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * SparseFactor;
+                float2 SampleOffset = mul(DiskShift, RotationMatrix);
 
-                float2 FetchTex = Tex + (DiskShift * Delta);
-                Sum += tex2D(SampleSource, FetchTex);
-                Weight += 1.0;
+                float2 FetchTex = Tex + (SampleOffset * PixelSize);
+                Sum += (tex2D(SampleSource, FetchTex).xy * Weight);
             }
         }
 
-        return Sum / Weight;
+        return Sum;
     }
 
     /*
@@ -70,6 +76,7 @@
     float2 CMotionEstimation_GetLucasKanade(
         bool IsCoarse,
         float2 MainTex,
+        float2 PixelSize,
         float2 Vectors,
         sampler2D SampleT,
         sampler2D SampleI
@@ -129,7 +136,6 @@
 		WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
         WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
         WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
-        float2 PixelSize = fwidth(MainTex);
 
         // Create Cache
         // This unrolled version samples and assigns to the Cache array.
@@ -199,13 +205,12 @@
             // Calculate range weights
             if (!IsCenter)
             {
-                float SumIT = 0.0;
                 It = R0 - CenterT;
-                SumIT += dot(It, It);
+                Weight += dot(It, It);
                 It = R1 - CenterI;
-                SumIT += dot(It, It);
-                SumIT = 1.0 / (1.0 + SumIT);
-                Weight *= SumIT;
+                Weight += dot(It, It);
+                Weight = 1.0 / Weight;
+                Weight *= Weight;
             }
 
             // Accumulate weight
