@@ -59,7 +59,7 @@
         Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
-    float3 CMotionExtimation_SRGBtoORGB(sampler2D Image, float2 Tex)
+    float3 CMotionEstimation_SRGBtoORGB(sampler2D Image, float2 Tex)
     {
         float3 Color = tex2D(Image, Tex).rgb;
         Color *= Color;
@@ -135,31 +135,31 @@
         // This unrolled version samples and assigns to the Cache array.
         // The four corners of the 5x5 grid are skipped in the original code,
         // so they are not included in this rewrite.
-        Cache[1] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-        Cache[2] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -2) * PixelSize));
-        Cache[3] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -2) * PixelSize));
+        Cache[1] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+        Cache[2] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -2) * PixelSize));
+        Cache[3] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
-        Cache[5] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-        Cache[6] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-        Cache[7] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -1) * PixelSize));
-        Cache[8] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -1) * PixelSize));
-        Cache[9] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, -1) * PixelSize));
+        Cache[5] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+        Cache[6] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+        Cache[7] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(0, -1) * PixelSize));
+        Cache[8] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(1, -1) * PixelSize));
+        Cache[9] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-        Cache[10] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-        Cache[11] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-        Cache[12] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 0) * PixelSize));
-        Cache[13] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 0) * PixelSize));
-        Cache[14] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 0) * PixelSize));
+        Cache[10] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+        Cache[11] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+        Cache[12] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 0) * PixelSize));
+        Cache[13] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 0) * PixelSize));
+        Cache[14] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-        Cache[15] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-        Cache[16] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-        Cache[17] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 1) * PixelSize));
-        Cache[18] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 1) * PixelSize));
-        Cache[19] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 1) * PixelSize));
+        Cache[15] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+        Cache[16] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+        Cache[17] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 1) * PixelSize));
+        Cache[18] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 1) * PixelSize));
+        Cache[19] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-        Cache[21] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-        Cache[22] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 2) * PixelSize));
-        Cache[23] = CMotionExtimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 2) * PixelSize));
+        Cache[21] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+        Cache[22] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(0, 2) * PixelSize));
+        Cache[23] = CMotionEstimation_SRGBtoORGB(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
         // Initialize variables
         float IxIx = 0.0;
@@ -171,7 +171,7 @@
 
         // Get center textures (this is for the spatial weighting)
         float3 CenterT = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float3 CenterI = CMotionExtimation_SRGBtoORGB(SampleI, WarpTex);
+        float3 CenterI = CMotionEstimation_SRGBtoORGB(SampleI, WarpTex);
 
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
@@ -190,7 +190,7 @@
 
             // Get dynamic data
             float2 R1Tex = WarpTex + (Offset * PixelSize);
-            float3 R1 = IsCenter ? CenterI : CMotionExtimation_SRGBtoORGB(SampleI, R1Tex);
+            float3 R1 = IsCenter ? CenterI : CMotionEstimation_SRGBtoORGB(SampleI, R1Tex);
             float3 It = 0.0;
 
             // Calculate bilateral weighting
