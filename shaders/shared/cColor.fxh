@@ -196,11 +196,12 @@
 
     float3 CColor_RGBtoORGB(float3 RGB)
     {
+        float3 N = rsqrt(float3(3.0, 2.0, 6.0));
         float T = RGB.r + RGB.g;
-        RGB.y = (RGB.r * 2.0) - T;
-        RGB.x = RGB.b + T;
-        RGB.z = T - (RGB.b * 2.0);
-        return RGB;
+        RGB.y = (RGB.r * 2.0) - T;  // R - G
+        RGB.x = RGB.b + T;          // R + G + B
+        RGB.z = T - (RGB.b * 2.0);  // R + G - 2B
+        return RGB * N;
     }
 
     /*
