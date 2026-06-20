@@ -429,6 +429,7 @@
     {
         float2 Sum;
         float SumWeight;
+        float Variance;
     };
 
     void CBlur_GetSideWindowBilateral(
@@ -440,13 +441,12 @@
     {
         // Constants: Mean
         const int KernelSize = 9;
-        const float Epsilon = 1.0;
         const float MeanN = 1.0 / Kernel.Size;
         const float VarianceN = 1.0 / (Kernel.Size - 1.0);
 
         // Initialize variance data
         float2 Mean = 0.0;
-        float Variance = Epsilon;
+        float Variance = 0.0;
 
         for (int i0 = 0; i0 < KernelSize; i0++)
         {
@@ -467,8 +467,11 @@
 
         // Initialize output data
         int ImageIndex = 0;
-        Output.Sum = 0.0;
-        Output.SumWeight = 0.0;
+
+        // Initialize Outputs
+        float VarD = 1.0 + Variance;
+        float2 Sum = 0.0;
+        float WSum = 0.0;
 
         // Pre-compute Spatial distances
         // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
@@ -482,11 +485,10 @@
             {
                 if (Kernel.Weights[ImageIndex] == 1)
                 {
-
                     // Compute Weight (Range)
                     float2 Delta = ImageArray[ImageIndex] - Guide;
                     float DistSqRange = dot(Delta, Delta);
-                    float WeightRange = 1.0 / (DistSqRange + Variance);
+                    float WeightRange = 1.0 / (DistSqRange + VarD);
 
                     // Compute Weight (Spatial)
                     int SpatialOffset = abs(x) + abs(y);
@@ -494,13 +496,17 @@
                     float Weight = WeightSpatial * WeightRange;
 
                     // Accumulate
-                    Output.Sum += (ImageArray[ImageIndex] * Weight);
-                    Output.SumWeight += Weight;
+                    Sum += (ImageArray[ImageIndex] * Weight);
+                    WSum += Weight;
                 }
 
                 ImageIndex += 1;
             }
         }
+
+        Output.Sum = Sum;
+        Output.SumWeight = WSum;
+        Output.Variance = Variance;
     }
 
     float2 CBlur_GetSelfBilateralUpsampleXY(
@@ -591,18 +597,13 @@
             CBlur_SideWindowBilateral SideWindow;
             CBlur_GetSideWindowBilateral(Kernel[i], GuideTexture, ImageArray, SideWindow);
 
-            // Avoid division by zero on empty/low weight regions
             if (SideWindow.SumWeight > 0.0)
             {
-                float2 WindowMean = SideWindow.Sum / SideWindow.SumWeight;
-                float2 Delta = WindowMean - GuideTexture;
-                float WindowVariance = dot(Delta, Delta);
-
-                if (!AVariance || (WindowVariance < Variance))
+                if (!AVariance || (SideWindow.Variance < Variance))
                 {
                     AVariance = true;
-                    Variance = WindowVariance;
-                    NearestWindow = WindowMean;
+                    Variance = SideWindow.Variance;
+                    NearestWindow = SideWindow.Sum / SideWindow.SumWeight;
                 }
             }
         }
@@ -714,6 +715,7 @@
 
         return Mean;
     }
+
     // Initialize variables to compute
     float4 CBlur_GetJointBilateralUpsample(
         sampler Image, // This should be 1/2 the size as GuideHigh

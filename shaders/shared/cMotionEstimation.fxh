@@ -128,15 +128,20 @@
         // .xy = TemplateGridPos; .zw = FetchPos
         const int4 P[FetchGridSize] =
         {
+            // Process edge regions
             int4(int2(-1, -1), int2(1, 1)),
-            int4(int2(0, -1), int2(2, 1)),
             int4(int2(1, -1), int2(3, 1)),
-            int4(int2(-1, 0), int2(1, 2)),
-            int4(int2(0, 0), int2(2, 2)),
-            int4(int2(1, 0), int2(3, 2)),
             int4(int2(-1, 1), int2(1, 3)),
+            int4(int2(1, 1), int2(3, 3)),
+
+            // Process cardinal regions
+            int4(int2(0, -1), int2(2, 1)),
+            int4(int2(-1, 0), int2(1, 2)),
+            int4(int2(1, 0), int2(3, 2)),
             int4(int2(0, 1), int2(2, 3)),
-            int4(int2(1, 1), int2(3, 3))
+
+            // Process center
+            int4(int2(0, 0), int2(2, 2))
         };
 
         const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
@@ -213,16 +218,20 @@
             float3 It = 0.0;
 
             // Calculate bilateral weighting
-            float Weight = 1.0;
+            float Weight = 0.0;
 
             // Calculate range weights
-            if (!IsCenter)
+            if (IsCenter)
+            {
+                Weight = 1.0;
+            }
+            else
             {
                 It = R0 - CenterT;
                 Weight += dot(It, It);
                 It = R1 - CenterI;
                 Weight += dot(It, It);
-                Weight = 1.0 / Weight;
+                Weight = 1.0 / (1.0 + Weight);
                 Weight *= Weight;
             }
 
