@@ -22,10 +22,10 @@
         float GoldenAngle = CMath_GetGoldenRatio();
 
         // Constants (Sum)
-        const float Spread = exp2(4.0);
+        const float Spread = exp2(3.0) * 2.0;
         const int SampleCount = 9;
         const float Weight = 1.0 / SampleCount;
-        int R[SampleCount];
+        float R[SampleCount];
 
         [unroll]
         for (int i0 = 0; i0 < SampleCount; i0++)
