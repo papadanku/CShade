@@ -16,32 +16,46 @@
     */
     float2 CMotionEstimation_GetSparsePyramidUpsample(float2 HPos, float2 Tex, float2 PixelSize, sampler2D SampleSource)
     {
-        // Constants
-        float Pi2 = CMath_GetPi() * 2.0;
-        float SparseFactor = exp2(4.0);
-        float Weight = 1.0 / 16.0;
+        // Constants (Math)
+        float Pi = CMath_GetPi();
+        float Pi2 = Pi * 2.0;
+        float GoldenAngle = CMath_GetGoldenRatio();
 
-        // Create Noise matrix
-        float2 Rotation;
-        sincos(Pi2 * CMath_GetInterleavedGradientNoise(HPos), Rotation.y, Rotation.x);
-        float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y, -Rotation.y, Rotation.x);
-
-        // Initialize variables
-        float4 Sum = 0.0;
+        // Constants (Sum)
+        const float Spread = exp2(4.0);
+        const int SampleCount = 9;
+        const float Weight = 1.0 / SampleCount;
+        int R[SampleCount];
 
         [unroll]
-        for (float x = -0.75; x <= 0.75; x += 0.5)
+        for (int i0 = 0; i0 < SampleCount; i0++)
         {
-            [unroll]
-            for (float y = -0.75; y <= 0.75; y += 0.5)
-            {
-                float2 Shift = float2(x, y);
-                float2 DiskShift = CMath_MapUVtoConcentricDisk(Shift) * SparseFactor;
-                float2 SampleOffset = mul(DiskShift, RotationMatrix);
+            // Compute radius fraction based on the tap index (sqrt ensures uniform area distribution)
+            R[i0] = sqrt((float(i0) + 0.5) / float(SampleCount)) * Spread;
+        }
 
-                float2 FetchTex = Tex + (SampleOffset * PixelSize);
-                Sum += (tex2D(SampleSource, FetchTex).xy * Weight);
-            }
+        // Create a sequence of random numbers
+        float IGN = CMath_GetInterleavedGradientNoise(HPos) * Pi2;
+
+        // Initialize variables
+        float2 Sum = 0.0;
+
+        [unroll]
+        for (int i1 = 0; i1 < SampleCount; i1++)
+        {
+            // Compute angle based on golden spiral + our per-pixel random dither rotation
+            float Theta = (float(i1) * GoldenAngle) + IGN;
+
+            // Convert polar coordinates to Cartesian offset vectors
+            float2 DiskOffset;
+            sincos(Theta, DiskOffset.y, DiskOffset.x);
+
+            // Scale the offset by your search footprint converted to UV space
+            DiskOffset *= R[i1];
+            DiskOffset = Tex + (DiskOffset * PixelSize);
+
+            // Gather the low-res motion vector baseline
+            Sum += (tex2D(SampleSource, DiskOffset).xy * Weight);
         }
 
         return Sum;
@@ -133,7 +147,7 @@
 
         // Calculate warped texture coordinates & gradient information
         float2 WarpTex = 0.0;
-		WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
+        WarpTex = MainTex - 0.5; // Pull into [-0.5, 0.5) range
         WarpTex -= Vectors; // Inverse warp in the [-0.5, 0.5) range
         WarpTex = saturate(WarpTex + 0.5); // Push and clamp into [0.0, 1.0) range
 

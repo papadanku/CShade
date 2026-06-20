@@ -73,6 +73,11 @@
         return acos(-1.0);
     }
 
+    float CMath_GetGoldenRatio()
+    {
+        return (3.0 - sqrt(5.0)) * CMath_GetPi();
+    }
+
     float CMath_GetNAN()
     {
         return 0.0 / 0.0;
