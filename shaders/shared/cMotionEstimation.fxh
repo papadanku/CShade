@@ -82,8 +82,7 @@
     float3 CMotionEstimation_SRGBtoORGB(sampler2D Image, float2 Tex)
     {
         float3 Color = tex2D(Image, Tex).rgb;
-        Color *= Color;
-        Color = CColor_RGBtoORGB(Color);
+        Color = CColor_SRGBtoYUV444(Color, false);
         return Color;
     }
 
@@ -244,7 +243,7 @@
         }
 
         // Check if WSum is not 0
-        WSum = (WSum == 0.0) ? 0.0 : 1.0 / WSum;
+        WSum = (WSum > 0.0) ? 1.0 / WSum : 0.0;
 
         // Normalized weighted variables
         IxIx *= WSum;
