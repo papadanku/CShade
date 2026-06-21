@@ -419,12 +419,6 @@
         Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
     */
 
-    struct CBlur_SideWindowBlock
-    {
-        int Weights[9];
-        int Size;
-    };
-
     struct CBlur_SideWindowBlockBilateral
     {
         float2 Mean;
@@ -439,22 +433,14 @@
     };
 
     void CBlur_InitSideWindowBilateral(
+        in int SubwindowSize,
         in float3 ImageArray[9],
         in float2 Mean,
         inout CBlur_SideWindowBlockBilateral Block)
     {
         const int ImageArraySize = 9;
-        int SubwindowSize = 0;
-
-        [unroll]
-        for (int i0; i0 < ImageArraySize; i0++)
-        {
-            SubwindowSize += Block.Weights[i0];
-        }
-
-        // Compute MeanN
-        float MeanN = 1.0 / float(SubwindowSize);
-        float VarianceN = 1.0 / (float(SubwindowSize) - 1.0);
+        const float MeanN = 1.0 / float(SubwindowSize);
+        const float VarianceN = 1.0 / (float(SubwindowSize) - 1.0);
 
         // Compute Mean
         Block.Mean = Mean * MeanN;
@@ -606,6 +592,7 @@
         Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
 
         const int WindowAmount = 8;
+        const int SubwindowSizes[WindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
         const int StaticWeightsLength = 9;
         const int StaticWeights[StaticWeightsLength * WindowAmount] =
         {
@@ -632,7 +619,7 @@
                 Blocks[i0].Weights[i1] = StaticWeights[ID];
             }
 
-            CBlur_InitSideWindowBilateral(ImageArray, Mean[i0], Blocks[i0]);
+            CBlur_InitSideWindowBilateral(SubwindowSizes[i0], ImageArray, Mean[i0], Blocks[i0]);
         }
 
         // Calculate Side Winder filter
@@ -660,15 +647,35 @@
         return NearestWindow;
     }
 
-    float2 CBlur_GetSideWindowBoxXY(sampler2D SampleSource, float2 Tex)
+    struct CBlur_SideWindowBlockBox
     {
-        // Precompute (static)
-        const int ArrayCount = 9;
-        float2 PixelSize = fwidth(Tex.xy);
+        float2 Mean;
+        int Weights[9];
+    };
 
-        int ImageIndex = 0;
-        float2 ImageArray[ArrayCount];
+   void CBlur_InitSideWindowBox(
+        in int SubwindowSize,
+        in float2 Mean,
+        inout CBlur_SideWindowBlockBox Block)
+    {
+        const int ImageArraySize = 9;
+        const float MeanN = 1.0 / float(SubwindowSize);
+
+        // Compute Mean
+        Block.Mean = Mean * MeanN;
+    }
+
+    float2 CBlur_GetSideWindowBoxXY(sampler2D Image, float2 Tex)
+    {
+        // Precompute (constants)
+        const int ArrayCount = 9;
+
+        // Precompute (static)
+        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
         float2 Reference;
+
+        float2 ImageArray[ArrayCount];
+        int ImageIndex = 0;
 
         /*
             Gather samples:
@@ -685,9 +692,10 @@
             for (int x = -1; x <= 1; x++)
             {
                 float2 Offset = Tex + (float2(x, y) * PixelSize);
-                ImageArray[ImageIndex] = tex2D(SampleSource, Offset).xy;
+                float2 Sample = tex2D(Image, Offset).xy;
+                ImageArray[ImageIndex] = Sample;
 
-                if ((x == 0) && y == 0)
+                if ((x == 0) && (y == 0))
                 {
                     Reference = ImageArray[ImageIndex];
                 }
@@ -697,6 +705,10 @@
         }
 
         /*
+            [0] [1] [2]  (Top Row)
+            [3] [4] [5]  (Mid Row)
+            [6] [7] [8]  (Bot Row)
+
             Construct array of kernels:
 
             NORTH   SOUTH   EAST    WEST
@@ -710,59 +722,77 @@
             - - -       - - -       x x -       - x x
         */
 
-        const int KernelSizeSide = 6;
-        const int KernelSizeCorner = 4;
+        float2 Submean[8];
+        Submean[0] = ImageArray[0] + ImageArray[3]; // Vertical-Top-Left
+        Submean[1] = ImageArray[1] + ImageArray[4]; // Vertical-Top-Mid
+        Submean[2] = ImageArray[2] + ImageArray[5]; // Vertical-Top-Right
+        Submean[3] = ImageArray[3] + ImageArray[6]; // Vertical-Bottom-Left
+        Submean[4] = ImageArray[4] + ImageArray[7]; // Vertical-Bottom-Mid
+        Submean[5] = ImageArray[5] + ImageArray[8]; // Vertical-Bottom-Right
+        Submean[6] = ImageArray[6] + ImageArray[7]; // Horizontal-Bottom-Left
+        Submean[7] = ImageArray[7] + ImageArray[8]; // Horizontal-Bottom-Right
 
-        CBlur_SideWindowBlock Kernel[8];
-        Kernel[0].Weights = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // Row 0 & 1 (N)
-        Kernel[0].Size = KernelSizeSide;
-        Kernel[1].Weights = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // Row 1 & 2 (S)
-        Kernel[1].Size = KernelSizeSide;
-        Kernel[2].Weights = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // Col 0 & 1 (E)
-        Kernel[2].Size = KernelSizeSide;
-        Kernel[3].Weights = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // Col 1 & 2 (W)
-        Kernel[3].Size = KernelSizeSide;
-        Kernel[4].Weights = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // Rows 0,1 & Cols 0,1 (NW)
-        Kernel[4].Size = KernelSizeCorner;
-        Kernel[5].Weights = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // Rows 0,1 & Cols 1,2 (NE)
-        Kernel[5].Size = KernelSizeCorner;
-        Kernel[6].Weights = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // Rows 1,2 & Cols 0,1 (SW)
-        Kernel[6].Size = KernelSizeCorner;
-        Kernel[7].Weights = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // Rows 1,2 & Cols 1,2 (SE)
-        Kernel[7].Size = KernelSizeCorner;
+        float2 Mean[8];
+        Mean[0] = Submean[0] + Submean[1]; // NW (0+3 + 1+4)
+        Mean[1] = Submean[1] + Submean[2]; // NE (1+4 + 2+5)
+        Mean[2] = Submean[3] + Submean[4]; // SW (3+6 + 4+7)
+        Mean[3] = Submean[4] + Submean[5]; // SE (4+7 + 5+8)
+        Mean[4] = Mean[0] + Submean[2]; // N (0+3+1+4 + 2+5)
+        Mean[5] = Mean[2] + Submean[5]; // S (3+6+4+7 + 5+8)
+        Mean[6] = Mean[0] + Submean[6]; // W (0+3+1+4 + 6+7)
+        Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
 
-        // Calculate Side Window filter
-        bool AVariance = false;
-        float Variance = 0.0;
-        float2 Mean;
+        const int WindowAmount = 8;
+        const int SubwindowSizes[WindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
+        const int StaticWeightsLength = 9;
+        const int StaticWeights[StaticWeightsLength * WindowAmount] =
+        {
+            1, 1, 0,  1, 1, 0,  0, 0, 0, // NW (0-8)
+            0, 1, 1,  0, 1, 1,  0, 0, 0, // NE (9-17)
+            0, 0, 0,  1, 1, 0,  1, 1, 0, // SW (18-26)
+            0, 0, 0,  0, 1, 1,  0, 1, 1, // SE (27-35)
+            1, 1, 1,  1, 1, 1,  0, 0, 0, // N  (36-44)
+            0, 0, 0,  1, 1, 1,  1, 1, 1, // S  (45-53)
+            1, 1, 0,  1, 1, 0,  1, 1, 0, // W  (54-62)
+            0, 1, 1,  0, 1, 1,  0, 1, 1  // E  (63-71)
+        };
+
+        // Initialize our side windows
+        CBlur_SideWindowBlockBox Blocks[8];
 
         [unroll]
-        for (int i = 0; i < 8; i++)
+        for (int i0 = 0; i0 < 8; i0++)
         {
-            float2 WindowMean = 0.0;
-
             [unroll]
-            for (int j = 0; j < ArrayCount; j++)
+            for (int i1 = 0; i1 < StaticWeightsLength; i1++)
             {
-                if (Kernel[i].Weights[j] == 1)
-                {
-                    float Weight = 1.0 / float(Kernel[i].Size);
-                    WindowMean += (ImageArray[j] * Weight);
-                }
+                int ID = (i0 * StaticWeightsLength) + i1;
+                Blocks[i0].Weights[i1] = StaticWeights[ID];
             }
 
-            float2 Delta = WindowMean - Reference;
+            CBlur_InitSideWindowBox(SubwindowSizes[i0], Mean[i0], Blocks[i0]);
+        }
+
+        // Calculate Side Winder filter
+        float2 NearestWindow = Reference;
+        bool AVariance = false;
+        float Variance = 0.0;
+
+        [unroll]
+        for (int i2 = 0; i2 < 8; i2++)
+        {
+            float2 Delta = Blocks[i2].Mean - Reference;
             float WindowVariance = dot(Delta, Delta);
 
             if (!AVariance || (WindowVariance < Variance))
             {
                 AVariance = true;
                 Variance = WindowVariance;
-                Mean = WindowMean;
+                NearestWindow = Blocks[i2].Mean;
             }
         }
 
-        return Mean;
+        return NearestWindow;
     }
 
     // Initialize variables to compute
