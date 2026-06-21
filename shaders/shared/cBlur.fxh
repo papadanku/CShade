@@ -591,10 +591,10 @@
         Mean[6] = Mean[0] + Submean[6]; // W (0+3+1+4 + 6+7)
         Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
 
-        const int WindowAmount = 8;
-        const int SubwindowSizes[WindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
+        const int SideWindowAmount = 8;
+        const int SubwindowSizes[SideWindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
         const int StaticWeightsLength = 9;
-        const int StaticWeights[StaticWeightsLength * WindowAmount] =
+        const int StaticWeights[StaticWeightsLength * SideWindowAmount] =
         {
             1, 1, 0,  1, 1, 0,  0, 0, 0, // NW (0-8)
             0, 1, 1,  0, 1, 1,  0, 0, 0, // NE (9-17)
@@ -607,10 +607,10 @@
         };
 
         // Initialize our side windows
-        CBlur_SideWindowBlockBilateral Blocks[8];
+        CBlur_SideWindowBlockBilateral Blocks[SideWindowAmount];
 
         [unroll]
-        for (int i0 = 0; i0 < 8; i0++)
+        for (int i0 = 0; i0 < SideWindowAmount; i0++)
         {
             [unroll]
             for (int i1 = 0; i1 < StaticWeightsLength; i1++)
@@ -628,7 +628,7 @@
         float Variance = 0.0;
 
         [unroll]
-        for (int i2 = 0; i2 < 8; i2++)
+        for (int i2 = 0; i2 < SideWindowAmount; i2++)
         {
             CBlur_SideWindowBilateral SideWindow;
             CBlur_GetSideWindowBilateral(ImageArray, Blocks[i2], SideWindow);
@@ -742,10 +742,10 @@
         Mean[6] = Mean[0] + Submean[6]; // W (0+3+1+4 + 6+7)
         Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
 
-        const int WindowAmount = 8;
-        const int SubwindowSizes[WindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
+        const int SideWindowAmount = 8;
+        const int SubwindowSizes[SideWindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
         const int StaticWeightsLength = 9;
-        const int StaticWeights[StaticWeightsLength * WindowAmount] =
+        const int StaticWeights[StaticWeightsLength * SideWindowAmount] =
         {
             1, 1, 0,  1, 1, 0,  0, 0, 0, // NW (0-8)
             0, 1, 1,  0, 1, 1,  0, 0, 0, // NE (9-17)
@@ -758,10 +758,10 @@
         };
 
         // Initialize our side windows
-        CBlur_SideWindowBlockBox Blocks[8];
+        CBlur_SideWindowBlockBox Blocks[SideWindowAmount];
 
         [unroll]
-        for (int i0 = 0; i0 < 8; i0++)
+        for (int i0 = 0; i0 < SideWindowAmount; i0++)
         {
             [unroll]
             for (int i1 = 0; i1 < StaticWeightsLength; i1++)
@@ -779,7 +779,7 @@
         float Variance = 0.0;
 
         [unroll]
-        for (int i2 = 0; i2 < 8; i2++)
+        for (int i2 = 0; i2 < SideWindowAmount; i2++)
         {
             float2 Delta = Blocks[i2].Mean - Reference;
             float WindowVariance = dot(Delta, Delta);
