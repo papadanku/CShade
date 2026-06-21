@@ -625,13 +625,11 @@
         [unroll]
         for (int i0 = 0; i0 < 8; i0++)
         {
-            // Compute the starting stride index for this kernel block
-            int KernelOffset = i0 * StaticWeightsLength;
-
             [unroll]
             for (int i1 = 0; i1 < StaticWeightsLength; i1++)
             {
-                Blocks[i0].Weights[i1] = StaticWeights[KernelOffset + i1];
+                int ID = (i0 * StaticWeightsLength) + i1;
+                Blocks[i0].Weights[i1] = StaticWeights[ID];
             }
 
             CBlur_InitSideWindowBilateral(ImageArray, Mean[i0], Blocks[i0]);
