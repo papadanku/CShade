@@ -752,7 +752,6 @@
         Means[6] *= WeightsCardinal;
         Means[7] *= WeightsCardinal;
 
-
         // Calculate Side Winder filter
         float2 NearestWindow = Reference;
         bool AVariance = false;
