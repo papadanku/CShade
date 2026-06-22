@@ -419,110 +419,51 @@
         Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
     */
 
-    struct CBlur_SideWindowBlockBilateral
+    struct CBlur_SharedData_SideWindowBilateral
     {
-        float2 Mean;
-        float Variance;
-        int Weights[9];
+        // Shared constants
+        int ArrayImageSize;
+        int SideWindowSize_Corner;
+        int SideWindowSize_Cardinal;
+
+        // Shared between side windows
+        float2 ArrayImages[9];
+        float ArrayDistances[9];
+        float2 SideWindowMeans[8];
+
+        // Shared for final calculation
+        float2 Reference;
     };
 
-    struct CBlur_SideWindowBilateral
+    struct CBlur_SideWindow_Bilateral
     {
+        float Masks[9];
+        float Size;
         float2 Sum;
         float SumWeight;
+        float Variance;
     };
 
-    void CBlur_InitSideWindowBilateral(
-        in int SubwindowSize,
-        in float3 ImageArray[9],
-        in float2 Mean,
-        inout CBlur_SideWindowBlockBilateral Block)
-    {
-        const int ImageArraySize = 9;
-        const float MeanN = 1.0 / float(SubwindowSize);
-        const float VarianceN = 1.0 / (float(SubwindowSize) - 1.0);
-
-        // Compute Mean
-        Block.Mean = Mean * MeanN;
-
-        // Initialize variance data
-        Block.Variance = 0.0;
-
-        [unroll]
-        for (int i1 = 0; i1 < ImageArraySize; i1++)
-        {
-            if (Block.Weights[i1] == 1)
-            {
-                float2 D = ImageArray[i1].xy - Block.Mean;
-                Block.Variance += (dot(D, D) * VarianceN);
-            }
-        }
-    }
-
-    void CBlur_GetSideWindowBilateral(
-        in float3 ImageArray[9],
-        in CBlur_SideWindowBlockBilateral Block,
-        out CBlur_SideWindowBilateral Output
-    )
-    {
-        // Initialize output data
-        int ImageIndex = 0;
-
-        // Initialize Outputs
-        float VarD = 1.0 + Block.Variance;
-        float2 Sum = 0.0;
-        float WSum = 0.0;
-
-        // Pre-compute Spatial distances
-        // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
-        float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
-
-        [unroll]
-        for (int y = -1; y <= 1; y++)
-        {
-            [unroll]
-            for (int x = -1; x <= 1; x++)
-            {
-                if (Block.Weights[ImageIndex] == 1)
-                {
-                    // Compute Weight (Range)
-                    float DistSqRange = ImageArray[ImageIndex].z;
-                    float WeightRange = 1.0 / (DistSqRange + VarD);
-
-                    // Compute Weight (Spatial)
-                    int SpatialOffset = abs(x) + abs(y);
-                    float WeightSpatial = SpatialDistances[SpatialOffset];
-                    float Weight = WeightSpatial * WeightRange;
-
-                    // Accumulate
-                    Sum += (ImageArray[ImageIndex].xy * Weight);
-                    WSum += Weight;
-                }
-
-                ImageIndex += 1;
-            }
-        }
-
-        Output.Sum = Sum;
-        Output.SumWeight = WSum;
-    }
-
-    float2 CBlur_GetSelfBilateralUpsampleXY(
+    void CBlur_GetSharedData_SideWindowBilateral(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
-        float2 Tex
+        float2 Tex,
+        out CBlur_SharedData_SideWindowBilateral Output
     )
     {
-        // Precompute (constants)
-        const int ArrayCount = 9;
+        // Precompute constants (side windows)
+        Output.SideWindowSize_Corner = 4;
+        Output.SideWindowSize_Cardinal = 6;
+
+        // Initialize variables
+        Output.ArrayImageSize = 9;
+        Output.ArrayImages[Output.ArrayImageSize];
+        Output.ArrayDistances[Output.ArrayImageSize];
+        Output.Reference;
 
         // Precompute (static)
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
         float2 GuideTexture = tex2D(Guide, Tex).xy;
-        float2 Reference;
-
-        float3 ImageArray[ArrayCount];
-        int ImageIndex = 0;
 
         /*
             Gather samples:
@@ -531,6 +472,8 @@
             3 4 5 [    West    | Center |    East    ]
             6 7 8 [ South West | South  | South East ]
         */
+
+        int ImageIndex = 0;
 
         [unroll]
         for (int y = -1; y <= 1; y++)
@@ -541,12 +484,12 @@
                 float2 Offset = Tex + (float2(x, y) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
                 float2 Delta = Sample - GuideTexture;
-                ImageArray[ImageIndex].xy = Sample;
-                ImageArray[ImageIndex].z = dot(Delta, Delta);
+                Output.ArrayImages[ImageIndex] = Sample;
+                Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
 
                 if ((x == 0) && (y == 0))
                 {
-                    Reference = ImageArray[ImageIndex].xy;
+                    Output.Reference = Sample;
                 }
 
                 ImageIndex += 1;
@@ -554,11 +497,11 @@
         }
 
         /*
+            Construct array of kernels:
+
             [0] [1] [2]  (Top Row)
             [3] [4] [5]  (Mid Row)
             [6] [7] [8]  (Bot Row)
-
-            Construct array of kernels:
 
             NORTH   SOUTH   EAST    WEST
             x x x   - - -   - x x   x x -
@@ -571,75 +514,144 @@
             - - -       - - -       x x -       - x x
         */
 
-        float2 Submean[8];
-        Submean[0] = ImageArray[0].xy + ImageArray[3].xy; // Vertical-Top-Left
-        Submean[1] = ImageArray[1].xy + ImageArray[4].xy; // Vertical-Top-Mid
-        Submean[2] = ImageArray[2].xy + ImageArray[5].xy; // Vertical-Top-Right
-        Submean[3] = ImageArray[3].xy + ImageArray[6].xy; // Vertical-Bottom-Left
-        Submean[4] = ImageArray[4].xy + ImageArray[7].xy; // Vertical-Bottom-Mid
-        Submean[5] = ImageArray[5].xy + ImageArray[8].xy; // Vertical-Bottom-Right
-        Submean[6] = ImageArray[6].xy + ImageArray[7].xy; // Horizontal-Bottom-Left
-        Submean[7] = ImageArray[7].xy + ImageArray[8].xy; // Horizontal-Bottom-Right
+        const float SideWindowWeight_Corner = 1.0 / float(Output.SideWindowSize_Corner);
+        const float SideWindowWeight_Cardinal = 1.0 / float(Output.SideWindowSize_Cardinal);
 
-        float2 Mean[8];
-        Mean[0] = Submean[0] + Submean[1]; // NW (0+3 + 1+4)
-        Mean[1] = Submean[1] + Submean[2]; // NE (1+4 + 2+5)
-        Mean[2] = Submean[3] + Submean[4]; // SW (3+6 + 4+7)
-        Mean[3] = Submean[4] + Submean[5]; // SE (4+7 + 5+8)
-        Mean[4] = Mean[0] + Submean[2]; // N (0+3+1+4 + 2+5)
-        Mean[5] = Mean[2] + Submean[5]; // S (3+6+4+7 + 5+8)
-        Mean[6] = Mean[0] + Submean[6]; // W (0+3+1+4 + 6+7)
-        Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
+        float2 Submeans[8];
+        Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[3].xy; // Vertical-Top-Left
+        Submeans[1] = Output.ArrayImages[1].xy + Output.ArrayImages[4].xy; // Vertical-Top-Mid
+        Submeans[2] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Vertical-Top-Right
+        Submeans[3] = Output.ArrayImages[3].xy + Output.ArrayImages[6].xy; // Vertical-Bottom-Left
+        Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[7].xy; // Vertical-Bottom-Mid
+        Submeans[5] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Vertical-Bottom-Right
+        Submeans[6] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Horizontal-Bottom-Left
+        Submeans[7] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Horizontal-Bottom-Right
 
-        const int SideWindowAmount = 8;
-        const int SubwindowSizes[SideWindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
-        const int StaticWeightsLength = 9;
-        const int StaticWeights[StaticWeightsLength * SideWindowAmount] =
-        {
-            1, 1, 0,  1, 1, 0,  0, 0, 0, // NW (0-8)
-            0, 1, 1,  0, 1, 1,  0, 0, 0, // NE (9-17)
-            0, 0, 0,  1, 1, 0,  1, 1, 0, // SW (18-26)
-            0, 0, 0,  0, 1, 1,  0, 1, 1, // SE (27-35)
-            1, 1, 1,  1, 1, 1,  0, 0, 0, // N  (36-44)
-            0, 0, 0,  1, 1, 1,  1, 1, 1, // S  (45-53)
-            1, 1, 0,  1, 1, 0,  1, 1, 0, // W  (54-62)
-            0, 1, 1,  0, 1, 1,  0, 1, 1  // E  (63-71)
-        };
+        Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 3] + [1 + 4]
+        Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [1 + 4] + [2 + 5]
+        Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [3 + 6] + [4 + 7]
+        Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 7] + [5 + 8]
+        Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
+        Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
+        Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
+        Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
 
-        // Initialize our side windows
-        CBlur_SideWindowBlockBilateral Blocks[SideWindowAmount];
+        Output.SideWindowMeans[0] *= SideWindowWeight_Corner;
+        Output.SideWindowMeans[1] *= SideWindowWeight_Corner;
+        Output.SideWindowMeans[2] *= SideWindowWeight_Corner;
+        Output.SideWindowMeans[3] *= SideWindowWeight_Corner;
+        Output.SideWindowMeans[4] *= SideWindowWeight_Cardinal;
+        Output.SideWindowMeans[5] *= SideWindowWeight_Cardinal;
+        Output.SideWindowMeans[6] *= SideWindowWeight_Cardinal;
+        Output.SideWindowMeans[7] *= SideWindowWeight_Cardinal;
+    }
 
+    void CBlur_GetSideWindowBilateral(
+        in CBlur_SharedData_SideWindowBilateral Input,
+        in float2 Mean,
+        inout CBlur_SideWindow_Bilateral Block
+    )
+    {
+        // Pre-compute Spatial distances
+        // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
+        const float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
+        const float VarianceN = 1.0 / (float(Block.Size) - 1.0);
+
+        // Initialize output members
+        Block.Sum = 0.0;
+        Block.SumWeight = 0.0;
+        Block.Variance = 0.0;
+
+        // Compute the SideWindow's variance
         [unroll]
-        for (int i0 = 0; i0 < SideWindowAmount; i0++)
+        for (int i1 = 0; i1 < Input.ArrayImageSize; i1++)
         {
-            [unroll]
-            for (int i1 = 0; i1 < StaticWeightsLength; i1++)
+            if (Block.Masks[i1] == 1)
             {
-                int ID = (i0 * StaticWeightsLength) + i1;
-                Blocks[i0].Weights[i1] = StaticWeights[ID];
+                float2 D = Input.ArrayImages[i1] - Mean;
+                Block.Variance += (dot(D, D) * VarianceN);
             }
-
-            CBlur_InitSideWindowBilateral(SubwindowSizes[i0], ImageArray, Mean[i0], Blocks[i0]);
         }
 
+        // Initialize Outputs
+        int ImageIndex = 0;
+        float VarD = 1.0 + Block.Variance;
+
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            [unroll]
+            for (int x = -1; x <= 1; x++)
+            {
+                if (Block.Masks[ImageIndex] == 1)
+                {
+                    // Compute Weight (Range)
+                    float DistSqRange = Input.ArrayDistances[ImageIndex];
+                    float WeightRange = 1.0 / (DistSqRange + VarD);
+
+                    // Compute Weight (Spatial)
+                    int SpatialOffset = abs(x) + abs(y);
+                    float WeightSpatial = SpatialDistances[SpatialOffset];
+                    float Weight = WeightSpatial * WeightRange;
+
+                    // Accumulate
+                    Block.Sum += (Input.ArrayImages[ImageIndex] * Weight);
+                    Block.SumWeight += Weight;
+                }
+
+                ImageIndex += 1;
+            }
+        }
+    }
+
+    float2 CBlur_GetSelfBilateralUpsampleXY(
+        sampler Image, // Low-res motion vectors (e.g., 1/2 size)
+        sampler Guide, // High-res structural guide (e.g., full size)
+        float2 Tex
+    )
+    {
+        const int SideWindowsCount = 8;
+
+        // Create the data struct that we will use accross multiple functions.
+        CBlur_SharedData_SideWindowBilateral SharedData;
+        CBlur_GetSharedData_SideWindowBilateral(Image, Guide, Tex, SharedData);
+
+        // Initialize our side windows
+        CBlur_SideWindow_Bilateral SideWindows[SideWindowsCount];
+        SideWindows[0].Masks = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // NW
+        SideWindows[0].Size = SharedData.SideWindowSize_Corner;
+        SideWindows[1].Masks = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // NE
+        SideWindows[1].Size = SharedData.SideWindowSize_Corner;
+        SideWindows[2].Masks = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // SW
+        SideWindows[2].Size = SharedData.SideWindowSize_Corner;
+        SideWindows[3].Masks = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // SE
+        SideWindows[3].Size = SharedData.SideWindowSize_Corner;
+        SideWindows[4].Masks = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // N
+        SideWindows[4].Size = SharedData.SideWindowSize_Cardinal;
+        SideWindows[5].Masks = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // S
+        SideWindows[5].Size = SharedData.SideWindowSize_Cardinal;
+        SideWindows[6].Masks = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // W
+        SideWindows[6].Size = SharedData.SideWindowSize_Cardinal;
+        SideWindows[7].Masks = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // E
+        SideWindows[7].Size = SharedData.SideWindowSize_Cardinal;
+
         // Calculate Side Winder filter
-        float2 NearestWindow = Reference;
+        float2 NearestWindow = SharedData.Reference;
         bool AVariance = false;
         float Variance = 0.0;
 
         [unroll]
-        for (int i2 = 0; i2 < SideWindowAmount; i2++)
+        for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            CBlur_SideWindowBilateral SideWindow;
-            CBlur_GetSideWindowBilateral(ImageArray, Blocks[i2], SideWindow);
+            CBlur_GetSideWindowBilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
 
-            if (SideWindow.SumWeight > 0.0)
+            if (SideWindows[i0].SumWeight > 0.0)
             {
-                if (!AVariance || (Blocks[i2].Variance < Variance))
+                if (!AVariance || (SideWindows[i0].Variance < Variance))
                 {
                     AVariance = true;
-                    Variance = Blocks[i2].Variance;
-                    NearestWindow = SideWindow.Sum / SideWindow.SumWeight;
+                    Variance = SideWindows[i0].Variance;
+                    NearestWindow = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
                 }
             }
         }
@@ -647,35 +659,22 @@
         return NearestWindow;
     }
 
-    struct CBlur_SideWindowBlockBox
-    {
-        float2 Mean;
-        int Weights[9];
-    };
-
-   void CBlur_InitSideWindowBox(
-        in int SubwindowSize,
-        in float2 Mean,
-        inout CBlur_SideWindowBlockBox Block)
-    {
-        const int ImageArraySize = 9;
-        const float MeanN = 1.0 / float(SubwindowSize);
-
-        // Compute Mean
-        Block.Mean = Mean * MeanN;
-    }
-
     float2 CBlur_GetSideWindowBoxXY(sampler2D Image, float2 Tex)
     {
-        // Precompute (constants)
-        const int ArrayCount = 9;
+        // Precompute constants (image array)
+        const int SideWindowsCount = 8;
+        const int ArrayImagesLength = 9;
+
+        // Precompute constants (side windows)
+        const int SideWindowSizeCorner = 4;
+        const int SideWindowSizeCardinal = 6;
+        const float WeightsCorner = 1.0 / float(SideWindowSizeCorner);
+        const float WeightsCardinal = 1.0 / float(SideWindowSizeCardinal);
 
         // Precompute (static)
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+        float2 ArrayImages[ArrayImagesLength];
         float2 Reference;
-
-        float2 ImageArray[ArrayCount];
-        int ImageIndex = 0;
 
         /*
             Gather samples:
@@ -685,6 +684,8 @@
             6 7 8 [ South West | South  | South East ]
         */
 
+        int ImageIndex = 0;
+
         [unroll]
         for (int y = -1; y <= 1; y++)
         {
@@ -693,11 +694,11 @@
             {
                 float2 Offset = Tex + (float2(x, y) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
-                ImageArray[ImageIndex] = Sample;
+                ArrayImages[ImageIndex] = Sample;
 
                 if ((x == 0) && (y == 0))
                 {
-                    Reference = ImageArray[ImageIndex];
+                    Reference = ArrayImages[ImageIndex];
                 }
 
                 ImageIndex += 1;
@@ -722,56 +723,35 @@
             - - -       - - -       x x -       - x x
         */
 
-        float2 Submean[8];
-        Submean[0] = ImageArray[0] + ImageArray[3]; // Vertical-Top-Left
-        Submean[1] = ImageArray[1] + ImageArray[4]; // Vertical-Top-Mid
-        Submean[2] = ImageArray[2] + ImageArray[5]; // Vertical-Top-Right
-        Submean[3] = ImageArray[3] + ImageArray[6]; // Vertical-Bottom-Left
-        Submean[4] = ImageArray[4] + ImageArray[7]; // Vertical-Bottom-Mid
-        Submean[5] = ImageArray[5] + ImageArray[8]; // Vertical-Bottom-Right
-        Submean[6] = ImageArray[6] + ImageArray[7]; // Horizontal-Bottom-Left
-        Submean[7] = ImageArray[7] + ImageArray[8]; // Horizontal-Bottom-Right
+        float2 Submeans[8];
+        Submeans[0] = ArrayImages[0] + ArrayImages[3]; // Vertical-Top-Left
+        Submeans[1] = ArrayImages[1] + ArrayImages[4]; // Vertical-Top-Mid
+        Submeans[2] = ArrayImages[2] + ArrayImages[5]; // Vertical-Top-Right
+        Submeans[3] = ArrayImages[3] + ArrayImages[6]; // Vertical-Bottom-Left
+        Submeans[4] = ArrayImages[4] + ArrayImages[7]; // Vertical-Bottom-Mid
+        Submeans[5] = ArrayImages[5] + ArrayImages[8]; // Vertical-Bottom-Right
+        Submeans[6] = ArrayImages[6] + ArrayImages[7]; // Horizontal-Bottom-Left
+        Submeans[7] = ArrayImages[7] + ArrayImages[8]; // Horizontal-Bottom-Right
 
-        float2 Mean[8];
-        Mean[0] = Submean[0] + Submean[1]; // NW (0+3 + 1+4)
-        Mean[1] = Submean[1] + Submean[2]; // NE (1+4 + 2+5)
-        Mean[2] = Submean[3] + Submean[4]; // SW (3+6 + 4+7)
-        Mean[3] = Submean[4] + Submean[5]; // SE (4+7 + 5+8)
-        Mean[4] = Mean[0] + Submean[2]; // N (0+3+1+4 + 2+5)
-        Mean[5] = Mean[2] + Submean[5]; // S (3+6+4+7 + 5+8)
-        Mean[6] = Mean[0] + Submean[6]; // W (0+3+1+4 + 6+7)
-        Mean[7] = Mean[1] + Submean[7]; // E (1+4+2+5 + 7+8)
+        float2 Means[8];
+        Means[0] = Submeans[0] + Submeans[1]; // NW: [0 + 3] + [1 + 4]
+        Means[1] = Submeans[1] + Submeans[2]; // NE: [1 + 4] + [2 + 5]
+        Means[2] = Submeans[3] + Submeans[4]; // SW: [3 + 6] + [4 + 7]
+        Means[3] = Submeans[4] + Submeans[5]; // SE: [4 + 7] + [5 + 8]
+        Means[4] = Means[0] + Submeans[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
+        Means[5] = Means[2] + Submeans[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
+        Means[6] = Means[0] + Submeans[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
+        Means[7] = Means[1] + Submeans[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
 
-        const int SideWindowAmount = 8;
-        const int SubwindowSizes[SideWindowAmount] = { 4, 4, 4, 4, 6, 6, 6, 6 };
-        const int StaticWeightsLength = 9;
-        const int StaticWeights[StaticWeightsLength * SideWindowAmount] =
-        {
-            1, 1, 0,  1, 1, 0,  0, 0, 0, // NW (0-8)
-            0, 1, 1,  0, 1, 1,  0, 0, 0, // NE (9-17)
-            0, 0, 0,  1, 1, 0,  1, 1, 0, // SW (18-26)
-            0, 0, 0,  0, 1, 1,  0, 1, 1, // SE (27-35)
-            1, 1, 1,  1, 1, 1,  0, 0, 0, // N  (36-44)
-            0, 0, 0,  1, 1, 1,  1, 1, 1, // S  (45-53)
-            1, 1, 0,  1, 1, 0,  1, 1, 0, // W  (54-62)
-            0, 1, 1,  0, 1, 1,  0, 1, 1  // E  (63-71)
-        };
+        Means[0] *= WeightsCorner;
+        Means[1] *= WeightsCorner;
+        Means[2] *= WeightsCorner;
+        Means[3] *= WeightsCorner;
+        Means[4] *= WeightsCardinal;
+        Means[5] *= WeightsCardinal;
+        Means[6] *= WeightsCardinal;
+        Means[7] *= WeightsCardinal;
 
-        // Initialize our side windows
-        CBlur_SideWindowBlockBox Blocks[SideWindowAmount];
-
-        [unroll]
-        for (int i0 = 0; i0 < SideWindowAmount; i0++)
-        {
-            [unroll]
-            for (int i1 = 0; i1 < StaticWeightsLength; i1++)
-            {
-                int ID = (i0 * StaticWeightsLength) + i1;
-                Blocks[i0].Weights[i1] = StaticWeights[ID];
-            }
-
-            CBlur_InitSideWindowBox(SubwindowSizes[i0], Mean[i0], Blocks[i0]);
-        }
 
         // Calculate Side Winder filter
         float2 NearestWindow = Reference;
@@ -779,16 +759,16 @@
         float Variance = 0.0;
 
         [unroll]
-        for (int i2 = 0; i2 < SideWindowAmount; i2++)
+        for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            float2 Delta = Blocks[i2].Mean - Reference;
+            float2 Delta = Means[i0] - Reference;
             float WindowVariance = dot(Delta, Delta);
 
             if (!AVariance || (WindowVariance < Variance))
             {
                 AVariance = true;
                 Variance = WindowVariance;
-                NearestWindow = Blocks[i2].Mean;
+                NearestWindow = Means[i0];
             }
         }
 
