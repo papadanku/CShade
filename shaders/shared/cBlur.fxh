@@ -752,22 +752,21 @@
         Means[6] *= WeightsCardinal;
         Means[7] *= WeightsCardinal;
 
-
         // Calculate Side Winder filter
         float2 NearestWindow = Reference;
-        bool AVariance = false;
-        float Variance = 0.0;
+        bool AError = false;
+        float Error = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
             float2 Delta = Means[i0] - Reference;
-            float WindowVariance = dot(Delta, Delta);
+            float WindowError = dot(Delta, Delta);
 
-            if (!AVariance || (WindowVariance < Variance))
+            if (!AError || (WindowError < Error))
             {
-                AVariance = true;
-                Variance = WindowVariance;
+                AError = true;
+                Error = WindowError;
                 NearestWindow = Means[i0];
             }
         }
