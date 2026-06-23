@@ -441,7 +441,7 @@
         float Size;
         float2 Sum;
         float SumWeight;
-        float Variance;
+        float IVariance;
     };
 
     void CBlur_GetSharedData_SideWindowBilateral(
@@ -560,7 +560,20 @@
         // Initialize output members
         Block.Sum = 0.0;
         Block.SumWeight = 0.0;
-        Block.Variance = 0.0;
+
+        /*
+            We initialize by 1 for the following reasons:
+
+            1. Range weighting: Done with Lorentzian approximation
+
+                x / (1 + x)
+
+            2. Compute the inverted variance: Used for variance weighting
+
+                1 / (1 + v)
+        */
+
+        float Variance = 1.0;
 
         // Compute the SideWindow's variance
         [unroll]
@@ -569,13 +582,12 @@
             if (Block.Masks[i1] == 1)
             {
                 float2 D = Input.ArrayImages[i1] - Mean;
-                Block.Variance += (dot(D, D) * VarianceN);
+                Variance += (dot(D, D) * VarianceN);
             }
         }
 
         // Initialize Outputs
         int ImageIndex = 0;
-        float VarD = 1.0 + Block.Variance;
 
         [unroll]
         for (int y = -1; y <= 1; y++)
@@ -587,7 +599,7 @@
                 {
                     // Compute Weight (Range)
                     float DistSqRange = Input.ArrayDistances[ImageIndex];
-                    float WeightRange = 1.0 / (DistSqRange + VarD);
+                    float WeightRange = 1.0 / (DistSqRange + Variance);
 
                     // Compute Weight (Spatial)
                     int SpatialOffset = abs(x) + abs(y);
@@ -602,6 +614,8 @@
                 ImageIndex += 1;
             }
         }
+
+        Block.IVariance = 1.0 / Variance;
     }
 
     float2 CBlur_GetSelfBilateralUpsampleFLT2(
@@ -635,28 +649,31 @@
         SideWindows[7].Masks = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // E
         SideWindows[7].Size = SharedData.SideWindowSize_Cardinal;
 
-        // Calculate Side Winder filter
-        float2 NearestWindow = SharedData.Reference;
-        bool AVariance = false;
-        float Variance = 0.0;
+        /*
+            Calculate the variance-weighted Side Window filter. This may sound strange, but it works better than the regular min(x) method.
+
+            While Google's enterprise-class clanker suggested this method, I did my discernment and revised it to work like do CBloom's Karis averaging. In layman's terms, a Karis average means "we will add 4 things together: darken the very-bright things and keep the not-very-bright-things the same". The "thing" is either a single pixel (for a Full Karis Average) or a sum of pixels (for a Partial Karis Average). We use the Karis average to prevent pulsating regions when downsampling.
+
+            What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use the sum of pixel variances.
+        */
+
+        float2 WindowMean = 0.0;
+        float SumIVariance = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
             CBlur_GetSideWindowBilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
+            SideWindows[i0].Sum /= SideWindows[i0].SumWeight;
 
-            if (SideWindows[i0].SumWeight > 0.0)
-            {
-                if (!AVariance || (SideWindows[i0].Variance < Variance))
-                {
-                    AVariance = true;
-                    Variance = SideWindows[i0].Variance;
-                    NearestWindow = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
-                }
-            }
+            // Weighted sum by variance
+            WindowMean += (SideWindows[i0].Sum * SideWindows[i0].IVariance);
+            SumIVariance += SideWindows[i0].IVariance;
         }
 
-        return NearestWindow;
+        WindowMean = WindowMean / SumIVariance;
+
+        return WindowMean;
     }
 
     float2 CBlur_GetSideWindowBoxFLT2(sampler2D Image, float2 Tex)
