@@ -604,7 +604,7 @@
         }
     }
 
-    float2 CBlur_GetSelfBilateralUpsampleXY(
+    float2 CBlur_GetSelfBilateralUpsampleFLT2(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
         float2 Tex
@@ -659,7 +659,7 @@
         return NearestWindow;
     }
 
-    float2 CBlur_GetSideWindowBoxXY(sampler2D Image, float2 Tex)
+    float2 CBlur_GetSideWindowBoxFLT2(sampler2D Image, float2 Tex)
     {
         // Precompute constants (image array)
         const int SideWindowsCount = 8;
