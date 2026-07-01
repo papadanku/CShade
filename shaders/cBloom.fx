@@ -139,35 +139,35 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     Output.a = Luminance;
 }
 
-#define CREATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
+#define TEMPLATE_PS_DOWNSCALE(METHOD_NAME, SAMPLER, FLICKER_FILTER) \
     void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
     { \
         Output = CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
     }
 
-CREATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
-CREATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1, false)
-CREATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2, false)
-CREATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3, false)
-CREATE_PS_DOWNSCALE(PS_Downscale5, SampleTempTex4, false)
-CREATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
-CREATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
-CREATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale5, SampleTempTex4, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
 
-#define CREATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
+#define TEMPLATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
     void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
     { \
         Output.rgb = CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb; \
         Output.a = 1.0; \
     }
 
-CREATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
-CREATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
-CREATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
-CREATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
-CREATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
-CREATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
-CREATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
+TEMPLATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
+TEMPLATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
+TEMPLATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
+TEMPLATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
+TEMPLATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
+TEMPLATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
+TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -201,7 +201,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #endif
 }
 
-#define CREATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
+#define TEMPLATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
     pass NAME \
     { \
         ClearRenderTargets = FALSE; \
@@ -220,29 +220,29 @@ technique CShade_AutoExposureBloom
     ui_tooltip = "Adjustable bloom with auto-exposure.";
 >
 {
-    CREATE_PASS(Prefilter, CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
+    TEMPLATE_PASS(Prefilter, CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
 
     // Iteratively downsample the image (RGB) and its log luminance (A) into a pyramid.
-    CREATE_PASS(Downsample1, CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
-    CREATE_PASS(Downsample2, CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
-    CREATE_PASS(Downsample3, CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
-    CREATE_PASS(Downsample4, CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
-    CREATE_PASS(Downsample5, CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
-    CREATE_PASS(Downsample6, CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
-    CREATE_PASS(Downsample7, CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
-    CREATE_PASS(Downsample8, CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample1, CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample2, CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample3, CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample4, CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample5, CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample6, CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample7, CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample8, CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
 
     /*
         Additive iterative upsampling.
         Formula: Upsample(Level[N+1]) + Level[N]
     */
-    CREATE_PASS(Upscale7, CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
-    CREATE_PASS(Upscale6, CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
-    CREATE_PASS(Upscale5, CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
-    CREATE_PASS(Upscale4, CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
-    CREATE_PASS(Upscale3, CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
-    CREATE_PASS(Upscale2, CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
-    CREATE_PASS(Upscale1, CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale7, CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale6, CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale5, CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale4, CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale3, CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale2, CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale1, CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
 
     pass Composition
     {

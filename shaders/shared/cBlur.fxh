@@ -319,91 +319,87 @@
         OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
 
-    void Swap2(inout float4 A, inout float4 B)
-    {
-        float4 Temp = A;
-        A = min(A, B);
-        B = max(Temp, B);
-    }
+    #define CBLUR_MEDIAN_SWAP2(A, B) \
+        Temp = A; \
+        A = min(A, B); \
+        B = max(Temp, B); \
 
-    void MN3(inout float4 A, inout float4 B, inout float4 C)
-    {
-        Swap2(A, B);
-        Swap2(A, C);
-    }
+    #define CBLUR_MEDIAN_MN3(A, B, C) \
+        CBLUR_MEDIAN_SWAP2(A, B); \
+        CBLUR_MEDIAN_SWAP2(A, C); \
 
-    void MX3(inout float4 A, inout float4 B, inout float4 C)
-    {
-        Swap2(B, C);
-        Swap2(A, C);
-    }
+    #define CBLUR_MEDIAN_MX3(A, B, C) \
+        CBLUR_MEDIAN_SWAP2(B, C); \
+        CBLUR_MEDIAN_SWAP2(A, C); \
 
     // 3 exchanges
-    void MNMX3(inout float4 A, inout float4 B, inout float4 C)
-    {
-        MX3(A, B, C);
-        Swap2(A, B);
-    }
+    #define CBLUR_MEDIAN_MNMX3(A, B, C) \
+        CBLUR_MEDIAN_MX3(A, B, C); \
+        CBLUR_MEDIAN_SWAP2(A, B); \
 
     // 4 exchanges
-    void MNMX4(inout float4 A, inout float4 B, inout float4 C, inout float4 D)
-    {
-        Swap2(A, B);
-        Swap2(C, D);
-        Swap2(A, C);
-        Swap2(B, D);
-    }
+    #define CBLUR_MEDIAN_MNMX4(A, B, C, D) \
+        CBLUR_MEDIAN_SWAP2(A, B); \
+        CBLUR_MEDIAN_SWAP2(C, D); \
+        CBLUR_MEDIAN_SWAP2(A, C); \
+        CBLUR_MEDIAN_SWAP2(B, D); \
 
     // 6 exchanges
-    void MNMX5(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E)
-    {
-        Swap2(A, B);
-        Swap2(C, D);
-        MN3(A, C, E);
-        MX3(B, D, E);
-    }
+    #define CBLUR_MEDIAN_MNMX5(A, B, C, D, E) \
+        CBLUR_MEDIAN_SWAP2(A, B); \
+        CBLUR_MEDIAN_SWAP2(C, D); \
+        CBLUR_MEDIAN_MN3(A, C, E); \
+        CBLUR_MEDIAN_MX3(B, D, E); \
 
     // 7 exchanges
-    void MNMX6(inout float4 A, inout float4 B, inout float4 C, inout float4 D, inout float4 E, inout float4 F)
-    {
-        Swap2(A, D);
-        Swap2(B, E);
-        Swap2(C, F);
-        MN3(A, B, C);
-        MX3(D, E, F);
-    }
+    #define CBLUR_MEDIAN_MNMX6(A, B, C, D, E, F) \
+        CBLUR_MEDIAN_SWAP2(A, D); \
+        CBLUR_MEDIAN_SWAP2(B, E); \
+        CBLUR_MEDIAN_SWAP2(C, F); \
+        CBLUR_MEDIAN_MN3(A, B, C); \
+        CBLUR_MEDIAN_MX3(D, E, F); \
 
-    float4 CBlur_GetMedian(sampler Source, float2 Tex)
-    {
-        float2 PixelSize = fwidth(Tex.xy);
+    // Starting with a subset of size 6, remove the min and max each time
+    #define CBLUR_MEDIAN_3x3(DATA_TYPE, ARRAY_3x3) \
+        DATA_TYPE Temp; \
+        CBLUR_MEDIAN_MNMX6(ARRAY_3x3[0], ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[5]); \
+        CBLUR_MEDIAN_MNMX5(ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[6]); \
+        CBLUR_MEDIAN_MNMX4(ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[7]); \
+        CBLUR_MEDIAN_MNMX3(ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[8]); \
 
-        // Add the pixels which make up our window to the pixel array.
-        float4 Array[9];
+    #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
+        DATA_TYPE CBlur_GetMedian3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+        { \
+            CBLUR_MEDIAN_3x3(DATA_TYPE, Array) \
+            return Array[4]; \
+        } \
 
-        [unroll]
-        for (int dx = -1; dx <= 1; ++dx)
-        {
-            [unroll]
-            for (int dy = -1; dy <= 1; ++dy)
-            {
-                float2 Offset = float2(float(dx), float(dy));
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1)
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2)
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3)
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4)
 
-                // If a pixel in the window is located at (x+dx, y+dy), put it at index (dx + R)(2R + 1) + (dy + R) of the
-                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
-                // bottom right pixel of the window at pixel[N-1].
-                int ID = (dx + 1) * 3 + (dy + 1);
-                Array[ID] = tex2D(Source, Tex + (Offset * PixelSize));
-            }
-        }
+    // Create an array of Median Differences
+    #define TEMPLATE_CBLUR_GETMAD3x3(DATA_TYPE, LENGTH) \
+        DATA_TYPE CBlur_GetMAD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+        { \
+            DATA_TYPE Median = CBlur_GetMedian3x3FLT##LENGTH(Array); \
+            DATA_TYPE MedianDeltas[9]; \
+            \
+            [unroll] \
+            for (int i = 0; i < 9; i++) \
+            { \
+                DATA_TYPE D = Array[i] - Median; \
+                MedianDeltas[i] = dot(abs(D), 1.0); \
+            } \
+            \
+            return CBlur_GetMedian3x3FLT##LENGTH(MedianDeltas); \
+        } \
 
-        // Starting with a subset of size 6, remove the min and max each time
-        MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]);
-        MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]);
-        MNMX4(Array[2], Array[3], Array[4], Array[7]);
-        MNMX3(Array[3], Array[4], Array[8]);
-
-        return Array[4];
-    }
+    TEMPLATE_CBLUR_GETMAD3x3(float, 1)
+    TEMPLATE_CBLUR_GETMAD3x3(float2, 2)
+    TEMPLATE_CBLUR_GETMAD3x3(float3, 3)
+    TEMPLATE_CBLUR_GETMAD3x3(float4, 4)
 
     /*
         This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -422,7 +418,7 @@
     struct CBlur_SharedData_SideWindowBilateral
     {
         // Shared constants
-        int ArrayImageSize;
+        int ArrayImageLength;
         int SideWindowSize_Corner;
         int SideWindowSize_Cardinal;
 
@@ -430,6 +426,7 @@
         float2 ArrayImages[9];
         float ArrayDistances[9];
         float2 SideWindowMeans[8];
+        float GVariance;
 
         // Shared for final calculation
         float2 Reference;
@@ -451,14 +448,16 @@
         out CBlur_SharedData_SideWindowBilateral Output
     )
     {
+        const int ArrayImageLength = 9;
+        const int SideWindowSize_Corner = 4;
+        const int SideWindowSize_Cardinal = 6;
+
         // Precompute constants (side windows)
-        Output.SideWindowSize_Corner = 4;
-        Output.SideWindowSize_Cardinal = 6;
+        Output.SideWindowSize_Corner = SideWindowSize_Corner;
+        Output.SideWindowSize_Cardinal = SideWindowSize_Cardinal;
 
         // Initialize variables
-        Output.ArrayImageSize = 9;
-        Output.ArrayImages[Output.ArrayImageSize];
-        Output.ArrayDistances[Output.ArrayImageSize];
+        Output.ArrayImageLength = ArrayImageLength;
         Output.Reference;
 
         // Precompute (static)
@@ -468,18 +467,18 @@
         /*
             Gather samples:
 
-            0 1 2 [ North West | North  | North East ]
-            3 4 5 [    West    | Center |    East    ]
-            6 7 8 [ South West | South  | South East ]
+            0 3 6 [ North West | North  | North East ]
+            1 4 7 [    West    | Center |    East    ]
+            2 5 8 [ South West | South  | South East ]
         */
 
         int ImageIndex = 0;
 
         [unroll]
-        for (int y = -1; y <= 1; y++)
+        for (int x = -1; x <= 1; x++)
         {
             [unroll]
-            for (int x = -1; x <= 1; x++)
+            for (int y = -1; y <= 1; y++)
             {
                 float2 Offset = Tex + (float2(x, y) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
@@ -497,11 +496,31 @@
         }
 
         /*
+            Compute the Median of Absolute Deviation (MAD)
+        */
+
+        // Initialize the arrays that will be used to calculate the MAD
+        float2 MedianArray[ArrayImageLength];
+        float MedianDeltas[ArrayImageLength];
+
+        // Copy information from Output.ArrayImages into MedianArray
+        for (int i0 = 0; i0 < ArrayImageLength; i0++)
+        {
+            MedianArray[i0] = Output.ArrayImages[i0];
+        }
+
+        // Compute the median of the deltas of Output.ArrayImages to its median
+        float MedianDelta = CBlur_GetMAD3x3FLT2(Output.ArrayImages);
+
+        // Compute our median that is the Lorentzian Approximation of MAD
+        Output.GVariance = 1.0 / (1.0 + MedianDelta);
+
+        /*
             Construct array of kernels:
 
-            [0] [1] [2]  (Top Row)
-            [3] [4] [5]  (Mid Row)
-            [6] [7] [8]  (Bot Row)
+            [0] [3] [6]  (Top Row)
+            [1] [4] [7]  (Middle Row)
+            [2] [5] [8]  (Bottom Row)
 
             NORTH   SOUTH   EAST    WEST
             x x x   - - -   - x x   x x -
@@ -518,23 +537,23 @@
         const float SideWindowWeight_Cardinal = 1.0 / float(Output.SideWindowSize_Cardinal);
 
         float2 Submeans[8];
-        Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[3].xy; // Vertical-Top-Left
-        Submeans[1] = Output.ArrayImages[1].xy + Output.ArrayImages[4].xy; // Vertical-Top-Mid
-        Submeans[2] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Vertical-Top-Right
-        Submeans[3] = Output.ArrayImages[3].xy + Output.ArrayImages[6].xy; // Vertical-Bottom-Left
-        Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[7].xy; // Vertical-Bottom-Mid
-        Submeans[5] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Vertical-Bottom-Right
-        Submeans[6] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Horizontal-Bottom-Left
-        Submeans[7] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Horizontal-Bottom-Right
+        Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[1].xy; // Vertical Top-Left (V_TL)
+        Submeans[1] = Output.ArrayImages[3].xy + Output.ArrayImages[4].xy; // Vertical Top-Mid (V_TM)
+        Submeans[2] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Vertical Top-Right (V_TR)
+        Submeans[3] = Output.ArrayImages[1].xy + Output.ArrayImages[2].xy; // Vertical Bottom-Left (V_BL)
+        Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[5].xy; // Vertical Bottom-Mid (V_BM)
+        Submeans[5] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Vertical Bottom-Right (V_BR)
+        Submeans[6] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Horizontal Bottom-Left (H_BL)
+        Submeans[7] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Horizontal Bottom-Right (H_BR)
 
-        Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 3] + [1 + 4]
-        Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [1 + 4] + [2 + 5]
-        Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [3 + 6] + [4 + 7]
-        Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 7] + [5 + 8]
-        Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
-        Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
-        Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
-        Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
+        Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 1] + [3 + 4]
+        Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [3 + 4] + [6 + 7]
+        Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [1 + 2] + [4 + 5]
+        Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 5] + [7 + 8]
+        Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
+        Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
+        Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
+        Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
 
         Output.SideWindowMeans[0] *= SideWindowWeight_Corner;
         Output.SideWindowMeans[1] *= SideWindowWeight_Corner;
@@ -554,37 +573,13 @@
     {
         // Pre-compute Spatial distances
         // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
+        const float Epsilon = 1e-7;
         const float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
         const float VarianceN = 1.0 / (float(Block.Size) - 1.0);
 
         // Initialize output members
         Block.Sum = 0.0;
         Block.SumWeight = 0.0;
-
-        /*
-            We initialize by 1 for the following reasons:
-
-            1. Range weighting: Done with Lorentzian approximation
-
-                x / (1 + x)
-
-            2. Compute the inverted variance: Used for variance weighting
-
-                1 / (1 + v)
-        */
-
-        float Variance = 1.0;
-
-        // Compute the SideWindow's variance
-        [unroll]
-        for (int i1 = 0; i1 < Input.ArrayImageSize; i1++)
-        {
-            if (Block.Masks[i1] == 1)
-            {
-                float2 D = Input.ArrayImages[i1] - Mean;
-                Variance += (dot(D, D) * VarianceN);
-            }
-        }
 
         // Initialize Outputs
         int ImageIndex = 0;
@@ -599,7 +594,7 @@
                 {
                     // Compute Weight (Range)
                     float DistSqRange = Input.ArrayDistances[ImageIndex];
-                    float WeightRange = 1.0 / (DistSqRange + Variance);
+                    float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
 
                     // Compute Weight (Spatial)
                     int SpatialOffset = abs(x) + abs(y);
@@ -615,6 +610,36 @@
             }
         }
 
+        /*
+            We initialize by 1 for the following reasons:
+
+            1. Range weighting: Done with Lorentzian approximation
+
+                x / (1 + x)
+
+            2. Compute the inverted variance: Used for variance weighting
+
+                1 / (1 + v)
+        */
+
+        float2 VarianceSum = 0.0;
+
+        // Compute the SideWindow's variance
+        [unroll]
+        for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
+        {
+            if (Block.Masks[i1] == 1)
+            {
+                float2 D = Input.ArrayImages[i1] - Mean;
+                VarianceSum += (D * D);
+            }
+        }
+
+        // Compute the variance weight using a Lorentzian Approximation too
+        float Variance = abs(VarianceSum.x) + abs(VarianceSum.y);
+        Variance = 1.0 + (Variance * VarianceN);
+
+        // Weight by the local variance
         Block.IVariance = 1.0 / Variance;
     }
 

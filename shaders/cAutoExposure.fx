@@ -59,7 +59,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CCamera_ApplyAverageLumaOverlay(Output.rgb, UnormTex, ExposureData);
 }
 
-#define CREATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
+#define TEMPLATE_PASS(VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET, IS_ADDITIVE) \
     pass \
     { \
         ClearRenderTargets = FALSE; \
