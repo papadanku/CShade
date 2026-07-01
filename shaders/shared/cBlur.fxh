@@ -359,25 +359,30 @@
         CBLUR_MEDIAN_MN3(A, B, C); \
         CBLUR_MEDIAN_MX3(D, E, F); \
 
-    // Starting with a subset of size 6, remove the min and max each time
-    #define CBLUR_MEDIAN_3x3(DATA_TYPE, ARRAY_3x3) \
-        DATA_TYPE Temp; \
-        CBLUR_MEDIAN_MNMX6(ARRAY_3x3[0], ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[5]); \
-        CBLUR_MEDIAN_MNMX5(ARRAY_3x3[1], ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[6]); \
-        CBLUR_MEDIAN_MNMX4(ARRAY_3x3[2], ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[7]); \
-        CBLUR_MEDIAN_MNMX3(ARRAY_3x3[3], ARRAY_3x3[4], ARRAY_3x3[8]); \
-
     #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
-        DATA_TYPE CBlur_GetMedian3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+        DATA_TYPE CBlur_GetMedian3x3FLT##LENGTH(DATA_TYPE InArray[9]) \
         { \
-            CBLUR_MEDIAN_3x3(DATA_TYPE, Array) \
+            /* Starting with a subset of size 6, remove the min and max each time */ \
+            DATA_TYPE Temp; \
+            DATA_TYPE Array[9]; \
+            \
+            [unroll] \
+            for (int i = 0; i < 9; i++) \
+            { \
+                Array[i] = InArray[i]; \
+            } \
+            \
+            CBLUR_MEDIAN_MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]); \
+            CBLUR_MEDIAN_MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]); \
+            CBLUR_MEDIAN_MNMX4(Array[2], Array[3], Array[4], Array[7]); \
+            CBLUR_MEDIAN_MNMX3(Array[3], Array[4], Array[8]); \
             return Array[4]; \
         } \
 
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1)
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2)
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3)
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4)
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1) // float CBlur_GetMedian3x3FLT(float InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2) // float2 CBlur_GetMedian3x3FLT(float2 InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 CBlur_GetMedian3x3FLT(float3 InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 CBlur_GetMedian3x3FLT(float4 InArray[9])
 
     // Create an array of Median Differences
     #define TEMPLATE_CBLUR_GETMAD3x3(DATA_TYPE, LENGTH) \
@@ -396,10 +401,10 @@
             return CBlur_GetMedian3x3FLT##LENGTH(MedianDeltas); \
         } \
 
-    TEMPLATE_CBLUR_GETMAD3x3(float, 1)
-    TEMPLATE_CBLUR_GETMAD3x3(float2, 2)
-    TEMPLATE_CBLUR_GETMAD3x3(float3, 3)
-    TEMPLATE_CBLUR_GETMAD3x3(float4, 4)
+    TEMPLATE_CBLUR_GETMAD3x3(float, 1) // float CBlur_GetMAD3x3FLT1(float Array[9])
+    TEMPLATE_CBLUR_GETMAD3x3(float2, 2) // float2 CBlur_GetMAD3x3FLT2(float2 Array[9])
+    TEMPLATE_CBLUR_GETMAD3x3(float3, 3) // float3 CBlur_GetMAD3x3FLT3(float3 Array[9])
+    TEMPLATE_CBLUR_GETMAD3x3(float4, 4) // float4 CBlur_GetMAD3x3FLT4(float4 Array[9])
 
     /*
         This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
