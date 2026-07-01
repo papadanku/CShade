@@ -386,19 +386,19 @@
 
     // Create an array of Median Differences
     #define TEMPLATE_CBLUR_GETMAD3x3(DATA_TYPE, LENGTH) \
-        DATA_TYPE CBlur_GetMAD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+        float CBlur_GetMAD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
         { \
             DATA_TYPE Median = CBlur_GetMedian3x3FLT##LENGTH(Array); \
-            DATA_TYPE MedianDeltas[9]; \
+            float MedianDeltas[9]; \
             \
             [unroll] \
             for (int i = 0; i < 9; i++) \
             { \
                 DATA_TYPE D = Array[i] - Median; \
-                MedianDeltas[i] = dot(abs(D), 1.0); \
+                MedianDeltas[i] = dot(D, D); \
             } \
             \
-            return CBlur_GetMedian3x3FLT##LENGTH(MedianDeltas); \
+            return CBlur_GetMedian3x3FLT1(MedianDeltas); \
         } \
 
     TEMPLATE_CBLUR_GETMAD3x3(float, 1) // float CBlur_GetMAD3x3FLT1(float Array[9])
