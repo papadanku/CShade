@@ -30,7 +30,7 @@ float4 GetGaussianBlur(float2 Tex, bool IsHorizontal)
     else
     {
         // Sample and weight center first to get even number sides
-        float TotalWeight = CBlur_GetGaussianWeight1D(0.0, _Sigma);
+        float TotalWeight = CMath_GetGaussian1D(0.0, _Sigma);
         float4 OutputColor = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0)) * TotalWeight;
 
         for (float i = 1.0; i < KernelSize; i += 2.0)

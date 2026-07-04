@@ -32,76 +32,9 @@
 #if !defined(INCLUDE_CMATH)
     #define INCLUDE_CMATH
 
-    float4 CMath_Max3_FLT4(float4 A, float4 B, float4 C)
-    {
-        return max(max(A, B), C);
-    }
-
-    float4 CMath_Min3_FLT4(float4 A, float4 B, float4 C)
-    {
-        return min(min(A, B), C);
-    }
-
-    float4 CMath_Med3_FLT4(float4 x, float4 y, float4 z)
-    {
-        return max(min(x, y), min(max(x, y), z));
-    }
-
-    float CMath_Med3_FLT1(float x, float y, float z)
-    {
-        return max(min(x, y), min(max(x, y), z));
-    }
-
-    float4 CMath_Med9_FLT4(
-        float4 X0, float4 X1, float4 X2,
-        float4 X3, float4 X4, float4 X5,
-        float4 X6, float4 X7, float4 X8)
-    {
-        float4 A = CMath_Max3_FLT4(CMath_Min3_FLT4(X0, X1, X2), CMath_Min3_FLT4(X3, X4, X5), CMath_Min3_FLT4(X6, X7, X8));
-        float4 B = CMath_Min3_FLT4(CMath_Max3_FLT4(X0, X1, X2), CMath_Max3_FLT4(X3, X4, X5), CMath_Max3_FLT4(X6, X7, X8));
-        float4 C = CMath_Med3_FLT4(CMath_Med3_FLT4(X0, X1, X2), CMath_Med3_FLT4(X3, X4, X5), CMath_Med3_FLT4(X6, X7, X8));
-        return CMath_Med3_FLT4(A, B, C);
-    }
-
-    float CMath_GetModulus_FLT1(float X, float Y)
-    {
-        return X - Y * floor(X / Y);
-    }
-
-    float CMath_GetPi()
-    {
-        return acos(-1.0);
-    }
-
-    float CMath_GetGoldenRatio()
-    {
-        return (3.0 - sqrt(5.0)) * CMath_GetPi();
-    }
-
-    float CMath_GetNAN()
-    {
-        return 0.0 / 0.0;
-    }
-
-    bool CMath_GetOutOfBounds(float2 Tex)
-    {
-        return any(Tex < 0.0 || Tex > 1.0);
-    }
-
-    float2x2 CMath_GetRotationMatrix(float A)
-    {
-        return float2x2(cos(A), sin(A), -sin(A), cos(A));
-    }
-
-    int CMath_GetFactorial(int N)
-    {
-        int O = N;
-        for (int i = 1 ; i < N; i++)
-        {
-            O *= i;
-        }
-        return O;
-    }
+    /*
+        CMATH: DATA CONVERSION & PROCESSING
+    */
 
     float CMath_UNORMtoSNORM_FLT1(float X)
     {
@@ -209,6 +142,124 @@
         return Value * CMath_GetFLT16Max();
     }
 
+    float CMath_GetNAN()
+    {
+        return 0.0 / 0.0;
+    }
+
+    /*
+        CMATH: CONSTANTS
+    */
+
+    int CMath_GetFactorial(int N)
+    {
+        int O = N;
+        for (int i = 1 ; i < N; i++)
+        {
+            O *= i;
+        }
+        return O;
+    }
+
+    float CMath_GetPi()
+    {
+        return acos(-1.0);
+    }
+
+    float CMath_GetGoldenRatio()
+    {
+        return (3.0 - sqrt(5.0)) * CMath_GetPi();
+    }
+
+    float CMath_GetPhi(int D)
+    {
+        float X = 2.0;
+
+        [unroll]
+        for (int i = 0; i < 10; i++)
+        {
+            X = pow(1.0 + X, 1.0 / (D + 1.0));
+        }
+
+        return X;
+    }
+
+    /*
+        CMATH: MATH FUNCTIONS
+    */
+
+    float4 CMath_Max3_FLT4(float4 A, float4 B, float4 C)
+    {
+        return max(max(A, B), C);
+    }
+
+    float4 CMath_Min3_FLT4(float4 A, float4 B, float4 C)
+    {
+        return min(min(A, B), C);
+    }
+
+    float4 CMath_Med3_FLT4(float4 x, float4 y, float4 z)
+    {
+        return max(min(x, y), min(max(x, y), z));
+    }
+
+    float CMath_Med3_FLT1(float x, float y, float z)
+    {
+        return max(min(x, y), min(max(x, y), z));
+    }
+
+    float4 CMath_Med9_FLT4(
+        float4 X0, float4 X1, float4 X2,
+        float4 X3, float4 X4, float4 X5,
+        float4 X6, float4 X7, float4 X8)
+    {
+        float4 A = CMath_Max3_FLT4(CMath_Min3_FLT4(X0, X1, X2), CMath_Min3_FLT4(X3, X4, X5), CMath_Min3_FLT4(X6, X7, X8));
+        float4 B = CMath_Min3_FLT4(CMath_Max3_FLT4(X0, X1, X2), CMath_Max3_FLT4(X3, X4, X5), CMath_Max3_FLT4(X6, X7, X8));
+        float4 C = CMath_Med3_FLT4(CMath_Med3_FLT4(X0, X1, X2), CMath_Med3_FLT4(X3, X4, X5), CMath_Med3_FLT4(X6, X7, X8));
+        return CMath_Med3_FLT4(A, B, C);
+    }
+
+    float CMath_GetModulus_FLT1(float X, float Y)
+    {
+        return X - Y * floor(X / Y);
+    }
+
+    /*
+        CMATH: GEOMETRIC & TRIGONOMETRIC FUNCTIONS
+    */
+
+    float2x2 CMath_GetRotationMatrix(float A)
+    {
+        return float2x2(cos(A), sin(A), -sin(A), cos(A));
+    }
+
+    float CMath_GetGaussian1D(float X, float S)
+    {
+        float G = rsqrt(2.0 * CMath_GetPi() * S * S);
+        return G * exp(-(X * X) / (2.0 * S * S));
+    }
+
+    float CMath_GetGaussian2D(float2 X, float S)
+    {
+        float G = 1.0 / (2.0 * CMath_GetPi() * S * S);
+        return G * exp(-dot(X, X) / (2.0 * S * S));
+    }
+
+    float CMath_GetLorentzian1D(float X_sq)
+    {
+        // Constants: Parameters
+        const float A = 1.0;
+        const float FWHM = 1.0;
+        const float HWHM = FWHM / 2.0;
+
+        // Constants: Lorentzian fit
+        const float HWHM_Sq = HWHM * HWHM;
+        const float Lz_N = A * HWHM_Sq;
+        const float Lz_D = HWHM_Sq;
+
+        return Lz_N / (Lz_D + X_sq);
+    }
+
     float2 CMath_CartesianToPolar(float2 Cartesian)
     {
         // r = magnitude of the vector
@@ -307,6 +358,61 @@
         }
     }
 
+    float2 CMath_MapUVtoConcentricDisk(
+        float2 UV // UV [-1, 1)
+    )
+    {
+        float Pi = CMath_GetPi();
+
+        // Handle the special case for the origin
+        if (UV.x == 0.0 && UV.y == 0.0)
+        {
+            return float2(0.0, 0.0);
+        }
+
+        // Check if the coordinates are in the first or second half of the square
+        float R;
+        float Theta;
+        if ((UV.x * UV.x) > (UV.y * UV.y))
+        {
+            R = UV.x;
+            Theta = (Pi / 4.0) * (UV.y / UV.x);
+        }
+        else
+        {
+            R = UV.y;
+            Theta = (Pi / 2.0) - (Pi / 4.0) * (UV.x / UV.y);
+        }
+
+        // Convert from polar to Cartesian coordinates
+        return R * float2(cos(Theta), sin(Theta));
+    }
+
+    /*
+        Functions from Graphics Gems from CryEngine 3
+        https://www.advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+    */
+
+    float2 CMath_EncodeVelocity(float2 Velocity)
+    {
+        return CMath_SNORMtoUNORM_FLT2(sign(Velocity) * sqrt(abs(Velocity)));
+    }
+
+    float2 CMath_DecodeVelocity(float2 Velocity)
+    {
+        Velocity = CMath_UNORMtoSNORM_FLT2(Velocity);
+        return (Velocity * Velocity) * sign(Velocity);
+    }
+
+    /*
+        CMATH: TEXTURE COORDINATE PROCESSING
+    */
+
+    bool CMath_GetOutOfBounds(float2 Tex)
+    {
+        return any(Tex < 0.0 || Tex > 1.0);
+    }
+
     int2 CMath_GetScreenSizeFromTex(float2 Tex)
     {
         return max(round(1.0 / fwidth(Tex)), 1.0);
@@ -335,21 +441,15 @@
         return Output;
     }
 
+    float CMath_GetAntiAliasShape(float Distance, float Radius)
+    {
+        float AA = fwidth(Distance);
+        return smoothstep(Radius - AA, Radius, Distance);
+    }
+
     /*
-        Functions from Graphics Gems from CryEngine 3
-        https://www.advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+        CMATH: PSEUDORANDOM & PROCEDURAL FUNCTIONS
     */
-
-    float2 CMath_EncodeVelocity(float2 Velocity)
-    {
-        return CMath_SNORMtoUNORM_FLT2(sign(Velocity) * sqrt(abs(Velocity)));
-    }
-
-    float2 CMath_DecodeVelocity(float2 Velocity)
-    {
-        Velocity = CMath_UNORMtoSNORM_FLT2(Velocity);
-        return (Velocity * Velocity) * sign(Velocity);
-    }
 
     /*
         https://www.shadertoy.com/view/4djSRW
@@ -407,53 +507,10 @@
         https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
     */
 
-    float CMath_GetPhi(int D)
-    {
-        float X = 2.0;
-
-        [unroll]
-        for (int i = 0; i < 10; i++)
-        {
-            X = pow(1.0 + X, 1.0 / (D + 1.0));
-        }
-
-        return X;
-    }
-
     float CMath_GetGoldenRatioNoise(float2 Position)
     {
         float P2 = CMath_GetPhi(2);
         return frac(dot(Position, 1.0 / float2(P2, P2 * P2)));
-    }
-
-    float2 CMath_MapUVtoConcentricDisk(
-        float2 UV // UV [-1, 1)
-    )
-    {
-        float Pi = CMath_GetPi();
-
-        // Handle the special case for the origin
-        if (UV.x == 0.0 && UV.y == 0.0)
-        {
-            return float2(0.0, 0.0);
-        }
-
-        // Check if the coordinates are in the first or second half of the square
-        float R;
-        float Theta;
-        if ((UV.x * UV.x) > (UV.y * UV.y))
-        {
-            R = UV.x;
-            Theta = (Pi / 4.0) * (UV.y / UV.x);
-        }
-        else
-        {
-            R = UV.y;
-            Theta = (Pi / 2.0) - (Pi / 4.0) * (UV.x / UV.y);
-        }
-
-        // Convert from polar to Cartesian coordinates
-        return R * float2(cos(Theta), sin(Theta));
     }
 
     /*
@@ -583,12 +640,6 @@
         float3 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
         Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT3(Noise)) : Noise;
         return Noise;
-    }
-
-    float CMath_GetAntiAliasShape(float Distance, float Radius)
-    {
-        float AA = fwidth(Distance);
-        return smoothstep(Radius - AA, Radius, Distance);
     }
 
 #endif
