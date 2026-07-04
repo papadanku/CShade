@@ -14,24 +14,12 @@
         https://www.rastergrid.com/blog/2010/09/efficient-Gaussian-blur-with-linear-sampling/
     */
 
-    float CBlur_GetGaussianWeight1D(float X, float S)
-    {
-        float G = rsqrt(2.0 * CMath_GetPi() * S * S);
-        return G * exp(-(X * X) / (2.0 * S * S));
-    }
-
-    float CBlur_GetGaussianWeight2D(float2 X, float S)
-    {
-        float G = 1.0 / (2.0 * CMath_GetPi() * S * S);
-        return G * exp(-dot(X, X) / (2.0 * S * S));
-    }
-
     float CBlur_GetGaussianOffset(float SampleIndex, float Sigma, out float LinearWeight)
     {
         float Offset1 = SampleIndex;
         float Offset2 = SampleIndex + 1.0;
-        float Weight1 = CBlur_GetGaussianWeight1D(Offset1, Sigma);
-        float Weight2 = CBlur_GetGaussianWeight1D(Offset2, Sigma);
+        float Weight1 = CMath_GetGaussian1D(Offset1, Sigma);
+        float Weight2 = CMath_GetGaussian1D(Offset2, Sigma);
         LinearWeight = Weight1 + Weight2;
         return ((Offset1 * Weight1) + (Offset2 * Weight2)) / LinearWeight;
     }
@@ -414,8 +402,7 @@
             [unroll] \
             for (int i = 0; i < 9; i++) \
             { \
-                DATA_TYPE D = Array[i] - Median; \
-                Distances[i] = dot(D, D); \
+                Distances[i] = length(Array[i] - Median); \
             } \
             \
             float MADGM = CBlur_GetMedian3x3FLT1(Distances); \
@@ -522,11 +509,9 @@
             }
         }
 
-        // Compute the median of the deltas of Output.ArrayImages to its median
+        // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
         float MADGM = CBlur_GetMADGM3x3FLT2(Output.ArrayImages);
-
-        // Compute our median that is the Lorentzian Approximation of MADGM
-        Output.GVariance = 1.0 / (1.0 + MADGM);
+        Output.GVariance = CMath_GetLorentzian1D(MADGM);
 
         /*
             Construct array of kernels:
@@ -584,17 +569,16 @@
         inout CBlur_SideWindow_Bilateral Block
     )
     {
-        // Pre-compute Spatial distances
+        // Pre-compute Spatial distances.
         // .x = Center (0 + 0); .y = Diagonal (1 + 1); .z = Cardinal (0 + 1)
         const float Epsilon = 1e-7;
         const float3 SpatialDistances = exp2(-float3(0.0, 1.0, 2.0));
-        const float VarianceN = 1.0 / (float(Block.Size) - 1.0);
 
-        // Initialize output members
+        // Initialize output members.
         Block.Sum = 0.0;
         Block.SumWeight = 0.0;
 
-        // Initialize Outputs
+        // Initialize Outputs.
         int ImageIndex = 0;
 
         [unroll]
@@ -605,16 +589,16 @@
             {
                 if (Block.Masks[ImageIndex] == 1)
                 {
-                    // Compute Weight (Range)
+                    // Compute Weight (Range).
                     float DistSqRange = Input.ArrayDistances[ImageIndex];
                     float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
 
-                    // Compute Weight (Spatial)
+                    // Compute Weight (Spatial).
                     int SpatialOffset = abs(x) + abs(y);
                     float WeightSpatial = SpatialDistances[SpatialOffset];
                     float Weight = WeightSpatial * WeightRange;
 
-                    // Accumulate
+                    // Accumulate.
                     Block.Sum += (Input.ArrayImages[ImageIndex] * Weight);
                     Block.SumWeight += Weight;
                 }
@@ -624,20 +608,25 @@
         }
 
         /*
-            Compute the SideWindow's Sample Variance (s^2).
+            Compute the SideWindow's Sample Coefficient of Variance (CoV).
 
-            We initialize by 1 for the following reasons:
+            We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
 
-            1. Range weighting: Done with Lorentzian approximation
-
-                x / (1 + x)
-
-            2. Compute the inverted variance: Used for variance weighting
-
-                1 / (1 + v)
+            Tr = The Trace
+            M = The Mean
         */
 
-        float2 VarianceSum = 0.0;
+        // Constants: Trace, Lorentzian parameters
+        const float TraceN = 1.0 / float(Block.Size);
+
+        /*
+            We will compute the trace of the covariance matrix with vector MADs.
+
+            | xx xy | <- We skip the xy/yx calculation of the matrix.
+            | yx yy |
+        */
+
+        float2 TraceVector = 0.0;
 
         [unroll]
         for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
@@ -645,15 +634,39 @@
             if (Block.Masks[i1] == 1)
             {
                 float2 D = Input.ArrayImages[i1] - Mean;
-                VarianceSum += (D * D);
+                TraceVector += (D * D);
             }
         }
 
-        // Compute the variance weight using a Lorentzian Approximation too
-        float Variance = dot(VarianceSum, VarianceN);
+        // Compute the Trace (T): (xx / N) + (yy / N).
+        float Tr = dot(TraceVector, TraceN);
 
-        // Weight by the local variance
-        Block.IVariance = 1.0 / (1.0 + Variance);
+        // Compute the Mean's Squared Euclidian Distance: M^T*M
+        float M = dot(Mean, Mean);
+
+        /*
+            To compute Van-Valen's Coefficient of Variance: sqrt(Tr / M)
+
+            We do not use sqrt(Tr / M) because it takes 4 instructions to compute the denominator.
+
+            sqrt(Tr / M)                | RCP-MUL-RSQ-RCP
+            (Tr * rsqrt(Tr)) * rsqrt(M) | RSQ-MUL-RSQ-MUL
+            Tr * (rsqrt(Tr) * rsqrt(M)) | RSQ-RSQ-MUL-MUL
+            Tr * rsqrt(Tr * M)          | MUL-RSQ-MUL
+
+            The benefit of the `Tr * rsqrt(Tr * M)` is that we can create the demoninator for the Lorentzian in (MUL-RSQ-MAD)
+
+            ---
+
+            We omit the square root because we are fitting CoV_VV into a Lorentzian distribution: Lz_N / (Lz_D + CoV_VV^2). A sqrt(x^2) would just be x.
+
+            1 / (1 + sqrt(Tr / M))  | RCP-MUL-RSQ-MAD-RCP
+            1 / (1 + (Tr / M))      | RCP-MAD-RCP
+        */
+
+        // Fit the CoV through the Lorentzian approximation.
+        float CoV_VV = (abs(M) > 0.0) ? CMath_GetLorentzian1D(Tr / M) : 1.0;
+        Block.IVariance = CoV_VV;
     }
 
     float2 CBlur_GetSelfBilateralUpsampleFLT2(
