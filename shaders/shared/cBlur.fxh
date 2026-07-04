@@ -372,27 +372,6 @@
     TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 CBlur_GetMedian3x3FLT(float3 InArray[9])
     TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 CBlur_GetMedian3x3FLT(float4 InArray[9])
 
-    #define TEMPLATE_CBLUR_GETMSD3x3(DATA_TYPE, LENGTH) \
-        float CBlur_GetMSD3x3FLT##LENGTH(DATA_TYPE Array[9]) \
-        { \
-            DATA_TYPE Median = CBlur_GetMedian3x3FLT##LENGTH(Array); \
-            float Distances[9]; \
-            /* Create an array of Median Differences */ \
-            [unroll] \
-            for (int i = 0; i < 9; i++) \
-            { \
-                DATA_TYPE D = Array[i] - Median; \
-                Distances[i] = dot(D, D); \
-            } \
-            \
-            return CBlur_GetMedian3x3FLT1(Distances); \
-        } \
-
-    TEMPLATE_CBLUR_GETMSD3x3(float, 1) // float CBlur_GetMSD3x3FLT1(float Array[9])
-    TEMPLATE_CBLUR_GETMSD3x3(float2, 2) // float2 CBlur_GetMSD3x3FLT2(float2 Array[9])
-    TEMPLATE_CBLUR_GETMSD3x3(float3, 3) // float3 CBlur_GetMSD3x3FLT3(float3 Array[9])
-    TEMPLATE_CBLUR_GETMSD3x3(float4, 4) // float4 CBlur_GetMSD3x3FLT4(float4 Array[9])
-
     #define TEMPLATE_CBLUR_GETMADGM3x3(DATA_TYPE, LENGTH) \
         float CBlur_GetMADGM3x3FLT##LENGTH(DATA_TYPE Array[9]) \
         { \
