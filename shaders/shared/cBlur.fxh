@@ -451,11 +451,10 @@
 
         // Initialize variables
         Output.ArrayImageLength = ArrayImageLength;
-        Output.Reference;
+        Output.Reference = tex2D(Guide, Tex).xy;
 
         // Precompute (static)
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-        float2 GuideTexture = tex2D(Guide, Tex).xy;
 
         /*
             Gather samples:
@@ -475,14 +474,9 @@
             {
                 float2 Offset = Tex + (float2(x, y) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
-                float2 Delta = Sample - GuideTexture;
+                float2 Delta = Sample - Output.Reference;
                 Output.ArrayImages[ImageIndex] = Sample;
                 Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
-
-                if ((x == 0) && (y == 0))
-                {
-                    Output.Reference = Sample;
-                }
 
                 ImageIndex += 1;
             }
@@ -623,29 +617,10 @@
         // Compute the Mean's Squared Euclidian Distance: M^T*M
         float M = dot(Mean, Mean);
 
-        /*
-            To compute Van-Valen's Coefficient of Variance: sqrt(Tr / M)
+        // Coefficient of Variance
+        float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
-            We do not use sqrt(Tr / M) because it takes 4 instructions to compute the denominator.
-
-            sqrt(Tr / M)                | RCP-MUL-RSQ-RCP
-            (Tr * rsqrt(Tr)) * rsqrt(M) | RSQ-MUL-RSQ-MUL
-            Tr * (rsqrt(Tr) * rsqrt(M)) | RSQ-RSQ-MUL-MUL
-            Tr * rsqrt(Tr * M)          | MUL-RSQ-MUL
-
-            The benefit of the `Tr * rsqrt(Tr * M)` is that we can create the demoninator for the Lorentzian in (MUL-RSQ-MAD)
-
-            ---
-
-            We omit the square root because we are fitting CoV_VV into a Lorentzian distribution: Lz_N / (Lz_D + CoV_VV^2). A sqrt(x^2) would just be x.
-
-            1 / (1 + sqrt(Tr / M))  | RCP-MUL-RSQ-MAD-RCP
-            1 / (1 + (Tr / M))      | RCP-MAD-RCP
-        */
-
-        // Fit the CoV through the Lorentzian approximation.
-        float CoV_VV = (abs(M) > 0.0) ? CMath_GetLorentzian1D(Tr / M) : 1.0;
-        Block.IVariance = CoV_VV;
+        Block.IVariance = exp2(-CoV);
     }
 
     float2 CBlur_GetSelfBilateralUpsampleFLT2(
@@ -701,7 +676,7 @@
             SumIVariance += SideWindows[i0].IVariance;
         }
 
-        WindowMean = WindowMean / SumIVariance;
+        WindowMean = (SumIVariance > 0.0) ? WindowMean / SumIVariance : SharedData.Reference;
 
         return WindowMean;
     }
