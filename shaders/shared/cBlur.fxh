@@ -483,8 +483,7 @@
         }
 
         // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-        float MADGM = CBlur_GetMADGM3x3FLT2(Output.ArrayImages);
-        Output.GVariance = CMath_GetLorentzian1D(MADGM);
+        Output.GVariance = CBlur_GetMADGM3x3FLT2(Output.ArrayImages) + 1e-7;
 
         /*
             Construct array of kernels:
@@ -564,7 +563,7 @@
                 {
                     // Compute Weight (Range).
                     float DistSqRange = Input.ArrayDistances[ImageIndex];
-                    float WeightRange = 1.0 / (DistSqRange + Input.GVariance);
+                    float WeightRange = CMath_GetLorentzian1D(DistSqRange, 1.0, Input.GVariance);
 
                     // Compute Weight (Spatial).
                     int SpatialOffset = abs(x) + abs(y);
@@ -620,7 +619,7 @@
         // Coefficient of Variance
         float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
-        Block.IVariance = exp2(-CoV);
+        Block.IVariance = exp2(-abs(CoV));
     }
 
     float2 CBlur_GetSelfBilateralUpsampleFLT2(
