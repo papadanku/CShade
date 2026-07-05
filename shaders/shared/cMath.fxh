@@ -245,19 +245,11 @@
         return G * exp(-dot(X, X) / (2.0 * S * S));
     }
 
-    float CMath_GetLorentzian1D(float X_sq)
+    float CMath_GetLorentzian1D(float X_sq, float A, float FWHM)
     {
-        // Constants: Parameters
-        const float A = 1.0;
-        const float FWHM = 1.0;
-        const float HWHM = FWHM / 2.0;
-
-        // Constants: Lorentzian fit
-        const float HWHM_Sq = HWHM * HWHM;
-        const float Lz_N = A * HWHM_Sq;
-        const float Lz_D = HWHM_Sq;
-
-        return Lz_N / (Lz_D + X_sq);
+        float HWHM = FWHM / 2.0;
+        float HWHM_Sq = HWHM * HWHM;
+        return (A * HWHM_Sq) / (HWHM_Sq + X_sq);
     }
 
     float2 CMath_CartesianToPolar(float2 Cartesian)
