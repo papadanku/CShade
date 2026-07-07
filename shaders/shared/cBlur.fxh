@@ -464,19 +464,18 @@
             2 5 8 [ South West | South  | South East ]
         */
 
+        // Initialize counter here
         int ImageIndex = 0;
 
         [unroll]
-        for (int x = -1; x <= 1; x++)
+        for (int x0 = -1; x0 <= 1; x0++)
         {
             [unroll]
-            for (int y = -1; y <= 1; y++)
+            for (int y0 = -1; y0 <= 1; y0++)
             {
-                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                float2 Offset = Tex + (float2(x0, y0) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
-                float2 Delta = Sample - Output.Reference;
                 Output.ArrayImages[ImageIndex] = Sample;
-                Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
 
                 ImageIndex += 1;
             }
@@ -484,6 +483,24 @@
 
         // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
         Output.GVariance = CBlur_GetMADGM3x3FLT2(Output.ArrayImages) + 1e-7;
+
+        // Reset counter and start again
+        ImageIndex = 0;
+
+        [unroll]
+        for (int x1 = -1; x1 <= 1; x1++)
+        {
+            [unroll]
+            for (int y1 = -1; y1 <= 1; y1++)
+            {
+                // Compute shared Weight (Range) here.
+                float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
+                float DistSqRange = dot(Delta, Delta);
+                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D(DistSqRange, 1.0, Output.GVariance);
+
+                ImageIndex += 1;
+            }
+        }
 
         /*
             Construct array of kernels:
@@ -561,13 +578,12 @@
             {
                 if (Block.Masks[ImageIndex] == 1)
                 {
-                    // Compute Weight (Range).
-                    float DistSqRange = Input.ArrayDistances[ImageIndex];
-                    float WeightRange = CMath_GetLorentzian1D(DistSqRange, 1.0, Input.GVariance);
-
                     // Compute Weight (Spatial).
                     int SpatialOffset = abs(x) + abs(y);
                     float WeightSpatial = SpatialDistances[SpatialOffset];
+
+                    // Fetch Weight (Range) and combine.
+                    float WeightRange = Input.ArrayDistances[ImageIndex];
                     float Weight = WeightSpatial * WeightRange;
 
                     // Accumulate.
