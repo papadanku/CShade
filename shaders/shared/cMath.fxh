@@ -91,7 +91,7 @@
     // Get the Half format distribution of bits
     // Sign Exponent Significand
     // x    xxxxx    xxxxxxxxxx
-    float CMath_CalculateFLT16(int Sign, int Exponent, int Significand)
+    float CMath_Calculate_FLT16(int Sign, int Exponent, int Significand)
     {
         const int Bias = -15;
         const int MaxExponent = (Exponent - exp2(1)) + Bias;
@@ -107,7 +107,7 @@
             ---- -------- -----------
             0    00001    000000000
         */
-        return CMath_CalculateFLT16(0, exp2(1) + 1, exp2(0));
+        return CMath_Calculate_FLT16(0, exp2(1) + 1, exp2(0));
     }
 
     float CMath_GetFLT16Max()
@@ -117,7 +117,7 @@
             ---- -------- -----------
             0    11110    1111111111
         */
-        return CMath_CalculateFLT16(0, exp2(5), exp2(10));
+        return CMath_Calculate_FLT16(0, exp2(5), exp2(10));
     }
 
     // [-HalfMax, HalfMax) -> [-1.0, 1.0)
