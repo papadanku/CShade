@@ -231,7 +231,7 @@
                 Weight += dot(It, It);
                 It = R1 - CenterI;
                 Weight += dot(It, It);
-                Weight = 1.0 / (1.0 + Weight);
+                Weight = exp2(-abs(Weight));
                 Weight *= Weight;
             }
 
