@@ -429,9 +429,11 @@
     {
         float Masks[9];
         float Size;
+
         float2 Sum;
         float SumWeight;
-        float IVariance;
+
+        float Influence;
     };
 
     void CBlur_GetSharedData_SideWindow_Bilateral(
@@ -637,7 +639,7 @@
         float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.IVariance = CMath_GetLorentzian1D(CoV, 1.0, Input.GVariance);
+        Block.Influence = CMath_GetLorentzian1D(CoV, 1.0, Input.GVariance);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -680,20 +682,25 @@
         */
 
         float2 WindowMean = 0.0;
-        float SumIVariance = 0.0;
+        float SumInfluence = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
             CBlur_GetSideWindow_Bilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
-            SideWindows[i0].Sum /= SideWindows[i0].SumWeight;
 
-            // Weighted sum by variance
-            WindowMean += (SideWindows[i0].Sum * SideWindows[i0].IVariance);
-            SumIVariance += SideWindows[i0].IVariance;
+            if (SideWindows[i0].SumWeight > 0.0)
+            {
+                // Normalize the sum.
+                float Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+
+                // Weighted sum by variance.
+                WindowMean += (Sum * SideWindows[i0].Influence);
+                SumInfluence += SideWindows[i0].Influence;
+            }
         }
 
-        WindowMean = (SumIVariance > 0.0) ? WindowMean / SumIVariance : SharedData.Reference;
+        WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : SharedData.Reference;
 
         return WindowMean;
     }
