@@ -691,7 +691,7 @@
             if (SideWindows[i0].SumWeight > 0.0)
             {
                 // Normalize the sum.
-                float Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+                float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
                 // Weighted sum by variance.
                 WindowMean += (Sum * SideWindows[i0].Influence);
