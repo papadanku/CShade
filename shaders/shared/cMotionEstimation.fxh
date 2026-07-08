@@ -211,7 +211,7 @@
                 Weight += dot(It, It);
                 It = R1 - CenterI;
                 Weight += dot(It, It);
-                Weight = exp2(-abs(Weight));
+                Weight = CMath_GetLorentzian1D(Weight, 1.0, 1.0);
                 Weight *= Weight;
             }
 
