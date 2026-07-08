@@ -350,7 +350,6 @@
     #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
         DATA_TYPE CBlur_GetMedian3x3_FLT##LENGTH(DATA_TYPE InArray[9]) \
         { \
-            /* Starting with a subset of size 6, remove the min and max each time */ \
             DATA_TYPE Temp; \
             DATA_TYPE Array[9]; \
             \
@@ -360,6 +359,7 @@
                 Array[i] = InArray[i]; \
             } \
             \
+            /* Starting with a subset of size 6, remove the min and max each time */ \
             CBLUR_MEDIAN_MNMX6(Array[0], Array[1], Array[2], Array[3], Array[4], Array[5]); \
             CBLUR_MEDIAN_MNMX5(Array[1], Array[2], Array[3], Array[4], Array[6]); \
             CBLUR_MEDIAN_MNMX4(Array[2], Array[3], Array[4], Array[7]); \
@@ -476,8 +476,7 @@
             for (int y0 = -1; y0 <= 1; y0++)
             {
                 float2 Offset = Tex + (float2(x0, y0) * PixelSize);
-                float2 Sample = tex2D(Image, Offset).xy;
-                Output.ArrayImages[ImageIndex] = Sample;
+                Output.ArrayImages[ImageIndex] = tex2D(Image, Offset).xy;
 
                 ImageIndex += 1;
             }
