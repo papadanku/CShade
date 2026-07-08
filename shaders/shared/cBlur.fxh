@@ -456,7 +456,7 @@
         Output.Reference = tex2D(Guide, Tex).xy;
 
         // Precompute (static)
-        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+        float2 PixelSize = fwidth(Tex.xy);
 
         /*
             Gather samples:
@@ -475,7 +475,9 @@
             [unroll]
             for (int y0 = -1; y0 <= 1; y0++)
             {
-                float2 Offset = Tex + (float2(x0, y0) * PixelSize);
+                // *2 because the lower sample takes a 2 texel footprint.
+                float2 Delta = float2(x0, y0) * 2.0;
+                float2 Offset = Tex + (Delta * PixelSize);
                 Output.ArrayImages[ImageIndex] = tex2D(Image, Offset).xy;
 
                 ImageIndex += 1;
@@ -717,7 +719,7 @@
         const float WeightsCardinal = 1.0 / float(SideWindowSizeCardinal);
 
         // Precompute (static)
-        float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
+        float2 PixelSize = fwidth(Tex.xy);
         float2 ArrayImages[ArrayImagesLength];
         float2 Reference;
 
@@ -737,7 +739,9 @@
             [unroll]
             for (int x = -1; x <= 1; x++)
             {
-                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                // *2 because the lower sample takes a 2 texel footprint.
+                float2 Delta = float2(x, y) * 2.0;
+                float2 Offset = Tex + (Delta * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
                 ArrayImages[ImageIndex] = Sample;
 
