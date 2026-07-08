@@ -348,7 +348,7 @@
         CBLUR_MEDIAN_MX3(D, E, F); \
 
     #define TEMPLATE_CBLUR_GETMEDIAN3X3(DATA_TYPE, LENGTH) \
-        DATA_TYPE CBlur_GetMedian3x3FLT##LENGTH(DATA_TYPE InArray[9]) \
+        DATA_TYPE CBlur_GetMedian3x3_FLT##LENGTH(DATA_TYPE InArray[9]) \
         { \
             /* Starting with a subset of size 6, remove the min and max each time */ \
             DATA_TYPE Temp; \
@@ -373,9 +373,9 @@
     TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 CBlur_GetMedian3x3FLT(float4 InArray[9])
 
     #define TEMPLATE_CBLUR_GETMADGM3x3(DATA_TYPE, LENGTH) \
-        float CBlur_GetMADGM3x3FLT##LENGTH(DATA_TYPE Array[9]) \
+        float CBlur_GetMADGM3x3_FLT##LENGTH(DATA_TYPE Array[9]) \
         { \
-            DATA_TYPE Median = CBlur_GetMedian3x3FLT##LENGTH(Array); \
+            DATA_TYPE Median = CBlur_GetMedian3x3_FLT##LENGTH(Array); \
             float Distances[9]; \
             /* Create an array of Median Differences */ \
             [unroll] \
@@ -384,15 +384,15 @@
                 Distances[i] = length(Array[i] - Median); \
             } \
             \
-            float MADGM = CBlur_GetMedian3x3FLT1(Distances); \
+            float MADGM = CBlur_GetMedian3x3_FLT1(Distances); \
             float NMADGM = (MADGM > 0.0) ? Distances[4] / MADGM : 0.0; \
             return NMADGM; \
         } \
 
-    TEMPLATE_CBLUR_GETMADGM3x3(float, 1) // float CBlur_GetMADGM3x3FLT1(float Array[9])
-    TEMPLATE_CBLUR_GETMADGM3x3(float2, 2) // float2 CBlur_GetMADGM3x3FLT2(float2 Array[9])
-    TEMPLATE_CBLUR_GETMADGM3x3(float3, 3) // float3 CBlur_GetMADGM3x3FLT3(float3 Array[9])
-    TEMPLATE_CBLUR_GETMADGM3x3(float4, 4) // float4 CBlur_GetMADGM3x3FLT4(float4 Array[9])
+    TEMPLATE_CBLUR_GETMADGM3x3(float, 1) // float CBlur_GetMADGM3x3_FLT1(float Array[9])
+    TEMPLATE_CBLUR_GETMADGM3x3(float2, 2) // float2 CBlur_GetMADGM3x3_FLT2(float2 Array[9])
+    TEMPLATE_CBLUR_GETMADGM3x3(float3, 3) // float3 CBlur_GetMADGM3x3_FLT3(float3 Array[9])
+    TEMPLATE_CBLUR_GETMADGM3x3(float4, 4) // float4 CBlur_GetMADGM3x3_FLT4(float4 Array[9])
 
     /*
         This is an optimized, self-guided version for Joint Bilateral Upsampling implemented in HLSL.
@@ -408,7 +408,7 @@
         Yin, H., Gong, Y., & Qiu, G. (2019). Side window filtering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (pp. 8758-8766).
     */
 
-    struct CBlur_SharedData_SideWindowBilateral
+    struct CBlur_SharedData_SideWindow_Bilateral
     {
         // Shared constants
         int ArrayImageLength;
@@ -434,11 +434,11 @@
         float IVariance;
     };
 
-    void CBlur_GetSharedData_SideWindowBilateral(
+    void CBlur_GetSharedData_SideWindow_Bilateral(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
         float2 Tex,
-        out CBlur_SharedData_SideWindowBilateral Output
+        out CBlur_SharedData_SideWindow_Bilateral Output
     )
     {
         const int ArrayImageLength = 9;
@@ -464,26 +464,43 @@
             2 5 8 [ South West | South  | South East ]
         */
 
+        // Initialize counter here
         int ImageIndex = 0;
 
         [unroll]
-        for (int x = -1; x <= 1; x++)
+        for (int x0 = -1; x0 <= 1; x0++)
         {
             [unroll]
-            for (int y = -1; y <= 1; y++)
+            for (int y0 = -1; y0 <= 1; y0++)
             {
-                float2 Offset = Tex + (float2(x, y) * PixelSize);
+                float2 Offset = Tex + (float2(x0, y0) * PixelSize);
                 float2 Sample = tex2D(Image, Offset).xy;
-                float2 Delta = Sample - Output.Reference;
                 Output.ArrayImages[ImageIndex] = Sample;
-                Output.ArrayDistances[ImageIndex] = dot(Delta, Delta);
 
                 ImageIndex += 1;
             }
         }
 
         // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-        Output.GVariance = CBlur_GetMADGM3x3FLT2(Output.ArrayImages) + 1e-7;
+        Output.GVariance = CBlur_GetMADGM3x3_FLT2(Output.ArrayImages) + 1e-7;
+
+        // Reset counter and start again
+        ImageIndex = 0;
+
+        [unroll]
+        for (int x1 = -1; x1 <= 1; x1++)
+        {
+            [unroll]
+            for (int y1 = -1; y1 <= 1; y1++)
+            {
+                // Compute shared Weight (Range) here.
+                float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
+                float DistSqRange = dot(Delta, Delta);
+                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D(DistSqRange, 1.0, Output.GVariance);
+
+                ImageIndex += 1;
+            }
+        }
 
         /*
             Construct array of kernels:
@@ -535,8 +552,8 @@
         Output.SideWindowMeans[7] *= SideWindowWeight_Cardinal;
     }
 
-    void CBlur_GetSideWindowBilateral(
-        in CBlur_SharedData_SideWindowBilateral Input,
+    void CBlur_GetSideWindow_Bilateral(
+        in CBlur_SharedData_SideWindow_Bilateral Input,
         in float2 Mean,
         inout CBlur_SideWindow_Bilateral Block
     )
@@ -561,13 +578,12 @@
             {
                 if (Block.Masks[ImageIndex] == 1)
                 {
-                    // Compute Weight (Range).
-                    float DistSqRange = Input.ArrayDistances[ImageIndex];
-                    float WeightRange = CMath_GetLorentzian1D(DistSqRange, 1.0, Input.GVariance);
-
                     // Compute Weight (Spatial).
                     int SpatialOffset = abs(x) + abs(y);
                     float WeightSpatial = SpatialDistances[SpatialOffset];
+
+                    // Fetch Weight (Range) and combine.
+                    float WeightRange = Input.ArrayDistances[ImageIndex];
                     float Weight = WeightSpatial * WeightRange;
 
                     // Accumulate.
@@ -622,7 +638,7 @@
         Block.IVariance = exp2(-abs(CoV));
     }
 
-    float2 CBlur_GetSelfBilateralUpsampleFLT2(
+    float2 CBlur_GetSelfBilateralUpsample_FLT2(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
         float2 Tex
@@ -631,8 +647,8 @@
         const int SideWindowsCount = 8;
 
         // Create the data struct that we will use accross multiple functions.
-        CBlur_SharedData_SideWindowBilateral SharedData;
-        CBlur_GetSharedData_SideWindowBilateral(Image, Guide, Tex, SharedData);
+        CBlur_SharedData_SideWindow_Bilateral SharedData;
+        CBlur_GetSharedData_SideWindow_Bilateral(Image, Guide, Tex, SharedData);
 
         // Initialize our side windows
         CBlur_SideWindow_Bilateral SideWindows[SideWindowsCount];
@@ -667,7 +683,7 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            CBlur_GetSideWindowBilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
+            CBlur_GetSideWindow_Bilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
             SideWindows[i0].Sum /= SideWindows[i0].SumWeight;
 
             // Weighted sum by variance
@@ -680,7 +696,7 @@
         return WindowMean;
     }
 
-    float2 CBlur_GetSideWindowBoxFLT2(sampler2D Image, float2 Tex)
+    float2 CBlur_GetSideWindowBox_FLT2(sampler2D Image, float2 Tex)
     {
         // Precompute constants (image array)
         const int SideWindowsCount = 8;

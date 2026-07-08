@@ -153,22 +153,22 @@ void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 void PS_Upsample0(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSideWindowBoxFLT2(SampleGuide, Input.Tex0);
+    Output = CBlur_GetSideWindowBox_FLT2(SampleGuide, Input.Tex0);
 }
 
 void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsampleFLT2(SampleTempTex5, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex5, SampleGuide, Input.Tex0);
 }
 
 void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsampleFLT2(SampleTempTex4, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex4, SampleGuide, Input.Tex0);
 }
 
 void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsampleFLT2(SampleTempTex3, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex3, SampleGuide, Input.Tex0);
 }
 
 float3 GetMotionBlur(CShade_VS2PS_Quad Input, float2 MotionVectors)
