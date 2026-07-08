@@ -604,8 +604,8 @@
             M = The Mean
         */
 
-        // Constants: Trace, Lorentzian parameters
-        const float TraceN = 1.0 / float(Block.Size);
+        // Constant: Sample Variance (Sigma)
+        const float SigmaN = 1.0 / (float(Block.Size) - 1.0);
 
         /*
             We will compute the trace of the covariance matrix with vector MADs.
@@ -614,7 +614,7 @@
             | yx yy |
         */
 
-        float2 TraceVector = 0.0;
+        float2 SigmaVec = 0.0;
 
         [unroll]
         for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
@@ -622,20 +622,22 @@
             if (Block.Masks[i1] == 1)
             {
                 float2 D = Input.ArrayImages[i1] - Mean;
-                TraceVector += (D * D);
+                SigmaVec += (D * D);
             }
         }
 
         // Compute the Trace (T): (xx / N) + (yy / N).
-        float Tr = dot(TraceVector, TraceN);
+        float Tr = dot(SigmaVec, SigmaN);
 
         // Compute the Mean's Squared Euclidian Distance: M^T*M
         float M = dot(Mean, Mean);
 
-        // Coefficient of Variance
+        // Coefficient of Variance.
+        // We removed the sqrt(x) because the result gets cancelled-out in CMath_GetLorentzian1D(x)
         float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
-        Block.IVariance = exp2(-abs(CoV));
+        // Fit the CoV into a Lorentzian approximation.
+        Block.IVariance = CMath_GetLorentzian1D(CoV, 1.0, Input.GVariance);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
