@@ -9,56 +9,36 @@
 #if !defined(INCLUDE_CMOTIONESTIMATION)
     #define INCLUDE_CMOTIONESTIMATION
 
-    /*
-        Dilate up to 2^4 pixels.
-        - Subsequent levels and the post-filter upsampling will address the undersampled regions.
-        - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
-    */
     float2 CMotionEstimation_GetSparsePyramidUpsample(float2 HPos, float2 Tex, float2 PixelSize, sampler2D SampleSource)
     {
-        // Constants (Math)
-        float Pi = CMath_GetPi();
-        float Pi2 = Pi * 2.0;
-        float GoldenAngle = CMath_GetGoldenRatio();
+        /*
+            Dilate up to 2^3 pixels.
 
-        // Constants (Sum)
-        const float Spread = exp2(3.0) * 2.0;
-        const int SampleCount = 9;
-        const float Weight = 1.0 / SampleCount;
-        float R[SampleCount];
+            - Subsequent levels and the post-filter upsampling will address the undersampled regions.
+            - This idea is based off depth-of-field undersampling and using a post-filter on the undersampled regions.
+        */
 
-        [unroll]
-        for (int i0 = 0; i0 < SampleCount; i0++)
-        {
-            // Compute radius fraction based on the tap index (sqrt ensures uniform area distribution)
-            R[i0] = sqrt((float(i0) + 0.5) / float(SampleCount)) * Spread;
-        }
+        const float DilateScale = exp2(3.0);
 
-        // Create a sequence of random numbers
-        float IGN = CMath_GetInterleavedGradientNoise(HPos) * Pi2;
-
-        // Initialize variables
+        // Initialize Sum
         float2 Sum = 0.0;
+        float Weight = 0.0;
 
         [unroll]
-        for (int i1 = 0; i1 < SampleCount; i1++)
+        for (int x = -1; x <= 1; x++)
         {
-            // Compute angle based on golden spiral + our per-pixel random dither rotation
-            float Theta = (float(i1) * GoldenAngle) + IGN;
+            [unroll]
+            for (int y = -1; y <= 1; y++)
+            {
+                float2 Shift = float2(x, y) * DilateScale;
+                float2 FetchTex = Tex + (Shift * PixelSize);
 
-            // Convert polar coordinates to Cartesian offset vectors
-            float2 DiskOffset;
-            sincos(Theta, DiskOffset.y, DiskOffset.x);
-
-            // Scale the offset by your search footprint converted to UV space
-            DiskOffset *= R[i1];
-            DiskOffset = Tex + (DiskOffset * PixelSize);
-
-            // Gather the low-res motion vector baseline
-            Sum += (tex2D(SampleSource, DiskOffset).xy * Weight);
+                Sum += tex2D(SampleSource, FetchTex).xy;
+                Weight += 1.0;
+            }
         }
 
-        return Sum;
+        return Sum / Weight;
     }
 
     /*
