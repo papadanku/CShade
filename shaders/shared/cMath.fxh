@@ -253,11 +253,11 @@
         return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
     }
 
-    float CMath_GetLorentzian1D_Fast(float X_sq, float A, float FWHM_Sq)
+    float CMath_GetLorentzian1D_Fast(float X_Sq, float A, float FWHM_Sq)
     {
         // (FWHM / 2)^2 = FWHM^2 / 4
         float HWHM_Sq = FWHM_Sq / 4.0;
-        return (A * HWHM_Sq) / (HWHM_Sq + X_sq);
+        return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
     }
 
     float2 CMath_CartesianToPolar(float2 Cartesian)

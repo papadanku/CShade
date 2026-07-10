@@ -419,7 +419,7 @@
         float2 ArrayImages[9];
         float ArrayDistances[9];
         float2 SideWindowMeans[8];
-        float GVariance;
+        float GVariance_Sq;
 
         // Shared for final calculation
         float2 Reference;
@@ -559,7 +559,7 @@
         float Coherence = (D > 0.0) ? (4.0 * N) / D : 0.0;
 
         // Map into your global variance framework
-        Output.GVariance = Coherence + 1e-7;
+        Output.GVariance_Sq = Coherence + 1e-7;
 
         // Reset counter and start again
         ImageIndex = 0;
@@ -573,7 +573,7 @@
                 // Compute shared Weight (Range) here.
                 float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
                 float DistRange_Sq = dot(Delta, Delta);
-                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance);
+                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance_Sq);
 
                 ImageIndex += 1;
             }
@@ -710,10 +710,11 @@
         float M = dot(Mean, Mean);
 
         // Coefficient of Variance.
-        float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
+        // We removed the sqrt(x) because the result gets cancelled-out in CMath_GetLorentzian1D_Fast(x)
+        float CoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.Influence = CMath_GetLorentzian1D_Fast(CoV, 1.0, Input.GVariance);
+        Block.Influence = CMath_GetLorentzian1D_Fast(CoV_Sq, 1.0, Input.GVariance_Sq);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
