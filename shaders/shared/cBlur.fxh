@@ -467,7 +467,7 @@
         */
 
         // Initialize counter here
-        int ImageIndex = 0;
+        int ImageIndex0 = 0;
 
         [unroll]
         for (int x0 = -1; x0 <= 1; x0++)
@@ -478,9 +478,9 @@
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x0, y0) * 2.0;
                 float2 Offset = Tex + (Delta * PixelSize);
-                Output.ArrayImages[ImageIndex] = tex2D(Image, Offset).xy;
+                Output.ArrayImages[ImageIndex0] = tex2D(Image, Offset).xy;
 
-                ImageIndex += 1;
+                ImageIndex0 += 1;
             }
         }
 
@@ -562,7 +562,7 @@
         Output.GVariance_Sq = Coherence + 1e-7;
 
         // Reset counter and start again
-        ImageIndex = 0;
+        int ImageIndex1 = 0;
 
         [unroll]
         for (int x1 = -1; x1 <= 1; x1++)
@@ -571,11 +571,11 @@
             for (int y1 = -1; y1 <= 1; y1++)
             {
                 // Compute shared Weight (Range) here.
-                float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
+                float2 Delta = Output.ArrayImages[ImageIndex1] - Output.Reference;
                 float DistRange_Sq = dot(Delta, Delta);
-                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance_Sq);
+                Output.ArrayDistances[ImageIndex1] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance_Sq);
 
-                ImageIndex += 1;
+                ImageIndex1 += 1;
             }
         }
 
