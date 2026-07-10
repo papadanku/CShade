@@ -484,8 +484,85 @@
             }
         }
 
-        // Compute the MADGM and fit the MADGM into a Lorentzian distribution.
-        Output.GVariance = CBlur_GetMADGM3x3_FLT2(Output.ArrayImages) + 1e-7;
+        /*
+            Coherance pass.
+        */
+
+        const float K_H[ArrayImageLength] =
+        {
+            -1.0 / 4.0, 0.0, 1.0 / 4.0,
+            -2.0 / 4.0, 0.0, 2.0 / 4.0,
+            -1.0 / 4.0, 0.0, 1.0 / 4.0
+        };
+
+        const float K_V[ArrayImageLength] =
+        {
+            -1.0 / 4.0, -2.0 / 4.0, -1.0 / 4.0,
+             0.0,        0.0,        0.0,
+             1.0 / 4.0,  2.0 / 4.0,  1.0 / 4.0
+        };
+
+        float2 Gx = 0.0;
+        float2 Gy = 0.0;
+
+        // Completely unrolled to avoid SM3 loop register index penalties
+        [unroll]
+        for (int i = 0; i < 9; i++)
+        {
+            Gx += (Output.ArrayImages[i] * K_H[i]);
+            Gy += (Output.ArrayImages[i] * K_V[i]);
+        }
+
+        float DotGxGx = dot(Gx, Gx);
+        float DotGyGy = dot(Gy, Gy);
+        float DotGxGy = dot(Gx, Gy);
+
+        /*
+            Compute the Coherance.
+
+            Simplication of the factor inside the square root (S):
+
+                1. Tr(M)^2 - 4det(M)
+                2. (a + c)^2 - 4(ac - b^2)
+                3. a^2 + 2ac + c^2 - 4ac + 4b^2
+                4. a^2 - 2ac + c^2 + 4b^2
+                5. (a - c)^2 + 4b^2
+
+                1. E = (Tr(M) +- sqrt((a - c)^2 + 4b^2)) / 2
+                2. E = (Tr(M) / 2) +- sqrt(((a - c)^2 / 4) + (4b^2 / 4))
+                3. E = (Tr(M) / 2) +- sqrt(((a - c) / 2)^2 + b^2)
+
+                E1 = (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+                E2 = (Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2)
+
+            Now we need to compute C: (E1 - E2) / (E1 + E2)
+
+                E1 - E2:
+
+                    1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+                    2. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+                    3. sqrt(((a - c) / 2)^2 + b^2) + sqrt(((a - c) / 2)^2 + b^2)
+                    4. 2 * sqrt(((a - c) / 2)^2 + b^2)
+
+                E1 + E2:
+
+                    1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) + ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+                    2. (Tr(M) / 2) + (Tr(M) / 2)
+                    3. 2 * (Tr(M) / 2)
+                    4. Tr(M)
+
+                Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
+        */
+
+        float Trace = (DotGxGx + DotGyGy);          // Element (a + c)
+        float Diff  = (DotGxGx - DotGyGy) * 0.5;    // Element (a - c) / 2
+        float N = (Diff * Diff) + (DotGxGy * DotGxGy);
+
+        // Normalized Linear Coherence: 0 (flat), (highly directional edge)
+        float Coherence = (Trace > 0.0) ? (4.0 * N) / (Trace * Trace) : 0.0;
+
+        // Map into your global variance framework
+        Output.GVariance = Coherence + 1e-7;
 
         // Reset counter and start again
         ImageIndex = 0;
@@ -598,49 +675,12 @@
             }
         }
 
-        /*
-            Compute the SideWindow's Sample Coefficient of Variance (CoV).
-
-            We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
-
-            Tr = The Trace
-            M = The Mean
-        */
-
-        // Constant: Sample Variance (Sigma)
-        const float SigmaN = 1.0 / (float(Block.Size) - 1.0);
-
-        /*
-            We will compute the trace of the covariance matrix with vector MADs.
-
-            | xx xy | <- We skip the xy/yx calculation of the matrix.
-            | yx yy |
-        */
-
-        float2 SigmaVec = 0.0;
-
-        [unroll]
-        for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
-        {
-            if (Block.Masks[i1] == 1)
-            {
-                float2 D = Input.ArrayImages[i1] - Mean;
-                SigmaVec += (D * D);
-            }
-        }
-
-        // Compute the Trace (T): (xx / N) + (yy / N).
-        float Tr = dot(SigmaVec, SigmaN);
-
-        // Compute the Mean's Squared Euclidian Distance: M^T*M
-        float M = dot(Mean, Mean);
-
-        // Coefficient of Variance.
-        // We removed the sqrt(x) because the result gets cancelled-out in CMath_GetLorentzian1D(x)
-        float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
+        // Compute the Laplacian for the weighting
+        float2 Error = Mean - Input.Reference;
+        float Laplacian = dot(Error, Error);
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.Influence = CMath_GetLorentzian1D(CoV, 1.0, Input.GVariance);
+        Block.Influence = CMath_GetLorentzian1D(Laplacian, 1.0, Input.GVariance);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
