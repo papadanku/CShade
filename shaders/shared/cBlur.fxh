@@ -575,8 +575,8 @@
             {
                 // Compute shared Weight (Range) here.
                 float2 Delta = Output.ArrayImages[ImageIndex] - Output.Reference;
-                float DistSqRange = dot(Delta, Delta);
-                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D(DistSqRange, 1.0, Output.GVariance);
+                float DistRange_Sq = dot(Delta, Delta);
+                Output.ArrayDistances[ImageIndex] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance);
 
                 ImageIndex += 1;
             }
@@ -675,12 +675,48 @@
             }
         }
 
-        // Compute the Laplacian for the weighting
-        float2 Error = Mean - Input.Reference;
-        float Laplacian = dot(Error, Error);
+        /*
+            Compute the SideWindow's Sample Coefficient of Variance (CoV).
+
+            We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
+
+            Tr = The Trace
+            M = The Mean
+        */
+
+        // Constant: Sample Variance (Sigma)
+        const float SigmaN = 1.0 / (float(Block.Size) - 1.0);
+
+        /*
+            We will compute the trace of the covariance matrix with vector MADs.
+
+            | xx xy | <- We skip the xy/yx calculation of the matrix.
+            | yx yy |
+        */
+
+        float2 SigmaVec = 0.0;
+
+        [unroll]
+        for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
+        {
+            if (Block.Masks[i1] == 1)
+            {
+                float2 D = Input.ArrayImages[i1] - Mean;
+                SigmaVec += (D * D);
+            }
+        }
+
+        // Compute the Trace (T): (xx / N) + (yy / N).
+        float Tr = dot(SigmaVec, SigmaN);
+
+        // Compute the Mean's Squared Euclidian Distance: M^T*M
+        float M = dot(Mean, Mean);
+
+        // Coefficient of Variance.
+        float CoV = (abs(M) > 0.0) ? Tr / M : 0.0;
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.Influence = CMath_GetLorentzian1D(Laplacian, 1.0, Input.GVariance);
+        Block.Influence = CMath_GetLorentzian1D_Fast(CoV, 1.0, Input.GVariance);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -735,7 +771,7 @@
                 // Normalize the sum.
                 float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
-                // Weighted sum by variance.
+                // Weighted sum by influence.
                 WindowMean += (Sum * SideWindows[i0].Influence);
                 SumInfluence += SideWindows[i0].Influence;
             }
