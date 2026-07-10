@@ -553,9 +553,10 @@
         float Trace = (DotGxGx + DotGyGy);          // Element (a + c)
         float Diff  = (DotGxGx - DotGyGy) * 0.5;    // Element (a - c) / 2
         float N = (Diff * Diff) + (DotGxGy * DotGxGy);
+        float D = Trace * Trace;
 
-        // Normalized Linear Coherence: 0 (flat), (highly directional edge)
-        float Coherence = (Trace > 0.0) ? (4.0 * N) / (Trace * Trace) : 0.0;
+        // Normalized Squared Coherence: 0 (flat), (highly directional edge)
+        float Coherence = (D > 0.0) ? (4.0 * N) / D : 0.0;
 
         // Map into your global variance framework
         Output.GVariance = Coherence + 1e-7;
