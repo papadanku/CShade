@@ -485,39 +485,6 @@
         }
 
         /*
-            Coherance pass.
-        */
-
-        const float K_H[ArrayImageLength] =
-        {
-            -1.0 / 4.0, 0.0, 1.0 / 4.0,
-            -2.0 / 4.0, 0.0, 2.0 / 4.0,
-            -1.0 / 4.0, 0.0, 1.0 / 4.0
-        };
-
-        const float K_V[ArrayImageLength] =
-        {
-            -1.0 / 4.0, -2.0 / 4.0, -1.0 / 4.0,
-             0.0,        0.0,        0.0,
-             1.0 / 4.0,  2.0 / 4.0,  1.0 / 4.0
-        };
-
-        float2 Gx = 0.0;
-        float2 Gy = 0.0;
-
-        // Completely unrolled to avoid SM3 loop register index penalties
-        [unroll]
-        for (int i = 0; i < 9; i++)
-        {
-            Gx += (Output.ArrayImages[i] * K_H[i]);
-            Gy += (Output.ArrayImages[i] * K_V[i]);
-        }
-
-        float DotGxGx = dot(Gx, Gx);
-        float DotGyGy = dot(Gy, Gy);
-        float DotGxGy = dot(Gx, Gy);
-
-        /*
             Compute the Coherance.
 
             Simplication of the factor inside the square root (S):
@@ -553,6 +520,35 @@
 
                 Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
         */
+
+        const float K_H[ArrayImageLength] =
+        {
+            -1.0 / 4.0, -2.0 / 4.0, -1.0 / 4.0,
+             0.0,        0.0,        0.0,
+             1.0 / 4.0,  2.0 / 4.0,  1.0 / 4.0
+        };
+
+        const float K_V[ArrayImageLength] =
+        {
+            -1.0 / 4.0, 0.0, 1.0 / 4.0,
+            -2.0 / 4.0, 0.0, 2.0 / 4.0,
+            -1.0 / 4.0, 0.0, 1.0 / 4.0
+        };
+
+        float2 Gx = 0.0;
+        float2 Gy = 0.0;
+
+        // Completely unrolled to avoid SM3 loop register index penalties
+        [unroll]
+        for (int i = 0; i < ArrayImageLength; i++)
+        {
+            Gx += (Output.ArrayImages[i] * K_H[i]);
+            Gy += (Output.ArrayImages[i] * K_V[i]);
+        }
+
+        float DotGxGx = dot(Gx, Gx);
+        float DotGyGy = dot(Gy, Gy);
+        float DotGxGy = dot(Gx, Gy);
 
         float Trace = (DotGxGx + DotGyGy);          // Element (a + c)
         float Diff  = (DotGxGx - DotGyGy) * 0.5;    // Element (a - c) / 2
