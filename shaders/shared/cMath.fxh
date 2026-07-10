@@ -245,10 +245,18 @@
         return G * exp(-dot(X, X) / (2.0 * S * S));
     }
 
-    float CMath_GetLorentzian1D(float X_sq, float A, float FWHM)
+    float CMath_GetLorentzian1D(float X, float A, float FWHM)
     {
         float HWHM = FWHM / 2.0;
         float HWHM_Sq = HWHM * HWHM;
+        float X_Sq = X * X;
+        return (A * HWHM_Sq) / (HWHM_Sq + X_Sq);
+    }
+
+    float CMath_GetLorentzian1D_Fast(float X_sq, float A, float FWHM_Sq)
+    {
+        // (FWHM / 2)^2 = FWHM^2 / 4
+        float HWHM_Sq = FWHM_Sq / 4.0;
         return (A * HWHM_Sq) / (HWHM_Sq + X_sq);
     }
 
