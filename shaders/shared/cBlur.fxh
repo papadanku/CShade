@@ -714,7 +714,7 @@
         float CoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.Influence_Sq = CoV_Sq;
+        Block.Influence_Sq = CMath_GetLorentzian1D_Fast(CoV_Sq, 1.0, Input.GVariance_Sq);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
