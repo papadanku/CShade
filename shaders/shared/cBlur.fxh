@@ -433,7 +433,7 @@
         float2 Sum;
         float SumWeight;
 
-        float Influence;
+        float Influence_Sq;
     };
 
     void CBlur_GetSharedData_SideWindow_Bilateral(
@@ -714,7 +714,7 @@
         float CoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
 
         // Fit the CoV into a Lorentzian approximation.
-        Block.Influence = CMath_GetLorentzian1D_Fast(CoV_Sq, 1.0, Input.GVariance_Sq);
+        Block.Influence_Sq = CoV_Sq;
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -729,23 +729,41 @@
         CBlur_SharedData_SideWindow_Bilateral SharedData;
         CBlur_GetSharedData_SideWindow_Bilateral(Image, Guide, Tex, SharedData);
 
+        /*
+            Construct array of Masks:
+
+            [0] [3] [6]  (Top Row)
+            [1] [4] [7]  (Middle Row)
+            [2] [5] [8]  (Bottom Row)
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
         // Initialize our side windows
         CBlur_SideWindow_Bilateral SideWindows[SideWindowsCount];
-        SideWindows[0].Masks = { 1, 1, 0,  1, 1, 0,  0, 0, 0 }; // NW
+        SideWindows[0].Masks = { 1, 1, 0, 1, 1, 0, 0, 0, 0 }; // NW
         SideWindows[0].Size = SharedData.SideWindowSize_Corner;
-        SideWindows[1].Masks = { 0, 1, 1,  0, 1, 1,  0, 0, 0 }; // NE
+        SideWindows[1].Masks = { 0, 0, 0, 1, 1, 0, 1, 1, 0 }; // NE
         SideWindows[1].Size = SharedData.SideWindowSize_Corner;
-        SideWindows[2].Masks = { 0, 0, 0,  1, 1, 0,  1, 1, 0 }; // SW
+        SideWindows[2].Masks = { 0, 1, 1, 0, 1, 1, 0, 0, 0 }; // SW
         SideWindows[2].Size = SharedData.SideWindowSize_Corner;
-        SideWindows[3].Masks = { 0, 0, 0,  0, 1, 1,  0, 1, 1 }; // SE
+        SideWindows[3].Masks = { 0, 0, 0, 0, 1, 1, 0, 1, 1 }; // SE
         SideWindows[3].Size = SharedData.SideWindowSize_Corner;
-        SideWindows[4].Masks = { 1, 1, 1,  1, 1, 1,  0, 0, 0 }; // N
+        SideWindows[4].Masks = { 1, 1, 0, 1, 1, 0, 1, 1, 0 }; // N
         SideWindows[4].Size = SharedData.SideWindowSize_Cardinal;
-        SideWindows[5].Masks = { 0, 0, 0,  1, 1, 1,  1, 1, 1 }; // S
+        SideWindows[5].Masks = { 0, 1, 1, 0, 1, 1, 0, 1, 1 }; // S
         SideWindows[5].Size = SharedData.SideWindowSize_Cardinal;
-        SideWindows[6].Masks = { 1, 1, 0,  1, 1, 0,  1, 1, 0 }; // W
+        SideWindows[6].Masks = { 1, 1, 1, 1, 1, 1, 0, 0, 0 }; // W
         SideWindows[6].Size = SharedData.SideWindowSize_Cardinal;
-        SideWindows[7].Masks = { 0, 1, 1,  0, 1, 1,  0, 1, 1 }; // E
+        SideWindows[7].Masks = { 0, 0, 0, 1, 1, 1, 1, 1, 1 }; // E
         SideWindows[7].Size = SharedData.SideWindowSize_Cardinal;
 
         /*
@@ -757,25 +775,24 @@
         */
 
         float2 WindowMean = 0.0;
-        float SumInfluence = 0.0;
+        float SumInfluence_Sq = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
             CBlur_GetSideWindow_Bilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
-
             if (SideWindows[i0].SumWeight > 0.0)
             {
                 // Normalize the sum.
                 float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
                 // Weighted sum by influence.
-                WindowMean += (Sum * SideWindows[i0].Influence);
-                SumInfluence += SideWindows[i0].Influence;
+                WindowMean += (Sum * SideWindows[i0].Influence_Sq);
+                SumInfluence_Sq += SideWindows[i0].Influence_Sq;
             }
         }
 
-        WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : SharedData.Reference;
+        WindowMean = (SumInfluence_Sq > 0.0) ? WindowMean / SumInfluence_Sq : SharedData.SideWindowMeans[4];
 
         return WindowMean;
     }
