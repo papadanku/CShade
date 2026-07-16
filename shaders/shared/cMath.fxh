@@ -228,6 +228,62 @@
         CMATH: GEOMETRIC & TRIGONOMETRIC FUNCTIONS
     */
 
+    /*
+        Compute the Coherance.
+
+        Simplication of the factor inside the square root (S):
+
+            1. Tr(M)^2 - 4det(M)
+            2. (a + c)^2 - 4(ac - b^2)
+            3. a^2 + 2ac + c^2 - 4ac + 4b^2
+            4. a^2 - 2ac + c^2 + 4b^2
+            5. (a - c)^2 + 4b^2
+
+            1. E = (Tr(M) +- sqrt((a - c)^2 + 4b^2)) / 2
+            2. E = (Tr(M) / 2) +- sqrt(((a - c)^2 / 4) + (4b^2 / 4))
+            3. E = (Tr(M) / 2) +- sqrt(((a - c) / 2)^2 + b^2)
+
+            E1 = (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+            E2 = (Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2)
+
+        Now we need to compute C: (E1 - E2) / (E1 + E2)
+
+            E1 - E2:
+
+                1. ((Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)) - ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+                2. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
+                3. sqrt(((a - c) / 2)^2 + b^2) + sqrt(((a - c) / 2)^2 + b^2)
+                4. 2 * sqrt(((a - c) / 2)^2 + b^2)
+
+            E1 + E2:
+
+                1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) + ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
+                2. (Tr(M) / 2) + (Tr(M) / 2)
+                3. 2 * (Tr(M) / 2)
+                4. Tr(M)
+
+            Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
+    */
+
+    float CMath_GetCovarianceCoherence_Sq(
+        float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
+    )
+    {
+        float GxGx = CovarianceVec[0];
+        float GyGy = CovarianceVec[1];
+        float GxGy = CovarianceVec[2];
+
+        float Trace = (GxGx + GyGy);          // Element (a + c)
+        float Diff  = (GxGx - GyGy) * 0.5;    // Element (a - c) / 2
+        float N = (Diff * Diff) + (GxGy * GxGy);
+        float D = Trace * Trace;
+
+        // Normalized Squared Coherence: 0 (flat), (highly directional edge)
+        float Coherence_Sq = (D > 0.0) ? (4.0 * N) / D : 0.0;
+
+        return Coherence_Sq;
+    }
+
     float2x2 CMath_GetRotationMatrix(float A)
     {
         return float2x2(cos(A), sin(A), -sin(A), cos(A));

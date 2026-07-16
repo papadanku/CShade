@@ -410,29 +410,30 @@
 
     struct CBlur_SharedData_SideWindow_Bilateral
     {
-        // Shared constants
+        // Window (Local) information.
         int ArrayImageLength;
-        int SideWindowSize_Corner;
-        int SideWindowSize_Cardinal;
-
-        // Shared between side windows
         float2 ArrayImages[9];
-        float ArrayDistances[9];
-        float2 SideWindowMeans[8];
-        float GVariance_Sq;
+        float ArrayDistancesRange[9];
+        float ArrayDistancesSpatial[9];
 
-        // Shared for final calculation
+        // Window (Global) information.
+        float2 GlobalWindowMean;
+        float GlobalWindowCoherence_Sq;
+
+        // Side Window Information.
+        int SideWindowSizes[8];
+        float2 SideWindowMeans[8];
+
+        // Shared for final calculation.
         float2 Reference;
     };
 
     struct CBlur_SideWindow_Bilateral
     {
-        float Masks[9];
-        float Size;
+        int Masks[9];
 
         float2 Sum;
         float SumWeight;
-
         float Influence_Sq;
     };
 
@@ -444,16 +445,16 @@
     )
     {
         const int ArrayImageLength = 9;
-        const int SideWindowSize_Corner = 4;
-        const int SideWindowSize_Cardinal = 6;
-
-        // Precompute constants (side windows)
-        Output.SideWindowSize_Corner = SideWindowSize_Corner;
-        Output.SideWindowSize_Cardinal = SideWindowSize_Cardinal;
+        const int ArraySideWindowsLength = 8;
 
         // Initialize variables
         Output.ArrayImageLength = ArrayImageLength;
         Output.Reference = tex2D(Guide, Tex).xy;
+
+        // Compute an array Covariance Sums to calculate Side Window Coherence
+        float3 CovarianceElement[9];
+        float3 SideWindowCovarianceMatrix[8];
+        float3 GlobalWindowCovarianceMatrix;
 
         // Precompute (static)
         float2 PixelSize = fwidth(Tex.xy);
@@ -478,104 +479,15 @@
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x0, y0) * 2.0;
                 float2 Offset = Tex + (Delta * PixelSize);
-                Output.ArrayImages[ImageIndex0] = tex2D(Image, Offset).xy;
+                float2 Sample = tex2D(Image, Offset).xy;
+
+                // This is for our Side Window calculation.
+                Output.ArrayImages[ImageIndex0] = Sample;
+
+                // This is for our Side Window Coherence calculation.
+                CovarianceElement[ImageIndex0] = Sample.xyx * Sample.xyy;
 
                 ImageIndex0 += 1;
-            }
-        }
-
-        /*
-            Compute the Coherance.
-
-            Simplication of the factor inside the square root (S):
-
-                1. Tr(M)^2 - 4det(M)
-                2. (a + c)^2 - 4(ac - b^2)
-                3. a^2 + 2ac + c^2 - 4ac + 4b^2
-                4. a^2 - 2ac + c^2 + 4b^2
-                5. (a - c)^2 + 4b^2
-
-                1. E = (Tr(M) +- sqrt((a - c)^2 + 4b^2)) / 2
-                2. E = (Tr(M) / 2) +- sqrt(((a - c)^2 / 4) + (4b^2 / 4))
-                3. E = (Tr(M) / 2) +- sqrt(((a - c) / 2)^2 + b^2)
-
-                E1 = (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
-                E2 = (Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2)
-
-            Now we need to compute C: (E1 - E2) / (E1 + E2)
-
-                E1 - E2:
-
-                    1. ((Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)) - ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
-                    2. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) - (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2)
-                    3. sqrt(((a - c) / 2)^2 + b^2) + sqrt(((a - c) / 2)^2 + b^2)
-                    4. 2 * sqrt(((a - c) / 2)^2 + b^2)
-
-                E1 + E2:
-
-                    1. (Tr(M) / 2) + sqrt(((a - c) / 2)^2 + b^2) + ((Tr(M) / 2) - sqrt(((a - c) / 2)^2 + b^2))
-                    2. (Tr(M) / 2) + (Tr(M) / 2)
-                    3. 2 * (Tr(M) / 2)
-                    4. Tr(M)
-
-                Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
-        */
-
-        const float K_H[ArrayImageLength] =
-        {
-            -1.0 / 4.0, -2.0 / 4.0, -1.0 / 4.0,
-             0.0,        0.0,        0.0,
-             1.0 / 4.0,  2.0 / 4.0,  1.0 / 4.0
-        };
-
-        const float K_V[ArrayImageLength] =
-        {
-            -1.0 / 4.0, 0.0, 1.0 / 4.0,
-            -2.0 / 4.0, 0.0, 2.0 / 4.0,
-            -1.0 / 4.0, 0.0, 1.0 / 4.0
-        };
-
-        float2 Gx = 0.0;
-        float2 Gy = 0.0;
-
-        // Completely unrolled to avoid SM3 loop register index penalties
-        [unroll]
-        for (int i = 0; i < ArrayImageLength; i++)
-        {
-            Gx += (Output.ArrayImages[i] * K_H[i]);
-            Gy += (Output.ArrayImages[i] * K_V[i]);
-        }
-
-        float DotGxGx = dot(Gx, Gx);
-        float DotGyGy = dot(Gy, Gy);
-        float DotGxGy = dot(Gx, Gy);
-
-        float Trace = (DotGxGx + DotGyGy);          // Element (a + c)
-        float Diff  = (DotGxGx - DotGyGy) * 0.5;    // Element (a - c) / 2
-        float N = (Diff * Diff) + (DotGxGy * DotGxGy);
-        float D = Trace * Trace;
-
-        // Normalized Squared Coherence: 0 (flat), (highly directional edge)
-        float Coherence = (D > 0.0) ? (4.0 * N) / D : 0.0;
-
-        // Map into your global variance framework
-        Output.GVariance_Sq = Coherence + 1e-7;
-
-        // Reset counter and start again
-        int ImageIndex1 = 0;
-
-        [unroll]
-        for (int x1 = -1; x1 <= 1; x1++)
-        {
-            [unroll]
-            for (int y1 = -1; y1 <= 1; y1++)
-            {
-                // Compute shared Weight (Range) here.
-                float2 Delta = Output.ArrayImages[ImageIndex1] - Output.Reference;
-                float DistRange_Sq = dot(Delta, Delta);
-                Output.ArrayDistances[ImageIndex1] = CMath_GetLorentzian1D_Fast(DistRange_Sq, 1.0, Output.GVariance_Sq);
-
-                ImageIndex1 += 1;
             }
         }
 
@@ -597,41 +509,116 @@
             - - -       - - -       x x -       - x x
         */
 
-        const float SideWindowWeight_Corner = 1.0 / float(Output.SideWindowSize_Corner);
-        const float SideWindowWeight_Cardinal = 1.0 / float(Output.SideWindowSize_Cardinal);
+        const int SideWindowSize_Corner = 4;
+        const int SideWindowSize_Cardinal = 6;
 
-        float2 Submeans[8];
-        Submeans[0] = Output.ArrayImages[0].xy + Output.ArrayImages[1].xy; // Vertical Top-Left (V_TL)
-        Submeans[1] = Output.ArrayImages[3].xy + Output.ArrayImages[4].xy; // Vertical Top-Mid (V_TM)
-        Submeans[2] = Output.ArrayImages[6].xy + Output.ArrayImages[7].xy; // Vertical Top-Right (V_TR)
-        Submeans[3] = Output.ArrayImages[1].xy + Output.ArrayImages[2].xy; // Vertical Bottom-Left (V_BL)
-        Submeans[4] = Output.ArrayImages[4].xy + Output.ArrayImages[5].xy; // Vertical Bottom-Mid (V_BM)
-        Submeans[5] = Output.ArrayImages[7].xy + Output.ArrayImages[8].xy; // Vertical Bottom-Right (V_BR)
-        Submeans[6] = Output.ArrayImages[2].xy + Output.ArrayImages[5].xy; // Horizontal Bottom-Left (H_BL)
-        Submeans[7] = Output.ArrayImages[5].xy + Output.ArrayImages[8].xy; // Horizontal Bottom-Right (H_BR)
+        const float SideWindowWeight_Mean_Corner = 1.0 / float(SideWindowSize_Corner);
+        const float SideWindowWeight_Mean_Cardinal = 1.0 / float(SideWindowSize_Cardinal);
+        const float GlobalWeight_Mean = 1.0 / float(ArrayImageLength);
 
-        Output.SideWindowMeans[0] = Submeans[0] + Submeans[1]; // NW: [0 + 1] + [3 + 4]
-        Output.SideWindowMeans[1] = Submeans[1] + Submeans[2]; // NE: [3 + 4] + [6 + 7]
-        Output.SideWindowMeans[2] = Submeans[3] + Submeans[4]; // SW: [1 + 2] + [4 + 5]
-        Output.SideWindowMeans[3] = Submeans[4] + Submeans[5]; // SE: [4 + 5] + [7 + 8]
-        Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Submeans[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
-        Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Submeans[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
-        Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Submeans[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
-        Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Submeans[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
+        Output.SideWindowSizes[0] = SideWindowSize_Corner;
+        Output.SideWindowSizes[1] = SideWindowSize_Corner;
+        Output.SideWindowSizes[2] = SideWindowSize_Corner;
+        Output.SideWindowSizes[3] = SideWindowSize_Corner;
+        Output.SideWindowSizes[4] = SideWindowSize_Cardinal;
+        Output.SideWindowSizes[5] = SideWindowSize_Cardinal;
+        Output.SideWindowSizes[6] = SideWindowSize_Cardinal;
+        Output.SideWindowSizes[7] = SideWindowSize_Cardinal;
 
-        Output.SideWindowMeans[0] *= SideWindowWeight_Corner;
-        Output.SideWindowMeans[1] *= SideWindowWeight_Corner;
-        Output.SideWindowMeans[2] *= SideWindowWeight_Corner;
-        Output.SideWindowMeans[3] *= SideWindowWeight_Corner;
-        Output.SideWindowMeans[4] *= SideWindowWeight_Cardinal;
-        Output.SideWindowMeans[5] *= SideWindowWeight_Cardinal;
-        Output.SideWindowMeans[6] *= SideWindowWeight_Cardinal;
-        Output.SideWindowMeans[7] *= SideWindowWeight_Cardinal;
+        float2 Subkernel_Means[8];
+        Subkernel_Means[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left (V_TL)
+        Subkernel_Means[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid (V_TM)
+        Subkernel_Means[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right (V_TR)
+        Subkernel_Means[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left (V_BL)
+        Subkernel_Means[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid (V_BM)
+        Subkernel_Means[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right (V_BR)
+        Subkernel_Means[6] = Output.ArrayImages[2] + Output.ArrayImages[5]; // Horizontal Bottom-Left (H_BL)
+        Subkernel_Means[7] = Output.ArrayImages[5] + Output.ArrayImages[8]; // Horizontal Bottom-Right (H_BR)
+
+        Output.SideWindowMeans[0] = Subkernel_Means[0] + Subkernel_Means[1]; // NW: [0 + 1] + [3 + 4]
+        Output.SideWindowMeans[1] = Subkernel_Means[1] + Subkernel_Means[2]; // NE: [3 + 4] + [6 + 7]
+        Output.SideWindowMeans[2] = Subkernel_Means[3] + Subkernel_Means[4]; // SW: [1 + 2] + [4 + 5]
+        Output.SideWindowMeans[3] = Subkernel_Means[4] + Subkernel_Means[5]; // SE: [4 + 5] + [7 + 8]
+        Output.SideWindowMeans[4] = Output.SideWindowMeans[0] + Subkernel_Means[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
+        Output.SideWindowMeans[5] = Output.SideWindowMeans[2] + Subkernel_Means[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
+        Output.SideWindowMeans[6] = Output.SideWindowMeans[0] + Subkernel_Means[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
+        Output.SideWindowMeans[7] = Output.SideWindowMeans[1] + Subkernel_Means[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
+        Output.GlobalWindowMean = Output.ArrayImages[0] + Subkernel_Means[3] + Output.SideWindowMeans[7];
+
+        Output.SideWindowMeans[0] *= SideWindowWeight_Mean_Corner;
+        Output.SideWindowMeans[1] *= SideWindowWeight_Mean_Corner;
+        Output.SideWindowMeans[2] *= SideWindowWeight_Mean_Corner;
+        Output.SideWindowMeans[3] *= SideWindowWeight_Mean_Corner;
+        Output.SideWindowMeans[4] *= SideWindowWeight_Mean_Cardinal;
+        Output.SideWindowMeans[5] *= SideWindowWeight_Mean_Cardinal;
+        Output.SideWindowMeans[6] *= SideWindowWeight_Mean_Cardinal;
+        Output.SideWindowMeans[7] *= SideWindowWeight_Mean_Cardinal;
+        Output.GlobalWindowMean *= GlobalWeight_Mean;
+
+        /*
+            Compute the Coherence for every side window.
+
+            [0] [3] [6]  (Top Row)
+            [1] [4] [7]  (Middle Row)
+            [2] [5] [8]  (Bottom Row)
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
+        const float GlobalWindowSize_Coherence = 1.0 / (float(ArrayImageLength) - 1.0);
+
+        /*
+            | xx xy |
+            | yx yy |
+
+            .x = x^2 - (x_mean * x_mean)
+            .y = y^2 - (y_mean * y_mean)
+            .z = x*y - (x_mean * y_mean)
+        */
+
+        float3 CovarianceVec = 0.0;
+
+        [unroll]
+        for (int i0 = 0; i0 < ArrayImageLength; i0++)
+        {
+            float2 D = Output.ArrayImages[i0] - Output.GlobalWindowMean;
+            CovarianceVec += (D.xyx * D.xyy);
+        }
+
+        // Normalize to Sample Variance
+        CovarianceVec *= GlobalWindowSize_Coherence;
+        Output.GlobalWindowCoherence_Sq = 1.0 - saturate(CMath_GetCovarianceCoherence_Sq(CovarianceVec));
+
+        // Reset counter and start again
+        int ImageIndex1 = 0;
+
+        [unroll]
+        for (int x1 = -1; x1 <= 1; x1++)
+        {
+            [unroll]
+            for (int y1 = -1; y1 <= 1; y1++)
+            {
+                // Compute shared Weight (Range) here.
+                float2 DeltaRange = Output.ArrayImages[ImageIndex1] - Output.Reference;
+                Output.ArrayDistancesRange[ImageIndex1] = 1.0 / max(1.0, dot(DeltaRange, DeltaRange));
+                Output.ArrayDistancesSpatial[ImageIndex1] = exp2(-(abs(x1) + abs(y1)));
+
+                ImageIndex1 += 1;
+            }
+        }
     }
 
     void CBlur_GetSideWindow_Bilateral(
+        in int SideWindowIndex,
         in CBlur_SharedData_SideWindow_Bilateral Input,
-        in float2 Mean,
         inout CBlur_SideWindow_Bilateral Block
     )
     {
@@ -644,77 +631,44 @@
         Block.Sum = 0.0;
         Block.SumWeight = 0.0;
 
-        // Initialize Outputs.
-        int ImageIndex = 0;
-
         [unroll]
-        for (int y = -1; y <= 1; y++)
+        for (int i0 = 0; i0 < Input.ArrayImageLength; i0++)
         {
-            [unroll]
-            for (int x = -1; x <= 1; x++)
+            if (Block.Masks[i0] == 1)
             {
-                if (Block.Masks[ImageIndex] == 1)
-                {
-                    // Compute Weight (Spatial).
-                    int SpatialOffset = abs(x) + abs(y);
-                    float WeightSpatial = SpatialDistances[SpatialOffset];
+                // Fetch Weights and combine.
+                float WeightSpatial = Input.ArrayDistancesSpatial[i0];
+                float WeightRange = Input.ArrayDistancesRange[i0];
+                float Weight = WeightSpatial * WeightRange;
 
-                    // Fetch Weight (Range) and combine.
-                    float WeightRange = Input.ArrayDistances[ImageIndex];
-                    float Weight = WeightSpatial * WeightRange;
-
-                    // Accumulate.
-                    Block.Sum += (Input.ArrayImages[ImageIndex] * Weight);
-                    Block.SumWeight += Weight;
-                }
-
-                ImageIndex += 1;
+                // Accumulate.
+                Block.Sum += (Input.ArrayImages[i0] * Weight);
+                Block.SumWeight += Weight;
             }
         }
 
         /*
-            Compute the SideWindow's Sample Coefficient of Variance (CoV).
-
-            We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
-
-            Tr = The Trace
-            M = The Mean
+            .x = x^2 - (x_mean * x_mean)
+            .y = y^2 - (y_mean * y_mean)
+            .z = x*y - (x_mean * y_mean)
         */
 
-        // Constant: Sample Variance (Sigma)
-        const float SigmaN = 1.0 / (float(Block.Size) - 1.0);
-
-        /*
-            We will compute the trace of the covariance matrix with vector MADs.
-
-            | xx xy | <- We skip the xy/yx calculation of the matrix.
-            | yx yy |
-        */
-
-        float2 SigmaVec = 0.0;
+        float CovarianceN = 1.0 / (float(Input.SideWindowSizes[SideWindowIndex]) - 1.0);
+        float3 CovarianceVec = 0.0;
 
         [unroll]
         for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
         {
             if (Block.Masks[i1] == 1)
             {
-                float2 D = Input.ArrayImages[i1] - Mean;
-                SigmaVec += (D * D);
+                float2 D = Input.ArrayImages[i1] - Input.SideWindowMeans[SideWindowIndex];
+                CovarianceVec += (D.xyx * D.xyy);
             }
         }
 
-        // Compute the Trace (T): (xx / N) + (yy / N).
-        float Tr = dot(SigmaVec, SigmaN);
-
-        // Compute the Mean's Squared Euclidian Distance: M^T*M
-        float M = dot(Mean, Mean);
-
-        // Coefficient of Variance.
-        // We removed the sqrt(x) because the result gets cancelled-out in CMath_GetLorentzian1D_Fast(x)
-        float CoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
-
-        // Fit the CoV into a Lorentzian approximation.
-        Block.Influence_Sq = CMath_GetLorentzian1D_Fast(CoV_Sq, 1.0, Input.GVariance_Sq);
+        // Normalize to Sample Variance
+        CovarianceVec *= CovarianceN;
+        Block.Influence_Sq = 1.0 - saturate(CMath_GetCovarianceCoherence_Sq(CovarianceVec));
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -750,21 +704,13 @@
         // Initialize our side windows
         CBlur_SideWindow_Bilateral SideWindows[SideWindowsCount];
         SideWindows[0].Masks = { 1, 1, 0, 1, 1, 0, 0, 0, 0 }; // NW
-        SideWindows[0].Size = SharedData.SideWindowSize_Corner;
         SideWindows[1].Masks = { 0, 0, 0, 1, 1, 0, 1, 1, 0 }; // NE
-        SideWindows[1].Size = SharedData.SideWindowSize_Corner;
         SideWindows[2].Masks = { 0, 1, 1, 0, 1, 1, 0, 0, 0 }; // SW
-        SideWindows[2].Size = SharedData.SideWindowSize_Corner;
         SideWindows[3].Masks = { 0, 0, 0, 0, 1, 1, 0, 1, 1 }; // SE
-        SideWindows[3].Size = SharedData.SideWindowSize_Corner;
         SideWindows[4].Masks = { 1, 1, 0, 1, 1, 0, 1, 1, 0 }; // N
-        SideWindows[4].Size = SharedData.SideWindowSize_Cardinal;
         SideWindows[5].Masks = { 0, 1, 1, 0, 1, 1, 0, 1, 1 }; // S
-        SideWindows[5].Size = SharedData.SideWindowSize_Cardinal;
         SideWindows[6].Masks = { 1, 1, 1, 1, 1, 1, 0, 0, 0 }; // W
-        SideWindows[6].Size = SharedData.SideWindowSize_Cardinal;
         SideWindows[7].Masks = { 0, 0, 0, 1, 1, 1, 1, 1, 1 }; // E
-        SideWindows[7].Size = SharedData.SideWindowSize_Cardinal;
 
         /*
             Calculate the variance-weighted Side Window filter. This may sound strange, but it works better than the regular min(x) method.
@@ -780,7 +726,7 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            CBlur_GetSideWindow_Bilateral(SharedData, SharedData.SideWindowMeans[i0], SideWindows[i0]);
+            CBlur_GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
             if (SideWindows[i0].SumWeight > 0.0)
             {
                 // Normalize the sum.
@@ -792,7 +738,7 @@
             }
         }
 
-        WindowMean = (SumInfluence_Sq > 0.0) ? WindowMean / SumInfluence_Sq : SharedData.SideWindowMeans[4];
+        WindowMean = (SumInfluence_Sq > 0.0) ? WindowMean / SumInfluence_Sq : SharedData.GlobalWindowMean;
 
         return WindowMean;
     }
