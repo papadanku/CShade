@@ -414,11 +414,10 @@
         int ArrayImageLength;
         float2 ArrayImages[9];
         float ArrayDistancesRange[9];
-        float ArrayDistancesSpatial[9];
 
         // Window (Global) information.
         float2 GlobalWindowMean;
-        float GlobalWindowCoherence_Sq;
+        float GlobalWindowCoV_Sq;
 
         // Side Window Information.
         int SideWindowSizes[8];
@@ -573,46 +572,43 @@
             - - -       - - -       x x -       - x x
         */
 
-        const float GlobalWindowSize_Coherence = 1.0 / (float(ArrayImageLength) - 1.0);
-
         /*
-            | xx xy |
-            | yx yy |
+            Compute the SideWindow's Sample Coefficient of Variance (CoV).
 
-            .x = x^2 - (x_mean * x_mean)
-            .y = y^2 - (y_mean * y_mean)
-            .z = x*y - (x_mean * y_mean)
+            We use Van Valen's Multivariate Coefficient of Variation because of the computational simplicity.
+
+            Tr = The Trace
+            M = The Mean
         */
 
-        float3 CovarianceVec = 0.0;
+        // Constant: Sample Variance (Sigma)
+        const float SigmaN = 1.0 / (float(ArrayImageLength) - 1.0);
+        float2 SigmaVec = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < ArrayImageLength; i0++)
         {
             float2 D = Output.ArrayImages[i0] - Output.GlobalWindowMean;
-            CovarianceVec += (D.xyx * D.xyy);
+            SigmaVec += (D * D);
         }
 
-        // Normalize to Sample Variance
-        CovarianceVec *= GlobalWindowSize_Coherence;
-        Output.GlobalWindowCoherence_Sq = 1.0 - saturate(CMath_GetCovarianceCoherence_Sq(CovarianceVec));
+        // Compute the Trace (T): (xx / N) + (yy / N).
+        float Tr = dot(SigmaVec, SigmaN);
 
-        // Reset counter and start again
-        int ImageIndex1 = 0;
+        // Compute the Mean's Squared Euclidian Distance: M^T*M
+        float M = dot(Output.GlobalWindowMean, Output.GlobalWindowMean);
 
-        [unroll]
-        for (int x1 = -1; x1 <= 1; x1++)
+        // Coefficient of Variance.
+        // We removed the sqrt(x) because the result gets cancelled-out in CMath_GetLorentzian1D(x)
+        Output.GlobalWindowCoV_Sq = (abs(M) > 0.0) ? Tr / M : 0.0;
+
+        for (int i1 = 0; i1 < ArrayImageLength; i1++)
         {
-            [unroll]
-            for (int y1 = -1; y1 <= 1; y1++)
-            {
-                // Compute shared Weight (Range) here.
-                float2 DeltaRange = Output.ArrayImages[ImageIndex1] - Output.Reference;
-                Output.ArrayDistancesRange[ImageIndex1] = 1.0 / max(1.0, dot(DeltaRange, DeltaRange));
-                Output.ArrayDistancesSpatial[ImageIndex1] = exp2(-(abs(x1) + abs(y1)));
+            // Compute shared Weight (Range) here.
+            float Similarity = saturate(CMath_GetVectorSimilarity_FLT2(Output.Reference, Output.ArrayImages[i1]));
+            float SimilarityInverse = saturate(1.0 - (Similarity * Similarity));
 
-                ImageIndex1 += 1;
-            }
+            Output.ArrayDistancesRange[i1] = CMath_GetLorentzian1D_Fast(SimilarityInverse, 1.0, Output.GlobalWindowCoV_Sq);
         }
     }
 
@@ -636,14 +632,9 @@
         {
             if (Block.Masks[i0] == 1)
             {
-                // Fetch Weights and combine.
-                float WeightSpatial = Input.ArrayDistancesSpatial[i0];
-                float WeightRange = Input.ArrayDistancesRange[i0];
-                float Weight = WeightSpatial * WeightRange;
-
                 // Accumulate.
-                Block.Sum += (Input.ArrayImages[i0] * Weight);
-                Block.SumWeight += Weight;
+                Block.Sum += (Input.ArrayImages[i0] * Input.ArrayDistancesRange[i0]);
+                Block.SumWeight += Input.ArrayDistancesRange[i0];
             }
         }
 
@@ -668,7 +659,7 @@
 
         // Normalize to Sample Variance
         CovarianceVec *= CovarianceN;
-        Block.Influence_Sq = 1.0 - saturate(CMath_GetCovarianceCoherence_Sq(CovarianceVec));
+        Block.Influence_Sq = saturate(CMath_GetCovarianceCoherenceInverse_Sq(CovarianceVec));
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(

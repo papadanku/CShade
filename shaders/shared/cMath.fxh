@@ -284,6 +284,97 @@
         return Coherence_Sq;
     }
 
+    float CMath_GetCovarianceCoherenceInverse_Sq(
+        float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
+    )
+    {
+        float GxGx = CovarianceVec.x;
+        float GyGy = CovarianceVec.y;
+        float GxGy = CovarianceVec.z;
+
+        float Trace = GxGx + GyGy;                          // Tr(J) = a + c
+        float Determinant = (GxGx * GyGy) - (GxGy * GxGy);  // Determinant(J) = ac - b^2
+
+        // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
+        float D = Trace * Trace;
+        float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
+
+        return InverseCoherence_Sq;
+    }
+
+    /*
+        VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
+        ---------------------------------------------------------------
+
+        This metric calculates a combined similarity score based on both angular alignment and relative scale of two-dimensional vectors u and v.
+
+        Original Formulation:
+
+            Sc (Cosine Similarity):     dot(u, v) / (||u|| * ||v||)
+            Sm (Magnitude Similarity):  (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
+
+            Similarity  = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+
+        Mathematical Bounds of Original Formulation:
+
+            * Fully aligned and equal scale:    1.0
+            * Orthogonal:                       0.0
+            * Fully opposed (180 deg):         -1.0
+            * Range:                            [-1.0, 1.0]
+
+        RESCALED FORMULATION TO RANGE [0, 1)
+        ------------------------------------
+
+        To map the metric to a strictly non-negative, normalized interval [0, 1) suitable for interpolation weights, texture masking, and blend factors, we apply an affine transformation to the angular component:
+
+            Sc_biased = (Sc + 1) / 2 --> Maps [-1, 1] to [0, 1]
+
+        Substituting Sc_biased back into the product:
+
+            Similarity_scaled   = Sc_biased * Sm
+                                = ((dot(u, v) / (||u|| * ||v||)) + 1) / 2 * (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
+                                = ((dot(u, v) +  ||u|| * ||v||) / (||u|| * ||v||)) * (||u|| * ||v||) / (||u||^2 + ||v||^2)
+
+        The terms (||u|| * ||v||) cancel, yielding:
+
+            Similarity_scaled = (dot(u, v) + (||u|| * ||v||)) / (||u||^2 + ||v||^2)
+
+        Mapping to Shader Variables:
+
+            * DotV1V2: dot(u, v)
+            * DotV1V1: dot(u, u) = ||u||^2
+            * DotV2V2: dot(v, v) = ||v||^2
+            *       M: DotV1V1 * DotV2V2 = ||u||^2 * ||v||^2  ==> sqrt(M) = ||u|| * ||v||
+
+        Final Normalized Formula:
+
+            Similarity_scaled = (DotV1V2 + sqrt(M)) / (DotV1V1 + DotV2V2)
+
+        Behavior & Bounds:
+
+            * Identical vectors (u == v):                   1.0 (clamped to [0, 1))
+            * Orthogonal vectors (dot(u, v) = 0, equal):    0.5
+            * Opposing vectors (u == -v):                   0.0
+            * Output Range:                                 [0.0, 1.0]
+    */
+
+    float CMath_GetVectorSimilarity_FLT2(
+        float2 Vector1, // V1
+        float2 Vector2  // V2
+    )
+    {
+        float DotV1V2 = dot(Vector1, Vector2);
+        float DotV1V1 = dot(Vector1, Vector1);
+        float DotV2V2 = dot(Vector2, Vector2);
+
+        float M = DotV1V1 * DotV2V2;
+        float N = DotV1V2 + sqrt(M);
+        float D = DotV1V1 + DotV2V2;
+        float Similarity = (M > 0.0) ? N / D : 1.0;
+
+        return Similarity;
+    }
+
     float2x2 CMath_GetRotationMatrix(float A)
     {
         return float2x2(cos(A), sin(A), -sin(A), cos(A));
