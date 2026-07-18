@@ -306,74 +306,73 @@
         VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
         ---------------------------------------------------------------
 
-        This metric calculates a combined similarity score based on both angular alignment and relative scale of two-dimensional vectors u and v.
+        Calculates a combined similarity score based on both the angular alignment
+        and the relative scale of two vectors.
 
         Original Formulation:
 
             Sc (Cosine Similarity):     dot(u, v) / (||u|| * ||v||)
             Sm (Magnitude Similarity):  (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
 
-            Similarity  = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+            Similarity_Raw = Sc * Sm = (2 * dot(u, v)) / (||u||^2 + ||v||^2)
+            Raw Range: [-1.0, 1.0]
 
-        Mathematical Bounds of Original Formulation:
+        OPTIMIZED UNORM FORMULATION [0.0, 1.0]
+        --------------------------------------
+        To map the metric to an unsigned normalized range (UNORM) for interpolation
+        weights and masking, we shift and scale the raw result:
 
-            * Fully aligned and equal scale:    1.0
-            * Orthogonal:                       0.0
-            * Fully opposed (180 deg):         -1.0
-            * Range:                            [-1.0, 1.0]
+            Similarity_UNORM:   (Similarity_Raw * 0.5) + 0.5
+                                (((2 * dot(u, v)) / (||u||^2 + ||v||^2)) * 0.5) + 0.5
 
-        RESCALED FORMULATION TO RANGE [0, 1)
-        ------------------------------------
+        The scalar 2.0 and 0.5 cancel out perfectly, eliminating a multiplication step:
 
-        To map the metric to a strictly non-negative, normalized interval [0, 1) suitable for interpolation weights, texture masking, and blend factors, we apply an affine transformation to the angular component:
+            Similarity_UNORM: (dot(u, v) / (||u||^2 + ||v||^2)) + 0.5
 
-            Sc_biased = (Sc + 1) / 2 --> Maps [-1, 1] to [0, 1]
-
-        Substituting Sc_biased back into the product:
-
-            Similarity_scaled   = Sc_biased * Sm
-                                = ((dot(u, v) / (||u|| * ||v||)) + 1) / 2 * (2 * ||u|| * ||v||) / (||u||^2 + ||v||^2)
-                                = ((dot(u, v) +  ||u|| * ||v||) / (||u|| * ||v||)) * (||u|| * ||v||) / (||u||^2 + ||v||^2)
-
-        The terms (||u|| * ||v||) cancel, yielding:
-
-            Similarity_scaled = (dot(u, v) + (||u|| * ||v||)) / (||u||^2 + ||v||^2)
-
-        Mapping to Shader Variables:
+        Mapping to Variables:
 
             * DotV1V2: dot(u, v)
-            * DotV1V1: dot(u, u) = ||u||^2
-            * DotV2V2: dot(v, v) = ||v||^2
-            *       M: DotV1V1 * DotV2V2 = ||u||^2 * ||v||^2  ==> sqrt(M) = ||u|| * ||v||
+            * D: dot(u, u) + dot(v, v) = ||u||^2 + ||v||^2
 
-        Final Normalized Formula:
+        Final Equation:
 
-            Similarity_scaled = (DotV1V2 + sqrt(M)) / (DotV1V1 + DotV2V2)
+            Similarity: (DotV1V2 / D) + 0.5
+
+        Zero-Vector & Boundary Handling:
+
+            * If both vectors are zero, D == 0.0. The function safely bypasses
+            the division and returns 1.0 (perfect match).
+            * `saturate()` clamps the final output to a hard [0.0, 1.0] boundary,
+            protecting against precision or floating-point under/overflow.
 
         Behavior & Bounds:
 
-            * Identical vectors (u == v):                   1.0 (clamped to [0, 1))
-            * Orthogonal vectors (dot(u, v) = 0, equal):    0.5
-            * Opposing vectors (u == -v):                   0.0
-            * Output Range:                                 [0.0, 1.0]
+            * Identical vectors (u == v):           1.0 (Maximum similarity)
+            * Orthogonal vectors (u perp v):        0.5
+            * Perfectly opposing vectors (u == -v): 0.0 (Minimum similarity)
+            * Output Range:                         [0.0, 1.0]
     */
 
-    float CMath_GetVectorSimilarity_FLT2(
-        float2 Vector1, // V1
-        float2 Vector2  // V2
-    )
-    {
-        float DotV1V2 = dot(Vector1, Vector2);
-        float DotV1V1 = dot(Vector1, Vector1);
-        float DotV2V2 = dot(Vector2, Vector2);
+    #define TEMPLATE_CMATH_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
+        float CMath_GetVectorSimilarity_FLT##LENGTH( \
+            DATA_TYPE Vector1, \
+            DATA_TYPE Vector2 \
+        ) \
+        { \
+            float DotV1V2 = dot(Vector1, Vector2); \
+            float DotV1V1 = dot(Vector1, Vector1); \
+            float DotV2V2 = dot(Vector2, Vector2); \
+            \
+            float D = DotV1V1 + DotV2V2; \
+            float Similarity = (D > 0.0) ? saturate((DotV1V2 / D) + 0.5) : 1.0; \
+            \
+            return Similarity; \
+        }
 
-        float M = DotV1V1 * DotV2V2;
-        float N = DotV1V2 + sqrt(M);
-        float D = DotV1V1 + DotV2V2;
-        float Similarity = (M > 0.0) ? N / D : 1.0;
-
-        return Similarity;
-    }
+    TEMPLATE_CMATH_GETVECTORSIMILARITY(float, 1)
+    TEMPLATE_CMATH_GETVECTORSIMILARITY(float2, 2)
+    TEMPLATE_CMATH_GETVECTORSIMILARITY(float3, 3)
+    TEMPLATE_CMATH_GETVECTORSIMILARITY(float4, 4)
 
     float2x2 CMath_GetRotationMatrix(float A)
     {

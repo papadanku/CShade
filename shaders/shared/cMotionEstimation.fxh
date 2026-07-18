@@ -124,8 +124,6 @@
             int4(int2(0, 0), int2(2, 2))
         };
 
-        const float3 SWeights = exp2(-float3(0.0, 1.0, 2.0));
-
         // Decode from FLT16
         Vectors = clamp(CMath_FLT16toSNORM_FLT2(Vectors), -1.0, 1.0);
 
@@ -198,7 +196,7 @@
             float3 It = 0.0;
 
             // Calculate bilateral weighting
-            float Weight = 0.0;
+            float Weight;
 
             // Calculate range weights
             if (IsCenter)
@@ -207,16 +205,13 @@
             }
             else
             {
-                It = R0 - CenterT;
-                Weight += dot(It, It);
-                It = R1 - CenterI;
-                Weight += dot(It, It);
-                Weight = 1.0 / max(1.0, Weight);
-                Weight *= Weight;
+                float Weight0 = CMath_GetVectorSimilarity_FLT3(R0, CenterT);
+                float Weight1 = CMath_GetVectorSimilarity_FLT3(R1, CenterI);
+                Weight = Weight0 * Weight1;
             }
 
             // Accumulate weight
-            WSum += (Weight * SWeights[OffsetID]);
+            WSum += Weight;
 
             // Immediately calculate spatial gradients
             float3 Ix = (West * 0.5) - (East * 0.5);

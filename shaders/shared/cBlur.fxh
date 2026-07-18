@@ -607,7 +607,6 @@
             // Compute shared Weight (Range) here.
             float Similarity = saturate(CMath_GetVectorSimilarity_FLT2(Output.Reference, Output.ArrayImages[i1]));
             float SimilarityInverse = saturate(1.0 - (Similarity * Similarity));
-
             Output.ArrayDistancesRange[i1] = CMath_GetLorentzian1D_Fast(SimilarityInverse, 1.0, Output.GlobalWindowCoV_Sq);
         }
     }
