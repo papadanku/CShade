@@ -447,11 +447,6 @@
         Output.ArrayImageLength = ArrayImageLength;
         Output.Reference = tex2D(Guide, Tex).xy;
 
-        // Compute an array Covariance Sums to calculate Side Window Coherence
-        float3 CovarianceElement[9];
-        float3 SideWindowCovarianceMatrix[8];
-        float3 GlobalWindowCovarianceMatrix;
-
         // Precompute (static)
         float2 PixelSize = fwidth(Tex.xy);
 
@@ -479,9 +474,6 @@
 
                 // This is for our Side Window calculation.
                 Output.ArrayImages[ImageIndex0] = Sample;
-
-                // This is for our Side Window Coherence calculation.
-                CovarianceElement[ImageIndex0] = Sample.xyx * Sample.xyy;
 
                 // Compute the similarity
                 Output.ArrayDistances[ImageIndex0] = CMath_GetVectorSimilarity_FLT2(Sample, Output.Reference);
@@ -577,27 +569,60 @@
         }
 
         /*
-            .x = x^2 - (x_mean * x_mean)
-            .y = y^2 - (y_mean * y_mean)
-            .z = x*y - (x_mean * y_mean)
+            Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
+
+            Compute the SideWindow's Sample Coefficient of Variance (CoV).
+
+            We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
+
+            ---
+
+            SigmaVec mapping:
+
+            .x = xx (Variance X)
+            .y = yy (Variance Y)
+            .z = xy (Covariance XY)
         */
 
-        float CovarianceN = 1.0 / (float(Input.SideWindow_Sizes[SideWindowIndex]) - 1.0);
-        float3 CovarianceVec = 0.0;
+        // Constant: Sample Variance (Sigma)
+        const float BlockSize = float(Input.SideWindow_Sizes[SideWindowIndex]);
+        const float SigmaN = 1.0 / (BlockSize - 1.0);
+
+        float2 Mean = Input.SideWindow_Means[SideWindowIndex];
+        float3 SigmaVec = 0.0;
 
         [unroll]
         for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
         {
             if (Block.Masks[i1] == 1)
             {
-                float2 D = Input.ArrayImages[i1] - Input.SideWindow_Means[SideWindowIndex];
-                CovarianceVec += (D.xyx * D.xyy);
+                float2 D = Input.ArrayImages[i1] - Mean;
+                SigmaVec += (D.xyx * D.xyy);
             }
         }
 
-        // Normalize to Sample Variance
-        CovarianceVec *= CovarianceN;
-        Block.Influence_Sq = saturate(CMath_GetCovarianceCoherenceInverse_Sq(CovarianceVec));
+        // Normalize to get true sample variance
+        SigmaVec *= SigmaN;
+
+        // Construct the symmetric Covariance matrix
+        float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
+
+        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+        float Denominator = dot(Mean, Mean);
+
+        /*
+            Calculate final AZ Coefficient of Variation (Inverse Squared).
+
+                CoV     = sqrt(N) / D
+                CoV^2   = N / D^2
+                1/CoV^2 = 1 / (N / D^2)
+                        = D^2 / N
+        */
+
+        float CoV_Inverse_Sq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
+
+        Block.Influence_Sq = CoV_Inverse_Sq;
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
