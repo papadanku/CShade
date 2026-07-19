@@ -601,28 +601,14 @@
             }
         }
 
-        // Normalize to get true sample variance
+        // Normalize to get true sample variance.
         SigmaVec *= SigmaN;
 
-        // Construct the symmetric Covariance matrix
+        // Construct the 2x2 Covariance matrix.
         float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
 
-        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
-        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
-        float Denominator = dot(Mean, Mean);
-
-        /*
-            Calculate final AZ Coefficient of Variation (Inverse Squared).
-
-                CoV     = sqrt(N) / D
-                CoV^2   = N / D^2
-                1/CoV^2 = 1 / (N / D^2)
-                        = D^2 / N
-        */
-
-        float CoV_Inverse_Sq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
-
-        Block.Influence_Sq = CoV_Inverse_Sq;
+        // Compute the CoV.
+        Block.Influence_Sq = CMath_GetCoefficientVariation_AZ_InverseSq(Mean, CovarianceMat);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(

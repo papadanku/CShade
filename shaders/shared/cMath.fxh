@@ -302,6 +302,43 @@
         return InverseCoherence_Sq;
     }
 
+        /*
+            Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
+
+            Compute the SideWindow's Sample Coefficient of Variance (CoV).
+
+            We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
+
+            ---
+
+            SigmaVec mapping:
+
+            .x = xx (Variance X)
+            .y = yy (Variance Y)
+            .z = xy (Covariance XY)
+        */
+
+    float CMath_GetCoefficientVariation_AZ_InverseSq(
+        float2 Mean, float2x2 CovarianceMat)
+    {
+        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+        float Denominator = dot(Mean, Mean);
+
+        /*
+            Calculate final AZ Coefficient of Variation (Inverse Squared).
+
+                CoV     = sqrt(N) / D
+                CoV^2   = N / D^2
+                1/CoV^2 = 1 / (N / D^2)
+                        = D^2 / N
+        */
+
+        float CoV_InverseSq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
+
+        return CoV_InverseSq;
+    }
+
     /*
         VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
         ---------------------------------------------------------------
