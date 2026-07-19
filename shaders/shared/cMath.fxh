@@ -359,12 +359,12 @@
             DATA_TYPE Vector2 \
         ) \
         { \
-            float DotV1V2 = dot(Vector1, Vector2); \
-            float DotV1V1 = dot(Vector1, Vector1); \
-            float DotV2V2 = dot(Vector2, Vector2); \
+            float DotAB = dot(Vector1, Vector2); \
+            float DotAA = dot(Vector1, Vector1); \
+            float DotBB = dot(Vector2, Vector2); \
             \
-            float D = DotV1V1 + DotV2V2; \
-            float Similarity = (D > 0.0) ? saturate((DotV1V2 / D) + 0.5) : 1.0; \
+            float D = DotAA + DotBB; \
+            float Similarity = (D > 0.0) ? saturate((DotAB / D) + 0.5) : 1.0; \
             \
             return Similarity; \
         }
