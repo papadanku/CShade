@@ -36,22 +36,6 @@
         CMATH: DATA CONVERSION & PROCESSING
     */
 
-    #define TEMPLATE_CMATH_NORMTONORM(DATA_TYPE, LENGTH) \
-        DATA_TYPE CMath_UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
-        { \
-            return (X * 2.0) - 1.0; \
-        } \
-        \
-        DATA_TYPE CMath_SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
-        { \
-            return (X * 0.5) + 0.5; \
-        }
-
-    TEMPLATE_CMATH_NORMTONORM(float, 1)
-    TEMPLATE_CMATH_NORMTONORM(float2, 2)
-    TEMPLATE_CMATH_NORMTONORM(float3, 3)
-    TEMPLATE_CMATH_NORMTONORM(float4, 4)
-
     /*
         Function to convert 2D row and column (0-indexed) to a 1D index.
         GridPos.x: The 0-indexed row number.
@@ -96,32 +80,37 @@
         return CMath_Calculate_FLT16(0, exp2(5), exp2(10));
     }
 
-    // [-HalfMax, HalfMax) -> [-1.0, 1.0)
-    float2 CMath_FLT16toSNORM_FLT2(float2 Value)
-    {
-        return Value / CMath_GetFLT16Max();
-    }
-
-    float4 CMath_FLT16toSNORM_FLT4(float4 Value)
-    {
-        return Value / CMath_GetFLT16Max();
-    }
-
-    // [-1.0, 1.0) -> [-HalfMax, HalfMax)
-    float2 CMath_SNORMtoFLT16_FLT2(float2 Value)
-    {
-        return Value * CMath_GetFLT16Max();
-    }
-
-    float4 CMath_SNORMtoFLT16_FLT4(float4 Value)
-    {
-        return Value * CMath_GetFLT16Max();
-    }
-
     float CMath_GetNAN()
     {
         return 0.0 / 0.0;
     }
+
+    #define TEMPLATE_CMATH_DATACONV(DATA_TYPE, LENGTH) \
+        DATA_TYPE CMath_UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
+        } \
+        \
+        DATA_TYPE CMath_SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
+        } \
+        \
+        DATA_TYPE CMath_FLT16toSNORM_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return X / (DATA_TYPE)CMath_GetFLT16Max(); \
+        } \
+        \
+        DATA_TYPE CMath_SNORMtoFLT16_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return X * (DATA_TYPE)CMath_GetFLT16Max(); \
+        }
+
+    // Instantiate template over vector dimensions
+    TEMPLATE_CMATH_DATACONV(float, 1)
+    TEMPLATE_CMATH_DATACONV(float2, 2)
+    TEMPLATE_CMATH_DATACONV(float3, 3)
+    TEMPLATE_CMATH_DATACONV(float4, 4)
 
     /*
         CMATH: CONSTANTS
