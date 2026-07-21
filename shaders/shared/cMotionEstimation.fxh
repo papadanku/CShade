@@ -205,8 +205,8 @@
             }
             else
             {
-                float Weight0 = CMath_GetVectorSimilarity_FLT3(R0, CenterT);
-                float Weight1 = CMath_GetVectorSimilarity_FLT3(R1, CenterI);
+                float Weight0 = CMath_GetSimilarityDice_FLT3(R0, CenterT);
+                float Weight1 = CMath_GetSimilarityDice_FLT3(R1, CenterI);
                 Weight = Weight0 * Weight1;
             }
 

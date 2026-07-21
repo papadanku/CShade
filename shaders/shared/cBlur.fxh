@@ -476,7 +476,7 @@
                 Output.ArrayImages[ImageIndex0] = Sample;
 
                 // Compute the similarity
-                Output.ArrayDistances[ImageIndex0] = CMath_GetVectorSimilarity_FLT2(Sample, Output.Reference);
+                Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_FLT2(Sample, Output.Reference);
 
                 ImageIndex0 += 1;
             }
@@ -786,7 +786,7 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            float Similarity = CMath_GetVectorSimilarity_FLT2(Means[i0], Reference);
+            float Similarity = CMath_GetSimilarityJaccard_FLT2(Means[i0], Reference);
             if ((ASimilarity == false) || (Similarity > MaxSimilarity))
             {
                 ASimilarity = true;

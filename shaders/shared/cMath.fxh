@@ -36,45 +36,21 @@
         CMATH: DATA CONVERSION & PROCESSING
     */
 
-    float CMath_UNORMtoSNORM_FLT1(float X)
-    {
-        return (X * 2.0) - 1.0;
-    }
+    #define TEMPLATE_CMATH_NORMTONORM(DATA_TYPE, LENGTH) \
+        DATA_TYPE CMath_UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return (X * 2.0) - 1.0; \
+        } \
+        \
+        DATA_TYPE CMath_SNORMtoUNORM_FLT##LENGTH(DATA_TYPE X) \
+        { \
+            return (X * 0.5) + 0.5; \
+        }
 
-    float2 CMath_UNORMtoSNORM_FLT2(float2 X)
-    {
-        return (X * 2.0) - 1.0;
-    }
-
-    float3 CMath_UNORMtoSNORM_FLT3(float3 X)
-    {
-        return (X * 2.0) - 1.0;
-    }
-
-    float4 CMath_UNORMtoSNORM_FLT4(float4 X)
-    {
-        return (X * 2.0) - 1.0;
-    }
-
-    float CMath_SNORMtoUNORM_FLT1(float X)
-    {
-        return (X * 0.5) + 0.5;
-    }
-
-    float2 CMath_SNORMtoUNORM_FLT2(float2 X)
-    {
-        return (X * 0.5) + 0.5;
-    }
-
-    float3 CMath_SNORMtoUNORM_FLT3(float3 X)
-    {
-        return (X * 0.5) + 0.5;
-    }
-
-    float4 CMath_SNORMtoUNORM_FLT4(float4 X)
-    {
-        return (X * 0.5) + 0.5;
-    }
+    TEMPLATE_CMATH_NORMTONORM(float, 1)
+    TEMPLATE_CMATH_NORMTONORM(float2, 2)
+    TEMPLATE_CMATH_NORMTONORM(float3, 3)
+    TEMPLATE_CMATH_NORMTONORM(float4, 4)
 
     /*
         Function to convert 2D row and column (0-indexed) to a 1D index.
@@ -391,7 +367,7 @@
     */
 
     #define TEMPLATE_CMATH_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
-        float CMath_GetVectorSimilarity_FLT##LENGTH( \
+        float CMath_GetSimilarityDice_FLT##LENGTH( \
             DATA_TYPE Vector1, \
             DATA_TYPE Vector2 \
         ) \
@@ -402,6 +378,21 @@
             \
             float D = DotAA + DotBB; \
             float Similarity = (D > 0.0) ? saturate((DotAB / D) + 0.5) : 1.0; \
+            \
+            return Similarity; \
+        } \
+        \
+        float CMath_GetSimilarityJaccard_FLT##LENGTH( \
+            DATA_TYPE Vector1, \
+            DATA_TYPE Vector2 \
+        ) \
+        { \
+            float DotAB = dot(Vector1, Vector2); \
+            float DotAA = dot(Vector1, Vector1); \
+            float DotBB = dot(Vector2, Vector2); \
+            \
+            float D = (DotAA + DotBB) - DotAB; \
+            float Similarity = (D > 0.0) ? saturate(CMath_SNORMtoUNORM_FLT1(DotAB / D)) : 1.0; \
             \
             return Similarity; \
         }
