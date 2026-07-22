@@ -283,20 +283,33 @@
         .z = xy (Covariance XY)
     */
 
-    float CMath_GetCoefficientVariation_AZ_InverseSq(
-        float2 Mean, float2x2 CovarianceMat)
+    float CMath_GetCoefficientVariation_AZ_Sq(float2 Mean, float2x2 CovarianceMat)
     {
         // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
         float Numerator = dot(Mean, mul(CovarianceMat, Mean));
         float Denominator = dot(Mean, Mean);
 
         /*
-            Calculate final AZ Coefficient of Variation (Inverse Squared).
+            CoV     = sqrt(N) / D
+            CoV^2   = N / D^2
+        */
 
-                CoV     = sqrt(N) / D
-                CoV^2   = N / D^2
-                1/CoV^2 = 1 / (N / D^2)
-                        = D^2 / N
+        float CoV_InverseSq = (Denominator > 0.0) ? Numerator / (Denominator * Denominator) : 1.0;
+
+        return CoV_InverseSq;
+    }
+
+    float CMath_GetCoefficientVariation_AZ_InverseSq(float2 Mean, float2x2 CovarianceMat)
+    {
+        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+        float Denominator = dot(Mean, Mean);
+
+        /*
+            CoV     = sqrt(N) / D
+            CoV^2   = N / D^2
+            1/CoV^2 = 1 / (N / D^2)
+                    = D^2 / N
         */
 
         float CoV_InverseSq = (Numerator > 0.0) ? (Denominator * Denominator) / Numerator : 1.0;
@@ -386,7 +399,31 @@
             return Similarity; \
         }
 
-    TEMPLATE_CMATH_GETVECTORSIMILARITY(float, 1)
+    float CMath_GetVectorSimilarity_FLT2(
+        float2 Vector1, // V1
+        float2 Vector2  // V2
+    )
+    {
+        float DotV1V2 = dot(Vector1, Vector2);
+        float DotV1V1 = dot(Vector1, Vector1);
+        float DotV2V2 = dot(Vector2, Vector2);
+
+        float M = DotV1V1 * DotV2V2;
+        float N = DotV1V2 + sqrt(M);
+        float D = DotV1V1 + DotV2V2;
+        float Similarity = (M > 0.0) ? N / D : 1.0;
+
+        return Similarity;
+    }
+
+    float CMath_GetSimilarityJaccard_Scalar(float Scalar1, float Scalar2)
+    {
+        float MinValue = min(Scalar1, Scalar2);
+        float MaxValue = max(Scalar1, Scalar2);
+        float Jaccard = (MaxValue > 0.0) ? MinValue / MaxValue : 1.0;
+        return Jaccard;
+    }
+
     TEMPLATE_CMATH_GETVECTORSIMILARITY(float2, 2)
     TEMPLATE_CMATH_GETVECTORSIMILARITY(float3, 3)
     TEMPLATE_CMATH_GETVECTORSIMILARITY(float4, 4)
