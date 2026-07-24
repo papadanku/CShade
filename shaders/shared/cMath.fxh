@@ -230,40 +230,26 @@
             Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
     */
 
-    float CMath_GetCovarianceCoherence_Sq(
-        float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
-    )
+    float CMath_GetCovarianceCoherence_Sq(float2x2 CoV)
     {
-        float GxGx = CovarianceVec[0];
-        float GyGy = CovarianceVec[1];
-        float GxGy = CovarianceVec[2];
-
-        float Trace = (GxGx + GyGy);          // Element (a + c)
-        float Diff  = (GxGx - GyGy) * 0.5;    // Element (a - c) / 2
-        float N = (Diff * Diff) + (GxGy * GxGy);
+        float Trace = CoV._11 + CoV._22;    // Element (a + c)
+        float Diff  = CoV._11 - CoV._22;    // Element (a - c) / 2
+        float N = ((Diff * Diff) * 0.5) + (CoV._21 * CoV._12);
         float D = Trace * Trace;
 
         // Normalized Squared Coherence: 0 (flat), (highly directional edge)
         float Coherence_Sq = (D > 0.0) ? (4.0 * N) / D : 0.0;
-
         return Coherence_Sq;
     }
 
-    float CMath_GetCovarianceCoherenceInverse_Sq(
-        float3 CovarianceVec // .x = xx; .y = yy; .z = .xy or yx
-    )
+    float CMath_GetCovarianceCoherenceInverse_Sq(float2x2 CoV)
     {
-        float GxGx = CovarianceVec.x;
-        float GyGy = CovarianceVec.y;
-        float GxGy = CovarianceVec.z;
-
-        float Trace = GxGx + GyGy;                          // Tr(J) = a + c
-        float Determinant = (GxGx * GyGy) - (GxGy * GxGy);  // Determinant(J) = ac - b^2
+        float Trace = CoV._11 + CoV._22;                                // Tr(J) = a + c
+        float Determinant = (CoV._11 * CoV._22) - (CoV._21 * CoV._12);  // Determinant(J) = ac - b^2
+        float D = Trace * Trace;
 
         // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
-        float D = Trace * Trace;
         float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
-
         return InverseCoherence_Sq;
     }
 
@@ -283,6 +269,21 @@
         .z = xy (Covariance XY)
     */
 
+    float CMath_GetCoefficientVariation_AZ(float2 Mean, float2x2 CovarianceMat)
+    {
+        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+        float Denominator = dot(Mean, Mean);
+
+        /*
+            CoV = sqrt(N) / D
+        */
+
+        float CoV_InverseSq = (Denominator > 0.0) ? sqrt(Numerator) / Denominator : 1.0;
+
+        return CoV_InverseSq;
+    }
+
     float CMath_GetCoefficientVariation_AZ_Sq(float2 Mean, float2x2 CovarianceMat)
     {
         // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
@@ -295,6 +296,24 @@
         */
 
         float CoV_InverseSq = (Denominator > 0.0) ? Numerator / (Denominator * Denominator) : 1.0;
+
+        return CoV_InverseSq;
+    }
+
+    float CMath_GetCoefficientVariation_AZ_Inverse(float2 Mean, float2x2 CovarianceMat)
+    {
+        // Compute standard quadratic forms: (Mean^T * Covariance) * Mean
+        float Numerator = dot(Mean, mul(CovarianceMat, Mean));
+        float Denominator = dot(Mean, Mean);
+
+        /*
+            CoV     = sqrt(N) / D
+            1/CoV   = 1 / (sqrt(N) / D)
+                    = D / sqrt(N)
+                    = D * rsqrt(N)
+        */
+
+        float CoV_InverseSq = (Numerator > 0.0) ? Denominator * rsqrt(Numerator) : 1.0;
 
         return CoV_InverseSq;
     }

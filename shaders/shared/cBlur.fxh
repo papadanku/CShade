@@ -608,7 +608,7 @@
         float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
 
         // Compute the CoV.
-        Block.Influence_Sq = CMath_GetCoefficientVariation_AZ_InverseSq(Mean, CovarianceMat);
+        Block.Influence_Sq = CMath_GetCovarianceCoherenceInverse_Sq(CovarianceMat);
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
