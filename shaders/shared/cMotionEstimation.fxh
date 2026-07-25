@@ -67,6 +67,7 @@
     }
 
     float CMotionEstimation_GetDiceIndex(
+        float E,    // dot(T_r, T_r) + dot(I_r, I_r)
         float3 T_r, // T (Reference)
         float3 T_s, // T (Sample)
         float3 I_r, // I (Reference)
@@ -74,7 +75,7 @@
     )
     {
         float N = dot(T_r, T_s) + dot(I_r, I_s);
-        float D = dot(T_r, T_r) + dot(T_s, T_s) + dot(I_r, I_r) + dot(I_s, I_s);
+        float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
         float Index = (D > 0.0) ? saturate((N / D) + 0.5) : 1.0;
 
         return Index;
@@ -186,18 +187,21 @@
         float WSum = 0.0;
 
         // Get center textures (this is for the spatial weighting)
-        float3 CenterT = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float3 CenterI = CMotionEstimation_GetPlanesYUV(SampleI, WarpTex);
+        float3 T_C = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
+        float3 I_C = CMotionEstimation_GetPlanesYUV(SampleI, WarpTex);
+
+        // Get center magnitudes
+        float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
 
         [unroll]
         for (int i = 0; i < FetchGridSize; i++)
         {
             // Get cached data
-            float3 North = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
-            float3 South = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
-            float3 East = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
-            float3 West = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
-            float3 R0 = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
+            float3 T_N = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, -1), CacheWidth)];
+            float3 T_S = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(0, 1), CacheWidth)];
+            float3 T_E = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(1, 0), CacheWidth)];
+            float3 T_W = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
+            float3 T = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
             // Get R0 and R1 to calculate temporal gradient
             bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
@@ -205,8 +209,9 @@
             float2 Offset = float2(P[i].xy);
 
             // Get dynamic data
-            float2 R1Tex = WarpTex + (Offset * PixelSize);
-            float3 R1 = IsCenter ? CenterI : CMotionEstimation_GetPlanesYUV(SampleI, R1Tex);
+            float2 UV = WarpTex + (Offset * PixelSize);
+            float3 SampleI = CMotionEstimation_GetPlanesYUV(SampleI, UV);
+            float3 I = IsCenter ? I_C : SampleI;
             float3 It = 0.0;
 
             // Calculate bilateral weighting
@@ -219,16 +224,16 @@
             }
             else
             {
-                Weight = CMotionEstimation_GetDiceIndex(CenterT, R0, CenterI, R1);
+                Weight = CMotionEstimation_GetDiceIndex(TT_II, T_C, T, I_C, I);
             }
 
             // Accumulate weight
             WSum += Weight;
 
             // Immediately calculate spatial gradients
-            float3 Ix = (West * 0.5) - (East * 0.5);
-            float3 Iy = (North * 0.5) - (South * 0.5);
-            It = R1 - R0;
+            float3 Ix = (T_W * 0.5) - (T_E * 0.5);
+            float3 Iy = (T_N * 0.5) - (T_S * 0.5);
+            It = I - T;
 
             // Summate the weighted contributions
             IxIx += (dot(Ix, Ix) * Weight);
