@@ -53,7 +53,7 @@ uniform float _BlendFactor <
     ui_min = 0.0;
     ui_type = "slider";
     ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
-> = 0.9;
+> = 0.5;
 
 #if !SHADER_VECTOR_STREAMING
     uniform int _DisplayMode <
@@ -76,19 +76,19 @@ uniform float _BlendFactor <
 
     uniform float _StreamScaling <
         ui_label = "Vector Motion Scaling";
-        ui_max = 32.0;
+        ui_max = 20.0;
         ui_min = 1.0;
         ui_type = "slider";
         ui_tooltip = "Amount of motion scaling applied to the displayed vectors.";
-    > = 16.0;
+    > = 10.0;
 
     uniform float _VertexSize <
         ui_label = "Vector Vertex Size";
-        ui_max = 2.0;
+        ui_max = 1.0;
         ui_min = 0.0;
         ui_type = "slider";
         ui_tooltip = "Controls the size of the vector verticies.";
-    > = 1.0;
+    > = 0.5;
 
     uniform float _MaskSize <
         ui_label = "Vector Mask Size";

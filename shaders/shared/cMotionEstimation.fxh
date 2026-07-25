@@ -66,6 +66,20 @@
         return Color;
     }
 
+    float CMotionEstimation_GetDiceIndex(
+        float3 T_r, // T (Reference)
+        float3 T_s, // T (Sample)
+        float3 I_r, // I (Reference)
+        float3 I_s  // I (Sample)
+    )
+    {
+        float N = dot(T_r, T_s) + dot(I_r, I_s);
+        float D = dot(T_r, T_r) + dot(T_s, T_s) + dot(I_r, I_r) + dot(I_s, I_s);
+        float Index = (D > 0.0) ? saturate((N / D) + 0.5) : 1.0;
+
+        return Index;
+    }
+
     float2 CMotionEstimation_GetLucasKanade(
         bool IsCoarse,
         float2 MainTex,
@@ -205,9 +219,7 @@
             }
             else
             {
-                float Weight0 = CMath_GetSimilarityDice_FLT3(R0, CenterT);
-                float Weight1 = CMath_GetSimilarityDice_FLT3(R1, CenterI);
-                Weight = Weight0 * Weight1;
+                Weight = CMotionEstimation_GetDiceIndex(CenterT, R0, CenterI, R1);
             }
 
             // Accumulate weight
