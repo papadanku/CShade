@@ -288,7 +288,9 @@
         float XY = A[2] * A[2];
         float Dt = (A[0] * A[1]) - XY;
 
-        float Lambda = (Tr > 0.0) ? 0.0 : Tr - ((4.0 * Dt) / Tr);
+        float Lambda = (Tr > 0.0)
+            ? saturate(Tr - ((4.0 * Dt) / Tr))
+            : 0.0;
 
         // Regularized Hessian Diagonal
         float A00 = A[0] + Lambda;
@@ -298,8 +300,8 @@
         float Dt_1 = (A00 * A11) - XY;
 
         float2 Flow = float2(
-            A[2] * B[1] - A11 * B[0],
-            A[2] * B[0] - A00 * B[1]
+            (A[2] * B[1]) - (A11 * B[0]),
+            (A[2] * B[0]) - (A00 * B[1])
         );
 
         Flow = (abs(Dt_1) > 0.0) ? Flow / Dt_1 : 0.0;
