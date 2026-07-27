@@ -46,8 +46,6 @@
 
         ---
 
-        Gauss-Newton Steepest Descent Inverse Additive Algorithm
-
         Baker, S., & Matthews, I. (2004). Lucas-kanade 20 years on: A unifying framework. International journal of computer vision, 56, 221-255.
 
         https://www.researchgate.net/publication/248602429_Lucas-Kanade_20_Years_On_A_Unifying_Framework_Part_1_The_Quantity_Approximated_the_Warp_Update_Rule_and_the_Gradient_Descent_Approximation
@@ -76,9 +74,8 @@
     {
         float N = dot(T_r, T_s) + dot(I_r, I_s);
         float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
-        float Index = (D > 0.0) ? saturate((N / D) + 0.5) : 1.0;
-
-        return Index;
+        D = (D > 0.0) ? 1.0 / D : 0.5;
+        return saturate((N * D) + 0.5);
     }
 
     float2 CMotionEstimation_GetLucasKanade(
@@ -179,11 +176,8 @@
         Cache[23] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
         // Initialize variables
-        float IxIx = 0.0;
-        float IyIy = 0.0;
-        float IxIy = 0.0;
-        float IxIt = 0.0;
-        float IyIt = 0.0;
+        float3 A = 0.0;
+        float2 B = 0.0;
         float WSum = 0.0;
 
         // Get center textures (this is for the spatial weighting)
@@ -204,79 +198,112 @@
             float3 T = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
             // Get R0 and R1 to calculate temporal gradient
-            bool IsCenter = (P[i].x == 0) && (P[i].y == 0);
-            int OffsetID = abs(P[i].x) + abs(P[i].y);
-            float2 Offset = float2(P[i].xy);
 
             // Get dynamic data
-            float2 UV = WarpTex + (Offset * PixelSize);
-            float3 SampleI = CMotionEstimation_GetPlanesYUV(SampleI, UV);
-            float3 I = IsCenter ? I_C : SampleI;
-            float3 It = 0.0;
+            float2 UV = WarpTex + (float2(P[i].xy) * PixelSize);
+            bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
+            float3 I = CenterFetch
+                ? I_C
+                : CMotionEstimation_GetPlanesYUV(SampleI, UV);
 
             // Calculate bilateral weighting
-            float Weight;
-
-            // Calculate range weights
-            if (IsCenter)
-            {
-                Weight = 1.0;
-            }
-            else
-            {
-                Weight = CMotionEstimation_GetDiceIndex(TT_II, T_C, T, I_C, I);
-            }
+            float Weight = CenterFetch
+                ? 1.0
+                : CMotionEstimation_GetDiceIndex(TT_II, T_C, T, I_C, I);
 
             // Accumulate weight
             WSum += Weight;
 
             // Immediately calculate spatial gradients
-            float3 Ix = (T_W * 0.5) - (T_E * 0.5);
-            float3 Iy = (T_N * 0.5) - (T_S * 0.5);
-            It = I - T;
+            float3 Ix = (T_W - T_E) * 0.5;
+            float3 Iy = (T_N - T_S) * 0.5;
+            A[0] += (dot(Ix, Ix) * Weight);
+            A[1] += (dot(Iy, Iy) * Weight);
+            A[2] += (dot(Ix, Iy) * Weight);
 
-            // Summate the weighted contributions
-            IxIx += (dot(Ix, Ix) * Weight);
-            IxIt += (dot(Ix, It) * Weight);
-            IyIy += (dot(Iy, Iy) * Weight);
-            IyIt += (dot(Iy, It) * Weight);
-            IxIy += (dot(Ix, Iy) * Weight);
+            float3 It = I - T;
+            B[0] += (dot(Ix, It) * Weight);
+            B[1] += (dot(Iy, It) * Weight);
         }
 
-        // Check if WSum is not 0
-        WSum = (WSum > 0.0) ? 1.0 / WSum : 0.0;
-
         // Normalized weighted variables
-        IxIx *= WSum;
-        IyIy *= WSum;
-        IxIy *= WSum;
-        IxIt *= WSum;
-        IyIt *= WSum;
+        WSum = 1.0 / WSum;
+        A *= WSum;
+        B *= WSum;
 
         /*
             Calculate Lucas-Kanade matrix
             ---
             [ Ix^2/D -IxIy/D] = [-IxIt]
             [-IxIy/D  Iy^2/D]   [-IyIt]
+
+            [ A[0] -A[2]] = [-B[0]]
+            [-A[2]  A[1]]   [-B[1]]
         */
 
-        float2x2 A = float2x2(IxIx, IxIy, IxIy, IyIy);
-        float2 B = float2(IxIt, IyIt);
+        /*
+            ANISOTROPY FACTOR
+            -----------------
 
-        // Calculate C factor
-        float2 E = -B;
-        float N = dot(E, E);
-        float D = dot(E, mul(A, E));
-        float C = N / D;
+            1. Mathematical Derivation:
 
-        // Calculate -C * B
-        float2 Flow = (abs(D) > 0.0) ? -C * B : 0.0;
+                We start with the Normalized Anisotropy metric 'S' and the Trace-scaled
+                damping factor 'Lambda':
 
-        // Normalize motion vectors
-        Flow *= PixelSize;
+                    S = 1.0 - (4.0 * Dt) / (Tr * Tr)
+                    Lambda = Tr * S
+
+                Substituting S into Lambda and applying the distributive property:
+
+                    Lambda = Tr * (1.0 - (4.0 * Dt) / (Tr * Tr))
+                    Lambda = Tr - (Tr * (4.0 * Dt) / (Tr * Tr))
+                    Lambda = Tr - ((4.0 * Dt) / Tr)
+
+            This algebraic simplification cancels out one 'Tr' term.
+
+            2. Why We Scale by the Trace (Tr):
+
+                Scaling Lambda by the Trace (total local gradient energy, Tr = Ix^2 + Iy^2) makes the damping factor scale-invariant / contrast-invariant.
+
+                Is this very prevalent if you apply a constant to the diagonals, but the influences of A00 & A11 become too weak in low contrast areas (low gradients scale) and high contrast areas (high gradient scale)
+
+                If image contrast changes by a factor 'c' (I' = c * I):
+
+                    * Structure Tensor elements scale by c^2.
+                    * Trace scales by c^2 (Tr' = c^2 * Tr).
+                    * Determinant scales by c^4 (Dt' = c^4 * Dt).
+
+                Without Trace-scaling (using a fixed static constant Lambda):
+
+                    * High contrast: Lambda is too small for matrix inversion.
+                    * Low contrast: Lambda dominates the matrix relative to the scale of the gradients.
+
+                With Trace-scaling:
+
+                    * Lambda' = c^2 * Lambda.
+                    * Lambda grows and shrinks in exact 1:1 proportion with the Hessian's diagonal elements (A00, A11), preserving identical regularized flow vectors regardless of brightness or exposure changes.
+        */
+
+        float Tr = A[0] + A[1];
+        float XY = A[2] * A[2];
+        float Dt = (A[0] * A[1]) - XY;
+
+        float Lambda = (Tr > 0.0) ? 0.0 : Tr - ((4.0 * Dt) / Tr);
+
+        // Regularized Hessian Diagonal
+        float A00 = A[0] + Lambda;
+        float A11 = A[1] + Lambda;
+
+        // Invert Regularized Hessian
+        float Dt_1 = (A00 * A11) - XY;
+
+        float2 Flow = float2(
+            A[2] * B[1] - A11 * B[0],
+            A[2] * B[0] - A00 * B[1]
+        ) / Dt_1;
 
         // Propagate normalized motion vectors in Norm Range
-        Vectors += Flow;
+        Vectors += (Flow * PixelSize);
 
         // Clamp motion vectors to restrict range to valid lengths
         Vectors = clamp(Vectors, -1.0, 1.0);
