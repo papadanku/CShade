@@ -264,7 +264,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Gather textures
     float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 Image = tex2Dlod(SampleCosmeticTex, float4(Input.Tex0, 0.0, _ScaleByImageLOD));
-    float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
+    float2 MotionVectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleStabilizationTex, float4(StabilizationTex, 0.0, StabilizationLOD)).xy);
 
     // Compute motion vector masking
     float ScaleMask = lerp(Image.a, distance(Image.xyz, float3(1.0, 1.0, 1.0)), _ScaleByImage);

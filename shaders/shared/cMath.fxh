@@ -49,35 +49,67 @@
     }
 
     // Get the Half format distribution of bits
-    // Sign Exponent Significand
-    // x    xxxxx    xxxxxxxxxx
-    float CMath_Calculate_FLT16(int Sign, int Exponent, int Significand)
+    // Sign    Exponent    Significand
+    // x       xxxxx       xxxxxxxxxx
+    float CMath_Calculate_FP16(int Sign, int Exponent, int Significand)
     {
         const int Bias = -15;
-        const int MaxExponent = (Exponent - exp2(1)) + Bias;
-        const int MaxSignificand = 1 + ((Significand - 1) / Significand);
+        const int MaxExponent = (Exponent - (int)exp2(1)) + Bias;
+        const float MaxSignificand = 1.0f + ((float)(Significand - 1) / (float)Significand);
 
-        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * (float)MaxSignificand;
+        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * MaxSignificand;
     }
 
-    float CMath_GetFLT16Min()
+    float CMath_GetFP16Min()
     {
         /*
-            Sign Exponent Significand
-            ---- -------- -----------
-            0    00001    000000000
+            Sign    Exponent    Significand
+            ----    --------    -----------
+            0       00001       000000000
         */
-        return CMath_Calculate_FLT16(0, exp2(1) + 1, exp2(0));
+        return CMath_Calculate_FP16(0, (int)exp2(0) + 1, (int)exp2(0));
     }
 
-    float CMath_GetFLT16Max()
+    float CMath_GetFP16Max()
     {
         /*
-            Sign Exponent Significand
-            ---- -------- -----------
-            0    11110    1111111111
+            Sign    Exponent    Significand
+            ----    --------    -----------
+            0       11110       1111111111
         */
-        return CMath_Calculate_FLT16(0, exp2(5), exp2(10));
+        return CMath_Calculate_FP16(0, (int)exp2(5), (int)exp2(10));
+    }
+
+    // Get the Single Precision (FP32) format distribution of bits
+    // Sign    Exponent    Significand
+    // x       xxxxxxxx    xxxxxxxxxxxxxxxxxxxxxxx
+    float CMath_Calculate_FP32(int Sign, int Exponent, int Significand)
+    {
+        const int Bias = -127;
+        const int MaxExponent = (Exponent - (int)exp2(7)) + Bias;
+        const float MaxSignificand = 1.0f + ((float)(Significand - 1) / (float)Significand);
+
+        return (float)pow(-1, Sign) * (float)exp2(MaxExponent) * MaxSignificand;
+    }
+
+    float CMath_GetFP32Min()
+    {
+        /*
+            Sign    Exponent    Significand
+            ----    --------    -----------
+            0       00000001    00000000000000000000000 (Normalized min)
+        */
+        return CMath_Calculate_FP32(0, (int)exp2(0), (int)exp2(0));
+    }
+
+    float CMath_GetFP32Max()
+    {
+        /*
+            Sign    Exponent    Significand
+            ----    --------    -----------
+            0       11111110    11111111111111111111111
+        */
+        return CMath_Calculate_FP32(0, (int)exp2(8) - 2, (int)exp2(23));
     }
 
     float CMath_GetNAN()
@@ -96,14 +128,14 @@
             return (X * (DATA_TYPE)0.5) + (DATA_TYPE)0.5; \
         } \
         \
-        DATA_TYPE CMath_FLT16toSNORM_FLT##LENGTH(DATA_TYPE X) \
+        DATA_TYPE CMath_FP16toSNORM_FLT##LENGTH(DATA_TYPE X) \
         { \
-            return X / (DATA_TYPE)CMath_GetFLT16Max(); \
+            return X / (DATA_TYPE)CMath_GetFP16Max(); \
         } \
         \
-        DATA_TYPE CMath_SNORMtoFLT16_FLT##LENGTH(DATA_TYPE X) \
+        DATA_TYPE CMath_SNORMtoFP16_FLT##LENGTH(DATA_TYPE X) \
         { \
-            return X * (DATA_TYPE)CMath_GetFLT16Max(); \
+            return X * (DATA_TYPE)CMath_GetFP16Max(); \
         }
 
     // Instantiate template over vector dimensions

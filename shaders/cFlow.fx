@@ -257,7 +257,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
         // Apply velocity to CellOffset.
         float4 VelocityTex = float4(VtxBasePos / GridSize, 0.0, _MipBias);
-        float2 Velocity = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, VelocityTex).xy);
+        float2 Velocity = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleFlow, VelocityTex).xy);
 
         /*
             Create our vertex offsets to make a triangle:
@@ -384,7 +384,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+        float2 Vectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
         // Encode vectors
         float3 VectorColors = normalize(float3(Vectors, 1e-3));

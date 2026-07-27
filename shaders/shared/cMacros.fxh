@@ -13,7 +13,7 @@
     #define CSHADE_GET_MIN(X, Y) (Y ^ ((X ^ Y) & -(X < Y)))
     #define CSHADE_GET_MAX(X, Y) (X ^ ((X ^ Y) & -(X < Y)))
 
-    #define CSHADE_FLT16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
+    #define CSHADE_FP16_SMALLEST_SUBNORMAL float((1.0 / (1 << 14)) * (0.0 + (1.0 / (1 << 10))))
 
     #define CSHADE_ASPECT_RATIO float(BUFFER_WIDTH * (1.0 / BUFFER_HEIGHT))
     #define CSHADE_BUFFER_SIZE_0 int2(BUFFER_WIDTH, BUFFER_HEIGHT)

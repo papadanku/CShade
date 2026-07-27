@@ -213,7 +213,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float2 MotionVectors = CMath_FLT16toSNORM_FLT2(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+    float2 MotionVectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleTempTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
     float3 ShaderOutput = GetMotionBlur(Input, MotionVectors);
 
     switch (_DisplayMode)
