@@ -300,7 +300,9 @@
         float2 Flow = float2(
             A[2] * B[1] - A11 * B[0],
             A[2] * B[0] - A00 * B[1]
-        ) / Dt_1;
+        );
+
+        Flow = (abs(Dt_1) > 0.0) ? Flow / Dt_1 : 0.0;
 
         // Propagate normalized motion vectors in Norm Range
         Vectors += (Flow * PixelSize);
