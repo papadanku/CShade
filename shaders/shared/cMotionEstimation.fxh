@@ -76,7 +76,7 @@
         float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
 
         float S = (abs(D) > 0.0)
-            ?  saturate((N / D) + 0.5)
+            ? saturate((N / D) + 0.5)
             : 1.0;
 
         return S;
