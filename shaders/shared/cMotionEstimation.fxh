@@ -74,8 +74,12 @@
     {
         float N = dot(T_r, T_s) + dot(I_r, I_s);
         float D = dot(T_s, T_s) + dot(I_s, I_s) + E;
-        D = (D > 0.0) ? 1.0 / D : 0.5;
-        return saturate((N * D) + 0.5);
+
+        float S = (abs(D) > 0.0)
+            ?  saturate((N / D) + 0.5)
+            : 1.0;
+
+        return S;
     }
 
     float2 CMotionEstimation_GetLucasKanade(
@@ -287,24 +291,27 @@
         float Tr = A[0] + A[1];
         float XY = A[2] * A[2];
         float Dt = (A[0] * A[1]) - XY;
+        float Tr_Rcp = 1.0 / Tr;
 
-        float Lambda = (Tr > 0.0)
-            ? saturate(Tr - ((4.0 * Dt) / Tr))
-            : CMath_GetFP16Min();
+        float Lambda = isinf(Tr_Rcp)
+            ? 0.0
+            : max(0.0, Tr - ((4.0 * Dt) * Tr_Rcp));
 
         // Regularized Hessian Diagonal
         float A00 = A[0] + Lambda;
         float A11 = A[1] + Lambda;
 
         // Invert Regularized Hessian
-        float Dt_1 = (A00 * A11) - XY;
+        float Dt_Rcp = 1.0 / ((A00 * A11) - XY);
 
         float2 Flow = float2(
             (A[2] * B[1]) - (A11 * B[0]),
             (A[2] * B[0]) - (A00 * B[1])
         );
 
-        Flow = (abs(Dt_1) > 0.0) ? Flow / Dt_1 : 0.0;
+        Flow = isinf(abs(Dt_Rcp))
+            ? 0.0
+            : Flow * Dt_Rcp;
 
         // Propagate normalized motion vectors in Norm Range
         Vectors += (Flow * PixelSize);
