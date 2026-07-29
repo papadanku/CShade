@@ -201,8 +201,6 @@
             float3 T_W = Cache[CMath_Get1DIndexFrom2D(P[i].zw + int2(-1, 0), CacheWidth)];
             float3 T = Cache[CMath_Get1DIndexFrom2D(P[i].zw, CacheWidth)];
 
-            // Get R0 and R1 to calculate temporal gradient
-
             // Get dynamic data
             float2 UV = WarpTex + (float2(P[i].xy) * PixelSize);
             bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
