@@ -57,25 +57,25 @@ uniform float _BloomIntensity <
 */
 
 // Bloom-specific textures and samplers
-CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA16F, CSHADE_BUFFER_SIZE_0, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGBA16F, CSHADE_BUFFER_SIZE_1, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex2_RGBA16F, CSHADE_BUFFER_SIZE_2, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex3_RGBA16F, CSHADE_BUFFER_SIZE_3, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex4_RGBA16F, CSHADE_BUFFER_SIZE_4, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex5_RGBA16F, CSHADE_BUFFER_SIZE_5, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex6_RGBA16F, CSHADE_BUFFER_SIZE_6, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex7_RGBA16F, CSHADE_BUFFER_SIZE_7, RGBA16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex8_RGBA16F, CSHADE_BUFFER_SIZE_8, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex0_RGBA16F, CSHADE_BUFFER_SIZE_0, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex1_RGBA16F, CSHADE_BUFFER_SIZE_1, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex2_RGBA16F, CSHADE_BUFFER_SIZE_2, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex3_RGBA16F, CSHADE_BUFFER_SIZE_3, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex4_RGBA16F, CSHADE_BUFFER_SIZE_4, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex5_RGBA16F, CSHADE_BUFFER_SIZE_5, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex6_RGBA16F, CSHADE_BUFFER_SIZE_6, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex7_RGBA16F, CSHADE_BUFFER_SIZE_7, RGBA16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex8_RGBA16F, CSHADE_BUFFER_SIZE_8, RGBA16F, 1)
 
-CSHADE_CREATE_SAMPLER(SampleTempTex0, TempTex0_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex1, TempTex1_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex2, TempTex2_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex3, TempTex3_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex4, TempTex4_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex5, TempTex5_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex6, TempTex6_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex7, TempTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex0, SharedTex0_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex1, SharedTex1_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex2, SharedTex2_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex3, SharedTex3_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex4, SharedTex4_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex5, SharedTex5_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex6, SharedTex6_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex7, SharedTex7_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex8, SharedTex8_RGBA16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 #if CSHADE_APPLY_AUTO_EXPOSURE
     CSHADE_CREATE_TEXTURE(BloomExposureTex, int2(1, 1), R16F, 0)
@@ -92,7 +92,7 @@ CSHADE_CREATE_SAMPLER(SampleTempTex8, TempTex8_RGBA16F, LINEAR, LINEAR, LINEAR, 
 #if CSHADE_APPLY_AUTO_EXPOSURE
     void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float LogLuminance = tex2D(SampleTempTex8, Input.Tex0).a;
+        float LogLuminance = tex2D(SampleSharedTex8, Input.Tex0).a;
         Output = CCamera_CreateExposureTex(LogLuminance);
         Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
     }
@@ -145,14 +145,14 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Output = CBlur_Downsample6x6(SAMPLER, Input.Tex0, FLICKER_FILTER); \
     }
 
-TEMPLATE_PS_DOWNSCALE(PS_Downscale1, SampleTempTex0, true)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale2, SampleTempTex1, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale3, SampleTempTex2, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale4, SampleTempTex3, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale5, SampleTempTex4, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale6, SampleTempTex5, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale7, SampleTempTex6, false)
-TEMPLATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale1, SampleSharedTex0, true)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale2, SampleSharedTex1, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale3, SampleSharedTex2, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale4, SampleSharedTex3, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale5, SampleSharedTex4, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale6, SampleSharedTex5, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale7, SampleSharedTex6, false)
+TEMPLATE_PS_DOWNSCALE(PS_Downscale8, SampleSharedTex7, false)
 
 #define TEMPLATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
     void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
@@ -161,13 +161,13 @@ TEMPLATE_PS_DOWNSCALE(PS_Downscale8, SampleTempTex7, false)
         Output.a = 1.0; \
     }
 
-TEMPLATE_PS_UPSCALE(PS_Upscale7, SampleTempTex8)
-TEMPLATE_PS_UPSCALE(PS_Upscale6, SampleTempTex7)
-TEMPLATE_PS_UPSCALE(PS_Upscale5, SampleTempTex6)
-TEMPLATE_PS_UPSCALE(PS_Upscale4, SampleTempTex5)
-TEMPLATE_PS_UPSCALE(PS_Upscale3, SampleTempTex4)
-TEMPLATE_PS_UPSCALE(PS_Upscale2, SampleTempTex3)
-TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleTempTex2)
+TEMPLATE_PS_UPSCALE(PS_Upscale7, SampleSharedTex8)
+TEMPLATE_PS_UPSCALE(PS_Upscale6, SampleSharedTex7)
+TEMPLATE_PS_UPSCALE(PS_Upscale5, SampleSharedTex6)
+TEMPLATE_PS_UPSCALE(PS_Upscale4, SampleSharedTex5)
+TEMPLATE_PS_UPSCALE(PS_Upscale3, SampleSharedTex4)
+TEMPLATE_PS_UPSCALE(PS_Upscale2, SampleSharedTex3)
+TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleSharedTex2)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -182,7 +182,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #endif
 
     // Bloom composition
-    float3 BloomColor = tex2D(SampleTempTex1, Input.Tex0).rgb;
+    float3 BloomColor = tex2D(SampleSharedTex1, Input.Tex0).rgb;
     BaseColor = (_BloomRenderMode == 0) ? BaseColor + (BloomColor * _BloomIntensity) : BloomColor;
 
     // RENDER
@@ -220,29 +220,29 @@ technique CShade_AutoExposureBloom
     ui_tooltip = "Adjustable bloom with auto-exposure.";
 >
 {
-    TEMPLATE_PASS(Prefilter, CShade_VS_Quad, PS_Prefilter, TempTex0_RGBA16F, FALSE)
+    TEMPLATE_PASS(Prefilter, CShade_VS_Quad, PS_Prefilter, SharedTex0_RGBA16F, FALSE)
 
     // Iteratively downsample the image (RGB) and its log luminance (A) into a pyramid.
-    TEMPLATE_PASS(Downsample1, CShade_VS_Quad, PS_Downscale1, TempTex1_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample2, CShade_VS_Quad, PS_Downscale2, TempTex2_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample3, CShade_VS_Quad, PS_Downscale3, TempTex3_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample4, CShade_VS_Quad, PS_Downscale4, TempTex4_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample5, CShade_VS_Quad, PS_Downscale5, TempTex5_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample6, CShade_VS_Quad, PS_Downscale6, TempTex6_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample7, CShade_VS_Quad, PS_Downscale7, TempTex7_RGBA16F, FALSE)
-    TEMPLATE_PASS(Downsample8, CShade_VS_Quad, PS_Downscale8, TempTex8_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample1, CShade_VS_Quad, PS_Downscale1, SharedTex1_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample2, CShade_VS_Quad, PS_Downscale2, SharedTex2_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample3, CShade_VS_Quad, PS_Downscale3, SharedTex3_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample4, CShade_VS_Quad, PS_Downscale4, SharedTex4_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample5, CShade_VS_Quad, PS_Downscale5, SharedTex5_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample6, CShade_VS_Quad, PS_Downscale6, SharedTex6_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample7, CShade_VS_Quad, PS_Downscale7, SharedTex7_RGBA16F, FALSE)
+    TEMPLATE_PASS(Downsample8, CShade_VS_Quad, PS_Downscale8, SharedTex8_RGBA16F, FALSE)
 
     /*
         Additive iterative upsampling.
         Formula: Upsample(Level[N+1]) + Level[N]
     */
-    TEMPLATE_PASS(Upscale7, CShade_VS_Quad, PS_Upscale7, TempTex7_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale6, CShade_VS_Quad, PS_Upscale6, TempTex6_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale5, CShade_VS_Quad, PS_Upscale5, TempTex5_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale4, CShade_VS_Quad, PS_Upscale4, TempTex4_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale3, CShade_VS_Quad, PS_Upscale3, TempTex3_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale2, CShade_VS_Quad, PS_Upscale2, TempTex2_RGBA16F, TRUE)
-    TEMPLATE_PASS(Upscale1, CShade_VS_Quad, PS_Upscale1, TempTex1_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale7, CShade_VS_Quad, PS_Upscale7, SharedTex7_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale6, CShade_VS_Quad, PS_Upscale6, SharedTex6_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale5, CShade_VS_Quad, PS_Upscale5, SharedTex5_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale4, CShade_VS_Quad, PS_Upscale4, SharedTex4_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale3, CShade_VS_Quad, PS_Upscale3, SharedTex3_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale2, CShade_VS_Quad, PS_Upscale2, SharedTex2_RGBA16F, TRUE)
+    TEMPLATE_PASS(Upscale1, CShade_VS_Quad, PS_Upscale1, SharedTex1_RGBA16F, TRUE)
 
     pass Composition
     {

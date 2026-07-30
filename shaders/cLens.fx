@@ -38,6 +38,8 @@
 
 #define CSHADE_APPLY_AUTO_EXPOSURE 0
 #define CSHADE_APPLY_ABBERATION 1 
+#define CSHADE_APPLY_GRAIN 1 
+#define CSHADE_APPLY_VIGNETTE 1 
 #include "shared/cShade.fxh"
 
 /* Pixel Shaders */

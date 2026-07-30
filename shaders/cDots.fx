@@ -163,8 +163,8 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 /* Textures & Samplers */
 
-CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
-CSHADE_CREATE_SRGB_SAMPLER(SampleTempTex0, TempTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
+CSHADE_CREATE_SRGB_SAMPLER(SampleSharedTex0, SharedTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 sampler2D CShade_SampleColorTexMirror
 {
@@ -308,9 +308,9 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
         // Generate per-color blocks
         float3 Blocks = 0.0;
-        Blocks.r = tex2Dlod(SampleTempTex0, float4(GetBlockTex(RedChannel_Tiles.Index), 0.0, LOD)).r;
-        Blocks.g = tex2Dlod(SampleTempTex0, float4(GetBlockTex(GreenChannel_Tiles.Index), 0.0, LOD)).g;
-        Blocks.b = tex2Dlod(SampleTempTex0, float4(GetBlockTex(BlueChannel_Tiles.Index), 0.0, LOD)).b;
+        Blocks.r = tex2Dlod(SampleSharedTex0, float4(GetBlockTex(RedChannel_Tiles.Index), 0.0, LOD)).r;
+        Blocks.g = tex2Dlod(SampleSharedTex0, float4(GetBlockTex(GreenChannel_Tiles.Index), 0.0, LOD)).g;
+        Blocks.b = tex2Dlod(SampleSharedTex0, float4(GetBlockTex(BlueChannel_Tiles.Index), 0.0, LOD)).b;
 
         // Generate per-color, circle-shaped lengths of each channel blocks' texture coordinates
         float3 CircleLengths = 0.0;
@@ -334,7 +334,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         Tile MainTiles = GetTiles(Input.Tex0.xy, _Offset);
 
         // Get texture information
-        float4 Blocks = tex2Dlod(SampleTempTex0, float4(GetBlockTex(MainTiles.Index), 0.0, LOD));
+        float4 Blocks = tex2Dlod(SampleSharedTex0, float4(GetBlockTex(MainTiles.Index), 0.0, LOD));
 
         // Compute circle mask (with fade at small sizes)
         float CircleLength = GetCircleLength(MainTiles);
@@ -372,7 +372,7 @@ technique CShade_Dots
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = TempTex0_RGBA8_8;
+        RenderTarget = SharedTex0_RGBA8_8;
     }
 
     pass Dots

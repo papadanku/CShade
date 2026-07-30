@@ -130,25 +130,25 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 /* Textures & Samplers */
 
-CSHADE_CREATE_TEXTURE_POOLED(TempTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex3_RG16F, CSHADE_BUFFER_SIZE_4, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex4_RG16F, CSHADE_BUFFER_SIZE_5, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(TempTex5_RG16F, CSHADE_BUFFER_SIZE_6, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex3_RG16F, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex4_RG16F, CSHADE_BUFFER_SIZE_5, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex5_RG16F, CSHADE_BUFFER_SIZE_6, RG16F, 1)
 
-CSHADE_CREATE_SAMPLER(SampleTempTex1, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex2, TempTex2_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex3, TempTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex4, TempTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleTempTex5, TempTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex1, SharedTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex2, SharedTex2_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex3, SharedTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex4, SharedTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex5, SharedTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_TEXTURE(PreviousFrameTex, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
-CSHADE_CREATE_SAMPLER_LODBIAS(SamplePreviousFrameTex, PreviousFrameTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
-CSHADE_CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, TempTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
+CSHADE_CREATE_SAMPLER_LODBIAS(SamplePreviousFrameTex, PreviousFrameTex_Flow, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CSHADE_CREATE_SAMPLER_LODBIAS(SampleCurrentFrameTex, SharedTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
 
-CSHADE_CREATE_TEXTURE(FlowTex, CSHADE_BUFFER_SIZE_3, RG16F, 8)
-CSHADE_CREATE_SAMPLER_LODBIAS(SampleGuide, FlowTex, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
-CSHADE_CREATE_SAMPLER(SampleFlow, TempTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_TEXTURE(MotionVectorTex_Flow, CSHADE_BUFFER_SIZE_3, RG16F, 8)
+CSHADE_CREATE_SAMPLER_LODBIAS(SampleMotionVectorTex1, MotionVectorTex_Flow, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 
 #if !SHADER_VECTOR_STREAMING
     CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
@@ -176,21 +176,21 @@ void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleTempTex5);
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex5);
     Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
 void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleTempTex4);
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex4);
     Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
 }
 
 void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleTempTex3);
+    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex3);
     float2 Flow = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex, SampleCurrentFrameTex);
     Output = float4(Flow, 0.0, _BlendFactor);
 }
@@ -199,27 +199,27 @@ void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2D(SampleTempTex1, Input.Tex0.xy);
+    Output = tex2D(SampleSharedTex1, Input.Tex0.xy);
 }
 
 void PS_Upsample0(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSideWindowBox_FLT2(SampleGuide, Input.Tex0);
+    Output = CBlur_GetSideWindowBox_FLT2(SampleMotionVectorTex1, Input.Tex0);
 }
 
 void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex5, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex5, SampleMotionVectorTex1, Input.Tex0);
 }
 
 void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex4, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex4, SampleMotionVectorTex1, Input.Tex0);
 }
 
 void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleTempTex3, SampleGuide, Input.Tex0);
+    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex3, SampleMotionVectorTex1, Input.Tex0);
 }
 
 /* Pixel Shaders: Output */
@@ -257,7 +257,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
         // Apply velocity to CellOffset.
         float4 VelocityTex = float4(VtxBasePos / GridSize, 0.0, _MipBias);
-        float2 Velocity = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleFlow, VelocityTex).xy);
+        float2 Velocity = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex2, VelocityTex).xy);
 
         /*
             Create our vertex offsets to make a triangle:
@@ -384,7 +384,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleFlow, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
+        float2 Vectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex2, float4(Input.Tex0.xy, 0.0, _MipBias)).xy);
 
         // Encode vectors
         float3 VectorColors = normalize(float3(Vectors, 1e-3));
@@ -480,11 +480,11 @@ technique CShade_Flow
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
-    TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, TempTex1_RGB10A2)
+    TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex1_RGB10A2)
 
-    TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, TempTex5_RG16F)
-    TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, TempTex4_RG16F)
-    TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, TempTex3_RG16F)
+    TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex5_RG16F)
+    TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex4_RG16F)
+    TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex3_RG16F)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -495,42 +495,42 @@ technique CShade_Flow
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_LucasKanade1;
-        RenderTarget0 = FlowTex;
+        RenderTarget0 = MotionVectorTex_Flow;
     }
 
     pass CopyFrame
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Copy;
-        RenderTarget0 = PreviousFrameTex;
+        RenderTarget0 = PreviousFrameTex_Flow;
     }
 
     pass BilateralUpsample0
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample0;
-        RenderTarget0 = TempTex5_RG16F;
+        RenderTarget0 = SharedTex5_RG16F;
     }
 
     pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
-        RenderTarget0 = TempTex4_RG16F;
+        RenderTarget0 = SharedTex4_RG16F;
     }
 
     pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
-        RenderTarget0 = TempTex3_RG16F;
+        RenderTarget0 = SharedTex3_RG16F;
     }
 
     pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;
-        RenderTarget0 = TempTex2_RG16F;
+        RenderTarget0 = SharedTex2_RG16F;
     }
 
     pass Main

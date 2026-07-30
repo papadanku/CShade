@@ -50,11 +50,11 @@ uniform float _Threshold <
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-CSHADE_CREATE_TEXTURE_POOLED(TempTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
 
-sampler2D SampleTempTex0
+sampler2D SampleSharedTex0
 {
-    Texture = TempTex0_RGBA8_8;
+    Texture = SharedTex0_RGBA8_8;
     MagFilter = POINT;
     MinFilter = POINT;
     MipFilter = LINEAR;
@@ -111,7 +111,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    float4 Blocks = tex2Dlod(SampleTempTex0, float4(Input.Tex0, 0.0, _Blockiness));
+    float4 Blocks = tex2Dlod(SampleSharedTex0, float4(Input.Tex0, 0.0, _Blockiness));
 
     // Initialize variables
     float3 Feature = (_DetectionMode == 0) ? Blocks.rgb : Blocks.aaa;
@@ -169,7 +169,7 @@ technique CShade_Censor
 
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = TempTex0_RGBA8_8;
+        RenderTarget = SharedTex0_RGBA8_8;
     }
 
     pass Censor
