@@ -234,6 +234,9 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
     void VS_VectorStreaming(in CShade_APP2VS Input, out VS2PS_Cell Output)
     {
+        // Enforce clamping here.
+        _VertexSize = min(_VertexSize, 1.0);
+
         float Pi2 = CMath_GetPi() * 2.0;
 
         // Identify which triangle and which corner of the triangle we are on.
@@ -299,13 +302,10 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         float2 VtxNormal = (VtxMagnitude > 0.0) ? VtxVector / VtxMagnitude : float2(1.0, 0.0);
 
         // Initiate the rotation matrix
-        float2x2 VtxRotationMatrix;
-
-        // The matrix's Normal
-        VtxRotationMatrix[0] = float2(VtxNormal.x, VtxNormal.y);
-
-        // The matrix's Tangent
-        VtxRotationMatrix[1] = float2(-VtxNormal.y, VtxNormal.x);
+        float2x2 VtxRotationMatrix = float2x2(
+             VtxNormal.x, VtxNormal.y,  // Normal
+            -VtxNormal.y, VtxNormal.x   // Tangent
+        );
 
         // Calculate the vertex directional information.
         float VtxScale = (TriangleVertexID == 1) ? VtxMagnitude * _StreamScaling : 1.0;
