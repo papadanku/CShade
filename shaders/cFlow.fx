@@ -235,7 +235,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     void VS_VectorStreaming(in CShade_APP2VS Input, out VS2PS_Cell Output)
     {
         // Enforce clamping here.
-        _VertexSize = min(_VertexSize, 1.0);
+        float GVertexSize = min(_VertexSize, 1.0);
 
         float Pi2 = CMath_GetPi() * 2.0;
 
@@ -312,7 +312,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
         VtxOffset = CMath_UNORMtoSNORM_FLT2(VtxOffset);
         VtxOffset.x *= VtxScale;
-        VtxOffset *= _VertexSize;
+        VtxOffset *= GVertexSize;
         VtxOffset = mul(VtxOffset, VtxRotationMatrix);
         VtxOffset = CMath_SNORMtoUNORM_FLT2(VtxOffset);
 
