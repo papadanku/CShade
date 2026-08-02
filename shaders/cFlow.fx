@@ -68,7 +68,7 @@ uniform float _BlendFactor <
 #if SHADER_VECTOR_STREAMING
     uniform int _DisplayMode <
         ui_text = "VECTOR STREAMING";
-        ui_items = "Output\0Debug · Triangles\0";
+        ui_items = "Output\0Debug · Quad\0";
         ui_label = "Display Mode";
         ui_type = "combo";
         ui_tooltip = "Controls how the contour effect is displayed, including various debug visualizations of gradients and magnitudes.";
@@ -339,7 +339,7 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         Output.Tex0 = Vertex;
 
         // For coloring in the PixelShader
-        Output.Velocity = Velocity * float2(1.0, -1.0);
+        Output.Velocity = -Velocity;
     }
 
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
@@ -375,6 +375,11 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         }
         else if (_DisplayMode == 1)
         {
+            if (CMath_GetOutOfBounds(Input.Tex0.xy))
+            {
+                discard;
+            }
+
             Output.rg = Input.Tex0.xy;
             Output.b = 1.0 - dot(Output.rg, 0.5);
             Output.a = DotVV > 0.0 ? FadeFactor : 0.0;
