@@ -339,46 +339,50 @@ void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
         Output.Tex0 = Vertex;
 
         // For coloring in the PixelShader
-        Output.Velocity = Velocity;
+        Output.Velocity = Velocity * float2(1.0, -1.0);
     }
 
     void PS_VectorStreaming(in VS2PS_Cell Input, out float4 Output : SV_Target)
     {
-        // Process vertex inputs.
-        float2 TexSNORM = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
-
-        // Process uniforms.
-        float MaskSize = lerp(5.0, 1.0, saturate(_MaskSize));
-        float MaskSmoothing = lerp(0.9, 0.0, saturate(_MaskSmoothing));
-
         // Process velocity.
-        float2 Velocity = Input.Velocity * float2(1.0, -1.0);
+        float2 Velocity = Input.Velocity;
         float DotVV = dot(Velocity, Velocity);
         float SqrtDotVV = DotVV > 0.0 ? sqrt(DotVV) : 1.0;
         float FadeFactor = smoothstep(1e-5, 1e-3, SqrtDotVV);
 
-        switch (_DisplayMode)
+        if (_DisplayMode == 0)
         {
-            case 0: // Display: Normal Mode
-                // Calculate normalized velocity and map it to [0, 1] range for color output.
-                Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy / SqrtDotVV);
-                Output.b = 1.0 - dot(Output.rg, 0.5);
+            // Process vertex inputs.
+            float2 TexSNORM = CMath_UNORMtoSNORM_FLT2(Input.Tex0.xy);
 
-                float2 MaskUV = TexSNORM * float2(1.0, MaskSize);
-                Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
-                Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
-                break;
-            case 1: // Display: Debug Triangle Mode
-                Output.rg = Input.Tex0.xy;
-                Output.b = 1.0 - dot(Output.rg, 0.5);
-                Output.a = 1.0;
-                Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
-                break;
-            default:
-                Output = float4(0.5, 0.5, 0.5, 0.5);
-                break;
+            // Process uniforms.
+            float MaskSize = lerp(5.0, 1.0, saturate(_MaskSize));
+            float MaskSmoothing = lerp(0.9, 0.0, saturate(_MaskSmoothing));
+            float2 MaskUV = TexSNORM * float2(1.0, MaskSize);
+
+            // Process alpha.
+            Output.a = smoothstep(1.0, MaskSmoothing, length(MaskUV));
+            Output.a = DotVV > 0.0 ? Output.a * FadeFactor : 0.0;
+
+            if (CMath_GetOutOfBounds(Input.Tex0.xy) || (Output.a <= 0.0))
+            {
+                discard;
+            }
+
+            // Calculate normalized velocity and map it to [0, 1] range for color output.
+            Output.rg = CMath_SNORMtoUNORM_FLT2(Velocity.xy / SqrtDotVV);
+            Output.b = 1.0 - dot(Output.rg, 0.5);
         }
-
+        else if (_DisplayMode == 1)
+        {
+            Output.rg = Input.Tex0.xy;
+            Output.b = 1.0 - dot(Output.rg, 0.5);
+            Output.a = DotVV > 0.0 ? FadeFactor : 0.0;
+        }
+        else
+        {
+            Output = float4(0.5, 0.5, 0.5, 0.5);
+        }
     }
 #else
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
