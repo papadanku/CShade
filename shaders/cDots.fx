@@ -362,9 +362,17 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     CShade_Render(Output, Input.HPos.xy, Input.Tex0);
 }
 
+#if SHADER_RGB_VERSION
+    #define SHADER_UI_LABEL_EXT " (Color)"
+#else
+    #define SHADER_UI_LABEL_EXT " (Monochromatic)"
+#endif
+
+#define SHADER_UI_LABEL "CShade | Dots" SHADER_UI_LABEL_EXT
+
 technique CShade_Dots
 <
-    ui_label = "CShade | Dots";
+    ui_label = SHADER_UI_LABEL;
     ui_tooltip = "Creates circles based on image features.";
 >
 {
