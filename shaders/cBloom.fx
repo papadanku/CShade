@@ -214,9 +214,17 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         RenderTarget0 = RENDER_TARGET; \
     }
 
+#if CSHADE_APPLY_AUTO_EXPOSURE
+    #define SHADER_UI_LABEL_EXT " & Auto Exposure"
+#else
+    #define SHADER_UI_LABEL_EXT ""
+#endif
+
+#define SHADER_UI_LABEL "CShade | Bloom" SHADER_UI_LABEL_EXT
+
 technique CShade_AutoExposureBloom
 <
-    ui_label = "CShade | Bloom";
+    ui_label = SHADER_UI_LABEL;
     ui_tooltip = "Adjustable bloom with auto-exposure.";
 >
 {

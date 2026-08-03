@@ -483,9 +483,17 @@ void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
     }
 #endif
 
+#if SHADER_VECTOR_STREAMING
+    #define SHADER_UI_LABEL_EXT " (Streaming)"
+#else
+    #define SHADER_UI_LABEL_EXT " (Shading)"
+#endif
+
+#define SHADER_UI_LABEL "CShade | Optical Flow" SHADER_UI_LABEL_EXT
+
 technique CShade_Flow
 <
-    ui_label = "CShade | Optical Flow";
+    ui_label = SHADER_UI_LABEL;
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
