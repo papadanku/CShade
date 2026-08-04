@@ -99,7 +99,7 @@ CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrameTex_MotionBlur, LINEA
 CSHADE_CREATE_SAMPLER(SampleCurrentFrameTex, SharedTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CSHADE_CREATE_TEXTURE(MotionVectorTex_MotionBlur, CSHADE_BUFFER_SIZE_3, RG16F, 8)
-CSHADE_CREATE_SAMPLER_LODBIAS(SampleMotionVectorTex, MotionVectorTex_MotionBlur, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP, -0.5)
+CSHADE_CREATE_SAMPLER(SampleMotionVectorTex, MotionVectorTex_MotionBlur, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 /* Pixel Shaders */
 
