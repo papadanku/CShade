@@ -490,14 +490,14 @@
             [2] [5] [8]  (Bottom Row)
 
             NORTH   SOUTH   EAST    WEST
-            x x x   - - -   - x x   x x -
-            x x x   x x x   - x x   x x -
-            - - -   x x x   - x x   x x -
+            1 1 1   0 0 0   0 1 1   1 1 0
+            1 1 1   1 1 1   0 1 1   1 1 0
+            0 0 0   1 1 1   0 1 1   1 1 0
 
             NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            x x -       - x x       - - -       - - -
-            x x -       - x x       x x -       - x x
-            - - -       - - -       x x -       - x x
+            1 1 0       0 1 1       0 0 0       0 0 0
+            1 1 0       0 1 1       1 1 0       0 1 1
+            0 0 0       0 0 0       1 1 0       0 1 1
         */
 
         const int SideWindowSize_Corner = 4;
@@ -631,14 +631,14 @@
             [2] [5] [8]  (Bottom Row)
 
             NORTH   SOUTH   EAST    WEST
-            x x x   - - -   - x x   x x -
-            x x x   x x x   - x x   x x -
-            - - -   x x x   - x x   x x -
+            1 1 1   0 0 0   0 1 1   1 1 0
+            1 1 1   1 1 1   0 1 1   1 1 0
+            0 0 0   1 1 1   0 1 1   1 1 0
 
             NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            x x -       - x x       - - -       - - -
-            x x -       - x x       x x -       - x x
-            - - -       - - -       x x -       - x x
+            1 1 0       0 1 1       0 0 0       0 0 0
+            1 1 0       0 1 1       1 1 0       0 1 1
+            0 0 0       0 0 0       1 1 0       0 1 1
         */
 
         // Initialize our side windows
