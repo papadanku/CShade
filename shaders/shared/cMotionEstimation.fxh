@@ -235,12 +235,17 @@
 
         /*
             Calculate Lucas-Kanade matrix
-            ---
-            [ Ix^2/D -IxIy/D] = [-IxIt]
-            [-IxIy/D  Iy^2/D]   [-IyIt]
 
-            [ A[0] -A[2]] = [-B[0]]
-            [-A[2]  A[1]]   [-B[1]]
+            ---
+
+            [ Ix^2/D -IxIy/D] [U] = [-IxIt]
+            [-IxIy/D  Iy^2/D] [V]   [-IyIt]
+
+            [A[0] A[2]] [U] = [-B[0]]
+            [A[2] A[1]] [V]   [-B[1]]
+
+            [U] = [ A[1] -A[2]] [-B[0]]
+            [V]   [-A[2]  A[0]] [-B[1]]
         */
 
         /*
@@ -303,8 +308,8 @@
         float Dt_Rcp = 1.0 / ((A00 * A11) - XY);
 
         float2 Flow = float2(
-            (A[2] * B[1]) - (A11 * B[0]),
-            (A[2] * B[0]) - (A00 * B[1])
+            ( A11  * -B[0]) + (-A[2] * -B[1]),
+            (-A[2] * -B[0]) + ( A00  * -B[1])
         );
 
         Flow = isinf(abs(Dt_Rcp))
