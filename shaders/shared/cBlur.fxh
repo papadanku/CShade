@@ -430,7 +430,7 @@
 
         float2 Sum;
         float SumWeight;
-        float Influence_Sq;
+        float Influence;
     };
 
     void CBlur_GetSharedData_SideWindow_Bilateral(
@@ -608,7 +608,7 @@
         float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
 
         // Compute the CoV.
-        Block.Influence_Sq = saturate(CMath_GetCovarianceCoherence_Inverse(CovarianceMat));
+        Block.Influence = saturate(CMath_GetCovarianceCoherence_Inverse(CovarianceMat));
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -661,7 +661,7 @@
         */
 
         float2 WindowMean = 0.0;
-        float SumInfluence_Sq = 0.0;
+        float SumInfluence = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
@@ -670,15 +670,15 @@
             if (SideWindows[i0].SumWeight > 0.0)
             {
                 // Normalize the sum.
-                float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+            float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
                 // Weighted sum by influence.
-                WindowMean += (Sum * SideWindows[i0].Influence_Sq);
-                SumInfluence_Sq += SideWindows[i0].Influence_Sq;
+                WindowMean += (Sum * SideWindows[i0].Influence);
+                SumInfluence += SideWindows[i0].Influence;
             }
         }
 
-        WindowMean = (SumInfluence_Sq > 0.0) ? WindowMean / SumInfluence_Sq : SharedData.GlobalWindow_Mean;
+        WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : SharedData.GlobalWindow_Mean;
 
         return WindowMean;
     }
