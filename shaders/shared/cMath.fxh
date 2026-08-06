@@ -262,26 +262,48 @@
             Therefore: (2 * sqrt(((a - c) / 2)^2 + b^2)) / Tr(M)
     */
 
+    float CMath_GetCovarianceCoherence(float2x2 CoV)
+    {
+        float Tr = CoV._11 + CoV._22;    // Element (a + c)
+        float Df = CoV._11 - CoV._22;    // Element (a - c)
+        float N = (Df * Df) + (4.0 * (CoV._21 * CoV._12));
+
+        // Normalized Coherence: 0 (flat), (highly directional edge)
+        float Coherence = (abs(Tr) > 0.0) ? sqrt(N) / Tr : 0.0;
+        return Coherence;
+    }
+
     float CMath_GetCovarianceCoherence_Sq(float2x2 CoV)
     {
-        float Trace = CoV._11 + CoV._22;    // Element (a + c)
-        float Diff  = CoV._11 - CoV._22;    // Element (a - c) / 2
-        float N = ((Diff * Diff) * 0.5) + (CoV._21 * CoV._12);
-        float D = Trace * Trace;
+        float Tr = CoV._11 + CoV._22;   // Element (a + c)
+        float Df = CoV._11 - CoV._22;   // Element (a - c) / 2
+        float N = ((Df * Df) * 0.5) + (CoV._21 * CoV._12);
+        float D = Tr * Tr;
 
         // Normalized Squared Coherence: 0 (flat), (highly directional edge)
         float Coherence_Sq = (D > 0.0) ? (4.0 * N) / D : 0.0;
         return Coherence_Sq;
     }
 
-    float CMath_GetCovarianceCoherenceInverse_Sq(float2x2 CoV)
+    float CMath_GetCovarianceCoherence_Inverse(float2x2 CoV)
     {
-        float Trace = CoV._11 + CoV._22;                                // Tr(J) = a + c
-        float Determinant = (CoV._11 * CoV._22) - (CoV._21 * CoV._12);  // Determinant(J) = ac - b^2
-        float D = Trace * Trace;
+        float Tr = CoV._11 + CoV._22;   // Element (a + c)
+        float Df = CoV._11 - CoV._22;   // Element (a - c)
+        float N = Tr - sqrt((Df * Df) + (4.0 * (CoV._12 * CoV._12)));
 
-        // If Trace is 0, the neighborhood is completely black/empty, which is isotropic by default.
-        float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Determinant) / D : 1.0;
+        // Normalized Isotropy: 0 (highly directional edge), 1 (flat)
+        float InverseCoherence = (abs(Tr) > 0.0) ? N / Tr : 1.0;
+        return InverseCoherence;
+    }
+
+    float CMath_GetCovarianceCoherence_InverseSq(float2x2 CoV)
+    {
+        float Tr = CoV._11 + CoV._22;                           // Tr(J) = a + c
+        float Det = (CoV._11 * CoV._22) - (CoV._21 * CoV._12);  // Determinant(J) = ac - b^2
+        float D = Tr * Tr;
+
+        // Normalized Isotropy: 0 (highly directional edge), 1 (flat)
+        float InverseCoherence_Sq = (D > 0.0) ? (4.0 * Det) / D : 1.0;
         return InverseCoherence_Sq;
     }
 
