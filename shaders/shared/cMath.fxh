@@ -441,6 +441,26 @@
             * Output Range:                         [0.0, 1.0]
     */
 
+    float CMath_GetSimilarityDice_Fast(float DotAB, float DotAA, float DotBB)
+    {
+        float D = DotAA + DotBB;
+        float Similarity = (abs(D) > 0.0)
+            ? saturate((DotAB / D) + 0.5)
+            : 1.0;
+
+        return Similarity;
+    }
+
+    float CMath_GetSimilarityJaccard_Fast(float DotAB, float DotAA, float DotBB)
+    {
+        float D = (DotAA + DotBB) - DotAB;
+        float Similarity = (abs(D) > 0.0)
+            ? saturate(CMath_SNORMtoUNORM_FLT1(DotAB / D))
+            : 1.0;
+
+        return Similarity;
+    }
+
     #define TEMPLATE_CMATH_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
         float CMath_GetSimilarityDice_FLT##LENGTH( \
             DATA_TYPE Vector1, \
@@ -452,7 +472,7 @@
             float DotBB = dot(Vector2, Vector2); \
             \
             float D = DotAA + DotBB; \
-            float Similarity = (D > 0.0) ? saturate((DotAB / D) + 0.5) : 1.0; \
+            float Similarity = (abs(D) > 0.0) ? saturate((DotAB / D) + 0.5) : 1.0; \
             \
             return Similarity; \
         } \
@@ -467,7 +487,7 @@
             float DotBB = dot(Vector2, Vector2); \
             \
             float D = (DotAA + DotBB) - DotAB; \
-            float Similarity = (D > 0.0) ? saturate(CMath_SNORMtoUNORM_FLT1(DotAB / D)) : 1.0; \
+            float Similarity = (abs(D) > 0.0) ? saturate(CMath_SNORMtoUNORM_FLT1(DotAB / D)) : 1.0; \
             \
             return Similarity; \
         }

@@ -367,10 +367,10 @@
             return Array[4]; \
         } \
 
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1) // float CBlur_GetMedian3x3FLT(float InArray[9])
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2) // float2 CBlur_GetMedian3x3FLT(float2 InArray[9])
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 CBlur_GetMedian3x3FLT(float3 InArray[9])
-    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 CBlur_GetMedian3x3FLT(float4 InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float, 1) // float CBlur_GetMedian3x3_FLT1(float InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float2, 2) // float2 CBlur_GetMedian3x3_FLT2(float2 InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float3, 3) // float3 CBlur_GetMedian3x3_FLT3(float3 InArray[9])
+    TEMPLATE_CBLUR_GETMEDIAN3X3(float4, 4) // float4 CBlur_GetMedian3x3_FLT4(float4 InArray[9])
 
     #define TEMPLATE_CBLUR_GETMADGM3x3(DATA_TYPE, LENGTH) \
         float CBlur_GetMADGM3x3_FLT##LENGTH(DATA_TYPE Array[9]) \
@@ -416,11 +416,10 @@
         float ArrayDistances[9];
 
         // Side Window Information.
-        int SideWindow_Sizes[8];
+        int SideWindow_Size;
         float2 SideWindow_Means[8];
 
         // Shared for final calculation.
-        float2 GlobalWindow_Mean;
         float2 Reference;
     };
 
@@ -430,7 +429,6 @@
 
         float2 Sum;
         float SumWeight;
-        float Influence;
     };
 
     void CBlur_GetSharedData_SideWindow_Bilateral(
@@ -495,56 +493,45 @@
             0 0 0   1 1 1   0 1 1   1 1 0
 
             NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            1 1 0       0 1 1       0 0 0       0 0 0
+            1 1 1       1 1 1       1 0 0       0 0 1
             1 1 0       0 1 1       1 1 0       0 1 1
-            0 0 0       0 0 0       1 1 0       0 1 1
+            1 0 0       0 0 1       1 1 1       1 1 1
         */
 
-        const int SideWindowSize_Corner = 4;
-        const int SideWindowSize_Cardinal = 6;
+        const int SideWindowSize = 6;
+        const float SideWindowWeight = 1.0 / float(SideWindowSize);
 
-        const float SideWindowWeight_Mean_Corner = 1.0 / float(SideWindowSize_Corner);
-        const float SideWindowWeight_Mean_Cardinal = 1.0 / float(SideWindowSize_Cardinal);
-        const float GlobalWeight_Mean = 1.0 / float(ArrayImageLength);
+        Output.SideWindow_Size = SideWindowSize;
 
-        Output.SideWindow_Sizes[0] = SideWindowSize_Corner;
-        Output.SideWindow_Sizes[1] = SideWindowSize_Corner;
-        Output.SideWindow_Sizes[2] = SideWindowSize_Corner;
-        Output.SideWindow_Sizes[3] = SideWindowSize_Corner;
-        Output.SideWindow_Sizes[4] = SideWindowSize_Cardinal;
-        Output.SideWindow_Sizes[5] = SideWindowSize_Cardinal;
-        Output.SideWindow_Sizes[6] = SideWindowSize_Cardinal;
-        Output.SideWindow_Sizes[7] = SideWindowSize_Cardinal;
+        float2 QuadHalf[6];
+        QuadHalf[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left       (TL)
+        QuadHalf[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid        (TM)
+        QuadHalf[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right      (TR)
+        QuadHalf[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left    (BL)
+        QuadHalf[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid     (BM)
+        QuadHalf[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right   (BR)
 
-        float2 Subkernel_Means[ArraySideWindowsLength];
-        Subkernel_Means[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left (V_TL)
-        Subkernel_Means[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid (V_TM)
-        Subkernel_Means[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right (V_TR)
-        Subkernel_Means[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left (V_BL)
-        Subkernel_Means[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid (V_BM)
-        Subkernel_Means[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right (V_BR)
-        Subkernel_Means[6] = Output.ArrayImages[2] + Output.ArrayImages[5]; // Horizontal Bottom-Left (H_BL)
-        Subkernel_Means[7] = Output.ArrayImages[5] + Output.ArrayImages[8]; // Horizontal Bottom-Right (H_BR)
+        float2 QuadFull[4];
+        QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayImages[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+        QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayImages[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+        QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayImages[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+        QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayImages[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
 
-        Output.SideWindow_Means[0] = Subkernel_Means[0] + Subkernel_Means[1]; // NW: [0 + 1] + [3 + 4]
-        Output.SideWindow_Means[1] = Subkernel_Means[1] + Subkernel_Means[2]; // NE: [3 + 4] + [6 + 7]
-        Output.SideWindow_Means[2] = Subkernel_Means[3] + Subkernel_Means[4]; // SW: [1 + 2] + [4 + 5]
-        Output.SideWindow_Means[3] = Subkernel_Means[4] + Subkernel_Means[5]; // SE: [4 + 5] + [7 + 8]
-        Output.SideWindow_Means[4] = Output.SideWindow_Means[0] + Subkernel_Means[2]; // N: [0 + 1 + 3 + 4] + [6 + 7]
-        Output.SideWindow_Means[5] = Output.SideWindow_Means[2] + Subkernel_Means[5]; // S: [1 + 2 + 4 + 5] + [7 + 8]
-        Output.SideWindow_Means[6] = Output.SideWindow_Means[0] + Subkernel_Means[6]; // W: [0 + 1 + 3 + 4] + [2 + 5]
-        Output.SideWindow_Means[7] = Output.SideWindow_Means[1] + Subkernel_Means[7]; // E: [3 + 4 + 6 + 7] + [5 + 8]
-        Output.GlobalWindow_Mean = Output.ArrayImages[0] + Subkernel_Means[3] + Output.SideWindow_Means[7];
+        float2 Sums[ArraySideWindowsLength];
+        Sums[0] = QuadFull[0] + Output.ArrayImages[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
+        Sums[1] = QuadFull[1] + Output.ArrayImages[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
+        Sums[2] = QuadFull[2] + Output.ArrayImages[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
+        Sums[3] = QuadFull[3] + Output.ArrayImages[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
+        Sums[4] = QuadFull[0] + Output.ArrayImages[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
+        Sums[5] = QuadFull[3] + Output.ArrayImages[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
+        Sums[6] = QuadFull[2] + Output.ArrayImages[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
+        Sums[7] = QuadFull[1] + Output.ArrayImages[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
 
-        Output.SideWindow_Means[0] *= SideWindowWeight_Mean_Corner;
-        Output.SideWindow_Means[1] *= SideWindowWeight_Mean_Corner;
-        Output.SideWindow_Means[2] *= SideWindowWeight_Mean_Corner;
-        Output.SideWindow_Means[3] *= SideWindowWeight_Mean_Corner;
-        Output.SideWindow_Means[4] *= SideWindowWeight_Mean_Cardinal;
-        Output.SideWindow_Means[5] *= SideWindowWeight_Mean_Cardinal;
-        Output.SideWindow_Means[6] *= SideWindowWeight_Mean_Cardinal;
-        Output.SideWindow_Means[7] *= SideWindowWeight_Mean_Cardinal;
-        Output.GlobalWindow_Mean *= GlobalWeight_Mean;
+        [unroll]
+        for (int i = 0; i < ArraySideWindowsLength; i++)
+        {
+            Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
+        }
     }
 
     void CBlur_GetSideWindow_Bilateral(
@@ -567,48 +554,6 @@
                 Block.SumWeight += Input.ArrayDistances[i0];
             }
         }
-
-        /*
-            Auricchio, G., Giudici, P., & Toscani, G. (2026). How to Measure Multidimensional Variation? Journal of Classification, 43(2), 503–526. https://doi.org/10.1007/s00357-026-09551-8
-
-            Compute the SideWindow's Sample Coefficient of Variance (CoV).
-
-            We use Albert-Zhang's Multivariate Coefficient of Variation because of the computational simplicity.
-
-            ---
-
-            SigmaVec mapping:
-
-            .x = xx (Variance X)
-            .y = yy (Variance Y)
-            .z = xy (Covariance XY)
-        */
-
-        // Constant: Sample Variance (Sigma)
-        const float BlockSize = float(Input.SideWindow_Sizes[SideWindowIndex]);
-        const float SigmaN = 1.0 / (BlockSize - 1.0);
-
-        float2 Mean = Input.SideWindow_Means[SideWindowIndex];
-        float3 SigmaVec = 0.0;
-
-        [unroll]
-        for (int i1 = 0; i1 < Input.ArrayImageLength; i1++)
-        {
-            if (Block.Masks[i1] == 1)
-            {
-                float2 D = Input.ArrayImages[i1] - Mean;
-                SigmaVec += (D.xyx * D.xyy);
-            }
-        }
-
-        // Normalize to get true sample variance.
-        SigmaVec *= SigmaN;
-
-        // Construct the 2x2 Covariance matrix.
-        float2x2 CovarianceMat = float2x2(SigmaVec.x, SigmaVec.z, SigmaVec.z, SigmaVec.y);
-
-        // Compute the CoV.
-        Block.Influence = saturate(CMath_GetCovarianceCoherence_Inverse(CovarianceMat));
     }
 
     float2 CBlur_GetSelfBilateralUpsample_FLT2(
@@ -636,17 +581,17 @@
             0 0 0   1 1 1   0 1 1   1 1 0
 
             NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            1 1 0       0 1 1       0 0 0       0 0 0
+            1 1 1       1 1 1       1 0 0       0 0 1
             1 1 0       0 1 1       1 1 0       0 1 1
-            0 0 0       0 0 0       1 1 0       0 1 1
+            1 0 0       0 0 1       1 1 1       1 1 1
         */
 
         // Initialize our side windows
         CBlur_SideWindow_Bilateral SideWindows[SideWindowsCount];
-        SideWindows[0].Masks = { 1, 1, 0, 1, 1, 0, 0, 0, 0 }; // NW
-        SideWindows[1].Masks = { 0, 0, 0, 1, 1, 0, 1, 1, 0 }; // NE
-        SideWindows[2].Masks = { 0, 1, 1, 0, 1, 1, 0, 0, 0 }; // SW
-        SideWindows[3].Masks = { 0, 0, 0, 0, 1, 1, 0, 1, 1 }; // SE
+        SideWindows[0].Masks = { 1, 1, 1, 1, 1, 0, 1, 0, 0 }; // NW
+        SideWindows[1].Masks = { 1, 0, 0, 1, 1, 0, 1, 1, 1 }; // NE
+        SideWindows[2].Masks = { 1, 1, 1, 0, 1, 1, 0, 0, 1 }; // SW
+        SideWindows[3].Masks = { 0, 0, 1, 0, 1, 1, 1, 1, 1 }; // SE
         SideWindows[4].Masks = { 1, 1, 0, 1, 1, 0, 1, 1, 0 }; // N
         SideWindows[5].Masks = { 0, 1, 1, 0, 1, 1, 0, 1, 1 }; // S
         SideWindows[6].Masks = { 1, 1, 1, 1, 1, 1, 0, 0, 0 }; // W
@@ -660,27 +605,39 @@
             What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use the sum of pixel variances.
         */
 
-        float2 WindowMean = 0.0;
-        float SumInfluence = 0.0;
+        // Calculate Side Winder filter
+        float2 NearestWindow = 0.0;
+        float MaxSimilarity = 0.0;
+
+        // Pre-compute Reference.Reference
+        float DotRR = dot(SharedData.Reference, SharedData.Reference);
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
             CBlur_GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
+
+            [flatten]
             if (SideWindows[i0].SumWeight > 0.0)
             {
-                // Normalize the sum.
-            float2 Sum = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+                float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+                float Similarity = CMath_GetSimilarityJaccard_Fast(
+                    dot(SideWindowMean, SharedData.Reference),
+                    dot(SideWindowMean, SideWindowMean),
+                    DotRR
+                );
 
-                // Weighted sum by influence.
-                WindowMean += (Sum * SideWindows[i0].Influence);
-                SumInfluence += SideWindows[i0].Influence;
+                if (Similarity > MaxSimilarity)
+                {
+                    MaxSimilarity = Similarity;
+                    NearestWindow = SideWindowMean;
+                }
             }
         }
 
-        WindowMean = (SumInfluence > 0.0) ? WindowMean / SumInfluence : SharedData.GlobalWindow_Mean;
+        return NearestWindow;
 
-        return WindowMean;
+
     }
 
     float2 CBlur_GetSideWindowBox_FLT2(sampler2D Image, float2 Tex)
