@@ -636,8 +636,6 @@
         }
 
         return NearestWindow;
-
-
     }
 
     float2 CBlur_GetSideWindowBox_FLT2(sampler2D Image, float2 Tex)
