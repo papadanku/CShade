@@ -607,14 +607,9 @@
         SideWindows[7].Masks = { 0, 0, 0, 1, 1, 1, 1, 1, 1 }; // E
 
         /*
-            Calculate the variance-weighted Side Window filter. This may sound strange, but it works better than the regular min(x) method.
-
-            While Google's enterprise-class clanker suggested this method, I did my discernment and revised it to work like do CBloom's Karis averaging. In layman's terms, a Karis average means "we will add 4 things together: darken the very-bright things and keep the not-very-bright-things the same". The "thing" is either a single pixel (for a Full Karis Average) or a sum of pixels (for a Partial Karis Average). We use the Karis average to prevent pulsating regions when downsampling.
-
-            What about motion vectors? Instead of measuring the sum of pixel brightness to infer pulsating areas, we use the sum of pixel variances.
+            Calculate Side Window filter
         */
 
-        // Calculate Side Winder filter
         float2 NearestWindow = 0.0;
         float MaxSimilarity = 0.0;
 
