@@ -735,17 +735,20 @@
         Means[7] *= WeightsCardinal;
 
         // Calculate Side Winder filter
-        float2 NearestWindow = Reference;
-        bool ASimilarity = false;
+        float DotRR = dot(Reference, Reference);
+        float2 NearestWindow = 0.0;
         float MaxSimilarity = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            float Similarity = CMath_GetSimilarityJaccard_FLT2(Means[i0], Reference);
-            if ((ASimilarity == false) || (Similarity > MaxSimilarity))
+            float DotRS = dot(Reference, Means[i0]);
+            float DotSS = dot(Means[i0], Means[i0]);
+            float Similarity = CMath_GetSimilarityJaccard_Fast(DotRS, DotSS, DotRR);
+
+            [flatten]
+            if (Similarity > MaxSimilarity)
             {
-                ASimilarity = true;
                 MaxSimilarity = Similarity;
                 NearestWindow = Means[i0];
             }
