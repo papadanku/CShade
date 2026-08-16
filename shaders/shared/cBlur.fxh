@@ -482,7 +482,7 @@
 
                 // Compute the similarity
                 Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_Fast(
-                    DotAB, DotAA, DotBB
+                    false, DotAB, DotAA, DotBB
                 );
 
                 ImageIndex0 += 1;
@@ -623,11 +623,13 @@
             {
                 float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
                 float Similarity = CMath_GetSimilarityJaccard_Fast(
+                    false,
                     dot(SideWindowMean, SharedData.Reference),
                     dot(SideWindowMean, SideWindowMean),
                     SharedData.ReferenceDotSq
                 );
 
+                [flatten]
                 if (Similarity > MaxSimilarity)
                 {
                     MaxSimilarity = Similarity;
@@ -744,7 +746,7 @@
         {
             float DotRS = dot(Reference, Means[i0]);
             float DotSS = dot(Means[i0], Means[i0]);
-            float Similarity = CMath_GetSimilarityJaccard_Fast(DotRS, DotSS, DotRR);
+            float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, DotRR);
 
             [flatten]
             if (Similarity > MaxSimilarity)

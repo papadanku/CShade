@@ -210,14 +210,14 @@
         https://www.itu.int/rec/T-REC-T.832
     */
 
-    float3 CColor_SRGBtoYUV444(float3 SRGB, bool Normalize)
+    float3 CColor_SRGBtoYUV444(float3 SRGB, bool OutputSigned)
     {
         float3 YUV;
 
         YUV.z = SRGB.b - SRGB.r;
         YUV.y = -SRGB.r + SRGB.g - (YUV.z * 0.5);
         YUV.x = SRGB.g - (YUV.y * 0.5);
-        YUV.yz = Normalize ? CMath_SNORMtoUNORM_FLT2(YUV.yz) : YUV.yz;
+        YUV.yz = OutputSigned ? YUV.yz : CMath_SNORMtoUNORM_FLT2(YUV.yz);
 
         return YUV;
     }
@@ -228,7 +228,7 @@
         https://www.microsoft.com/en-us/research/publication/ycocg-r-a-color-space-with-rgb-reversibility-and-low-dynamic-range/?msockid=304d3b086ecf61db06e32ea86fb06088
     */
 
-    float3 CColor_SRGBtoYCOCGR(float3 SRGB, bool NormalizeOutput)
+    float3 CColor_SRGBtoYCOCGR(float3 SRGB, bool OutputSigned)
     {
         float3 YCoCg;
         float T;
@@ -238,7 +238,7 @@
         YCoCg[2] = SRGB.g - T;
         YCoCg[0] = T + (YCoCg[2] * 0.5);
 
-        if (NormalizeOutput)
+        if (!OutputSigned)
         {
             YCoCg.yz = saturate((YCoCg.yz * float2(0.5, 1.0)) + 0.5);
         }
@@ -246,12 +246,12 @@
         return YCoCg;
     }
 
-    float3 CColor_YCOCGRtoSRGB(float3 YCoCgR, bool NormalizedInput)
+    float3 CColor_YCOCGRtoSRGB(float3 YCoCgR, bool UnsignedInput)
     {
         float3 SRGB;
         float Temp;
 
-        YCoCgR.yz = NormalizedInput ? CMath_UNORMtoSNORM_FLT2(YCoCgR.yz) : YCoCgR.yz;
+        YCoCgR.yz = UnsignedInput ? CMath_UNORMtoSNORM_FLT2(YCoCgR.yz) : YCoCgR.yz;
         Temp = YCoCgR.x - (YCoCgR.z * 0.5);
         SRGB.g = YCoCgR.z + Temp;
         SRGB.b = Temp - (YCoCgR.y * 0.5);
