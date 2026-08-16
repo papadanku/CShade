@@ -117,7 +117,7 @@
         return 0.0 / 0.0;
     }
 
-    #define TEMPLATE_CMATH_DATACONV(DATA_TYPE, LENGTH) \
+    #define TEMPLATE_CMATH_DATA_CONV(DATA_TYPE, LENGTH) \
         DATA_TYPE CMath_UNORMtoSNORM_FLT##LENGTH(DATA_TYPE X) \
         { \
             return (X * (DATA_TYPE)2.0) - (DATA_TYPE)1.0; \
@@ -139,10 +139,10 @@
         }
 
     // Instantiate template over vector dimensions
-    TEMPLATE_CMATH_DATACONV(float, 1)
-    TEMPLATE_CMATH_DATACONV(float2, 2)
-    TEMPLATE_CMATH_DATACONV(float3, 3)
-    TEMPLATE_CMATH_DATACONV(float4, 4)
+    TEMPLATE_CMATH_DATA_CONV(float, 1)
+    TEMPLATE_CMATH_DATA_CONV(float2, 2)
+    TEMPLATE_CMATH_DATA_CONV(float3, 3)
+    TEMPLATE_CMATH_DATA_CONV(float4, 4)
 
     /*
         CMATH: CONSTANTS
@@ -475,7 +475,7 @@
         return S;
     }
 
-    #define TEMPLATE_CMATH_GETVECTORSIMILARITY(DATA_TYPE, LENGTH) \
+    #define TEMPLATE_CMATH_GET_VECTOR_SIMILARITY(DATA_TYPE, LENGTH) \
         float CMath_GetSimilarityDice_FLT##LENGTH( \
             bool OutputSigned, \
             DATA_TYPE Vector1, \
@@ -549,9 +549,9 @@
         return Jaccard;
     }
 
-    TEMPLATE_CMATH_GETVECTORSIMILARITY(float2, 2)
-    TEMPLATE_CMATH_GETVECTORSIMILARITY(float3, 3)
-    TEMPLATE_CMATH_GETVECTORSIMILARITY(float4, 4)
+    TEMPLATE_CMATH_GET_VECTOR_SIMILARITY(float2, 2)
+    TEMPLATE_CMATH_GET_VECTOR_SIMILARITY(float3, 3)
+    TEMPLATE_CMATH_GET_VECTOR_SIMILARITY(float4, 4)
 
     float2x2 CMath_GetRotationMatrix(float A)
     {
@@ -925,46 +925,23 @@
         return float3(dot(HashSinCos1, Gradient), dot(HashSinCos2, Gradient), dot(HashSinCos3, Gradient));
     }
 
-    float CMath_GetGradientNoise_FLT1(float2 Tex, float Bias, bool Normalize)
-    {
-        float2 I = floor(Tex);
-        float2 F = frac(Tex);
-        float A = CMath_GetGradient_FLT1(I, F, float2(0.0, 0.0), Bias);
-        float B = CMath_GetGradient_FLT1(I, F, float2(1.0, 0.0), Bias);
-        float C = CMath_GetGradient_FLT1(I, F, float2(0.0, 1.0), Bias);
-        float D = CMath_GetGradient_FLT1(I, F, float2(1.0, 1.0), Bias);
-        float2 UV = CMath_GetQuintic(F);
-        float Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT1(Noise)) : Noise;
-        return Noise;
-    }
+    #define TEMPLATE_CMATH_GET_GRADIENT_NOISE(DATA_TYPE, LENGTH) \
+    DATA_TYPE CMath_GetGradientNoise_FLT##LENGTH(float2 Tex, float Bias, bool OutputSigned) \
+    { \
+        float2 I = floor(Tex); \
+        float2 F = frac(Tex); \
+        DATA_TYPE A = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 0.0), Bias); \
+        DATA_TYPE B = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 0.0), Bias); \
+        DATA_TYPE C = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 1.0), Bias); \
+        DATA_TYPE D = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 1.0), Bias); \
+        float2 UV = CMath_GetQuintic(F); \
+        DATA_TYPE Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y); \
+        Noise = OutputSigned ? Noise : saturate(CMath_SNORMtoUNORM_FLT##LENGTH(Noise)); \
+        return Noise; \
+    } \
 
-    float2 CMath_GetGradientNoise_FLT2(float2 Input, float Bias, bool Normalize)
-    {
-        float2 I = floor(Input);
-        float2 F = frac(Input);
-        float2 A = CMath_GetGradient_FLT2(I, F, float2(0.0, 0.0), Bias);
-        float2 B = CMath_GetGradient_FLT2(I, F, float2(1.0, 0.0), Bias);
-        float2 C = CMath_GetGradient_FLT2(I, F, float2(0.0, 1.0), Bias);
-        float2 D = CMath_GetGradient_FLT2(I, F, float2(1.0, 1.0), Bias);
-        float2 UV = CMath_GetQuintic(F);
-        float2 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT2(Noise)) : Noise;
-        return Noise;
-    }
-
-    float3 CMath_GetGradientNoise_FLT3(float2 Input, float Bias, bool Normalize)
-    {
-        float2 I = floor(Input);
-        float2 F = frac(Input);
-        float3 A = CMath_GetGradient_FLT3(I, F, float2(0.0, 0.0), Bias);
-        float3 B = CMath_GetGradient_FLT3(I, F, float2(1.0, 0.0), Bias);
-        float3 C = CMath_GetGradient_FLT3(I, F, float2(0.0, 1.0), Bias);
-        float3 D = CMath_GetGradient_FLT3(I, F, float2(1.0, 1.0), Bias);
-        float2 UV = CMath_GetQuintic(F);
-        float3 Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y);
-        Noise = (Normalize) ? saturate(CMath_SNORMtoUNORM_FLT3(Noise)) : Noise;
-        return Noise;
-    }
+    TEMPLATE_CMATH_GET_GRADIENT_NOISE(float, 1) // float CMath_GetGradientNoise_FLT1(float2 Tex, float Bias, bool OutputSigned)
+    TEMPLATE_CMATH_GET_GRADIENT_NOISE(float2, 2) // float2 CMath_GetGradientNoise_FLT2(float2 Tex, float Bias, bool OutputSigned)
+    TEMPLATE_CMATH_GET_GRADIENT_NOISE(float3, 3) // float3 CMath_GetGradientNoise_FLT3(float2 Tex, float Bias, bool OutputSigned)
 
 #endif
