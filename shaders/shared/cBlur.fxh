@@ -616,25 +616,15 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            CBlur_GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
+            float DotRS = dot(SharedData.Reference, SharedData.SideWindow_Means[i0]);
+            float DotSS = dot(SharedData.SideWindow_Means[i0], SharedData.SideWindow_Means[i0]);
+            float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, SharedData.ReferenceDotSq);
 
             [flatten]
-            if (SideWindows[i0].SumWeight > 0.0)
+            if (Similarity > MaxSimilarity)
             {
-                float2 SideWindowMean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
-                float Similarity = CMath_GetSimilarityJaccard_Fast(
-                    false,
-                    dot(SideWindowMean, SharedData.Reference),
-                    dot(SideWindowMean, SideWindowMean),
-                    SharedData.ReferenceDotSq
-                );
-
-                [flatten]
-                if (Similarity > MaxSimilarity)
-                {
-                    MaxSimilarity = Similarity;
-                    NearestWindow = SideWindowMean;
-                }
+                MaxSimilarity = Similarity;
+                NearestWindow = SharedData.SideWindow_Means[i0];
             }
         }
 
@@ -707,34 +697,34 @@
             - - -       - - -       x x -       - x x
         */
 
-        float2 Submeans[8];
-        Submeans[0] = ArrayImages[0] + ArrayImages[3]; // Vertical-Top-Left
-        Submeans[1] = ArrayImages[1] + ArrayImages[4]; // Vertical-Top-Mid
-        Submeans[2] = ArrayImages[2] + ArrayImages[5]; // Vertical-Top-Right
-        Submeans[3] = ArrayImages[3] + ArrayImages[6]; // Vertical-Bottom-Left
-        Submeans[4] = ArrayImages[4] + ArrayImages[7]; // Vertical-Bottom-Mid
-        Submeans[5] = ArrayImages[5] + ArrayImages[8]; // Vertical-Bottom-Right
-        Submeans[6] = ArrayImages[6] + ArrayImages[7]; // Horizontal-Bottom-Left
-        Submeans[7] = ArrayImages[7] + ArrayImages[8]; // Horizontal-Bottom-Right
+        float2 HalfQuads[8];
+        HalfQuads[0] = ArrayImages[0] + ArrayImages[3]; // Vertical-Top-Left
+        HalfQuads[1] = ArrayImages[1] + ArrayImages[4]; // Vertical-Top-Mid
+        HalfQuads[2] = ArrayImages[2] + ArrayImages[5]; // Vertical-Top-Right
+        HalfQuads[3] = ArrayImages[3] + ArrayImages[6]; // Vertical-Bottom-Left
+        HalfQuads[4] = ArrayImages[4] + ArrayImages[7]; // Vertical-Bottom-Mid
+        HalfQuads[5] = ArrayImages[5] + ArrayImages[8]; // Vertical-Bottom-Right
+        HalfQuads[6] = ArrayImages[6] + ArrayImages[7]; // Horizontal-Bottom-Left
+        HalfQuads[7] = ArrayImages[7] + ArrayImages[8]; // Horizontal-Bottom-Right
 
-        float2 Means[8];
-        Means[0] = Submeans[0] + Submeans[1]; // NW: [0 + 3] + [1 + 4]
-        Means[1] = Submeans[1] + Submeans[2]; // NE: [1 + 4] + [2 + 5]
-        Means[2] = Submeans[3] + Submeans[4]; // SW: [3 + 6] + [4 + 7]
-        Means[3] = Submeans[4] + Submeans[5]; // SE: [4 + 7] + [5 + 8]
-        Means[4] = Means[0] + Submeans[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
-        Means[5] = Means[2] + Submeans[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
-        Means[6] = Means[0] + Submeans[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
-        Means[7] = Means[1] + Submeans[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
+        float2 FullQuads[8];
+        FullQuads[0] = HalfQuads[0] + HalfQuads[1]; // NW: [0 + 3] + [1 + 4]
+        FullQuads[1] = HalfQuads[1] + HalfQuads[2]; // NE: [1 + 4] + [2 + 5]
+        FullQuads[2] = HalfQuads[3] + HalfQuads[4]; // SW: [3 + 6] + [4 + 7]
+        FullQuads[3] = HalfQuads[4] + HalfQuads[5]; // SE: [4 + 7] + [5 + 8]
+        FullQuads[4] = FullQuads[0] + HalfQuads[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
+        FullQuads[5] = FullQuads[2] + HalfQuads[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
+        FullQuads[6] = FullQuads[0] + HalfQuads[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
+        FullQuads[7] = FullQuads[1] + HalfQuads[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
 
-        Means[0] *= WeightsCorner;
-        Means[1] *= WeightsCorner;
-        Means[2] *= WeightsCorner;
-        Means[3] *= WeightsCorner;
-        Means[4] *= WeightsCardinal;
-        Means[5] *= WeightsCardinal;
-        Means[6] *= WeightsCardinal;
-        Means[7] *= WeightsCardinal;
+        FullQuads[0] *= WeightsCorner;
+        FullQuads[1] *= WeightsCorner;
+        FullQuads[2] *= WeightsCorner;
+        FullQuads[3] *= WeightsCorner;
+        FullQuads[4] *= WeightsCardinal;
+        FullQuads[5] *= WeightsCardinal;
+        FullQuads[6] *= WeightsCardinal;
+        FullQuads[7] *= WeightsCardinal;
 
         // Calculate Side Winder filter
         float DotRR = dot(Reference, Reference);
@@ -744,15 +734,132 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            float DotRS = dot(Reference, Means[i0]);
-            float DotSS = dot(Means[i0], Means[i0]);
+            float DotRS = dot(Reference, FullQuads[i0]);
+            float DotSS = dot(FullQuads[i0], FullQuads[i0]);
             float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, DotRR);
 
             [flatten]
             if (Similarity > MaxSimilarity)
             {
                 MaxSimilarity = Similarity;
-                NearestWindow = Means[i0];
+                NearestWindow = FullQuads[i0];
+            }
+        }
+
+        return NearestWindow;
+    }
+
+    float2 CBlur_GetSideWindowBoxUpsample_FLT2(
+        sampler Image, // Low-res motion vectors (e.g., 1/2 size)
+        sampler Guide, // High-res structural guide (e.g., full size)
+        float2 Tex
+    )
+    {
+        // Precompute constants (image array)
+        const int SideWindowsCount = 8;
+        const int ArrayImagesLength = 9;
+
+        // Precompute constants (side windows)
+        const int SideWindowSizeCorner = 4;
+        const int SideWindowSizeCardinal = 6;
+        const float WeightsCorner = 1.0 / float(SideWindowSizeCorner);
+        const float WeightsCardinal = 1.0 / float(SideWindowSizeCardinal);
+
+        // Precompute (static)
+        float2 PixelSize = fwidth(Tex.xy);
+        float2 ArrayImages[ArrayImagesLength];
+
+        /*
+            Gather samples:
+
+            0 1 2 [ North West | North  | North East ]
+            3 4 5 [    West    | Center |    East    ]
+            6 7 8 [ South West | South  | South East ]
+        */
+
+        int ImageIndex = 0;
+
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            [unroll]
+            for (int x = -1; x <= 1; x++)
+            {
+                // *2 because the lower sample takes a 2 texel footprint.
+                float2 Delta = float2(x, y) * 2.0;
+                float2 Offset = Tex + (Delta * PixelSize);
+                float2 Sample = tex2D(Image, Offset).xy;
+                ArrayImages[ImageIndex] = Sample;
+                ImageIndex += 1;
+            }
+        }
+
+        /*
+            [0] [1] [2]  (Top Row)
+            [3] [4] [5]  (Mid Row)
+            [6] [7] [8]  (Bot Row)
+
+            Construct array of kernels:
+
+            NORTH   SOUTH   EAST    WEST
+            x x x   - - -   - x x   x x -
+            x x x   x x x   - x x   x x -
+            - - -   x x x   - x x   x x -
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            x x -       - x x       - - -       - - -
+            x x -       - x x       x x -       - x x
+            - - -       - - -       x x -       - x x
+        */
+
+        float2 HalfQuads[8];
+        HalfQuads[0] = ArrayImages[0] + ArrayImages[3]; // Vertical-Top-Left
+        HalfQuads[1] = ArrayImages[1] + ArrayImages[4]; // Vertical-Top-Mid
+        HalfQuads[2] = ArrayImages[2] + ArrayImages[5]; // Vertical-Top-Right
+        HalfQuads[3] = ArrayImages[3] + ArrayImages[6]; // Vertical-Bottom-Left
+        HalfQuads[4] = ArrayImages[4] + ArrayImages[7]; // Vertical-Bottom-Mid
+        HalfQuads[5] = ArrayImages[5] + ArrayImages[8]; // Vertical-Bottom-Right
+        HalfQuads[6] = ArrayImages[6] + ArrayImages[7]; // Horizontal-Bottom-Left
+        HalfQuads[7] = ArrayImages[7] + ArrayImages[8]; // Horizontal-Bottom-Right
+
+        float2 FullQuads[8];
+        FullQuads[0] = HalfQuads[0] + HalfQuads[1]; // NW: [0 + 3] + [1 + 4]
+        FullQuads[1] = HalfQuads[1] + HalfQuads[2]; // NE: [1 + 4] + [2 + 5]
+        FullQuads[2] = HalfQuads[3] + HalfQuads[4]; // SW: [3 + 6] + [4 + 7]
+        FullQuads[3] = HalfQuads[4] + HalfQuads[5]; // SE: [4 + 7] + [5 + 8]
+        FullQuads[4] = FullQuads[0] + HalfQuads[2]; // N: [0 + 3 + 1 + 4] + [2 + 5]
+        FullQuads[5] = FullQuads[2] + HalfQuads[5]; // S: [3 + 6 + 4 + 7] + [5 + 8]
+        FullQuads[6] = FullQuads[0] + HalfQuads[6]; // W: [0 + 3 + 1 + 4] + [6 + 7]
+        FullQuads[7] = FullQuads[1] + HalfQuads[7]; // E: [1 + 4 + 2 + 5] + [7 + 8]
+
+        FullQuads[0] *= WeightsCorner;
+        FullQuads[1] *= WeightsCorner;
+        FullQuads[2] *= WeightsCorner;
+        FullQuads[3] *= WeightsCorner;
+        FullQuads[4] *= WeightsCardinal;
+        FullQuads[5] *= WeightsCardinal;
+        FullQuads[6] *= WeightsCardinal;
+        FullQuads[7] *= WeightsCardinal;
+
+        // Calculate Side Winder filter
+        float2 Reference = tex2D(Guide, Tex).xy;
+        float DotRR = dot(Reference, Reference);
+
+        float2 NearestWindow = 0.0;
+        float MaxSimilarity = 0.0;
+
+        [unroll]
+        for (int i0 = 0; i0 < SideWindowsCount; i0++)
+        {
+            float DotRS = dot(Reference, FullQuads[i0]);
+            float DotSS = dot(FullQuads[i0], FullQuads[i0]);
+            float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, DotRR);
+
+            [flatten]
+            if (Similarity > MaxSimilarity)
+            {
+                MaxSimilarity = Similarity;
+                NearestWindow = FullQuads[i0];
             }
         }
 

@@ -204,17 +204,17 @@ void PS_Upsample0(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 
 void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex5, SampleMotionVectorTex1, Input.Tex0);
+    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex5, SampleMotionVectorTex1, Input.Tex0);
 }
 
 void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex4, SampleMotionVectorTex1, Input.Tex0);
+    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex4, SampleMotionVectorTex1, Input.Tex0);
 }
 
 void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
-    Output = CBlur_GetSelfBilateralUpsample_FLT2(SampleSharedTex3, SampleMotionVectorTex1, Input.Tex0);
+    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex3, SampleMotionVectorTex1, Input.Tex0);
 }
 
 // Datamosh
