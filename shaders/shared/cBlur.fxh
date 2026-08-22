@@ -565,7 +565,7 @@
         }
     }
 
-    float2 CBlur_GetSelfBilateralUpsample_FLT2(
+    float2 CBlur_GetSideWindowBilateralUpsample_FLT2(
         sampler Image, // Low-res motion vectors (e.g., 1/2 size)
         sampler Guide, // High-res structural guide (e.g., full size)
         float2 Tex
