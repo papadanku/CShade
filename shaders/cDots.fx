@@ -163,8 +163,8 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 /* Textures & Samplers */
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex0_RGBA8_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
-CSHADE_CREATE_SRGB_SAMPLER(SampleSharedTex0, SharedTex0_RGBA8_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGBA8_0_8, CSHADE_BUFFER_SIZE_0, RGBA8, 8)
+CSHADE_CREATE_SRGB_SAMPLER(SampleSharedTex0, SharedTex_RGBA8_0_8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 sampler2D CShade_SampleColorTexMirror
 {
@@ -380,7 +380,7 @@ technique CShade_Dots
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Blit;
-        RenderTarget = SharedTex0_RGBA8_8;
+        RenderTarget = SharedTex_RGBA8_0_8;
     }
 
     pass Dots

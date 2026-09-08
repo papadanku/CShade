@@ -60,8 +60,8 @@ static const float ContrastThresholds[6] =
 #define CSHADE_APPLY_ABBERATION 0
 #include "shared/cShade.fxh"
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex0_RGBA8, CSHADE_BUFFER_SIZE_0, RGBA8, 0)
-CSHADE_CREATE_SAMPLER(SampleSharedTex0, SharedTex0_RGBA8, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGBA8_0, CSHADE_BUFFER_SIZE_0, RGBA8, 0)
+CSHADE_CREATE_SAMPLER(SampleSharedTex0, SharedTex_RGBA8_0, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 
 float GetIntensity(float3 Color)
 {
@@ -262,7 +262,7 @@ technique CShade_DLAA
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Prefilter;
-        RenderTarget0 = SharedTex0_RGBA8;
+        RenderTarget0 = SharedTex_RGBA8_0;
     }
 
     pass DirectionallyLocalizedAntiAliasing

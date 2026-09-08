@@ -130,25 +130,25 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 /* Textures & Samplers */
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex1_RGB10A2, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex2_RG16F, CSHADE_BUFFER_SIZE_3, RG16F, 8)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex3_RG16F, CSHADE_BUFFER_SIZE_4, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex4_RG16F, CSHADE_BUFFER_SIZE_5, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex5_RG16F, CSHADE_BUFFER_SIZE_6, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_1_8, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_8, CSHADE_BUFFER_SIZE_3, RG16F, 8)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4, CSHADE_BUFFER_SIZE_5, RG16F, 1)
+CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_5, CSHADE_BUFFER_SIZE_6, RG16F, 1)
 
-CSHADE_CREATE_SAMPLER(SampleSharedTex1, SharedTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex2, SharedTex2_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex3, SharedTex3_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex4, SharedTex4_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex5, SharedTex5_RG16F, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex1, SharedTex_RGB10A2_1_8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex2, SharedTex_RG16F_2_8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex3, SharedTex_RG16F_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex4, SharedTex_RG16F_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleSharedTex5, SharedTex_RG16F_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow, CSHADE_BUFFER_SIZE_1, RGB10A2, 8)
 CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrameTex_Flow, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleCurrentFrameTex, SharedTex1_RGB10A2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleCurrentFrameTex, SharedTex_RGB10A2_1_8, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CSHADE_CREATE_TEXTURE(MotionVectorTex_Flow, CSHADE_BUFFER_SIZE_3, RG16F, 8)
 CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, MotionVectorTex_Flow, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex2_RG16F, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex_RG16F_2_8, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 
 #if !SHADER_VECTOR_STREAMING
     CSHADE_CREATE_TEXTURE(NoiseTex, CSHADE_BUFFER_SIZE_0, R16, 0)
@@ -497,11 +497,11 @@ technique CShade_Flow
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
-    TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex1_RGB10A2)
+    TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex_RGB10A2_1_8)
 
-    TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex5_RG16F)
-    TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex4_RG16F)
-    TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex3_RG16F)
+    TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex_RG16F_5)
+    TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex_RG16F_4)
+    TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex_RG16F_3)
     pass GetFineOpticalFlow
     {
         ClearRenderTargets = FALSE;
@@ -526,28 +526,28 @@ technique CShade_Flow
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample0;
-        RenderTarget0 = SharedTex5_RG16F;
+        RenderTarget0 = SharedTex_RG16F_5;
     }
 
     pass BilateralUpsample1
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample1;
-        RenderTarget0 = SharedTex4_RG16F;
+        RenderTarget0 = SharedTex_RG16F_4;
     }
 
     pass BilateralUpsample2
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample2;
-        RenderTarget0 = SharedTex3_RG16F;
+        RenderTarget0 = SharedTex_RG16F_3;
     }
 
     pass BilateralUpsample3
     {
         VertexShader = CShade_VS_Quad;
         PixelShader = PS_Upsample3;
-        RenderTarget0 = SharedTex2_RG16F;
+        RenderTarget0 = SharedTex_RG16F_2_8;
     }
 
     pass Main
