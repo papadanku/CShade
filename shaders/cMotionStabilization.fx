@@ -113,10 +113,10 @@ CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_B, CSHADE_BUFFER_SIZE_2, RG16F, 1
 CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_B, CSHADE_BUFFER_SIZE_3, RG16F, 1)
 CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_B, CSHADE_BUFFER_SIZE_4, RG16F, 1)
 
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_Flow_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowStabilization_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowStabilization_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowStabilization_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
+CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowStabilization_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
 
 CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_1, SharedTex_RGB10A2_1, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_2, SharedTex_RGB10A2_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
@@ -133,10 +133,10 @@ CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_2_B, SharedTex_RG16F_2_B, LINEAR, LI
 CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_3_B, SharedTex_RG16F_3_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_4_B, SharedTex_RG16F_4_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_2, PreviousFrameTex_Flow_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_3, PreviousFrameTex_Flow_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_4, PreviousFrameTex_Flow_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_5, PreviousFrameTex_Flow_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowStabilization_2, PreviousFrameTex_FlowStabilization_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowStabilization_3, PreviousFrameTex_FlowStabilization_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowStabilization_4, PreviousFrameTex_FlowStabilization_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowStabilization_5, PreviousFrameTex_FlowStabilization_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
 CSHADE_CREATE_SAMPLER(SampleMotionVectorTex, SharedTex_RG16F_2_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 
@@ -186,28 +186,28 @@ void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 Vectors = 0.0;
     float2 PixelSize = fwidth(Input.Tex0.xy);
-    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_Flow_5, SampleSharedTex_RGB10A2_5);
+    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowStabilization_5, SampleSharedTex_RGB10A2_5);
 }
 
 void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_5_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_Flow_4, SampleSharedTex_RGB10A2_4);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowStabilization_4, SampleSharedTex_RGB10A2_4);
 }
 
 void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_4_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_Flow_3, SampleSharedTex_RGB10A2_3);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowStabilization_3, SampleSharedTex_RGB10A2_3);
 }
 
 void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
 {
     float2 PixelSize = fwidth(Input.Tex0.xy);
     float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_3_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_Flow_2, SampleSharedTex_RGB10A2_2);
+    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowStabilization_2, SampleSharedTex_RGB10A2_2);
 }
 
 /* Pixel Shaders: Downsample & Blit */
@@ -359,10 +359,10 @@ technique CShade_MotionStabilization
     TEMPLATE_PASS(MotionLevel1, CShade_VS_Quad, PS_LucasKanade1, SharedTex_RG16F_2_A)
 
     // Build Pyramid 2
-    TEMPLATE_PASS(Copy, CShade_VS_Quad, PS_CopyMotionLevel2, PreviousFrameTex_Flow_2)
-    TEMPLATE_PASS_MRT2(MotionLevel2, CShade_VS_Quad, PS_MotionLevel1, SharedTex_RG16F_3_A, PreviousFrameTex_Flow_3)
-    TEMPLATE_PASS_MRT2(MotionLevel3, CShade_VS_Quad, PS_MotionLevel2, SharedTex_RG16F_4_A, PreviousFrameTex_Flow_4)
-    TEMPLATE_PASS_MRT2(MotionLevel4, CShade_VS_Quad, PS_MotionLevel3, SharedTex_RG16F_5_A, PreviousFrameTex_Flow_5)
+    TEMPLATE_PASS(Copy, CShade_VS_Quad, PS_CopyMotionLevel2, PreviousFrameTex_FlowStabilization_2)
+    TEMPLATE_PASS_MRT2(MotionLevel2, CShade_VS_Quad, PS_MotionLevel1, SharedTex_RG16F_3_A, PreviousFrameTex_FlowStabilization_3)
+    TEMPLATE_PASS_MRT2(MotionLevel3, CShade_VS_Quad, PS_MotionLevel2, SharedTex_RG16F_4_A, PreviousFrameTex_FlowStabilization_4)
+    TEMPLATE_PASS_MRT2(MotionLevel4, CShade_VS_Quad, PS_MotionLevel3, SharedTex_RG16F_5_A, PreviousFrameTex_FlowStabilization_5)
 
     // Apply Filtering
     TEMPLATE_PASS(BilateralUpsample3, CShade_VS_Quad, PS_Upsample3, SharedTex_RG16F_4_B)
