@@ -185,20 +185,27 @@
         CMATH: MATH FUNCTIONS
     */
 
-    float4 CMath_Max3_FLT4(float4 A, float4 B, float4 C)
-    {
-        return max(max(A, B), C);
-    }
+    #define CMATH_MAX_MIN_MED(DATA_TYPE, LENGTH) \
+        \
+        DATA_TYPE CMath_Max3_FLT##LENGTH(DATA_TYPE A, DATA_TYPE B, DATA_TYPE C) \
+        { \
+            return max(max(A, B), C); \
+        } \
+        \
+        DATA_TYPE CMath_Min3_FLT##LENGTH(DATA_TYPE A, DATA_TYPE B, DATA_TYPE C) \
+        { \
+            return min(min(A, B), C); \
+        } \
+        \
+        DATA_TYPE CMath_Med3_FLT##LENGTH(DATA_TYPE x, DATA_TYPE y, DATA_TYPE z) \
+        { \
+            return max(min(x, y), min(max(x, y), z)); \
+        }
 
-    float4 CMath_Min3_FLT4(float4 A, float4 B, float4 C)
-    {
-        return min(min(A, B), C);
-    }
-
-    float4 CMath_Med3_FLT4(float4 x, float4 y, float4 z)
-    {
-        return max(min(x, y), min(max(x, y), z));
-    }
+    CMATH_MAX_MIN_MED(float, 1)
+    CMATH_MAX_MIN_MED(float2, 2)
+    CMATH_MAX_MIN_MED(float3, 3)
+    CMATH_MAX_MIN_MED(float4, 4)
 
     float CMath_Med3_FLT1(float x, float y, float z)
     {

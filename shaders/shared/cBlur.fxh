@@ -93,6 +93,31 @@
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
 
+
+    float4 CBlur_DownsampleBox3x3(sampler2D Image, float2 Tex, float2 PixelSize)
+    {
+        /*
+            0 1 2
+            3 4 5
+            6 7 8
+        */
+
+        const float Weight = 1.0 / 9.0;
+
+        float4 Output = 0.0;
+        Output += (tex2D(Image, Tex + (float2(-1.0, -1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 0.0, -1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 1.0, -1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2(-1.0,  0.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 0.0,  0.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 1.0,  0.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2(-1.0,  1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 0.0,  1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 1.0,  1.0) * PixelSize)) * Weight);
+
+        return Output;
+    }
+
     float4 CBlur_DownsampleDualKawase(sampler2D Image, float2 Tex)
     {
         float4 OutputColor = 0.0;
