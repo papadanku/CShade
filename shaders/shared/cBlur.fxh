@@ -96,24 +96,18 @@
 
     float4 CBlur_DownsampleBox3x3(sampler2D Image, float2 Tex, float2 PixelSize)
     {
-        /*
-            0 1 2
-            3 4 5
-            6 7 8
-        */
-
-        const float Weight = 1.0 / 9.0;
+        const float3 Weights = float3(4.0, 2.0, 1.0) / 16.0;
 
         float4 Output = 0.0;
-        Output += (tex2D(Image, Tex + (float2(-1.0, -1.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 0.0, -1.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 1.0, -1.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2(-1.0,  0.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 0.0,  0.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 1.0,  0.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2(-1.0,  1.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 0.0,  1.0) * PixelSize)) * Weight);
-        Output += (tex2D(Image, Tex + (float2( 1.0,  1.0) * PixelSize)) * Weight);
+        Output += (tex2D(Image, Tex + (float2( 0.0,  0.0) * PixelSize)) * Weights[0]);
+        Output += (tex2D(Image, Tex + (float2( 0.0, -1.0) * PixelSize)) * Weights[1]);
+        Output += (tex2D(Image, Tex + (float2(-1.0,  0.0) * PixelSize)) * Weights[1]);
+        Output += (tex2D(Image, Tex + (float2( 1.0,  0.0) * PixelSize)) * Weights[1]);
+        Output += (tex2D(Image, Tex + (float2( 0.0,  1.0) * PixelSize)) * Weights[1]);
+        Output += (tex2D(Image, Tex + (float2(-1.0, -1.0) * PixelSize)) * Weights[2]);
+        Output += (tex2D(Image, Tex + (float2( 1.0, -1.0) * PixelSize)) * Weights[2]);
+        Output += (tex2D(Image, Tex + (float2(-1.0,  1.0) * PixelSize)) * Weights[2]);
+        Output += (tex2D(Image, Tex + (float2( 1.0,  1.0) * PixelSize)) * Weights[2]);
 
         return Output;
     }
