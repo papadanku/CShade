@@ -654,9 +654,9 @@
             Calculate Side Window filter
         */
 
-        float2 NearestWindow = 0.0;
-        float AVariance = 0.0;
+        bool AVariance = false;
         float MinVariance;
+        float2 NearestWindow = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
