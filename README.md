@@ -389,7 +389,7 @@ uniform float _CShadeExposureSmoothingSpeed <
 
 ### Individuals
 
-#### Morale Support ;)
+#### Support ;)
 
 - Ashlesha Samyal
 
