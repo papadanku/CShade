@@ -655,7 +655,8 @@
         */
 
         float2 NearestWindow = 0.0;
-        float MaxSimilarity;
+        float AVariance = 0.0;
+        float MinVariance;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
@@ -667,9 +668,10 @@
                 float2 Mean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
 
                 [flatten]
-                if (!MaxSimilarity || (SideWindows[i0].Variance < MaxSimilarity))
+                if ((AVariance == false) || (SideWindows[i0].Variance < MinVariance))
                 {
-                    MaxSimilarity = SideWindows[i0].Variance;
+                    AVariance = true;
+                    MinVariance = SideWindows[i0].Variance;
                     NearestWindow = Mean;
                 }
             }
