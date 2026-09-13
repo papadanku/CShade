@@ -443,11 +443,12 @@
         // Window (Local) information.
         int ArrayImageLength;
         float2 ArrayImages[9];
+        float2 ArrayGuides[9];
         float ArrayDistances[9];
 
-        // Shared for final calculation.
-        float2 Reference;
-        float ReferenceDotSq;
+        // Side Window Information.
+        int SideWindow_Size;
+        float2 SideWindow_Means[8];
     };
 
     struct CBlur_SideWindow_Bilateral
@@ -456,6 +457,7 @@
 
         float2 Sum;
         float SumWeight;
+        float Variance;
     };
 
     void CBlur_GetSharedData_SideWindow_Bilateral(
@@ -470,8 +472,6 @@
 
         // Initialize variables
         Output.ArrayImageLength = ArrayImageLength;
-        Output.Reference = tex2D(Guide, Tex).xy;
-        Output.ReferenceDotSq = dot(Output.Reference, Output.Reference);
 
         // Precompute (static)
         float2 PixelSize = fwidth(Tex.xy);
@@ -494,23 +494,17 @@
             for (int y0 = -1; y0 <= 1; y0++)
             {
                 // *2 because the lower sample takes a 2 texel footprint.
-                bool IsCenter = (x0 == 0) && (y0 == 0);
                 float2 Delta = float2(x0, y0) * 2.0;
                 float2 Offset = Tex + (Delta * PixelSize);
-                float2 SampleImage = tex2D(Image, Offset).xy;
-                float2 SampleGuide = IsCenter
-                    ? Output.Reference
-                    : tex2D(Guide, Offset).xy;
 
                 // This is for our Side Window calculation.
-                Output.ArrayImages[ImageIndex0] = SampleImage;
+                Output.ArrayImages[ImageIndex0] = tex2D(Image, Offset).xy;
+                Output.ArrayGuides[ImageIndex0] = tex2D(Guide, Offset).xy;
 
                 // Create variables for our distance calculation.
-                float DotAB = dot(SampleGuide, SampleImage);
-                float DotAA = dot(SampleImage, SampleImage);
-                float DotBB = IsCenter
-                    ? Output.ReferenceDotSq
-                    : dot(SampleGuide, SampleGuide);
+                float DotAB = dot(Output.ArrayGuides[ImageIndex0], Output.ArrayImages[ImageIndex0]);
+                float DotAA = dot(Output.ArrayImages[ImageIndex0], Output.ArrayImages[ImageIndex0]);
+                float DotBB = dot(Output.ArrayGuides[ImageIndex0], Output.ArrayGuides[ImageIndex0]);
 
                 // Compute the similarity
                 Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_Fast(
@@ -520,6 +514,59 @@
                 ImageIndex0 += 1;
             }
         }
+
+        /*
+            Construct array of kernels:
+
+            [0] [3] [6]  (Top Row)
+            [1] [4] [7]  (Middle Row)
+            [2] [5] [8]  (Bottom Row)
+
+            NORTH   SOUTH   EAST    WEST
+            1 1 1   0 0 0   0 1 1   1 1 0
+            1 1 1   1 1 1   0 1 1   1 1 0
+            0 0 0   1 1 1   0 1 1   1 1 0
+
+            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
+            1 1 1       1 1 1       1 0 0       0 0 1
+            1 1 0       0 1 1       1 1 0       0 1 1
+            1 0 0       0 0 1       1 1 1       1 1 1
+        */
+
+        const int SideWindowSize = 6;
+        const float SideWindowWeight = 1.0 / float(SideWindowSize);
+
+        Output.SideWindow_Size = SideWindowSize;
+
+        float2 QuadHalf[6];
+        QuadHalf[0] = Output.ArrayGuides[0] + Output.ArrayGuides[1]; // Vertical Top-Left       (TL)
+        QuadHalf[1] = Output.ArrayGuides[3] + Output.ArrayGuides[4]; // Vertical Top-Mid        (TM)
+        QuadHalf[2] = Output.ArrayGuides[6] + Output.ArrayGuides[7]; // Vertical Top-Right      (TR)
+        QuadHalf[3] = Output.ArrayGuides[1] + Output.ArrayGuides[2]; // Vertical Bottom-Left    (BL)
+        QuadHalf[4] = Output.ArrayGuides[4] + Output.ArrayGuides[5]; // Vertical Bottom-Mid     (BM)
+        QuadHalf[5] = Output.ArrayGuides[7] + Output.ArrayGuides[8]; // Vertical Bottom-Right   (BR)
+
+        float2 QuadFull[4];
+        QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayGuides[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+        QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayGuides[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+        QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayGuides[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+        QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayGuides[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
+
+        float2 Sums[ArraySideWindowsLength];
+        Sums[0] = QuadFull[0] + Output.ArrayGuides[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
+        Sums[1] = QuadFull[1] + Output.ArrayGuides[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
+        Sums[2] = QuadFull[2] + Output.ArrayGuides[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
+        Sums[3] = QuadFull[3] + Output.ArrayGuides[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
+        Sums[4] = QuadFull[0] + Output.ArrayGuides[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
+        Sums[5] = QuadFull[3] + Output.ArrayGuides[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
+        Sums[6] = QuadFull[2] + Output.ArrayGuides[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
+        Sums[7] = QuadFull[1] + Output.ArrayGuides[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
+
+        [unroll]
+        for (int i = 0; i < ArraySideWindowsLength; i++)
+        {
+            Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
+        }
     }
 
     void CBlur_GetSideWindow_Bilateral(
@@ -528,20 +575,33 @@
         inout CBlur_SideWindow_Bilateral Block
     )
     {
+        // Compute sample weight
+        const float Weight = 1.0 / (float(Input.SideWindow_Size - 1));
+
         // Initialize output members.
         Block.Sum = 0.0;
         Block.SumWeight = 0.0;
+        Block.Variance = 0.0;
+
+        float2 BlockMean = Input.SideWindow_Means[SideWindowIndex];
+        float2 Moments = 0.0;
 
         [unroll]
         for (int i0 = 0; i0 < Input.ArrayImageLength; i0++)
         {
             if (Block.Masks[i0] == 1)
             {
+                float2 Error = Input.ArrayGuides[i0] - BlockMean;
+                Moments += (Error * Error);
+
                 // Accumulate.
                 Block.Sum += (Input.ArrayImages[i0] * Input.ArrayDistances[i0]);
                 Block.SumWeight += Input.ArrayDistances[i0];
             }
         }
+
+        // Compute variance
+        Block.Variance = dot(Moments, Weight);
     }
 
     float2 CBlur_GetSideWindowBilateralUpsample_FLT2(
@@ -590,7 +650,7 @@
         */
 
         float2 NearestWindow = 0.0;
-        float MaxSimilarity = 0.0;
+        float MaxSimilarity;
 
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
@@ -600,14 +660,11 @@
             if (SideWindows[i0].SumWeight > 0.0)
             {
                 float2 Mean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
-                float DotRS = dot(SharedData.Reference, Mean);
-                float DotSS = dot(Mean, Mean);
-                float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, SharedData.ReferenceDotSq);
 
                 [flatten]
-                if (Similarity > MaxSimilarity)
+                if (!MaxSimilarity || (SideWindows[i0].Variance < MaxSimilarity))
                 {
-                    MaxSimilarity = Similarity;
+                    MaxSimilarity = SideWindows[i0].Variance;
                     NearestWindow = Mean;
                 }
             }
