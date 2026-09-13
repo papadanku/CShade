@@ -498,17 +498,23 @@
             for (int y0 = -1; y0 <= 1; y0++)
             {
                 // *2 because the lower sample takes a 2 texel footprint.
+                bool IsCenter = (x0 == 0) && (y0 == 0);
                 float2 Delta = float2(x0, y0) * 2.0;
                 float2 Offset = Tex + (Delta * PixelSize);
-                float2 Sample = tex2D(Image, Offset).xy;
+                float2 SampleImage = tex2D(Image, Offset).xy;
+                float2 SampleGuide = IsCenter
+                    ? Output.Reference
+                    : tex2D(Guide, Offset).xy;
 
                 // This is for our Side Window calculation.
-                Output.ArrayImages[ImageIndex0] = Sample;
+                Output.ArrayImages[ImageIndex0] = SampleImage;
 
                 // Create variables for our distance calculation.
-                float DotAB = dot(Output.Reference, Sample);
-                float DotAA = dot(Sample, Sample);
-                float DotBB = Output.ReferenceDotSq;
+                float DotAB = dot(SampleGuide, SampleImage);
+                float DotAA = dot(SampleImage, SampleImage);
+                float DotBB = IsCenter
+                    ? Output.ReferenceDotSq
+                    : dot(SampleGuide, SampleGuide);
 
                 // Compute the similarity
                 Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_Fast(
@@ -646,16 +652,23 @@
         [unroll]
         for (int i0 = 0; i0 < SideWindowsCount; i0++)
         {
-            float DotRS = dot(SharedData.Reference, SharedData.SideWindow_Means[i0]);
-            float DotSS = dot(SharedData.SideWindow_Means[i0], SharedData.SideWindow_Means[i0]);
-            float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, SharedData.ReferenceDotSq);
+            CBlur_GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
 
-            [flatten]
-            if (Similarity > MaxSimilarity)
+            if (SideWindows[i0].SumWeight > 0.0)
             {
-                MaxSimilarity = Similarity;
-                NearestWindow = SharedData.SideWindow_Means[i0];
+                float2 Mean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
+                float DotRS = dot(SharedData.Reference, Mean);
+                float DotSS = dot(Mean, Mean);
+                float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotRS, DotSS, SharedData.ReferenceDotSq);
+
+                [flatten]
+                if (Similarity > MaxSimilarity)
+                {
+                    MaxSimilarity = Similarity;
+                    NearestWindow = Mean;
+                }
             }
+
         }
 
         return NearestWindow;
