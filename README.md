@@ -391,7 +391,7 @@ uniform float _CShadeExposureSmoothingSpeed <
 
 #### Morale Support ;)
 
-- Ashlesha S.
+- Ashlesha Samyal
 
 #### The Shadersphere
 
