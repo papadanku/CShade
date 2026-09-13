@@ -445,10 +445,6 @@
         float2 ArrayImages[9];
         float ArrayDistances[9];
 
-        // Side Window Information.
-        int SideWindow_Size;
-        float2 SideWindow_Means[8];
-
         // Shared for final calculation.
         float2 Reference;
         float ReferenceDotSq;
@@ -523,59 +519,6 @@
 
                 ImageIndex0 += 1;
             }
-        }
-
-        /*
-            Construct array of kernels:
-
-            [0] [3] [6]  (Top Row)
-            [1] [4] [7]  (Middle Row)
-            [2] [5] [8]  (Bottom Row)
-
-            NORTH   SOUTH   EAST    WEST
-            1 1 1   0 0 0   0 1 1   1 1 0
-            1 1 1   1 1 1   0 1 1   1 1 0
-            0 0 0   1 1 1   0 1 1   1 1 0
-
-            NORTHWEST   NORTHEAST   SOUTHWEST   SOUTHEAST
-            1 1 1       1 1 1       1 0 0       0 0 1
-            1 1 0       0 1 1       1 1 0       0 1 1
-            1 0 0       0 0 1       1 1 1       1 1 1
-        */
-
-        const int SideWindowSize = 6;
-        const float SideWindowWeight = 1.0 / float(SideWindowSize);
-
-        Output.SideWindow_Size = SideWindowSize;
-
-        float2 QuadHalf[6];
-        QuadHalf[0] = Output.ArrayImages[0] + Output.ArrayImages[1]; // Vertical Top-Left       (TL)
-        QuadHalf[1] = Output.ArrayImages[3] + Output.ArrayImages[4]; // Vertical Top-Mid        (TM)
-        QuadHalf[2] = Output.ArrayImages[6] + Output.ArrayImages[7]; // Vertical Top-Right      (TR)
-        QuadHalf[3] = Output.ArrayImages[1] + Output.ArrayImages[2]; // Vertical Bottom-Left    (BL)
-        QuadHalf[4] = Output.ArrayImages[4] + Output.ArrayImages[5]; // Vertical Bottom-Mid     (BM)
-        QuadHalf[5] = Output.ArrayImages[7] + Output.ArrayImages[8]; // Vertical Bottom-Right   (BR)
-
-        float2 QuadFull[4];
-        QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayImages[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
-        QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayImages[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
-        QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayImages[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
-        QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayImages[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
-
-        float2 Sums[ArraySideWindowsLength];
-        Sums[0] = QuadFull[0] + Output.ArrayImages[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
-        Sums[1] = QuadFull[1] + Output.ArrayImages[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
-        Sums[2] = QuadFull[2] + Output.ArrayImages[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
-        Sums[3] = QuadFull[3] + Output.ArrayImages[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
-        Sums[4] = QuadFull[0] + Output.ArrayImages[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
-        Sums[5] = QuadFull[3] + Output.ArrayImages[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
-        Sums[6] = QuadFull[2] + Output.ArrayImages[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
-        Sums[7] = QuadFull[1] + Output.ArrayImages[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
-
-        [unroll]
-        for (int i = 0; i < ArraySideWindowsLength; i++)
-        {
-            Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
         }
     }
 
@@ -668,7 +611,6 @@
                     NearestWindow = Mean;
                 }
             }
-
         }
 
         return NearestWindow;
