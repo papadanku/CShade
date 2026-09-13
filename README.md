@@ -38,7 +38,55 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
     - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
     - Letterbox
 
-## Important Note
+## Acknowledgments
+
+### Groups
+
+- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
+
+  Major knowledge-base and inspiration.
+
+- [The Project Reality Team](https://www.realitymod.com/)
+
+  memes
+
+- [The ReShade Community](https://reshade.me/)
+
+  Where the coding journey started.
+
+- [Vietnamese Student Association](https://www.instagram.com/asu.vsa)
+
+  The community I needed.
+
+- Family, friends, and acquaintances
+
+  You know who you are.
+
+### Individuals
+
+#### Support ;)
+
+- Ashlesha Samyal
+
+#### The Shadersphere
+
+- BeTa/Alea
+- BlueSkyDefender
+- Pfoiffee
+- Certain individuals in #code-chat/#shader-programming
+
+#### GitHub Contributors
+
+- **Overall**: 0CCULTIST
+- **Reported Bugs**: Jakey757, simonedibilio, WardedPredator
+- **Submitted Ideas**: mrjoshisattvablack, liuxd17thu, Maximus961
+- **Asked Questions**: R0nBurgandy, lapsio
+
+## Advanced Documentation
+
+This section is intended for developers and contributors.
+
+### Important Note
 
 CShade shaders have UI markers that signify important notes about the shader. These UI markers appear on top of the shader's settings.
 
@@ -51,10 +99,6 @@ CShade shaders have UI markers that signify important notes about the shader. Th
 - `[$]` **Expensive**: High performance demand.
 
 For example, if you see `[D] Requires Depth`, it means this shader requires access to the depth buffer.
-
-## Advanced Documentation
-
-This section is intended for developers and contributors.
 
 ### Coding Convention
 
@@ -362,47 +406,3 @@ uniform float _CShadeExposureSmoothingSpeed <
 | VK_NONAME | 0xFC | Reserved |
 | VK_PA1 | 0xFD | PA1 key |
 | VK_OEM_CLEAR | 0xFE | Clear key |
-
-## Acknowledgments
-
-### Groups
-
-- [The Forgotten Hope Team](http://forgottenhope.warumdarum.de/)
-
-  Major knowledge-base and inspiration.
-
-- [The Project Reality Team](https://www.realitymod.com/)
-
-  memes
-
-- [The ReShade Community](https://reshade.me/)
-
-  Where the coding journey started.
-
-- [Vietnamese Student Association](https://www.instagram.com/asu.vsa)
-
-  The community I needed.
-
-- Family, friends, and acquaintances
-
-  You know who you are.
-
-### Individuals
-
-#### Support ;)
-
-- Ashlesha Samyal
-
-#### The Shadersphere
-
-- BeTa/Alea
-- BlueSkyDefender
-- Pfoiffee
-- Certain individuals in #code-chat/#shader-programming
-
-#### GitHub Contributors
-
-- **Overall**: 0CCULTIST
-- **Reported Bugs**: Jakey757, simonedibilio, WardedPredator
-- **Submitted Ideas**: mrjoshisattvablack, liuxd17thu, Maximus961
-- **Asked Questions**: R0nBurgandy, lapsio
