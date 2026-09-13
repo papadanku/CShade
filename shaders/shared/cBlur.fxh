@@ -440,15 +440,16 @@
 
     struct CBlur_SharedData_SideWindow_Bilateral
     {
+        int SideWindowSize;
+
         // Window (Local) information.
         int ArrayImageLength;
         float2 ArrayImages[9];
         float2 ArrayGuides[9];
         float ArrayDistances[9];
 
-        // Side Window Information.
-        int SideWindow_Size;
-        float2 SideWindow_Means[8];
+        // Guide Windows (Side Windows, but as Guides).
+        float2 ArrayGuideWindows[8];
     };
 
     struct CBlur_SideWindow_Bilateral
@@ -497,14 +498,18 @@
                 float2 Delta = float2(x0, y0) * 2.0;
                 float2 Offset = Tex + (Delta * PixelSize);
 
+                // Sampling.
+                float2 ImageSample = tex2D(Image, Offset).xy;
+                float2 GuideSample = tex2D(Guide, Offset).xy;
+
                 // This is for our Side Window calculation.
-                Output.ArrayImages[ImageIndex0] = tex2D(Image, Offset).xy;
-                Output.ArrayGuides[ImageIndex0] = tex2D(Guide, Offset).xy;
+                Output.ArrayImages[ImageIndex0] = ImageSample;
+                Output.ArrayGuides[ImageIndex0] = GuideSample;
 
                 // Create variables for our distance calculation.
-                float DotAB = dot(Output.ArrayGuides[ImageIndex0], Output.ArrayImages[ImageIndex0]);
-                float DotAA = dot(Output.ArrayImages[ImageIndex0], Output.ArrayImages[ImageIndex0]);
-                float DotBB = dot(Output.ArrayGuides[ImageIndex0], Output.ArrayGuides[ImageIndex0]);
+                float DotAB = dot(GuideSample, ImageSample);
+                float DotAA = dot(ImageSample, ImageSample);
+                float DotBB = dot(GuideSample, GuideSample);
 
                 // Compute the similarity
                 Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_Fast(
@@ -565,7 +570,7 @@
         [unroll]
         for (int i = 0; i < ArraySideWindowsLength; i++)
         {
-            Output.SideWindow_Means[i] = Sums[i] * SideWindowWeight;
+            Output.ArrayGuideWindows[i] = Sums[i] * SideWindowWeight;
         }
     }
 
@@ -583,7 +588,7 @@
         Block.SumWeight = 0.0;
         Block.Variance = 0.0;
 
-        float2 BlockMean = Input.SideWindow_Means[SideWindowIndex];
+        float2 BlockMean = Input.ArrayGuideWindows[SideWindowIndex];
         float2 Moments = 0.0;
 
         [unroll]
