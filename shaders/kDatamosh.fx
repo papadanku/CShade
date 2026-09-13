@@ -37,6 +37,10 @@
 
 /* Shader Options */
 
+#ifndef SHADER_USE_CSHARES_MOTION_VECTORS
+    #define SHADER_USE_CSHARES_MOTION_VECTORS 0
+#endif
+
 #ifndef SHADER_DISPLACEMENT_SAMPLING
     #define SHADER_DISPLACEMENT_SAMPLING POINT
 #endif
@@ -106,165 +110,176 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 CSHADE_CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_1, CSHADE_BUFFER_SIZE_1, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
+#if SHADER_USE_CSHARES_MOTION_VECTORS
+    CSHADE_CREATE_TEXTURE(CShade_Mainframe_MotionVectors, CSHADE_BUFFER_SIZE_2, RG16F, 1)
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_A, CSHADE_BUFFER_SIZE_2, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_A, CSHADE_BUFFER_SIZE_3, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_A, CSHADE_BUFFER_SIZE_4, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_5_A, CSHADE_BUFFER_SIZE_5, RG16F, 1)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, CShade_Mainframe_MotionVectors, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, CShade_Mainframe_MotionVectors, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+#else
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_1, CSHADE_BUFFER_SIZE_1, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
 
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_B, CSHADE_BUFFER_SIZE_2, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_B, CSHADE_BUFFER_SIZE_3, RG16F, 1)
-CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_B, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_A, CSHADE_BUFFER_SIZE_2, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_A, CSHADE_BUFFER_SIZE_3, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_A, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_5_A, CSHADE_BUFFER_SIZE_5, RG16F, 1)
 
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
-CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_2_B, CSHADE_BUFFER_SIZE_2, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_B, CSHADE_BUFFER_SIZE_3, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_B, CSHADE_BUFFER_SIZE_4, RG16F, 1)
 
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_1, SharedTex_RGB10A2_1, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_2, SharedTex_RGB10A2_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_3, SharedTex_RGB10A2_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_4, SharedTex_RGB10A2_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_5, SharedTex_RGB10A2_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_3, CSHADE_BUFFER_SIZE_3, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_4, CSHADE_BUFFER_SIZE_4, RGB10A2, 1)
+    CSHADE_CREATE_TEXTURE(PreviousFrameTex_FlowMosh_5, CSHADE_BUFFER_SIZE_5, RGB10A2, 1)
 
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_2_A, SharedTex_RG16F_2_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_3_A, SharedTex_RG16F_3_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_4_A, SharedTex_RG16F_4_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_5_A, SharedTex_RG16F_5_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_1, SharedTex_RGB10A2_1, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_2, SharedTex_RGB10A2_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_3, SharedTex_RGB10A2_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_4, SharedTex_RGB10A2_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RGB10A2_5, SharedTex_RGB10A2_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_2_B, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_3_B, SharedTex_RG16F_3_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_4_B, SharedTex_RG16F_4_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_2_A, SharedTex_RG16F_2_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_3_A, SharedTex_RG16F_3_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_4_A, SharedTex_RG16F_4_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_5_A, SharedTex_RG16F_5_A, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_2, PreviousFrameTex_FlowMosh_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_3, PreviousFrameTex_FlowMosh_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_4, PreviousFrameTex_FlowMosh_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_5, PreviousFrameTex_FlowMosh_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_2_B, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_3_B, SharedTex_RG16F_3_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleSharedTex_RG16F_4_B, SharedTex_RG16F_4_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, SharedTex_RG16F_4_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex_RG16F_4_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_2, PreviousFrameTex_FlowMosh_2, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_3, PreviousFrameTex_FlowMosh_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_4, PreviousFrameTex_FlowMosh_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_5, PreviousFrameTex_FlowMosh_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex_RG16F_2_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+#endif
 
 CSHADE_CREATE_TEXTURE(AccumulationTex_Datamosh, CSHADE_BUFFER_SIZE_0, R16F, 1)
 CSHADE_CREATE_TEXTURE(FeedbackTex_Datamosh, CSHADE_BUFFER_SIZE_0, RGBA8, 1)
 CSHADE_CREATE_SAMPLER(SampleAccumulationTex, AccumulationTex_Datamosh, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex_Datamosh, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
-/* Pixel Shaders: Pyramid */
+#if !SHADER_USE_CSHARES_MOTION_VECTORS
 
-void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
-    Output.rgb = sqrt(Color.rgb);
-    Output.a = 1.0;
-}
+    /* Pixel Shaders: Pyramid */
 
-void PS_PyramidLevel1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_1, Input.Tex0, PixelSize).rgb;
-    Output.a = 1.0;
-}
+    void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+        Output.rgb = sqrt(Color.rgb);
+        Output.a = 1.0;
+    }
 
-void PS_PyramidLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_2, Input.Tex0, PixelSize).rgb;
-    Output.a = 1.0;
-}
+    void PS_PyramidLevel1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_1, Input.Tex0, PixelSize).rgb;
+        Output.a = 1.0;
+    }
 
-void PS_PyramidLevel3(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_3, Input.Tex0, PixelSize).rgb;
-    Output.a = 1.0;
-}
+    void PS_PyramidLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_2, Input.Tex0, PixelSize).rgb;
+        Output.a = 1.0;
+    }
 
-void PS_PyramidLevel4(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_4, Input.Tex0, PixelSize).rgb;
-    Output.a = 1.0;
-}
+    void PS_PyramidLevel3(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_3, Input.Tex0, PixelSize).rgb;
+        Output.a = 1.0;
+    }
 
-/* Pixel Shaders: Lucas-Kanade */
+    void PS_PyramidLevel4(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_4, Input.Tex0, PixelSize).rgb;
+        Output.a = 1.0;
+    }
 
-void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    float2 Vectors = 0.0;
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_5, SampleSharedTex_RGB10A2_5);
-}
+    /* Pixel Shaders: Lucas-Kanade */
 
-void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_5_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_4, SampleSharedTex_RGB10A2_4);
-}
+    void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        float2 Vectors = 0.0;
+        float2 PixelSize = fwidth(Input.Tex0.xy);
+        Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_5, SampleSharedTex_RGB10A2_5);
+    }
 
-void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_4_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_3, SampleSharedTex_RGB10A2_3);
-}
+    void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0.xy);
+        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_5_A);
+        Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_4, SampleSharedTex_RGB10A2_4);
+    }
 
-void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    float2 PixelSize = fwidth(Input.Tex0.xy);
-    float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_3_A);
-    Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_2, SampleSharedTex_RGB10A2_2);
-}
+    void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0.xy);
+        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_4_A);
+        Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_3, SampleSharedTex_RGB10A2_3);
+    }
 
-/* Pixel Shaders: Downsample & Blit */
+    void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0.xy);
+        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_3_A);
+        Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowMosh_2, SampleSharedTex_RGB10A2_2);
+    }
 
-void PS_CopyMotionLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-{
-    Output = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
-}
+    /* Pixel Shaders: Downsample & Blit */
 
-void PS_MotionLevel1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_2_A, Input.Tex0, PixelSize).xy;
-    Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
-}
+    void PS_CopyMotionLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        Output = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
+    }
 
-void PS_MotionLevel2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_3_A, Input.Tex0, PixelSize).xy;
-    Output1 = tex2D(SampleSharedTex_RGB10A2_4, Input.Tex0);
-}
+    void PS_MotionLevel1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_2_A, Input.Tex0, PixelSize).xy;
+        Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
+    }
 
-void PS_MotionLevel3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
-{
-    float2 PixelSize = fwidth(Input.Tex0);
-    Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_4_A, Input.Tex0, PixelSize).xy;
-    Output1 = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
-}
+    void PS_MotionLevel2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_3_A, Input.Tex0, PixelSize).xy;
+        Output1 = tex2D(SampleSharedTex_RGB10A2_4, Input.Tex0);
+    }
 
-/* Pixel Shaders: Filtering */
+    void PS_MotionLevel3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_4_A, Input.Tex0, PixelSize).xy;
+        Output1 = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
+    }
 
-void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-}
+    /* Pixel Shaders: Filtering */
 
-void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-}
+    void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
+    }
 
-void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-{
-    Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-}
+    void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
+    }
+
+    void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
+    }
+
+#endif
 
 // Datamosh
 
@@ -424,37 +439,47 @@ void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         RenderTarget1 = RENDER_TARGET_1; \
     }
 
+#if SHADER_USE_CSHARES_MOTION_VECTORS
+    #define SHADER_UI_LABEL_EXT " & CShares"
+#else
+    #define SHADER_UI_LABEL_EXT ""
+#endif
+
+#define SHADER_UI_LABEL "CShade" SHADER_UI_LABEL_EXT " | Motion KinoDatamosh"
+
 technique CShade_KinoDatamosh
 <
-    ui_label = "CShade | KinoDatamosh";
+    ui_label = SHADER_UI_LABEL;
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
-    // Prepare
-    TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex_RGB10A2_1)
+    #if !SHADER_USE_CSHARES_MOTION_VECTORS
+        // Prepare
+        TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex_RGB10A2_1)
 
-    // Construct Pyramid 1
-    TEMPLATE_PASS(Pyramid1, CShade_VS_Quad, PS_PyramidLevel1, SharedTex_RGB10A2_2)
-    TEMPLATE_PASS(Pyramid2, CShade_VS_Quad, PS_PyramidLevel2, SharedTex_RGB10A2_3)
-    TEMPLATE_PASS(Pyramid3, CShade_VS_Quad, PS_PyramidLevel3, SharedTex_RGB10A2_4)
-    TEMPLATE_PASS(Pyramid4, CShade_VS_Quad, PS_PyramidLevel4, SharedTex_RGB10A2_5)
+        // Construct Pyramid 1
+        TEMPLATE_PASS(Pyramid1, CShade_VS_Quad, PS_PyramidLevel1, SharedTex_RGB10A2_2)
+        TEMPLATE_PASS(Pyramid2, CShade_VS_Quad, PS_PyramidLevel2, SharedTex_RGB10A2_3)
+        TEMPLATE_PASS(Pyramid3, CShade_VS_Quad, PS_PyramidLevel3, SharedTex_RGB10A2_4)
+        TEMPLATE_PASS(Pyramid4, CShade_VS_Quad, PS_PyramidLevel4, SharedTex_RGB10A2_5)
 
-    // Process Lucas-Kanade
-    TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex_RG16F_5_A)
-    TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex_RG16F_4_A)
-    TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex_RG16F_3_A)
-    TEMPLATE_PASS(MotionLevel1, CShade_VS_Quad, PS_LucasKanade1, SharedTex_RG16F_2_A)
+        // Process Lucas-Kanade
+        TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex_RG16F_5_A)
+        TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex_RG16F_4_A)
+        TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex_RG16F_3_A)
+        TEMPLATE_PASS(MotionLevel1, CShade_VS_Quad, PS_LucasKanade1, SharedTex_RG16F_2_A)
 
-    // Build Pyramid 2
-    TEMPLATE_PASS(Copy, CShade_VS_Quad, PS_CopyMotionLevel2, PreviousFrameTex_FlowMosh_2)
-    TEMPLATE_PASS_MRT2(MotionLevel2, CShade_VS_Quad, PS_MotionLevel1, SharedTex_RG16F_3_A, PreviousFrameTex_FlowMosh_3)
-    TEMPLATE_PASS_MRT2(MotionLevel3, CShade_VS_Quad, PS_MotionLevel2, SharedTex_RG16F_4_A, PreviousFrameTex_FlowMosh_4)
-    TEMPLATE_PASS_MRT2(MotionLevel4, CShade_VS_Quad, PS_MotionLevel3, SharedTex_RG16F_5_A, PreviousFrameTex_FlowMosh_5)
+        // Build Pyramid 2
+        TEMPLATE_PASS(Copy, CShade_VS_Quad, PS_CopyMotionLevel2, PreviousFrameTex_FlowMosh_2)
+        TEMPLATE_PASS_MRT2(MotionLevel2, CShade_VS_Quad, PS_MotionLevel1, SharedTex_RG16F_3_A, PreviousFrameTex_FlowMosh_3)
+        TEMPLATE_PASS_MRT2(MotionLevel3, CShade_VS_Quad, PS_MotionLevel2, SharedTex_RG16F_4_A, PreviousFrameTex_FlowMosh_4)
+        TEMPLATE_PASS_MRT2(MotionLevel4, CShade_VS_Quad, PS_MotionLevel3, SharedTex_RG16F_5_A, PreviousFrameTex_FlowMosh_5)
 
-    // Apply Filtering
-    TEMPLATE_PASS(BilateralUpsample3, CShade_VS_Quad, PS_Upsample3, SharedTex_RG16F_4_B)
-    TEMPLATE_PASS(BilateralUpsample2, CShade_VS_Quad, PS_Upsample2, SharedTex_RG16F_3_B)
-    TEMPLATE_PASS(BilateralUpsample1, CShade_VS_Quad, PS_Upsample1, SharedTex_RG16F_2_B)
+        // Apply Filtering
+        TEMPLATE_PASS(BilateralUpsample3, CShade_VS_Quad, PS_Upsample3, SharedTex_RG16F_4_B)
+        TEMPLATE_PASS(BilateralUpsample2, CShade_VS_Quad, PS_Upsample2, SharedTex_RG16F_3_B)
+        TEMPLATE_PASS(BilateralUpsample1, CShade_VS_Quad, PS_Upsample1, SharedTex_RG16F_2_B)
+    #endif
 
     // Datamoshing
     pass Accumulate

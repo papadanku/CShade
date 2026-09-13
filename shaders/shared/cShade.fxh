@@ -52,7 +52,16 @@
         return Output;
     }
 
-    /* CShade's Composite System */
+    /*
+        CShade's Composite System
+
+        CSHADE_APPLY_VIGNETTE
+        CSHADE_COMPOSITE
+        CSHADE_APPLY_GRAIN
+        CSHADE_APPLY_DITHER
+        CSHADE_DEBUG_PEAKING
+        CSHADE_APPLY_SWIZZLE
+    */
 
     #include "cCamera.fxh"
     #include "cComposite.fxh"
