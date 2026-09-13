@@ -266,17 +266,17 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex_Datamosh, SHADER_WARP_
 
     void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
-        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
+        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
     }
 
     void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
-        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
+        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
     }
 
     void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
-        Output = CBlur_GetSideWindowBoxUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
+        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
     }
 
 #endif
