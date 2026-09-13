@@ -541,7 +541,7 @@
         const int SideWindowSize = 6;
         const float SideWindowWeight = 1.0 / float(SideWindowSize);
 
-        Output.SideWindow_Size = SideWindowSize;
+        Output.SideWindowSize = SideWindowSize;
 
         float2 QuadHalf[6];
         QuadHalf[0] = Output.ArrayGuides[0] + Output.ArrayGuides[1]; // Vertical Top-Left       (TL)
@@ -581,7 +581,7 @@
     )
     {
         // Compute sample weight
-        const float Weight = 1.0 / (float(Input.SideWindow_Size - 1));
+        const float Weight = 1.0 / (float(Input.SideWindowSize - 1));
 
         // Initialize output members.
         Block.Sum = 0.0;
