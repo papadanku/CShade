@@ -120,7 +120,7 @@ uniform float _TargetFrameRate <
 
 #if !SHADER_USE_CSHARES_MOTION_VECTORS
 
-    /* Pixel Shaders */
+    /* Pixel Shaders: Pyramid */
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
@@ -157,7 +157,7 @@ uniform float _TargetFrameRate <
         Output.a = 1.0;
     }
 
-    // Run Lucas-Kanade
+    /* Pixel Shaders: Lucas-Kanade */
 
     void PS_LucasKanade4(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
@@ -187,49 +187,49 @@ uniform float _TargetFrameRate <
         Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_FlowBlur_2, SampleSharedTex_RGB10A2_2);
     }
 
-    /* Pixel Shaders: Downsample & Blit */
+    /* Pixel Shaders: Downsample */
 
-    void PS_CopyMotionLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
-    {
-        Output = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
-    }
-
-    void PS_MotionLevel1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    void PS_Downsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_2_A, Input.Tex0, PixelSize).xy;
-        Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_2_A, Input.Tex0, PixelSize).xy;
     }
 
-    void PS_MotionLevel2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    void PS_Downsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_3_A, Input.Tex0, PixelSize).xy;
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_3_A, Input.Tex0, PixelSize).xy;
+    }
+
+    void PS_Downsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    {
+        float2 PixelSize = fwidth(Input.Tex0);
+        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_4_A, Input.Tex0, PixelSize).xy;
+    }
+
+    /* Pixel Shaders: Upsample & Blit */
+
+    void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+    {
+        Output = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
+    }
+
+    void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    {
+        Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
         Output1 = tex2D(SampleSharedTex_RGB10A2_4, Input.Tex0);
     }
 
-    void PS_MotionLevel3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
+    void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
-        float2 PixelSize = fwidth(Input.Tex0);
-        Output0 = CBlur_DownsampleBox3x3(SampleSharedTex_RG16F_4_A, Input.Tex0, PixelSize).xy;
-        Output1 = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
+        Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
+        Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
     }
 
-    /* Pixel Shaders: Filtering */
-
-    void PS_Upsample3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
+    void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
-        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-    }
-
-    void PS_Upsample2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-    {
-        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-    }
-
-    void PS_Upsample1(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
-    {
-        Output = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
+        Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
+        Output1 = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
     }
 
 #endif
@@ -353,18 +353,18 @@ technique CShade_MotionBlur
         TEMPLATE_PASS(LucasKanade4, CShade_VS_Quad, PS_LucasKanade4, SharedTex_RG16F_5_A)
         TEMPLATE_PASS(LucasKanade3, CShade_VS_Quad, PS_LucasKanade3, SharedTex_RG16F_4_A)
         TEMPLATE_PASS(LucasKanade2, CShade_VS_Quad, PS_LucasKanade2, SharedTex_RG16F_3_A)
-        TEMPLATE_PASS(MotionLevel1, CShade_VS_Quad, PS_LucasKanade1, SharedTex_RG16F_2_A)
+        TEMPLATE_PASS(LucasKanade1, CShade_VS_Quad, PS_LucasKanade1, SharedTex_RG16F_2_A)
 
         // Build Pyramid 2
-        TEMPLATE_PASS(Copy, CShade_VS_Quad, PS_CopyMotionLevel2, PreviousFrameTex_FlowBlur_2)
-        TEMPLATE_PASS_MRT2(MotionLevel2, CShade_VS_Quad, PS_MotionLevel1, SharedTex_RG16F_3_A, PreviousFrameTex_FlowBlur_3)
-        TEMPLATE_PASS_MRT2(MotionLevel3, CShade_VS_Quad, PS_MotionLevel2, SharedTex_RG16F_4_A, PreviousFrameTex_FlowBlur_4)
-        TEMPLATE_PASS_MRT2(MotionLevel4, CShade_VS_Quad, PS_MotionLevel3, SharedTex_RG16F_5_A, PreviousFrameTex_FlowBlur_5)
+        TEMPLATE_PASS(Downsample1, CShade_VS_Quad, PS_Downsample1, SharedTex_RG16F_3_A)
+        TEMPLATE_PASS(Downsample2, CShade_VS_Quad, PS_Downsample2, SharedTex_RG16F_4_A)
+        TEMPLATE_PASS(Downsample3, CShade_VS_Quad, PS_Downsample3, SharedTex_RG16F_5_A)
 
         // Apply Filtering
-        TEMPLATE_PASS(BilateralUpsample3, CShade_VS_Quad, PS_Upsample3, SharedTex_RG16F_4_B)
-        TEMPLATE_PASS(BilateralUpsample2, CShade_VS_Quad, PS_Upsample2, SharedTex_RG16F_3_B)
-        TEMPLATE_PASS(BilateralUpsample1, CShade_VS_Quad, PS_Upsample1, SharedTex_RG16F_2_B)
+        TEMPLATE_PASS(CopyCoarse, CShade_VS_Quad, PS_CopyCoarse, PreviousFrameTex_FlowBlur_5)
+        TEMPLATE_PASS_MRT2(Upsample3_Copy3, CShade_VS_Quad, PS_Upsample3_Copy3, SharedTex_RG16F_4_B, PreviousFrameTex_FlowBlur_4)
+        TEMPLATE_PASS_MRT2(Upsample2_Copy2, CShade_VS_Quad, PS_Upsample2_Copy2, SharedTex_RG16F_3_B, PreviousFrameTex_FlowBlur_3)
+        TEMPLATE_PASS_MRT2(Upsample1_Copy1, CShade_VS_Quad, PS_Upsample1_Copy1, SharedTex_RG16F_2_B, PreviousFrameTex_FlowBlur_2)
     #endif
 
     pass MotionBlur
