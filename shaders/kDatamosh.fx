@@ -171,7 +171,7 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex_Datamosh, SHADER_WARP_
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+        float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
         Output.rgb = sqrt(Color.rgb);
         Output.a = 1.0;
     }
@@ -258,25 +258,25 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex_Datamosh, SHADER_WARP_
 
     void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, float4(Input.Tex0, 0.0, 0.0));
+        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, CShade_PadFloat2(Input.Tex0));
     }
 
 #endif
@@ -327,7 +327,7 @@ void PS_Accumulate(CShade_VS2PS_Quad Input, out float4 Accumulation : SV_TARGET0
     float3 Random = 0.0;
 
     // Motion vectors
-    float4 MVTex = float4(Input.Tex0, 0.0, 0.0);
+    float4 MVTex = CShade_PadFloat2(Input.Tex0);
     float2 MV = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex1, MVTex).xy);
 
     // Get motion blocks
@@ -374,10 +374,10 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
     MV = NormalizeUV(MV, Delta);
 
     // Displacement vector
-    float Disp = tex2Dlod(SampleAccumulationTex, float4(Tex, 0.0, 0.0)).r;
+    float Disp = tex2Dlod(SampleAccumulationTex, CShade_PadFloat2(Tex)).r;
 
     // Color from the original image
-    float4 Work = tex2Dlod(SampleFeedbackTex, float4(Tex + MV, 0.0, 0.0));
+    float4 Work = tex2Dlod(SampleFeedbackTex, CShade_PadFloat2(Tex + MV));
 
     // Generate some pseudo random numbers.
     float4 Rand = frac(float4(1.0, 17.37135, 841.4272, 3305.121) * RandomMotion);
@@ -403,8 +403,8 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 TexSize = fwidth(Input.Tex0);
-    float4 Base = tex2Dlod(SampleSourceTex, float4(Input.Tex0, 0.0, 0.0));
-    float4 MVTex = float4(Input.Tex0, 0.0, 0.0);
+    float4 Base = tex2Dlod(SampleSourceTex, CShade_PadFloat2(Input.Tex0));
+    float4 MVTex = CShade_PadFloat2(Input.Tex0);
     float2 MV = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex2, MVTex).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos.xy, Input.Tex0, TexSize);
 
@@ -419,7 +419,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+    Output = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
 }
 
 #define TEMPLATE_PASS(NAME, VERTEX_SHADER, PIXEL_SHADER, RENDER_TARGET) \

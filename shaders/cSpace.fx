@@ -111,8 +111,8 @@ float3 DiplayChromaSpace(float4 Color, float4 Gamma)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
-    float4 Gamma = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
+    float4 Gamma = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
 
     // Initialize
     Output = float4(0.0, 0.0, 0.0, 1.0);

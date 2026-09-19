@@ -111,7 +111,7 @@ CSHADE_CREATE_SAMPLER(SampleSharedTex8, SharedTex_RGBA16F_8, LINEAR, LINEAR, LIN
 #if CSHADE_APPLY_AUTO_EXPOSURE
     void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float LogLuminance = tex2Dlod(SampleSharedTex8, float4(Input.Tex0, 0.0, 0.0)).a;
+        float LogLuminance = tex2Dlod(SampleSharedTex8, CShade_PadFloat2(Input.Tex0)).a;
         Output = CCamera_CreateExposureTex(LogLuminance);
         Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
     }
@@ -120,7 +120,7 @@ CSHADE_CREATE_SAMPLER(SampleSharedTex8, SharedTex_RGBA16F_8, LINEAR, LINEAR, LIN
 // Bloom-specific functions
 void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
     float Luminance = 1.0;
 
     // Apply auto exposure to the backbuffer
@@ -129,7 +129,7 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         if (_CCamera_MeteringType == 1)
         {
             float2 ColorAreaTex = CCamera_GetSpotMeterTex(Input.Tex0);
-            float3 ColorArea = tex2Dlod(CShade_SampleColorTex, float4(ColorAreaTex, 0.0, 0.0)).rgb;
+            float3 ColorArea = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(ColorAreaTex)).rgb;
             Luminance = CCamera_GetLogLuminance(ColorArea.rgb);
         }
         else
@@ -138,7 +138,7 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         }
 
         // Apply auto exposure to input
-        float Luma = tex2Dlod(SampleBloomExposureTex, float4(Input.Tex0, 0.0, 0.0)).r;
+        float Luma = tex2Dlod(SampleBloomExposureTex, CShade_PadFloat2(Input.Tex0)).r;
         CCamera_Exposure ExposureData = CCamera_GetExposureData(Luma);
         Color = CCamera_ApplyAutoExposure(Color.rgb, ExposureData);
     #endif
@@ -197,7 +197,7 @@ TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleSharedTex2, _LevelWeight1)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 BaseColor = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
+    float3 BaseColor = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0)).rgb;
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color
@@ -208,7 +208,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #endif
 
     // Bloom composition
-    float3 BloomColor = tex2Dlod(SampleSharedTex1, float4(Input.Tex0, 0.0, 0.0)).rgb;
+    float3 BloomColor = tex2Dlod(SampleSharedTex1, CShade_PadFloat2(Input.Tex0)).rgb;
     BaseColor = (_BloomRenderMode == 0) ? BaseColor + (BloomColor * _BloomIntensity) : BloomColor;
 
     // RENDER

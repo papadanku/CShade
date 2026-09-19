@@ -75,11 +75,11 @@ void PS_Prefilter(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float4 EdgeTex1 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
     float3 Neighborhood[4];
-    float3 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
-    Neighborhood[0] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex0.xy, 0.0, 0.0)).rgb;
-    Neighborhood[1] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex0.zw, 0.0, 0.0)).rgb;
-    Neighborhood[2] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.xy, 0.0, 0.0)).rgb;
-    Neighborhood[3] = tex2Dlod(CShade_SampleGammaTex, float4(EdgeTex1.zw, 0.0, 0.0)).rgb;
+    float3 Center = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0)).rgb;
+    Neighborhood[0] = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(EdgeTex0.xy)).rgb;
+    Neighborhood[1] = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(EdgeTex0.zw)).rgb;
+    Neighborhood[2] = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(EdgeTex1.xy)).rgb;
+    Neighborhood[3] = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(EdgeTex1.zw)).rgb;
 
     // Compass edge detection on N/S/E/W
     float3 Edges = 0.0;
@@ -96,15 +96,15 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Delta = fwidth(Input.Tex0);
 
-    float4 Center = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Center = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
 
     float4 ShortTex1 = Input.Tex0.xyxy + (float4(-1.0, 0.0, 1.0, 0.0) * Delta.xyxy);
     float4 ShortTex2 = Input.Tex0.xyxy + (float4(0.0, -1.0, 0.0, 1.0) * Delta.xyxy);
 
-    float4 Left = tex2Dlod(SampleSharedTex0, float4(ShortTex1.xy, 0.0, 0.0));
-    float4 Right = tex2Dlod(SampleSharedTex0, float4(ShortTex1.zw, 0.0, 0.0));
-    float4 Top = tex2Dlod(SampleSharedTex0, float4(ShortTex2.xy, 0.0, 0.0));
-    float4 Bottom = tex2Dlod(SampleSharedTex0, float4(ShortTex2.zw, 0.0, 0.0));
+    float4 Left = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(ShortTex1.xy));
+    float4 Right = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(ShortTex1.zw));
+    float4 Top = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(ShortTex2.xy));
+    float4 Bottom = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(ShortTex2.zw));
 
     float4 LongTex0 = Input.Tex0.xyxy + (float4(1.5, 0.0, 0.0, 1.5) * Delta.xyxy);
     float4 LongTex1 = Input.Tex0.xyxy + (float4(3.5, 0.0, 0.0, 3.5) * Delta.xyxy);
@@ -115,23 +115,23 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float4 LongTex6 = Input.Tex0.xyxy + (float4(-5.5, 0.0, 0.0, -5.5) * Delta.xyxy);
     float4 LongTex7 = Input.Tex0.xyxy + (float4(-7.5, 0.0, 0.0, -7.5) * Delta.xyxy);
 
-    float4 H0 = tex2Dlod(SampleSharedTex0, float4(LongTex0.xy, 0.0, 0.0));
-    float4 H1 = tex2Dlod(SampleSharedTex0, float4(LongTex1.xy, 0.0, 0.0));
-    float4 H2 = tex2Dlod(SampleSharedTex0, float4(LongTex2.xy, 0.0, 0.0));
-    float4 H3 = tex2Dlod(SampleSharedTex0, float4(LongTex3.xy, 0.0, 0.0));
-    float4 H4 = tex2Dlod(SampleSharedTex0, float4(LongTex4.xy, 0.0, 0.0));
-    float4 H5 = tex2Dlod(SampleSharedTex0, float4(LongTex5.xy, 0.0, 0.0));
-    float4 H6 = tex2Dlod(SampleSharedTex0, float4(LongTex6.xy, 0.0, 0.0));
-    float4 H7 = tex2Dlod(SampleSharedTex0, float4(LongTex7.xy, 0.0, 0.0));
+    float4 H0 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex0.xy));
+    float4 H1 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex1.xy));
+    float4 H2 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex2.xy));
+    float4 H3 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex3.xy));
+    float4 H4 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex4.xy));
+    float4 H5 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex5.xy));
+    float4 H6 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex6.xy));
+    float4 H7 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex7.xy));
 
-    float4 V0 = tex2Dlod(SampleSharedTex0, float4(LongTex0.zw, 0.0, 0.0));
-    float4 V1 = tex2Dlod(SampleSharedTex0, float4(LongTex1.zw, 0.0, 0.0));
-    float4 V2 = tex2Dlod(SampleSharedTex0, float4(LongTex2.zw, 0.0, 0.0));
-    float4 V3 = tex2Dlod(SampleSharedTex0, float4(LongTex3.zw, 0.0, 0.0));
-    float4 V4 = tex2Dlod(SampleSharedTex0, float4(LongTex4.zw, 0.0, 0.0));
-    float4 V5 = tex2Dlod(SampleSharedTex0, float4(LongTex5.zw, 0.0, 0.0));
-    float4 V6 = tex2Dlod(SampleSharedTex0, float4(LongTex6.zw, 0.0, 0.0));
-    float4 V7 = tex2Dlod(SampleSharedTex0, float4(LongTex7.zw, 0.0, 0.0));
+    float4 V0 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex0.zw));
+    float4 V1 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex1.zw));
+    float4 V2 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex2.zw));
+    float4 V3 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex3.zw));
+    float4 V4 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex4.zw));
+    float4 V5 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex5.zw));
+    float4 V6 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex6.zw));
+    float4 V7 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(LongTex7.zw));
 
     /*
         Short edges
@@ -224,10 +224,10 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     if (_PreserveFrequencies)
     {
         float4 RTex = Input.Tex0.xyxy + (Delta.xyxy * float4(-1.5, -1.5, 1.5, 1.5));
-        float4 R0 = tex2Dlod(SampleSharedTex0, float4(RTex.xw, 0.0, 0.0));
-        float4 R1 = tex2Dlod(SampleSharedTex0, float4(RTex.zw, 0.0, 0.0));
-        float4 R2 = tex2Dlod(SampleSharedTex0, float4(RTex.xy, 0.0, 0.0));
-        float4 R3 = tex2Dlod(SampleSharedTex0, float4(RTex.zy, 0.0, 0.0));
+        float4 R0 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(RTex.xw));
+        float4 R1 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(RTex.zw));
+        float4 R2 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(RTex.xy));
+        float4 R3 = tex2Dlod(SampleSharedTex0, CShade_PadFloat2(RTex.zy));
 
         float4 R = (4.0 * (R0 + R1 + R2 + R3) + Center + V0 + V4 + H4 + H0) / 25.0;
         Color = lerp(Color, Center, saturate(R.a * 3.0 - 1.5));

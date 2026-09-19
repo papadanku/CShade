@@ -158,7 +158,7 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_DISPLACEMENT
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+        float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
         Output.rgb = sqrt(Color.rgb);
         Output.a = 1.0;
     }
@@ -245,25 +245,25 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleStableTex, CShade_ColorTex, SHADER_DISPLACEMENT
 
     void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, float4(Input.Tex0, 0.0, 0.0));
+        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, CShade_PadFloat2(Input.Tex0));
     }
 
 #endif
@@ -280,7 +280,7 @@ float4 GetMotionStabilization(CShade_VS2PS_Quad Input, float2 MotionVectors)
     const float Pi2 = CMath_GetPi() * 2.0;
     CMath_ApplyGeometricTransform(StableTex, _GeometricTransformOrder, _Angle * Pi2, _Translate, _Scale, true);
 
-    return tex2Dlod(SampleStableTex, float4(StableTex, 0.0, 0.0));
+    return tex2Dlod(SampleStableTex, CShade_PadFloat2(StableTex));
 }
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
@@ -295,8 +295,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     // Get needed LOD for shader
 
     // Gather textures
-    float4 Image = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
-    float4 MotionVectorsTex = float4(Input.Tex0, 0.0, 0.0);
+    float4 Image = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
+    float4 MotionVectorsTex = CShade_PadFloat2(Input.Tex0);
     float2 MotionVectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex, MotionVectorsTex).xy);
 
     // Compute motion vector masking

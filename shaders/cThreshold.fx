@@ -40,7 +40,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     const float Knee = mad(_Threshold, _Smooth, 1e-5f);
     const float3 Curve = float3(_Threshold - Knee, Knee * 2.0, 0.25 / Knee);
-    float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+    float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
 
     // Under-threshold
     float Brightness = CColor_RGBtoLuma(Color.rgb, 3);

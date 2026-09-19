@@ -119,7 +119,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             DiskShift = mul(DiskShift * 3.0, RotationMatrix);
 
             float2 FetchTex = Input.Tex0 + (DiskShift * 0.01);
-            Output += tex2Dlod(CShade_SampleColorTex, float4(FetchTex, 0.0, 0.0));
+            Output += tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(FetchTex));
             Weight += 1.0;
         }
     }

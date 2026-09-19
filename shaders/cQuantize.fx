@@ -66,11 +66,11 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     if (_Pixelate)
     {
         HashPos = Grid;
-        ColorMap = tex2Dlod(CShade_SampleGammaTex, float4(Grid / _Resolution, 0.0, 0.0));
+        ColorMap = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Grid / _Resolution));
     }
     else
     {
-        ColorMap = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
+        ColorMap = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
     }
 
     if (_Dithering)

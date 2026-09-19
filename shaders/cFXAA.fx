@@ -69,7 +69,7 @@ static const float SubpixelBlendings[5] =
 
 float SampleLuma(float2 Tex, float2 Offset, float2 Delta)
 {
-    float4 Tex1 = float4(Tex + (Offset * Delta), 0.0, 0.0);
+    float4 Tex1 = CShade_PadFloat2(Tex + (Offset * Delta));
     float3 Color = tex2Dlod(CShade_SampleGammaTex, Tex1).rgb;
     return dot(Color, CColor_Rec709_Coefficients);
 }
@@ -84,7 +84,7 @@ struct LumaNeighborhood
 LumaNeighborhood GetLumaNeighborhood(float2 Tex, float2 Delta)
 {
     LumaNeighborhood L;
-    L.C = tex2Dlod(CShade_SampleGammaTex, float4(Tex, 0.0, 0.0));
+    L.C = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Tex));
     L.M = dot(L.C.rgb, CColor_Rec709_Coefficients);
     L.N = SampleLuma(Tex, float2(0.0, 1.0), Delta);
     L.E = SampleLuma(Tex, float2(1.0, 0.0), Delta);
@@ -284,7 +284,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
             BlendTex.x += (BlendFactor * E.PixelStep);
         }
 
-        FXAA = tex2Dlod(CShade_SampleGammaTex, float4(BlendTex, 0.0, 0.0)).rgb;
+        FXAA = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(BlendTex)).rgb;
     }
 
     // RENDER

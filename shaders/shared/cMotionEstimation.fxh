@@ -33,7 +33,7 @@
                 float2 Shift = float2(x, y) * DilateScale;
                 float2 FetchTex = Tex + (Shift * PixelSize);
 
-                Sum += tex2Dlod(SampleSource, float4(FetchTex, 0.0, 0.0)).xy;
+                Sum += tex2Dlod(SampleSource, CShade_PadFloat2(FetchTex)).xy;
                 Weight += 1.0;
             }
         }
@@ -59,7 +59,7 @@
 
     float3 CMotionEstimation_GetPlanes(sampler2D Image, float2 Tex)
     {
-        float3 Color = tex2Dlod(Image, float4(Tex, 0.0, 0.0)).rgb;
+        float3 Color = tex2Dlod(Image, CShade_PadFloat2(Tex)).rgb;
         Color = CColor_SRGBtoYUV444(Color, false);
         return Color;
     }

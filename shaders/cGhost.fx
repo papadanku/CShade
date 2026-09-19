@@ -37,13 +37,13 @@ CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex, PreviousFrame, LINEAR, LINEAR, LIN
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     #if (CSHADE_WRITE_SRGB == TRUE)
-        float4 CurrentFrame = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
-        float4 PreviousFrame = tex2Dlod(SamplePreviousFrameTex, float4(Input.Tex0, 0.0, 0.0));
+        float4 CurrentFrame = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
+        float4 PreviousFrame = tex2Dlod(SamplePreviousFrameTex, CShade_PadFloat2(Input.Tex0));
         CurrentFrame = CColor_SRGBtoRGB(CurrentFrame);
         PreviousFrame = CColor_SRGBtoRGB(PreviousFrame);
     #else
-        float4 CurrentFrame = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
-        float4 PreviousFrame = tex2Dlod(SamplePreviousFrameTex, float4(Input.Tex0, 0.0, 0.0));
+        float4 CurrentFrame = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
+        float4 PreviousFrame = tex2Dlod(SamplePreviousFrameTex, CShade_PadFloat2(Input.Tex0));
     #endif
 
     float3 BlendColor = lerp(CurrentFrame.rgb, PreviousFrame.rgb, _BlendFactor);
@@ -64,7 +64,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 // Copy backbuffer to a that continuously blends with its previous result
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2Dlod(CShade_SampleGammaTex, float4(Input.Tex0, 0.0, 0.0));
+    Output = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
 }
 
 technique CShade_Ghosting

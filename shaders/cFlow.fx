@@ -189,7 +189,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
+        float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
         Output.rgb = sqrt(Color.rgb);
         Output.a = 1.0;
     }
@@ -276,25 +276,25 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
     void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, float4(Input.Tex0, 0.0, 0.0));
+        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, CShade_PadFloat2(Input.Tex0));
     }
 
     void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, float4(Input.Tex0, 0.0, 0.0));
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, CShade_PadFloat2(Input.Tex0));
     }
 
     float2 GetMotionVector(float4 Tex)
@@ -365,7 +365,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
         VtxBasePos.x -= ShiftOdds;
 
         // Apply velocity to CellOffset.
-        float4 VelocityTex = float4(VtxBasePos / GridSize, 0.0, 0.0);
+        float4 VelocityTex = CShade_PadFloat2(VtxBasePos / GridSize);
         float2 Velocity = CMath_FP16toSNORM_FLT2(GetMotionVector(VelocityTex).xy);
 
         /*
@@ -499,7 +499,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMath_FP16toSNORM_FLT2(GetMotionVector(float4(Input.Tex0.xy, 0.0, 0.0)).xy);
+        float2 Vectors = CMath_FP16toSNORM_FLT2(GetMotionVector(CShade_PadFloat2(Input.Tex0.xy)).xy);
 
         // Encode vectors
         float3 VectorColors = normalize(float3(Vectors, 1e-3));
@@ -518,8 +518,8 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
         for (float i = 1.0; i < 4.0; i += 0.5)
         {
             float2 Offset = Vectors * i;
-            LIC += tex2Dlod(SampleNoiseTex, float4(Input.Tex0 + Offset, 0.0, 0.0)).r;
-            LIC += tex2Dlod(SampleNoiseTex, float4(Input.Tex0 - Offset, 0.0, 0.0)).r;
+            LIC += tex2Dlod(SampleNoiseTex, CShade_PadFloat2(Input.Tex0 + Offset)).r;
+            LIC += tex2Dlod(SampleNoiseTex, CShade_PadFloat2(Input.Tex0 - Offset)).r;
             WeightSum += 2.0;
         }
 

@@ -36,6 +36,21 @@
         CMATH: DATA CONVERSION & PROCESSING
     */
 
+    float4 CShade_PadFloat1(float X)
+    {
+        return float4(X, 0.0, 0.0, 0.0);
+    }
+
+    float4 CShade_PadFloat2(float2 X)
+    {
+        return float4(X, 0.0, 0.0);
+    }
+
+    float4 CShade_PadFloat3(float3 X)
+    {
+        return float4(X, 0.0);
+    }
+
     /*
         Function to convert 2D row and column (0-indexed) to a 1D index.
         GridPos.x: The 0-indexed row number.

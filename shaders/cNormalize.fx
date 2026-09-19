@@ -33,15 +33,15 @@ float4 GetCensusTransform(float2 Tex)
 
     const int Neighbors = 8;
     float4 SampleNeighbor[Neighbors];
-    SampleNeighbor[0] = tex2Dlod(CShade_SampleColorTex, float4(Tex0.xy, 0.0, 0.0));
-    SampleNeighbor[1] = tex2Dlod(CShade_SampleColorTex, float4(Tex1.xy, 0.0, 0.0));
-    SampleNeighbor[2] = tex2Dlod(CShade_SampleColorTex, float4(Tex2.xy, 0.0, 0.0));
-    SampleNeighbor[3] = tex2Dlod(CShade_SampleColorTex, float4(Tex0.xz, 0.0, 0.0));
-    SampleNeighbor[4] = tex2Dlod(CShade_SampleColorTex, float4(Tex2.xz, 0.0, 0.0));
-    SampleNeighbor[5] = tex2Dlod(CShade_SampleColorTex, float4(Tex0.xw, 0.0, 0.0));
-    SampleNeighbor[6] = tex2Dlod(CShade_SampleColorTex, float4(Tex1.xw, 0.0, 0.0));
-    SampleNeighbor[7] = tex2Dlod(CShade_SampleColorTex, float4(Tex2.xw, 0.0, 0.0));
-    float4 CenterSample = tex2Dlod(CShade_SampleColorTex, float4(Tex1.xz, 0.0, 0.0));
+    SampleNeighbor[0] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex0.xy));
+    SampleNeighbor[1] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex1.xy));
+    SampleNeighbor[2] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex2.xy));
+    SampleNeighbor[3] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex0.xz));
+    SampleNeighbor[4] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex2.xz));
+    SampleNeighbor[5] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex0.xw));
+    SampleNeighbor[6] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex1.xw));
+    SampleNeighbor[7] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex2.xw));
+    float4 CenterSample = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex1.xz));
 
     // Generate 8-bit integer from the 8-pixel neighborhood
     for (int i = 0; i < Neighbors; i++)
@@ -59,11 +59,11 @@ float4 GetLocalContrastNormalization(float2 Tex)
     float2 Delta = fwidth(Tex);
 
     float4 S[5];
-    S[0] = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
-    S[1] = tex2Dlod(CShade_SampleColorTex, float4(Tex + (float2(-1.5,  0.0) * Delta), 0.0, 0.0));
-    S[2] = tex2Dlod(CShade_SampleColorTex, float4(Tex + (float2( 1.5,  0.0) * Delta), 0.0, 0.0));
-    S[3] = tex2Dlod(CShade_SampleColorTex, float4(Tex + (float2( 0.0, -1.5) * Delta), 0.0, 0.0));
-    S[4] = tex2Dlod(CShade_SampleColorTex, float4(Tex + (float2( 0.0,  1.5) * Delta), 0.0, 0.0));
+    S[0] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex));
+    S[1] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex + (float2(-1.5,  0.0) * Delta)));
+    S[2] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex + (float2( 1.5,  0.0) * Delta)));
+    S[3] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex + (float2( 0.0, -1.5) * Delta)));
+    S[4] = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Tex + (float2( 0.0,  1.5) * Delta)));
     float4 Mean = (S[0] + S[1] + S[2] + S[3] + S[4]) / 5.0;
 
     // Calculate standard deviation
