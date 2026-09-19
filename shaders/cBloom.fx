@@ -43,24 +43,24 @@ uniform float _BloomIntensity <
     ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
 > = 0.5;
 
-#define TEMPLATE_OPTION_LEVEL(INDEX) \
+#define TEMPLATE_OPTION_LEVEL(INDEX, LABEL) \
     uniform float _LevelWeight##INDEX < \
-        ui_category = "Level Weights"; \
-        ui_label = "Level " #INDEX; \
+        ui_category = "Pyramid Level Weights"; \
+        ui_label = LABEL; \
         ui_max = 1.0; \
         ui_min = 0.0; \
         ui_step = 0.001; \
         ui_type = "slider"; \
     > = 1.0;
 
-TEMPLATE_OPTION_LEVEL(1)
-TEMPLATE_OPTION_LEVEL(2)
-TEMPLATE_OPTION_LEVEL(3)
-TEMPLATE_OPTION_LEVEL(4)
-TEMPLATE_OPTION_LEVEL(5)
-TEMPLATE_OPTION_LEVEL(6)
-TEMPLATE_OPTION_LEVEL(7)
-TEMPLATE_OPTION_LEVEL(8)
+TEMPLATE_OPTION_LEVEL(1, "Level 1 (Fine)")
+TEMPLATE_OPTION_LEVEL(2, "Level 2")
+TEMPLATE_OPTION_LEVEL(3, "Level 3")
+TEMPLATE_OPTION_LEVEL(4, "Level 4")
+TEMPLATE_OPTION_LEVEL(5, "Level 5")
+TEMPLATE_OPTION_LEVEL(6, "Level 6")
+TEMPLATE_OPTION_LEVEL(7, "Level 7")
+TEMPLATE_OPTION_LEVEL(8, "Level 8 (Coarse)")
 
 #ifndef CSHADE_APPLY_AUTO_EXPOSURE
     #define CSHADE_APPLY_AUTO_EXPOSURE 1
