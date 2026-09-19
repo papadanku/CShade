@@ -16,7 +16,7 @@
 #if CSHARES_EXPORT_MOTION_VECTORS
     #include "shared/cColor.fxh"
     #include "shared/cBlur.fxh"
-    #include "shared/cMotionEstimation.fxh"
+    #include "shared/cMotion.fxh"
 #endif
 
 #if CSHARES_EXPORT_MOTION_VECTORS

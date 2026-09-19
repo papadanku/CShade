@@ -33,7 +33,7 @@
 
 #include "shared/cColor.fxh"
 #include "shared/cBlur.fxh"
-#include "shared/cMotionEstimation.fxh"
+#include "shared/cMotion.fxh"
 
 /* Shader Options */
 
