@@ -496,11 +496,11 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x0, y0) * 2.0;
-                float2 Offset = Tex + (Delta * PixelSize);
+                float4 Offset = float4(Tex + (Delta * PixelSize), 0.0, 0.0);
 
                 // Sampling.
-                float2 ImageSample = tex2D(Image, Offset).xy;
-                float2 GuideSample = tex2D(Guide, Offset).xy;
+                float2 ImageSample = tex2Dlod(Image, Offset).xy;
+                float2 GuideSample = tex2Dlod(Guide, Offset).xy;
 
                 // This is for our Side Window calculation.
                 Output.ArrayImages[ImageIndex0] = ImageSample;
@@ -715,8 +715,8 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x, y) * 2.0;
-                float2 Offset = Tex + (Delta * PixelSize);
-                float2 Sample = tex2D(Image, Offset).xy;
+                float4 Offset = float4(Tex + (Delta * PixelSize), 0.0, 0.0);
+                float2 Sample = tex2Dlod(Image, Offset).xy;
                 ArrayImages[ImageIndex] = Sample;
 
                 if ((x == 0) && (y == 0))
@@ -836,8 +836,8 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x, y) * 2.0;
-                float2 Offset = Tex + (Delta * PixelSize);
-                float2 Sample = tex2D(Image, Offset).xy;
+                float4 Offset = float4(Tex + (Delta * PixelSize), 0.0, 0.0);
+                float2 Sample = tex2Dlod(Image, Offset).xy;
                 ArrayImages[ImageIndex] = Sample;
                 ImageIndex += 1;
             }
@@ -891,7 +891,7 @@
         FullQuads[7] *= WeightsCardinal;
 
         // Calculate Side Winder filter
-        float2 Reference = tex2D(Guide, Tex).xy;
+        float2 Reference = tex2Dlod(Guide, float4(Tex, 0.0, 0.0)).xy;
         float DotRR = dot(Reference, Reference);
 
         float2 NearestWindow = 0.0;
@@ -925,7 +925,7 @@
     {
         // Initialize variables
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-        float4 GuideHighSample = tex2D(GuideHigh, Tex);
+        float4 GuideHighSample = tex2Dlod(GuideHigh, float4(Tex, 0.0, 0.0));
 
         float4 BilateralSum = 0.0;
         float BilateralWeightSum = 0.0;
@@ -938,11 +938,11 @@
             {
                 // Calculate offset
                 float2 Offset = float2(x, y);
-                float2 OffsetTex = Tex + (Offset * PixelSize);
+                float4 OffsetTex = float4(Tex + (Offset * PixelSize), 0.0, 0.0);
 
                 // Sample image and guide
-                float4 ImageSample = tex2D(Image, OffsetTex);
-                float4 GuideLowSample = tex2D(GuideLow, OffsetTex);
+                float4 ImageSample = tex2Dlod(Image, OffsetTex);
+                float4 GuideLowSample = tex2Dlod(GuideLow, OffsetTex);
 
                 // Calculate weight
                 float4 D = GuideHighSample - GuideLowSample;

@@ -57,9 +57,9 @@
         Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
-    float3 CMotionEstimation_GetPlanesYUV(sampler2D Image, float2 Tex)
+    float3 CMotionEstimation_GetPlanes(sampler2D Image, float2 Tex)
     {
-        float3 Color = tex2D(Image, Tex).rgb;
+        float3 Color = tex2Dlod(Image, float4(Tex, 0.0, 0.0)).rgb;
         Color = CColor_SRGBtoYUV444(Color, false);
         return Color;
     }
@@ -153,31 +153,31 @@
         // This unrolled version samples and assigns to the Cache array.
         // The four corners of the 5x5 grid are skipped in the original code,
         // so they are not included in this rewrite.
-        Cache[1] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-        Cache[2] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(0, -2) * PixelSize));
-        Cache[3] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, -2) * PixelSize));
+        Cache[1] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, -2) * PixelSize));
+        Cache[2] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, -2) * PixelSize));
+        Cache[3] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, -2) * PixelSize));
 
-        Cache[5] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-        Cache[6] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-        Cache[7] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(0, -1) * PixelSize));
-        Cache[8] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, -1) * PixelSize));
-        Cache[9] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(2, -1) * PixelSize));
+        Cache[5] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, -1) * PixelSize));
+        Cache[6] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, -1) * PixelSize));
+        Cache[7] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, -1) * PixelSize));
+        Cache[8] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, -1) * PixelSize));
+        Cache[9] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, -1) * PixelSize));
 
-        Cache[10] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-        Cache[11] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-        Cache[12] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(0, 0) * PixelSize));
-        Cache[13] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, 0) * PixelSize));
-        Cache[14] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(2, 0) * PixelSize));
+        Cache[10] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, 0) * PixelSize));
+        Cache[11] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 0) * PixelSize));
+        Cache[12] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 0) * PixelSize));
+        Cache[13] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 0) * PixelSize));
+        Cache[14] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, 0) * PixelSize));
 
-        Cache[15] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-        Cache[16] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-        Cache[17] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(0, 1) * PixelSize));
-        Cache[18] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, 1) * PixelSize));
-        Cache[19] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(2, 1) * PixelSize));
+        Cache[15] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, 1) * PixelSize));
+        Cache[16] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 1) * PixelSize));
+        Cache[17] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 1) * PixelSize));
+        Cache[18] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 1) * PixelSize));
+        Cache[19] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, 1) * PixelSize));
 
-        Cache[21] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-        Cache[22] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(0, 2) * PixelSize));
-        Cache[23] = CMotionEstimation_GetPlanesYUV(SampleT, MainTex + (float2(1, 2) * PixelSize));
+        Cache[21] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 2) * PixelSize));
+        Cache[22] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 2) * PixelSize));
+        Cache[23] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 2) * PixelSize));
 
         // Initialize variables
         float3 A = 0.0;
@@ -186,7 +186,7 @@
 
         // Get center textures (this is for the spatial weighting)
         float3 T_C = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float3 I_C = CMotionEstimation_GetPlanesYUV(SampleI, WarpTex);
+        float3 I_C = CMotionEstimation_GetPlanes(SampleI, WarpTex);
 
         // Get center magnitudes
         float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
@@ -206,7 +206,7 @@
             bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
             float3 I = CenterFetch
                 ? I_C
-                : CMotionEstimation_GetPlanesYUV(SampleI, UV);
+                : CMotionEstimation_GetPlanes(SampleI, UV);
 
             // Calculate bilateral weighting
             float Weight = CenterFetch

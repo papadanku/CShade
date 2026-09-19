@@ -114,8 +114,6 @@ uniform float _TargetFrameRate <
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowBlur_3, PreviousFrameTex_FlowBlur_3, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowBlur_4, PreviousFrameTex_FlowBlur_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowBlur_5, PreviousFrameTex_FlowBlur_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
 #if !SHADER_USE_CSHARES_MOTION_VECTORS
@@ -277,7 +275,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     float4 Base = tex2D(CShade_SampleColorTex, Input.Tex0);
     float4 MotionVectorsTex = float4(Input.Tex0.xy, 0.0, 0.0);
-    float2 MotionVectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex, MotionVectorsTex).xy);
+    float2 MotionVectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleSharedTex_RG16F_2_B, MotionVectorsTex).xy);
     float3 ShaderOutput = GetMotionBlur(Input, MotionVectors);
 
     switch (_DisplayMode)
