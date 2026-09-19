@@ -96,8 +96,6 @@
 
     float4 CBlur_DownsampleBox3x3(sampler2D Image, float2 Tex, float2 PixelSize)
     {
-        const float3 Weights = float3(4.0, 2.0, 1.0) / 16.0;
-
         float4 Samples[9];
         Samples[0] = tex2D(Image, Tex + (float2( 0.0,  0.0) * PixelSize));
         Samples[1] = tex2D(Image, Tex + (float2( 0.0, -1.0) * PixelSize));
@@ -110,17 +108,17 @@
         Samples[8] = tex2D(Image, Tex + (float2( 1.0,  1.0) * PixelSize));
 
         float4 Output = 0.0;
-        Output += (Samples[0] * Weights[0]);
-        Output += (Samples[1] * Weights[1]);
-        Output += (Samples[2] * Weights[1]);
-        Output += (Samples[3] * Weights[1]);
-        Output += (Samples[4] * Weights[1]);
-        Output += (Samples[5] * Weights[2]);
-        Output += (Samples[6] * Weights[2]);
-        Output += (Samples[7] * Weights[2]);
-        Output += (Samples[8] * Weights[2]);
+        Output += Samples[0];
+        Output += Samples[1];
+        Output += Samples[2];
+        Output += Samples[3];
+        Output += Samples[4];
+        Output += Samples[5];
+        Output += Samples[6];
+        Output += Samples[7];
+        Output += Samples[8];
 
-        return Output;
+        return Output / 9.0;
     }
 
     float4 CBlur_DownsampleDualKawase(sampler2D Image, float2 Tex)
