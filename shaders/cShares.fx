@@ -64,7 +64,7 @@
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+        float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
         Output.rgb = sqrt(Color.rgb);
         Output.a = 1.0;
     }
@@ -151,25 +151,25 @@
 
     void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        Output = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
+        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_4, Input.Tex0);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, float4(Input.Tex0, 0.0, 0.0));
     }
 
 #endif

@@ -48,15 +48,15 @@
 
         // Sample and weight center first to get even number sides
         float TotalWeight = Weights[0];
-        OutputColor = tex2D(SampleSource, Tex + (Offsets[0] * PSize.xy)) * Weights[0];
+        OutputColor = tex2Dlod(SampleSource, float4(Tex + (Offsets[0] * PSize.xy), 0.0, 0.0)) * Weights[0];
 
         // Sample neighboring pixels
         for (int i = 1; i < KernelSize; i++)
         {
             const float4 Offset = (Horizontal) ? Offsets[i] * HShift: Offsets[i] * VShift;
             float4 Tex = Tex.xyxy + (Offset * PSize);
-            OutputColor += tex2D(SampleSource, Tex.xy) * Weights[i];
-            OutputColor += tex2D(SampleSource, Tex.zw) * Weights[i];
+            OutputColor += tex2Dlod(SampleSource, float4(Tex.xy, 0.0, 0.0)) * Weights[i];
+            OutputColor += tex2Dlod(SampleSource, float4(Tex.zw, 0.0, 0.0)) * Weights[i];
             TotalWeight += (Weights[i] * 2.0);
         }
 
@@ -97,15 +97,15 @@
     float4 CBlur_DownsampleBox3x3(sampler2D Image, float2 Tex, float2 PixelSize)
     {
         float4 Samples[9];
-        Samples[0] = tex2D(Image, Tex + (float2( 0.0,  0.0) * PixelSize));
-        Samples[1] = tex2D(Image, Tex + (float2( 0.0, -1.0) * PixelSize));
-        Samples[2] = tex2D(Image, Tex + (float2(-1.0,  0.0) * PixelSize));
-        Samples[3] = tex2D(Image, Tex + (float2( 1.0,  0.0) * PixelSize));
-        Samples[4] = tex2D(Image, Tex + (float2( 0.0,  1.0) * PixelSize));
-        Samples[5] = tex2D(Image, Tex + (float2(-1.0, -1.0) * PixelSize));
-        Samples[6] = tex2D(Image, Tex + (float2( 1.0, -1.0) * PixelSize));
-        Samples[7] = tex2D(Image, Tex + (float2(-1.0,  1.0) * PixelSize));
-        Samples[8] = tex2D(Image, Tex + (float2( 1.0,  1.0) * PixelSize));
+        Samples[0] = tex2Dlod(Image, float4(Tex + (float2( 0.0,  0.0) * PixelSize), 0.0, 0.0));
+        Samples[1] = tex2Dlod(Image, float4(Tex + (float2( 0.0, -1.0) * PixelSize), 0.0, 0.0));
+        Samples[2] = tex2Dlod(Image, float4(Tex + (float2(-1.0,  0.0) * PixelSize), 0.0, 0.0));
+        Samples[3] = tex2Dlod(Image, float4(Tex + (float2( 1.0,  0.0) * PixelSize), 0.0, 0.0));
+        Samples[4] = tex2Dlod(Image, float4(Tex + (float2( 0.0,  1.0) * PixelSize), 0.0, 0.0));
+        Samples[5] = tex2Dlod(Image, float4(Tex + (float2(-1.0, -1.0) * PixelSize), 0.0, 0.0));
+        Samples[6] = tex2Dlod(Image, float4(Tex + (float2( 1.0, -1.0) * PixelSize), 0.0, 0.0));
+        Samples[7] = tex2Dlod(Image, float4(Tex + (float2(-1.0,  1.0) * PixelSize), 0.0, 0.0));
+        Samples[8] = tex2Dlod(Image, float4(Tex + (float2( 1.0,  1.0) * PixelSize), 0.0, 0.0));
 
         float4 Output = 0.0;
         Output += Samples[0];
@@ -129,11 +129,11 @@
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
 
         float2 Weights = float2(1.0, 4.0) / 8.0;
-        OutputColor += (tex2D(Image, Tex) * Weights[1]);
-        OutputColor += (tex2D(Image, Tex0.xw) * Weights[0]);
-        OutputColor += (tex2D(Image, Tex0.zw) * Weights[0]);
-        OutputColor += (tex2D(Image, Tex0.xy) * Weights[0]);
-        OutputColor += (tex2D(Image, Tex0.zy) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, float4(Tex, 0.0, 0.0)) * Weights[1]);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.xw, 0.0, 0.0)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.zw, 0.0, 0.0)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.xy, 0.0, 0.0)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.zy, 0.0, 0.0)) * Weights[0]);
 
         return OutputColor;
     }
@@ -147,10 +147,10 @@
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
 
         float Weight = 1.0 / 4.0;
-        OutputColor += (tex2D(Image, Tex0.xw) * Weight);
-        OutputColor += (tex2D(Image, Tex0.zw) * Weight);
-        OutputColor += (tex2D(Image, Tex0.xy) * Weight);
-        OutputColor += (tex2D(Image, Tex0.zy) * Weight);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.xw, 0.0, 0.0)) * Weight);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.zw, 0.0, 0.0)) * Weight);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.xy, 0.0, 0.0)) * Weight);
+        OutputColor += (tex2Dlod(Image, float4(Tex0.zy, 0.0, 0.0)) * Weight);
 
         return OutputColor;
     }
@@ -166,17 +166,17 @@
         float4 Tex1 = Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
 
-        float4 A0 = tex2D(SampleSource, Tex0.xy);
-        float4 A1 = tex2D(SampleSource, Tex0.xz);
-        float4 A2 = tex2D(SampleSource, Tex0.xw);
+        float4 A0 = tex2Dlod(SampleSource, float4(Tex0.xy, 0.0, 0.0));
+        float4 A1 = tex2Dlod(SampleSource, float4(Tex0.xz, 0.0, 0.0));
+        float4 A2 = tex2Dlod(SampleSource, float4(Tex0.xw, 0.0, 0.0));
 
-        float4 B0 = tex2D(SampleSource, Tex1.xy);
-        float4 B1 = tex2D(SampleSource, Tex1.xz);
-        float4 B2 = tex2D(SampleSource, Tex1.xw);
+        float4 B0 = tex2Dlod(SampleSource, float4(Tex1.xy, 0.0, 0.0));
+        float4 B1 = tex2Dlod(SampleSource, float4(Tex1.xz, 0.0, 0.0));
+        float4 B2 = tex2Dlod(SampleSource, float4(Tex1.xw, 0.0, 0.0));
 
-        float4 C0 = tex2D(SampleSource, Tex2.xy);
-        float4 C1 = tex2D(SampleSource, Tex2.xz);
-        float4 C2 = tex2D(SampleSource, Tex2.xw);
+        float4 C0 = tex2Dlod(SampleSource, float4(Tex2.xy, 0.0, 0.0));
+        float4 C1 = tex2Dlod(SampleSource, float4(Tex2.xz, 0.0, 0.0));
+        float4 C2 = tex2Dlod(SampleSource, float4(Tex2.xw, 0.0, 0.0));
 
         float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
         float4 OutputColor = 0.0;
@@ -201,7 +201,7 @@
     CBlur_KarisSample GetKarisSample(sampler2D SamplerSource, float2 Tex)
     {
         CBlur_KarisSample Output;
-        Output.Color = tex2D(SamplerSource, Tex);
+        Output.Color = tex2Dlod(SamplerSource, float4(Tex, 0.0, 0.0));
         Output.Weight = CBlur_GetKarisWeight(Output.Color.rgb);
         return Output;
     }
@@ -270,22 +270,22 @@
         }
         else
         {
-            float4 A0 = tex2D(SampleSource, Tex1.xy);
-            float4 A1 = tex2D(SampleSource, Tex1.xz);
-            float4 A2 = tex2D(SampleSource, Tex1.xw);
+            float4 A0 = tex2Dlod(SampleSource, float4(Tex1.xy, 0.0, 0.0));
+            float4 A1 = tex2Dlod(SampleSource, float4(Tex1.xz, 0.0, 0.0));
+            float4 A2 = tex2Dlod(SampleSource, float4(Tex1.xw, 0.0, 0.0));
 
-            float4 B0 = tex2D(SampleSource, Tex2.xy);
-            float4 B1 = tex2D(SampleSource, Tex2.xz);
-            float4 B2 = tex2D(SampleSource, Tex2.xw);
+            float4 B0 = tex2Dlod(SampleSource, float4(Tex2.xy, 0.0, 0.0));
+            float4 B1 = tex2Dlod(SampleSource, float4(Tex2.xz, 0.0, 0.0));
+            float4 B2 = tex2Dlod(SampleSource, float4(Tex2.xw, 0.0, 0.0));
 
-            float4 C0 = tex2D(SampleSource, Tex3.xy);
-            float4 C1 = tex2D(SampleSource, Tex3.xz);
-            float4 C2 = tex2D(SampleSource, Tex3.xw);
+            float4 C0 = tex2Dlod(SampleSource, float4(Tex3.xy, 0.0, 0.0));
+            float4 C1 = tex2Dlod(SampleSource, float4(Tex3.xz, 0.0, 0.0));
+            float4 C2 = tex2Dlod(SampleSource, float4(Tex3.xw, 0.0, 0.0));
 
-            float4 D0 = tex2D(SampleSource, Tex0.xw);
-            float4 D1 = tex2D(SampleSource, Tex0.zw);
-            float4 D2 = tex2D(SampleSource, Tex0.xy);
-            float4 D3 = tex2D(SampleSource, Tex0.zy);
+            float4 D0 = tex2Dlod(SampleSource, float4(Tex0.xw, 0.0, 0.0));
+            float4 D1 = tex2Dlod(SampleSource, float4(Tex0.zw, 0.0, 0.0));
+            float4 D2 = tex2Dlod(SampleSource, float4(Tex0.xy, 0.0, 0.0));
+            float4 D3 = tex2Dlod(SampleSource, float4(Tex0.zy, 0.0, 0.0));
 
             float4 GroupA = A0 + B0 + A1 + B1;
             float4 GroupB = B0 + C0 + B1 + C1;

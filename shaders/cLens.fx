@@ -52,11 +52,11 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         CLens_ChromaticAberrationTex ChromaticAberrationTex = CLens_GetChromaticAberrationTex(Input.Tex0, 0.5, RGMag.r, RGMag.g);
 
         float3 Color = 1.0;
-        Color.r = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Red).r;
-        Color.g = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Green).g;
-        Color.b = tex2D(CShade_SampleColorTex, ChromaticAberrationTex.Blue).b;
+        Color.r = tex2Dlod(CShade_SampleColorTex, float4(ChromaticAberrationTex.Red, 0.0, 0.0)).r;
+        Color.g = tex2Dlod(CShade_SampleColorTex, float4(ChromaticAberrationTex.Green, 0.0, 0.0)).g;
+        Color.b = tex2Dlod(CShade_SampleColorTex, float4(ChromaticAberrationTex.Blue, 0.0, 0.0)).b;
     #else
-        float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+        float3 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
     #endif
 
     // RENDER

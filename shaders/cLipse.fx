@@ -22,7 +22,7 @@
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     // Get backbuffer
-    float3 Color = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
 
     // RENDER
     #if defined(CSHADE_BLENDING)

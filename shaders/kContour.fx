@@ -157,7 +157,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     // Initialize variables for Output
-    float4 Base = tex2D(CShade_SampleColorTex, EdgeTex);
+    float4 Base = tex2Dlod(CShade_SampleColorTex, float4(EdgeTex, 0.0, 0.0));
     float4 OutputColor = Base;
 
     switch (_DisplayMode)

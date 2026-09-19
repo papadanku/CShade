@@ -29,7 +29,7 @@ CSHADE_CREATE_SAMPLER(SampleExposureTex, ExposureTex, LINEAR, LINEAR, LINEAR, CL
 void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 Tex = (_CCamera_MeteringType == 1) ? CCamera_GetSpotMeterTex(Input.Tex0) : Input.Tex0;
-    float3 Color = tex2D(CShade_SampleColorTex, Tex).rgb;
+    float3 Color = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0)).rgb;
     float LogLuminance = CCamera_GetLogLuminance(Color);
     Output = CCamera_CreateExposureTex(LogLuminance);
     Output = CMath_GetOutOfBounds(Input.Tex0) ? 0.0 : Output;
@@ -37,7 +37,7 @@ void PS_GetExposure(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float3 BaseColor = tex2D(CShade_SampleColorTex, Input.Tex0).rgb;
+    float3 BaseColor = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0)).rgb;
     float3 NonExposedColor = BaseColor;
 
     // Apply auto exposure to base-color

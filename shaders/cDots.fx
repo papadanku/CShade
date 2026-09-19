@@ -244,7 +244,7 @@ float GetCircleLength(Tile Input)
 
 void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2D(CShade_SampleColorTex, Input.Tex0);
+    Output = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
 
     #if !SHADER_RGB_VERSION
         switch(_Select)

@@ -81,7 +81,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 
     // Reflection at the border of the screen.
     MirrorTex = max(min(MirrorTex, 2.0 - MirrorTex), -MirrorTex);
-    float4 Base = tex2D(CShade_SampleColorTex, MirrorTex);
+    float4 Base = tex2Dlod(CShade_SampleColorTex, float4(MirrorTex, 0.0, 0.0));
 
     // RENDER
     #if defined(CSHADE_BLENDING)

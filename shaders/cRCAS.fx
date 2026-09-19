@@ -104,11 +104,11 @@ void FFX_RCAS(
     TexArray[1] = Tex.xyxy + (Delta.xyxy * float4(0.0, -1.0, 0.0, 1.0));
 
     float4 Sample[5];
-    Sample[0] = tex2D(CShade_SampleColorTex, Tex);
-    Sample[1] = tex2D(CShade_SampleColorTex, TexArray[0].xy);
-    Sample[2] = tex2D(CShade_SampleColorTex, TexArray[0].zw);
-    Sample[3] = tex2D(CShade_SampleColorTex, TexArray[1].xy);
-    Sample[4] = tex2D(CShade_SampleColorTex, TexArray[1].zw);
+    Sample[0] = tex2Dlod(CShade_SampleColorTex, float4(Tex, 0.0, 0.0));
+    Sample[1] = tex2Dlod(CShade_SampleColorTex, float4(TexArray[0].xy, 0.0, 0.0));
+    Sample[2] = tex2Dlod(CShade_SampleColorTex, float4(TexArray[0].zw, 0.0, 0.0));
+    Sample[3] = tex2Dlod(CShade_SampleColorTex, float4(TexArray[1].xy, 0.0, 0.0));
+    Sample[4] = tex2Dlod(CShade_SampleColorTex, float4(TexArray[1].zw, 0.0, 0.0));
 
     // Luma times 2.
     float Luma[5];

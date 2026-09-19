@@ -33,7 +33,7 @@
                 float2 Shift = float2(x, y) * DilateScale;
                 float2 FetchTex = Tex + (Shift * PixelSize);
 
-                Sum += tex2D(SampleSource, FetchTex).xy;
+                Sum += tex2Dlod(SampleSource, float4(FetchTex, 0.0, 0.0)).xy;
                 Weight += 1.0;
             }
         }

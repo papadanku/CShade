@@ -66,7 +66,7 @@ sampler2D SampleSharedTex0
 
 float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
 
     switch(_DetectionMode)
     {
@@ -110,7 +110,7 @@ float4 PS_Blit(CShade_VS2PS_Quad Input) : SV_TARGET0
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+    float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
     float4 Blocks = tex2Dlod(SampleSharedTex0, float4(Input.Tex0, 0.0, _Blockiness));
 
     // Initialize variables

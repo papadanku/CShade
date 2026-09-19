@@ -42,6 +42,15 @@
 
 /* Shader Options */
 
+uniform float _MipBias <
+    ui_text = "OPTICAL FLOW";
+    ui_label = "Optical Flow Mipmap Level";
+    ui_max = 3.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
+> = 0.0;
+
 #if !SHADER_VECTOR_STREAMING
     uniform int _DisplayMode <
         ui_text = "VECTOR SHADING";
@@ -162,7 +171,10 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_4, PreviousFrameTex_Flow_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_5, PreviousFrameTex_Flow_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex, SharedTex_RG16F_2_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, SharedTex_RG16F_2_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
 #if !SHADER_VECTOR_STREAMING
@@ -177,7 +189,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2D(CShade_SampleColorTex, Input.Tex0);
+        float4 Color = tex2Dlod(CShade_SampleColorTex, float4(Input.Tex0, 0.0, 0.0));
         Output.rgb = sqrt(Color.rgb);
         Output.a = 1.0;
     }
@@ -264,25 +276,54 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
     void PS_CopyCoarse(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        Output = tex2D(SampleSharedTex_RGB10A2_5, Input.Tex0);
+        Output = tex2Dlod(SampleSharedTex_RGB10A2_5, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample3_Copy3(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_5_A, SampleSharedTex_RG16F_4_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_4, Input.Tex0);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_4, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample2_Copy2(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_4_B, SampleSharedTex_RG16F_3_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_3, Input.Tex0);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_3, float4(Input.Tex0, 0.0, 0.0));
     }
 
     void PS_Upsample1_Copy1(CShade_VS2PS_Quad Input, out float2 Output0 : SV_TARGET0, out float4 Output1 : SV_TARGET1)
     {
         Output0 = CBlur_GetSideWindowBilateralUpsample_FLT2(SampleSharedTex_RG16F_3_B, SampleSharedTex_RG16F_2_A, Input.Tex0);
-        Output1 = tex2D(SampleSharedTex_RGB10A2_2, Input.Tex0.xy);
+        Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, float4(Input.Tex0, 0.0, 0.0));
+    }
+
+    float2 GetMotionVector(float4 Tex)
+    {
+        float2 MipLevels[4];
+        MipLevels[0] = tex2Dlod(SampleMotionVectorTex_2, Tex).xy;
+        MipLevels[1] = tex2Dlod(SampleMotionVectorTex_3, Tex).xy;
+        MipLevels[2] = tex2Dlod(SampleMotionVectorTex_4, Tex).xy;
+        MipLevels[3] = tex2Dlod(SampleMotionVectorTex_5, Tex).xy; // Fixed array index (0-3)
+
+        // Expand the clamp range to cover 4 levels (0.0 -> 3.0)
+        float Bias = clamp(_MipBias, 0.0, 3.0);
+
+        [flatten]
+        if (Bias <= 1.0)
+        {
+            // Smoothly lerp between Level 0 and Level 1 (bias: 0.0 -> 1.0)
+            return lerp(MipLevels[0], MipLevels[1], Bias);
+        }
+        else if (Bias <= 2.0)
+        {
+            // Smoothly lerp between Level 1 and Level 2 (bias: 1.0 -> 2.0)
+            return lerp(MipLevels[1], MipLevels[2], Bias - 1.0);
+        }
+        else
+        {
+            // Smoothly lerp between Level 2 and Level 3 (bias: 2.0 -> 3.0)
+            return lerp(MipLevels[2], MipLevels[3], Bias - 2.0);
+        }
     }
 
 #endif
@@ -325,7 +366,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
         // Apply velocity to CellOffset.
         float4 VelocityTex = float4(VtxBasePos / GridSize, 0.0, 0.0);
-        float2 Velocity = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex, VelocityTex).xy);
+        float2 Velocity = CMath_FP16toSNORM_FLT2(GetMotionVector(VelocityTex).xy);
 
         /*
             Create our vertex offsets to make a triangle:
@@ -458,7 +499,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex, float4(Input.Tex0.xy, 0.0, 0.0)).xy);
+        float2 Vectors = CMath_FP16toSNORM_FLT2(GetMotionVector(float4(Input.Tex0.xy, 0.0, 0.0)).xy);
 
         // Encode vectors
         float3 VectorColors = normalize(float3(Vectors, 1e-3));
@@ -477,8 +518,8 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
         for (float i = 1.0; i < 4.0; i += 0.5)
         {
             float2 Offset = Vectors * i;
-            LIC += tex2D(SampleNoiseTex, Input.Tex0 + Offset).r;
-            LIC += tex2D(SampleNoiseTex, Input.Tex0 - Offset).r;
+            LIC += tex2Dlod(SampleNoiseTex, float4(Input.Tex0 + Offset, 0.0, 0.0)).r;
+            LIC += tex2Dlod(SampleNoiseTex, float4(Input.Tex0 - Offset, 0.0, 0.0)).r;
             WeightSum += 2.0;
         }
 
