@@ -43,6 +43,25 @@ uniform float _BloomIntensity <
     ui_tooltip = "Adjusts the overall strength or brightness of the bloom effect.";
 > = 0.5;
 
+#define TEMPLATE_OPTION_LEVEL(INDEX, LABEL) \
+    uniform float _LevelWeight##INDEX < \
+        ui_category = "Pyramid Level Weights"; \
+        ui_label = LABEL; \
+        ui_max = 1.0; \
+        ui_min = 0.0; \
+        ui_step = 0.001; \
+        ui_type = "slider"; \
+    > = 1.0;
+
+TEMPLATE_OPTION_LEVEL(1, "Level 1 (Fine)")
+TEMPLATE_OPTION_LEVEL(2, "Level 2")
+TEMPLATE_OPTION_LEVEL(3, "Level 3")
+TEMPLATE_OPTION_LEVEL(4, "Level 4")
+TEMPLATE_OPTION_LEVEL(5, "Level 5")
+TEMPLATE_OPTION_LEVEL(6, "Level 6")
+TEMPLATE_OPTION_LEVEL(7, "Level 7")
+TEMPLATE_OPTION_LEVEL(8, "Level 8 (Coarse)")
+
 #ifndef CSHADE_APPLY_AUTO_EXPOSURE
     #define CSHADE_APPLY_AUTO_EXPOSURE 1
 #endif
@@ -154,20 +173,26 @@ TEMPLATE_PS_DOWNSCALE(PS_Downscale6, SampleSharedTex5, false)
 TEMPLATE_PS_DOWNSCALE(PS_Downscale7, SampleSharedTex6, false)
 TEMPLATE_PS_DOWNSCALE(PS_Downscale8, SampleSharedTex7, false)
 
-#define TEMPLATE_PS_UPSCALE(METHOD_NAME, SAMPLER) \
+#define TEMPLATE_PS_UPSCALE(METHOD_NAME, SAMPLER, LEVEL_WEIGHT) \
     void METHOD_NAME(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0) \
     { \
         Output.rgb = CBlur_UpsampleTent(SAMPLER, Input.Tex0).rgb; \
-        Output.a = 1.0; \
+        Output.a = LEVEL_WEIGHT; \
     }
 
-TEMPLATE_PS_UPSCALE(PS_Upscale7, SampleSharedTex8)
-TEMPLATE_PS_UPSCALE(PS_Upscale6, SampleSharedTex7)
-TEMPLATE_PS_UPSCALE(PS_Upscale5, SampleSharedTex6)
-TEMPLATE_PS_UPSCALE(PS_Upscale4, SampleSharedTex5)
-TEMPLATE_PS_UPSCALE(PS_Upscale3, SampleSharedTex4)
-TEMPLATE_PS_UPSCALE(PS_Upscale2, SampleSharedTex3)
-TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleSharedTex2)
+void PS_Upscale7(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
+{
+    Output.rgb = CBlur_UpsampleTent(SampleSharedTex8, Input.Tex0).rgb;
+    Output.rgb *= _LevelWeight8;
+    Output.a = _LevelWeight7;
+}
+
+TEMPLATE_PS_UPSCALE(PS_Upscale6, SampleSharedTex7, _LevelWeight6)
+TEMPLATE_PS_UPSCALE(PS_Upscale5, SampleSharedTex6, _LevelWeight5)
+TEMPLATE_PS_UPSCALE(PS_Upscale4, SampleSharedTex5, _LevelWeight4)
+TEMPLATE_PS_UPSCALE(PS_Upscale3, SampleSharedTex4, _LevelWeight3)
+TEMPLATE_PS_UPSCALE(PS_Upscale2, SampleSharedTex3, _LevelWeight2)
+TEMPLATE_PS_UPSCALE(PS_Upscale1, SampleSharedTex2, _LevelWeight1)
 
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
@@ -208,7 +233,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         BlendEnable = IS_ADDITIVE; \
         BlendOp = ADD; \
         SrcBlend = ONE; \
-        DestBlend = ONE; \
+        DestBlend = SRCALPHA; \
         VertexShader = VERTEX_SHADER; \
         PixelShader = PIXEL_SHADER; \
         RenderTarget0 = RENDER_TARGET; \
