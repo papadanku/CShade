@@ -10,12 +10,12 @@
 
 /* Preprocessor Definitions */
 
-#ifndef SHADER_USE_CSHARES_MOTION_VECTORS
-    #define SHADER_USE_CSHARES_MOTION_VECTORS 0
+#ifndef IMPORT_CSHARES_MOTION_VECTORS
+    #define IMPORT_CSHARES_MOTION_VECTORS 0
 #endif
 
-#ifndef SHADER_OPTICAL_FLOW_SAMPLING
-    #define SHADER_OPTICAL_FLOW_SAMPLING POINT
+#ifndef SHADER_MOTION_VECTORS_SAMPLING
+    #define SHADER_MOTION_VECTORS_SAMPLING POINT
 #endif
 
 #ifndef SHADER_VECTOR_STREAMING
@@ -50,16 +50,6 @@ uniform float _MipBias <
     ui_type = "slider";
     ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
 > = 0.0;
-
-#if !SHADER_VECTOR_STREAMING
-    uniform int _DisplayMode <
-        ui_text = "VECTOR SHADING";
-        ui_label = "Display Mode";
-        ui_type = "combo";
-        ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
-        ui_tooltip = "Selects the visual output mode for optical flow.";
-    > = 0;
-#endif
 
 #if SHADER_VECTOR_STREAMING
     uniform int _DisplayMode <
@@ -101,9 +91,18 @@ uniform float _MipBias <
         ui_type = "slider";
         ui_tooltip = "Controls the smoothing of the vector mask edges.";
     > = 0.5;
+#else
+    uniform int _DisplayMode <
+        ui_text = "VECTOR SHADING";
+        ui_label = "Display Mode";
+        ui_type = "combo";
+        ui_items = "Shading / Normalized\0Shading / Renormalized\0Line Integral Convolution\0Line Integral Convolution / Colored\0";
+        ui_tooltip = "Selects the visual output mode for optical flow.";
+    > = 0;
 #endif
 
 #if SHADER_VECTOR_STREAMING
+    #undef CBLEND_APPLY_PRESET
     #define CBLEND_APPLY_PRESET 1
     #define CSHADE_APPLY_AUTO_EXPOSURE 0
     #define CSHADE_APPLY_ABBERATION 0
@@ -126,10 +125,16 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 /* Textures & Samplers */
 
-#if SHADER_USE_CSHARES_MOTION_VECTORS
+#if IMPORT_CSHARES_MOTION_VECTORS
     CSHADE_CREATE_TEXTURE(CShade_Mainframe_MotionVectors, CSHADE_BUFFER_SIZE_2, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_B, CSHADE_BUFFER_SIZE_3, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_B, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_5_A, CSHADE_BUFFER_SIZE_5, RG16F, 1)
 
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex, CShade_Mainframe_MotionVectors, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, CShade_Mainframe_MotionVectors, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 #else
     CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_1, CSHADE_BUFFER_SIZE_1, RGB10A2, 1)
     CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
@@ -171,10 +176,10 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_4, PreviousFrameTex_Flow_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_Flow_5, PreviousFrameTex_Flow_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, SharedTex_RG16F_2_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_OPTICAL_FLOW_SAMPLING, SHADER_OPTICAL_FLOW_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, SharedTex_RG16F_2_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_MOTION_VECTORS_SAMPLING, SHADER_MOTION_VECTORS_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
 #if !SHADER_VECTOR_STREAMING
@@ -183,7 +188,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     CSHADE_CREATE_SAMPLER(SampleNoiseTex, NoiseTex, LINEAR, LINEAR, LINEAR, MIRROR, MIRROR, MIRROR)
 #endif
 
-#if !SHADER_USE_CSHARES_MOTION_VECTORS
+#if !IMPORT_CSHARES_MOTION_VECTORS
 
     /* Pixel Shaders: Pyramid */
 
@@ -297,38 +302,38 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
         Output1 = tex2Dlod(SampleSharedTex_RGB10A2_2, CShade_PadFloat2(Input.Tex0));
     }
 
-    float2 GetMotionVector(float4 Tex)
-    {
-        float2 MipLevels[4];
-        MipLevels[0] = tex2Dlod(SampleMotionVectorTex_2, Tex).xy;
-        MipLevels[1] = tex2Dlod(SampleMotionVectorTex_3, Tex).xy;
-        MipLevels[2] = tex2Dlod(SampleMotionVectorTex_4, Tex).xy;
-        MipLevels[3] = tex2Dlod(SampleMotionVectorTex_5, Tex).xy; // Fixed array index (0-3)
-
-        // Expand the clamp range to cover 4 levels (0.0 -> 3.0)
-        float Bias = clamp(_MipBias, 0.0, 3.0);
-
-        [flatten]
-        if (Bias <= 1.0)
-        {
-            // Smoothly lerp between Level 0 and Level 1 (bias: 0.0 -> 1.0)
-            return lerp(MipLevels[0], MipLevels[1], Bias);
-        }
-        else if (Bias <= 2.0)
-        {
-            // Smoothly lerp between Level 1 and Level 2 (bias: 1.0 -> 2.0)
-            return lerp(MipLevels[1], MipLevels[2], Bias - 1.0);
-        }
-        else
-        {
-            // Smoothly lerp between Level 2 and Level 3 (bias: 2.0 -> 3.0)
-            return lerp(MipLevels[2], MipLevels[3], Bias - 2.0);
-        }
-    }
-
 #endif
 
 /* Pixel Shaders: Output */
+
+float2 GetMotionVectors(float4 Tex)
+{
+    float2 MipLevels[4];
+    MipLevels[0] = tex2Dlod(SampleMotionVectorTex_2, Tex).xy;
+    MipLevels[1] = tex2Dlod(SampleMotionVectorTex_3, Tex).xy;
+    MipLevels[2] = tex2Dlod(SampleMotionVectorTex_4, Tex).xy;
+    MipLevels[3] = tex2Dlod(SampleMotionVectorTex_5, Tex).xy;
+
+    // Expand the clamp range to cover 4 levels (0.0 -> 3.0)
+    float Bias = clamp(_MipBias, 0.0, 3.0);
+
+    [flatten]
+    if (Bias <= 1.0)
+    {
+        // Smoothly lerp between Level 0 and Level 1 (bias: 0.0 -> 1.0)
+        return lerp(MipLevels[0], MipLevels[1], Bias);
+    }
+    else if (Bias <= 2.0)
+    {
+        // Smoothly lerp between Level 1 and Level 2 (bias: 1.0 -> 2.0)
+        return lerp(MipLevels[1], MipLevels[2], Bias - 1.0);
+    }
+    else
+    {
+        // Smoothly lerp between Level 2 and Level 3 (bias: 2.0 -> 3.0)
+        return lerp(MipLevels[2], MipLevels[3], Bias - 2.0);
+    }
+}
 
 #if SHADER_VECTOR_STREAMING
     struct VS2PS_Cell
@@ -366,7 +371,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
         // Apply velocity to CellOffset.
         float4 VelocityTex = CShade_PadFloat2(VtxBasePos / GridSize);
-        float2 Velocity = CMath_FP16toSNORM_FLT2(GetMotionVector(VelocityTex).xy);
+        float2 Velocity = CMath_FP16toSNORM_FLT2(GetMotionVectors(VelocityTex).xy);
 
         /*
             Create our vertex offsets to make a triangle:
@@ -499,7 +504,7 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
     void PS_VectorShading(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMath_FP16toSNORM_FLT2(GetMotionVector(CShade_PadFloat2(Input.Tex0.xy)).xy);
+        float2 Vectors = CMath_FP16toSNORM_FLT2(GetMotionVectors(CShade_PadFloat2(Input.Tex0.xy)).xy);
 
         // Encode vectors
         float3 VectorColors = normalize(float3(Vectors, 1e-3));
@@ -598,7 +603,7 @@ void PS_GenerateNoise(CShade_VS2PS_Quad Input, out float Output : SV_TARGET0)
     }
 #endif
 
-#if SHADER_USE_CSHARES_MOTION_VECTORS
+#if IMPORT_CSHARES_MOTION_VECTORS
     #define SHADER_UI_LABEL_EXT1 " & CShares"
 #else
     #define SHADER_UI_LABEL_EXT1 ""
@@ -618,7 +623,7 @@ technique CShade_Flow
     ui_tooltip = "Lucas-Kanade optical flow.";
 >
 {
-    #if !SHADER_USE_CSHARES_MOTION_VECTORS
+    #if !IMPORT_CSHARES_MOTION_VECTORS
         // Prepare
         TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex_RGB10A2_1)
 

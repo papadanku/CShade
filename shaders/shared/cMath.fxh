@@ -412,6 +412,15 @@
         return CoV_InverseSq;
     }
 
+    float CMath_GetCoefficientVariation_VV(float2 Trace, float2 Mean)
+    {
+        float N = Trace.x + Trace.y;
+        float D = dot(Mean, Mean);
+        float VV = (abs(N) > 0.0) ? rsqrt(D / N) : 0.0;
+
+        return VV;
+    }
+
     /*
         VECTOR SIMILARITY METRIC (Magnitude-Weighted Cosine Similarity)
         ---------------------------------------------------------------

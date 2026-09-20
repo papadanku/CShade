@@ -37,8 +37,8 @@
 
 /* Shader Options */
 
-#ifndef SHADER_USE_CSHARES_MOTION_VECTORS
-    #define SHADER_USE_CSHARES_MOTION_VECTORS 0
+#ifndef IMPORT_CSHARES_MOTION_VECTORS
+    #define IMPORT_CSHARES_MOTION_VECTORS 0
 #endif
 
 #ifndef SHADER_DISPLACEMENT_SAMPLING
@@ -50,6 +50,15 @@
 #endif
 
 uniform float _Time < source = "timer"; ui_tooltip = "The shader's internal timer, used for time-based effects."; > ;
+
+uniform float _MipBias <
+    ui_text = "OPTICAL FLOW";
+    ui_label = "Optical Flow Mipmap Level";
+    ui_max = 3.0;
+    ui_min = 0.0;
+    ui_type = "slider";
+    ui_tooltip = "Adjusts the mipmap level used for sampling the optical flow map, affecting the detail and smoothness of the flow vectors.";
+> = 0.0;
 
 uniform int _BlockSize <
     ui_category = "Datamosh";
@@ -110,11 +119,17 @@ CSHADE_UI_PREPROCESSOR_GUIDE(
 
 CSHADE_CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
-#if SHADER_USE_CSHARES_MOTION_VECTORS
+#if IMPORT_CSHARES_MOTION_VECTORS
     CSHADE_CREATE_TEXTURE(CShade_Mainframe_MotionVectors, CSHADE_BUFFER_SIZE_2, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_3_B, CSHADE_BUFFER_SIZE_3, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_4_B, CSHADE_BUFFER_SIZE_4, RG16F, 1)
+    CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RG16F_5_A, CSHADE_BUFFER_SIZE_5, RG16F, 1)
 
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, CShade_Mainframe_MotionVectors, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, CShade_Mainframe_MotionVectors, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_Accumulation, CShade_Mainframe_MotionVectors, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, CShade_Mainframe_MotionVectors, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 #else
     CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_1, CSHADE_BUFFER_SIZE_1, RGB10A2, 1)
     CSHADE_CREATE_TEXTURE_POOLED(SharedTex_RGB10A2_2, CSHADE_BUFFER_SIZE_2, RGB10A2, 1)
@@ -156,16 +171,21 @@ CSHADE_CREATE_SRGB_SAMPLER(SampleSourceTex, CShade_ColorTex, SHADER_WARP_SAMPLIN
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_4, PreviousFrameTex_FlowMosh_4, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
     CSHADE_CREATE_SAMPLER(SamplePreviousFrameTex_FlowMosh_5, PreviousFrameTex_FlowMosh_5, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
 
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex1, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
-    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex2, SharedTex_RG16F_2_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_Accumulation, SharedTex_RG16F_2_B, LINEAR, LINEAR, LINEAR, CLAMP, CLAMP, CLAMP)
+
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_2, SharedTex_RG16F_2_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_3, SharedTex_RG16F_3_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_4, SharedTex_RG16F_4_B, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
+    CSHADE_CREATE_SAMPLER(SampleMotionVectorTex_5, SharedTex_RG16F_5_A, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 #endif
 
 CSHADE_CREATE_TEXTURE(AccumulationTex_Datamosh, CSHADE_BUFFER_SIZE_0, R16F, 1)
 CSHADE_CREATE_TEXTURE(FeedbackTex_Datamosh, CSHADE_BUFFER_SIZE_0, RGBA8, 1)
+
 CSHADE_CREATE_SAMPLER(SampleAccumulationTex, AccumulationTex_Datamosh, SHADER_DISPLACEMENT_SAMPLING, SHADER_DISPLACEMENT_SAMPLING, LINEAR, CLAMP, CLAMP, CLAMP)
 CSHADE_CREATE_SRGB_SAMPLER(SampleFeedbackTex, FeedbackTex_Datamosh, SHADER_WARP_SAMPLING, SHADER_WARP_SAMPLING, LINEAR, MIRROR, MIRROR, MIRROR)
 
-#if !SHADER_USE_CSHARES_MOTION_VECTORS
+#if !IMPORT_CSHARES_MOTION_VECTORS
 
     /* Pixel Shaders: Pyramid */
 
@@ -328,7 +348,7 @@ void PS_Accumulate(CShade_VS2PS_Quad Input, out float4 Accumulation : SV_TARGET0
 
     // Motion vectors
     float4 MVTex = CShade_PadFloat2(Input.Tex0);
-    float2 MV = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex1, MVTex).xy);
+    float2 MV = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex_Accumulation, MVTex).xy);
 
     // Get motion blocks
     MV = GetMVBlocks(MV, Input.Tex0, Random);
@@ -400,12 +420,41 @@ float4 GetDataMosh(float4 Base, float2 MV, float2 Pos, float2 Tex, float2 Delta)
     return lerp(Work, Base, CW);
 }
 
+float2 GetMotionVectors(float4 Tex)
+{
+    float2 MipLevels[4];
+    MipLevels[0] = tex2Dlod(SampleMotionVectorTex_2, Tex).xy;
+    MipLevels[1] = tex2Dlod(SampleMotionVectorTex_3, Tex).xy;
+    MipLevels[2] = tex2Dlod(SampleMotionVectorTex_4, Tex).xy;
+    MipLevels[3] = tex2Dlod(SampleMotionVectorTex_5, Tex).xy;
+
+    // Expand the clamp range to cover 4 levels (0.0 -> 3.0)
+    float Bias = clamp(_MipBias, 0.0, 3.0);
+
+    [flatten]
+    if (Bias <= 1.0)
+    {
+        // Smoothly lerp between Level 0 and Level 1 (bias: 0.0 -> 1.0)
+        return lerp(MipLevels[0], MipLevels[1], Bias);
+    }
+    else if (Bias <= 2.0)
+    {
+        // Smoothly lerp between Level 1 and Level 2 (bias: 1.0 -> 2.0)
+        return lerp(MipLevels[1], MipLevels[2], Bias - 1.0);
+    }
+    else
+    {
+        // Smoothly lerp between Level 2 and Level 3 (bias: 2.0 -> 3.0)
+        return lerp(MipLevels[2], MipLevels[3], Bias - 2.0);
+    }
+}
+
 void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
     float2 TexSize = fwidth(Input.Tex0);
     float4 Base = tex2Dlod(SampleSourceTex, CShade_PadFloat2(Input.Tex0));
     float4 MVTex = CShade_PadFloat2(Input.Tex0);
-    float2 MV = CMath_FP16toSNORM_FLT2(tex2Dlod(SampleMotionVectorTex2, MVTex).xy);
+    float2 MV = CMath_FP16toSNORM_FLT2(GetMotionVectors(MVTex).xy);
     float4 Datamosh = GetDataMosh(Base, MV, Input.HPos.xy, Input.Tex0, TexSize);
 
     // RENDER
@@ -439,7 +488,7 @@ void PS_CopyBackBuffer(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         RenderTarget1 = RENDER_TARGET_1; \
     }
 
-#if SHADER_USE_CSHARES_MOTION_VECTORS
+#if IMPORT_CSHARES_MOTION_VECTORS
     #define SHADER_UI_LABEL_EXT " & CShares"
 #else
     #define SHADER_UI_LABEL_EXT ""
@@ -453,7 +502,7 @@ technique CShade_KinoDatamosh
     ui_tooltip = "Keijiro Takahashi's image effect that simulates video compression artifacts.";
 >
 {
-    #if !SHADER_USE_CSHARES_MOTION_VECTORS
+    #if !IMPORT_CSHARES_MOTION_VECTORS
         // Prepare
         TEMPLATE_PASS(Pyramid, CShade_VS_Quad, PS_Pyramid, SharedTex_RGB10A2_1)
 
