@@ -606,7 +606,7 @@
         }
 
         // Compute variance
-        Block.Variance = CMath_GetCoefficientVariation_VV(Moments * Weight, BlockMean);
+        Block.Variance = CMath_GetCoefficientVariation_VV(BlockMean, Moments * Weight);
     }
 
     float2 CBlur_GetSideWindowBilateralUpsample_FLT2(

@@ -412,7 +412,7 @@
         return CoV_InverseSq;
     }
 
-    float CMath_GetCoefficientVariation_VV(float2 Trace, float2 Mean)
+    float CMath_GetCoefficientVariation_VV(float2 Mean, float2 Trace)
     {
         float N = Trace.x + Trace.y;
         float D = dot(Mean, Mean);
