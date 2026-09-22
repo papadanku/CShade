@@ -18,25 +18,49 @@ CShade features an adaptive-exposure shader that uses hardware blending for temp
 
 ### Image, Video, and Post Processing
 
-- **Image Processing**: CShade features shaders that deal with getting information about images.
+- **Image Processing**: CShade features shaders that extract information from images.
     - **Sharpening**: [FidelityFX Contrast Adaptive Sharpening (CAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_contrast-adaptive-sharpening/), [FidelityFX Robust Contrast Adaptive Sharpening (RCAS)](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_super-resolution-upscaler/#robust-contrast-adaptive-sharpening-rcas)
     - **Anti-Aliasing**: [Fast Approximate Anti-Aliasing (FXAA)](https://en.wikipedia.org/wiki/Fast_approximate_anti-aliasing), [Directionally Localized Anti-Aliasing (DLAA)](http://www.and.intercon.ru/releases/talks/dlaagdc2011/)
-    - **Color Conversions**: Chromaticity Spaces, Cylindrical Color Spaces, Polar Color Spaces, Grayscale
-    - **Convolutions**: Gaussian Blur, Edge Detection, Hierarchical (Joint) Bilateral Upsampling
-    - **Local Normalization**: Census Transform, Local Contrast Normalization
+    - **Color Conversions**: Chromaticity Spaces, Cylindrical Color Spaces, Polar Color Spaces, Grayscale.
+    - **Color Space Visualization**: Tools for analyzing chromaticity and luminance.
+    - **Convolutions**: Gaussian Blur, Edge Detection, Hierarchical (Joint) Bilateral Upsampling.
+    - **Geometric Transformations**: Advanced geometric and color transformations with overlay support.
+    - **Local Normalization**: Census Transform, Local Contrast Normalization.
+    - **Noise Blur**: Noise-based blur effect with configurable edge falloff and blur strength.
+    - **Quantization**: Artificial quantization for posterization and pixelation effects.
 - **Video Processing**: CShade features real-time motion shaders.
-    - Auto Exposure
-    - Hierarchal Lucas-Kanade Optical Flow
-    - Datamoshing
-    - Motion Blur
-    - Motion Stabilization
-    - Vector Lines
-- **Post Processing**: CShade features shaders that filter images for aesthetics.
-    - Backbuffer Blending
-    - Dual-Kawase Bloom
-    - Color Grading
-    - [FidelityFX Lens](https://gpuopen.com/manuals/fidelityfx_sdk/fidelityfx_sdk-page_techniques_lens/)
-    - Letterbox
+    - **Auto Exposure**: Automatically adjusts exposure based on scene brightness.
+    - **Hierarchical Lucas-Kanade Optical Flow**: Computes motion vectors for motion analysis.
+    - **Datamoshing**: Creates video artifacts by manipulating frame data.
+    - **Motion Blur**: Simulates camera motion blur using optical flow calculations.
+    - **Motion Stabilization**: Reduces camera shake by warping frames based on motion vectors.
+    - **Vector Lines**: Draws directional lines based on motion vectors.
+- **Post Processing**: CShade features shaders that filter images for aesthetics and visual enhancement.
+    - **Backbuffer Blending**: Blends the current frame with previous frames.
+    - **Dual-Kawase Bloom**: Simulates bloom effects through a downsampling and upsampling scheme.
+    - **Color Grading**: Adjusts color balance, saturation, and contrast.
+    - **FidelityFX Lens**: Adds lens effects like chromatic aberration and vignetting.
+    - **Letterbox**: Adds black bars to simulate widescreen aspect ratios.
+    - **Layering System**: Framework for layering and blending multiple shader effects.
+    - **Ghosting Effect**: Temporal blending for ghosting or motion blur effects.
+    - **Solid Color Output**: Utility for outputting solid colors with alpha blending.
+    - **Mirroring Effects**: Kaleidoscope and mirroring effects using polar coordinate transformations.
+
+### Reusable Utilities
+
+CShade includes `.fxh` header files with reusable algorithms and utilities:
+
+- **`cBlend.fxh`**: Macros for managing color and alpha blending operations in ReShade shaders, including blend state definitions.
+- **`cBlur.fxh`**: Blur-related functions, including Gaussian blur, downsampling, upsampling, and median filtering. Implements Joint Bilateral Upsampling for high-quality resampling.
+- **`cCamera.fxh`**: Camera-related utilities for auto-exposure and exposure peaking. Provides log luminance calculations, exposure data computation, and visualization overlays.
+- **`cColor.fxh`**: Color manipulation functions, including blend modes (Multiply, Screen, Overlay), color space conversions, and tonemapping operators.
+- **`cComposite.fxh`**: Color grading and tonemapping utilities, including exposure peaking, dithering, and channel swizzling. Applies various tonemapping operators (Reinhard, Reinhard Squared, AMD Resolve) and color grading effects.
+- **`cEdge.fxh`**: Advanced edge detection algorithms, including Sobel, Prewitt, Scharr, and Frei-Chen filters. Provides edge magnitude calculations and gradient-based edge detection for outlining and stylistic rendering.
+- **`cLens.fxh`**: Lens-related effects like film grain, chromatic aberration, and vignetting. Implements AMD's FidelityFX Lens algorithm for realistic lens distortions.
+- **`cMacros.fxh`**: Preprocessor macros for UI markers, buffer size calculations, and texture/sampler creation utilities. Ensures consistency in shader definitions.
+- **`cMath.fxh`**: Mathematical utilities, including vector operations, noise generation (gradient, golden ratio, interleaved), geometric transformations, and data conversion functions.
+- **`cMotion.fxh`**: Motion estimation functions, including Lucas-Kanade optical flow, sparse pyramid upsampling, and debug visualization tools for motion vectors.
+- **`cShade.fxh`**: Core utility and macro definitions for CShade. Provides macros for texture/sampler creation, preprocessor flags for enabling/disabling effects, and a standard vertex shader for full-screen quad rendering.
 
 ## Acknowledgments
 
