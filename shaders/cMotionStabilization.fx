@@ -350,7 +350,8 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float Luma = max(max(Image.r, Image.g), Image.b);
     float3 Chroma = (abs(Luma) > 0.0) ? Image.rgb / Luma: 1.0;
     float ScaleMask = lerp(Luma, distance(Chroma, float3(1.0, 1.0, 1.0)), _ScaleByImage);
-    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * ScaleMask * _ScaleByImageIntensity);
+    ScaleMask = (_ScaleByImage != 2) ? ScaleMask * _ScaleByImageIntensity : 1.0;
+    float4 ShaderOutput = GetMotionStabilization(Input, MotionVectors * ScaleMask);
 
     switch (_DisplayMode)
     {
