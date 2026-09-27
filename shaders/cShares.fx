@@ -9,6 +9,16 @@
     #define SHADER_TEMPORAL_BLENDING 1
 #endif
 
+#if SHADER_TEMPORAL_BLENDING
+    uniform float _BlendFactor <
+        ui_label = "Flow Temporal Smoothing";
+        ui_max = 0.9;
+        ui_min = 0.0;
+        ui_type = "slider";
+        ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
+    > = 0.0;
+#endif
+
 #define CSHADE_APPLY_VIGNETTE 0
 #define CSHADE_APPLY_GRAIN 0
 #define CSHADE_APPLY_DITHER 0
@@ -21,16 +31,6 @@
     #include "shared/cColor.fxh"
     #include "shared/cBlur.fxh"
     #include "shared/cMotion.fxh"
-#endif
-
-#if SHADER_TEMPORAL_BLENDING
-    uniform float _BlendFactor <
-        ui_label = "Flow Temporal Smoothing";
-        ui_max = 0.9;
-        ui_min = 0.0;
-        ui_type = "slider";
-        ui_tooltip = "Controls the temporal smoothing of the optical flow vectors, reducing flickering and making motion appear more fluid over time.";
-    > = 0.0;
 #endif
 
 #if CSHARES_EXPORT_MOTION_VECTORS

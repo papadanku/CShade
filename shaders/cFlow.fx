@@ -4,10 +4,6 @@
     This shader calculates and visualizes optical flow using the Lucas-Kanade method. It analyzes motion between consecutive frames to generate motion vectors. The shader then visualizes these vectors using various display modes, including normalized or renormalized shading, and different Line Integral Convolution (LIC) visualizations. It also applies temporal smoothing to reduce flickering and offers control over the mipmap level for optical flow sampling.
 */
 
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotion.fxh"
-
 /* Preprocessor Definitions */
 
 #ifndef IMPORT_CSHARES_MOTION_VECTORS
@@ -116,6 +112,10 @@ uniform float _MipBias <
         ui_tooltip = "Selects the visual output mode for optical flow.";
     > = 0;
 #endif
+
+#include "shared/cColor.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMotion.fxh"
 
 #if SHADER_VECTOR_STREAMING
     #undef CBLEND_APPLY_PRESET

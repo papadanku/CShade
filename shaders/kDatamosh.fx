@@ -31,10 +31,6 @@
     For more information, please refer to <http://unlicense.org/>
 */
 
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotion.fxh"
-
 /* Shader Options */
 
 #ifndef IMPORT_CSHARES_MOTION_VECTORS
@@ -120,6 +116,10 @@ uniform float _Diffusion <
     ui_type = "slider";
     ui_tooltip = "Controls the amount of random displacement applied to pixels, contributing to the glitch effect.";
 > = 2.0;
+
+#include "shared/cColor.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMotion.fxh"
 
 #define CSHADE_APPLY_AUTO_EXPOSURE 0
 #define CSHADE_APPLY_ABBERATION 0

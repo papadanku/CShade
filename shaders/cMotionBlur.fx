@@ -4,10 +4,6 @@
     This shader applies a motion blur effect to the image by utilizing optical flow information calculated through the Lucas-Kanade method. It detects movement between frames and blurs pixels along their motion paths, creating a sense of speed or dynamic action. The shader provides controls for temporal smoothing of motion vectors, frame rate scaling for blur intensity, and options for unidirectional or bidirectional blurring. It also includes debug display modes to visualize motion vectors.
 */
 
-#include "shared/cColor.fxh"
-#include "shared/cBlur.fxh"
-#include "shared/cMotion.fxh"
-
 /* Shader Options */
 
 #ifndef IMPORT_CSHARES_MOTION_VECTORS
@@ -87,6 +83,10 @@ uniform float _TargetFrameRate <
     ui_type = "slider";
     ui_tooltip = "Sets the target frame rate used for scaling the motion blur effect, especially when 'Enable Frame Rate Scaling' is active.";
 > = 60.0;
+
+#include "shared/cColor.fxh"
+#include "shared/cBlur.fxh"
+#include "shared/cMotion.fxh"
 
 #define CSHADE_APPLY_AUTO_EXPOSURE 0
 #define CSHADE_APPLY_ABBERATION 0
