@@ -444,12 +444,12 @@
 
         // Window (Local) information.
         int ArrayImageLength;
-        float2 ArrayImages[9];
         float2 ArrayGuides[9];
-        float ArrayDistances[9];
 
         // Guide Windows (Side Windows, but as Guides).
-        float2 ArrayGuideWindows[8];
+        float2 ArrayWindowGuides[8];
+        float2 ArrayWindowImages[8];
+        float ArrayWindowWeightSums[8];
     };
 
     struct CBlur_SideWindow_Bilateral
@@ -457,7 +457,6 @@
         int Masks[9];
 
         float2 Sum;
-        float SumWeight;
         float Variance;
     };
 
@@ -486,6 +485,8 @@
         */
 
         // Initialize counter here
+        float2 ArrayImages[ArrayImageLength];
+        float ArrayWeights[ArrayImageLength];
         int ImageIndex0 = 0;
 
         [unroll]
@@ -499,12 +500,8 @@
                 float4 Offset = CShade_PadFloat2(Tex + (Delta * PixelSize));
 
                 // Sampling.
-                float2 ImageSample = tex2Dlod(Image, Offset).xy;
                 float2 GuideSample = tex2Dlod(Guide, Offset).xy;
-
-                // This is for our Side Window calculation.
-                Output.ArrayImages[ImageIndex0] = ImageSample;
-                Output.ArrayGuides[ImageIndex0] = GuideSample;
+                float2 ImageSample = tex2Dlod(Image, Offset).xy;
 
                 // Create variables for our distance calculation.
                 float DotAB = dot(GuideSample, ImageSample);
@@ -512,9 +509,12 @@
                 float DotBB = dot(GuideSample, GuideSample);
 
                 // Compute the similarity
-                Output.ArrayDistances[ImageIndex0] = CMath_GetSimilarityJaccard_Fast(
-                    false, DotAB, DotAA, DotBB
-                );
+                float Similarity = CMath_GetSimilarityJaccard_Fast(false, DotAB, DotAA, DotBB);
+
+                // This is for our Side Window calculation.
+                Output.ArrayGuides[ImageIndex0] = GuideSample;
+                ArrayImages[ImageIndex0] = ImageSample * Similarity;
+                ArrayWeights[ImageIndex0] = Similarity;
 
                 ImageIndex0 += 1;
             }
@@ -543,35 +543,74 @@
 
         Output.SideWindowSize = SideWindowSize;
 
-        float2 QuadHalf[6];
-        QuadHalf[0] = Output.ArrayGuides[0] + Output.ArrayGuides[1]; // Vertical Top-Left       (TL)
-        QuadHalf[1] = Output.ArrayGuides[3] + Output.ArrayGuides[4]; // Vertical Top-Mid        (TM)
-        QuadHalf[2] = Output.ArrayGuides[6] + Output.ArrayGuides[7]; // Vertical Top-Right      (TR)
-        QuadHalf[3] = Output.ArrayGuides[1] + Output.ArrayGuides[2]; // Vertical Bottom-Left    (BL)
-        QuadHalf[4] = Output.ArrayGuides[4] + Output.ArrayGuides[5]; // Vertical Bottom-Mid     (BM)
-        QuadHalf[5] = Output.ArrayGuides[7] + Output.ArrayGuides[8]; // Vertical Bottom-Right   (BR)
+        float2 QuadHalfGuides[6];
+        QuadHalfGuides[0] = Output.ArrayGuides[0] + Output.ArrayGuides[1]; // Vertical Top-Left       (TL)
+        QuadHalfGuides[1] = Output.ArrayGuides[3] + Output.ArrayGuides[4]; // Vertical Top-Mid        (TM)
+        QuadHalfGuides[2] = Output.ArrayGuides[6] + Output.ArrayGuides[7]; // Vertical Top-Right      (TR)
+        QuadHalfGuides[3] = Output.ArrayGuides[1] + Output.ArrayGuides[2]; // Vertical Bottom-Left    (BL)
+        QuadHalfGuides[4] = Output.ArrayGuides[4] + Output.ArrayGuides[5]; // Vertical Bottom-Mid     (BM)
+        QuadHalfGuides[5] = Output.ArrayGuides[7] + Output.ArrayGuides[8]; // Vertical Bottom-Right   (BR)
 
-        float2 QuadFull[4];
-        QuadFull[0] = (QuadHalf[0] + QuadHalf[1]) + Output.ArrayGuides[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
-        QuadFull[1] = (QuadHalf[1] + QuadHalf[2]) + Output.ArrayGuides[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
-        QuadFull[2] = (QuadHalf[3] + QuadHalf[4]) + Output.ArrayGuides[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
-        QuadFull[3] = (QuadHalf[4] + QuadHalf[5]) + Output.ArrayGuides[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
+        float2 QuadFullGuides[4];
+        QuadFullGuides[0] = (QuadHalfGuides[0] + QuadHalfGuides[1]) + Output.ArrayGuides[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+        QuadFullGuides[1] = (QuadHalfGuides[1] + QuadHalfGuides[2]) + Output.ArrayGuides[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+        QuadFullGuides[2] = (QuadHalfGuides[3] + QuadHalfGuides[4]) + Output.ArrayGuides[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+        QuadFullGuides[3] = (QuadHalfGuides[4] + QuadHalfGuides[5]) + Output.ArrayGuides[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
 
-        float2 Sums[ArraySideWindowsLength];
-        Sums[0] = QuadFull[0] + Output.ArrayGuides[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
-        Sums[1] = QuadFull[1] + Output.ArrayGuides[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
-        Sums[2] = QuadFull[2] + Output.ArrayGuides[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
-        Sums[3] = QuadFull[3] + Output.ArrayGuides[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
-        Sums[4] = QuadFull[0] + Output.ArrayGuides[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
-        Sums[5] = QuadFull[3] + Output.ArrayGuides[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
-        Sums[6] = QuadFull[2] + Output.ArrayGuides[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
-        Sums[7] = QuadFull[1] + Output.ArrayGuides[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
+        Output.ArrayWindowGuides[0] = (QuadFullGuides[0] + Output.ArrayGuides[2]) * SideWindowWeight; // NW:    [0 + 1] + [3 + 4] + [6] + [2]
+        Output.ArrayWindowGuides[1] = (QuadFullGuides[1] + Output.ArrayGuides[0]) * SideWindowWeight; // NE:    [3 + 4] + [6 + 7] + [8] + [0]
+        Output.ArrayWindowGuides[2] = (QuadFullGuides[2] + Output.ArrayGuides[8]) * SideWindowWeight; // SW:    [1 + 2] + [4 + 5] + [0] + [8]
+        Output.ArrayWindowGuides[3] = (QuadFullGuides[3] + Output.ArrayGuides[6]) * SideWindowWeight; // SE:    [4 + 5] + [7 + 8] + [2] + [6]
+        Output.ArrayWindowGuides[4] = (QuadFullGuides[0] + Output.ArrayGuides[7]) * SideWindowWeight; // N:     [0 + 1] + [3 + 4] + [6] + [7]
+        Output.ArrayWindowGuides[5] = (QuadFullGuides[3] + Output.ArrayGuides[1]) * SideWindowWeight; // S:     [4 + 5] + [7 + 8] + [2] + [1]
+        Output.ArrayWindowGuides[6] = (QuadFullGuides[2] + Output.ArrayGuides[3]) * SideWindowWeight; // W:     [1 + 2] + [4 + 5] + [0] + [3]
+        Output.ArrayWindowGuides[7] = (QuadFullGuides[1] + Output.ArrayGuides[5]) * SideWindowWeight; // E:     [3 + 4] + [6 + 7] + [8] + [5]
 
-        [unroll]
-        for (int i = 0; i < ArraySideWindowsLength; i++)
-        {
-            Output.ArrayGuideWindows[i] = Sums[i] * SideWindowWeight;
-        }
+        float2 QuadHalfImages[6];
+        QuadHalfImages[0] = ArrayImages[0] + ArrayImages[1]; // Vertical Top-Left       (TL)
+        QuadHalfImages[1] = ArrayImages[3] + ArrayImages[4]; // Vertical Top-Mid        (TM)
+        QuadHalfImages[2] = ArrayImages[6] + ArrayImages[7]; // Vertical Top-Right      (TR)
+        QuadHalfImages[3] = ArrayImages[1] + ArrayImages[2]; // Vertical Bottom-Left    (BL)
+        QuadHalfImages[4] = ArrayImages[4] + ArrayImages[5]; // Vertical Bottom-Mid     (BM)
+        QuadHalfImages[5] = ArrayImages[7] + ArrayImages[8]; // Vertical Bottom-Right   (BR)
+
+        float2 QuadFullImages[4];
+        QuadFullImages[0] = (QuadHalfImages[0] + QuadHalfImages[1]) + ArrayImages[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+        QuadFullImages[1] = (QuadHalfImages[1] + QuadHalfImages[2]) + ArrayImages[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+        QuadFullImages[2] = (QuadHalfImages[3] + QuadHalfImages[4]) + ArrayImages[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+        QuadFullImages[3] = (QuadHalfImages[4] + QuadHalfImages[5]) + ArrayImages[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
+
+        Output.ArrayWindowImages[0] = QuadFullImages[0] + ArrayImages[2]; // NW:    [0 + 1] + [3 + 4] + [6] + [2]
+        Output.ArrayWindowImages[1] = QuadFullImages[1] + ArrayImages[0]; // NE:    [3 + 4] + [6 + 7] + [8] + [0]
+        Output.ArrayWindowImages[2] = QuadFullImages[2] + ArrayImages[8]; // SW:    [1 + 2] + [4 + 5] + [0] + [8]
+        Output.ArrayWindowImages[3] = QuadFullImages[3] + ArrayImages[6]; // SE:    [4 + 5] + [7 + 8] + [2] + [6]
+        Output.ArrayWindowImages[4] = QuadFullImages[0] + ArrayImages[7]; // N:     [0 + 1] + [3 + 4] + [6] + [7]
+        Output.ArrayWindowImages[5] = QuadFullImages[3] + ArrayImages[1]; // S:     [4 + 5] + [7 + 8] + [2] + [1]
+        Output.ArrayWindowImages[6] = QuadFullImages[2] + ArrayImages[3]; // W:     [1 + 2] + [4 + 5] + [0] + [3]
+        Output.ArrayWindowImages[7] = QuadFullImages[1] + ArrayImages[5]; // E:     [3 + 4] + [6 + 7] + [8] + [5]
+
+        float2 QuadHalfWeights[6];
+        QuadHalfWeights[0] = ArrayWeights[0] + ArrayWeights[1]; // Vertical Top-Left        (TL)
+        QuadHalfWeights[1] = ArrayWeights[3] + ArrayWeights[4]; // Vertical Top-Mid         (TM)
+        QuadHalfWeights[2] = ArrayWeights[6] + ArrayWeights[7]; // Vertical Top-Right       (TR)
+        QuadHalfWeights[3] = ArrayWeights[1] + ArrayWeights[2]; // Vertical Bottom-Left     (BL)
+        QuadHalfWeights[4] = ArrayWeights[4] + ArrayWeights[5]; // Vertical Bottom-Mid      (BM)
+        QuadHalfWeights[5] = ArrayWeights[7] + ArrayWeights[8]; // Vertical Bottom-Right    (BR)
+
+        float2 QuadFullWeights[4];
+        QuadFullWeights[0] = (QuadHalfWeights[0] + QuadHalfWeights[1]) + ArrayWeights[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
+        QuadFullWeights[1] = (QuadHalfWeights[1] + QuadHalfWeights[2]) + ArrayWeights[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
+        QuadFullWeights[2] = (QuadHalfWeights[3] + QuadHalfWeights[4]) + ArrayWeights[0]; // SW & W: [1 + 2] + [4 + 5] + [0]
+        QuadFullWeights[3] = (QuadHalfWeights[4] + QuadHalfWeights[5]) + ArrayWeights[2]; // SE & S: [4 + 5] + [7 + 8] + [2]
+
+        Output.ArrayWindowWeightSums[0] = QuadFullWeights[0] + ArrayWeights[2]; // NW:  [0 + 1] + [3 + 4] + [6] + [2]
+        Output.ArrayWindowWeightSums[1] = QuadFullWeights[1] + ArrayWeights[0]; // NE:  [3 + 4] + [6 + 7] + [8] + [0]
+        Output.ArrayWindowWeightSums[2] = QuadFullWeights[2] + ArrayWeights[8]; // SW:  [1 + 2] + [4 + 5] + [0] + [8]
+        Output.ArrayWindowWeightSums[3] = QuadFullWeights[3] + ArrayWeights[6]; // SE:  [4 + 5] + [7 + 8] + [2] + [6]
+        Output.ArrayWindowWeightSums[4] = QuadFullWeights[0] + ArrayWeights[7]; // N:   [0 + 1] + [3 + 4] + [6] + [7]
+        Output.ArrayWindowWeightSums[5] = QuadFullWeights[3] + ArrayWeights[1]; // S:   [4 + 5] + [7 + 8] + [2] + [1]
+        Output.ArrayWindowWeightSums[6] = QuadFullWeights[2] + ArrayWeights[3]; // W:   [1 + 2] + [4 + 5] + [0] + [3]
+        Output.ArrayWindowWeightSums[7] = QuadFullWeights[1] + ArrayWeights[5]; // E:   [3 + 4] + [6 + 7] + [8] + [5]
     }
 
     void CBlur_GetSideWindow_Bilateral(
@@ -583,12 +622,9 @@
         // Compute sample weight
         const float Weight = 1.0 / (float(Input.SideWindowSize - 1));
 
-        // Initialize output members.
-        Block.Sum = 0.0;
-        Block.SumWeight = 0.0;
-        Block.Variance = 0.0;
-
-        float2 BlockMean = Input.ArrayGuideWindows[SideWindowIndex];
+        float2 MeanGuide = Input.ArrayWindowGuides[SideWindowIndex];
+        float2 MeanImage = Input.ArrayWindowImages[SideWindowIndex];
+        float WeightSum = Input.ArrayWindowWeightSums[SideWindowIndex];
         float2 Moments = 0.0;
 
         [unroll]
@@ -596,17 +632,14 @@
         {
             if (Block.Masks[i0] == 1)
             {
-                float2 Error = Input.ArrayGuides[i0] - BlockMean;
+                float2 Error = Input.ArrayGuides[i0] - MeanGuide;
                 Moments += (Error * Error);
-
-                // Accumulate.
-                Block.Sum += (Input.ArrayImages[i0] * Input.ArrayDistances[i0]);
-                Block.SumWeight += Input.ArrayDistances[i0];
             }
         }
 
         // Compute variance
-        Block.Variance = CMath_GetCoefficientVariation_VV(BlockMean, Moments * Weight);
+        Block.Sum = MeanImage / WeightSum;
+        Block.Variance = CMath_GetCoefficientVariation_VV(MeanGuide, Moments * Weight);
     }
 
     float2 CBlur_GetSideWindowBilateralUpsample_FLT2(
@@ -663,16 +696,14 @@
         {
             CBlur_GetSideWindow_Bilateral(i0, SharedData, SideWindows[i0]);
 
-            if (SideWindows[i0].SumWeight > 0.0)
+            if (SharedData.ArrayWindowWeightSums[i0] > 0.0)
             {
-                float2 Mean = SideWindows[i0].Sum / SideWindows[i0].SumWeight;
-
                 [flatten]
                 if ((AVariance == false) || (SideWindows[i0].Variance < MinVariance))
                 {
                     AVariance = true;
                     MinVariance = SideWindows[i0].Variance;
-                    NearestWindow = Mean;
+                    NearestWindow = SideWindows[i0].Sum;
                 }
             }
         }
