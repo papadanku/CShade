@@ -2,9 +2,29 @@
 
 ## About
 
-CShade is an HLSL shader collection for ReShade. CShade introduces conventional image and video processing effects from a different angle.
+### What is CShade?
 
-CShade also includes `.fxh` files that contain algorithms used in the collection or have potential use.
+CShade is a free repository of HLSL image and video processing shaders designed for ReShade.
+
+CShade offers visual techniques, including sharpening, color conversions, optical flow, and post-processing effects.
+
+### Who is Behind CShade?
+
+* **Creator and Primary Maintainer**: I lead the CShade project.
+* **Contributors**: Community members who support the project by reporting bugs, submitting ideas, asking questions, and creating pull requests.
+* **Users**: The user community's ongoing input, usage, and feedback drive continuous improvements.
+
+### When Was CShade Created?
+
+The project began in 2020 as ‘BrimsonFX’ before evolving into CShade.
+
+### Where is CShade Located?
+
+You can access the source code, open issues, and contribute here on GitHub.
+
+### Why CShade?
+
+CShade exists to keep real-time image and video processing tools free as in beer and freedom.
 
 ## Features
 
