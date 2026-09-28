@@ -158,69 +158,80 @@ uniform float _CShadeExposureSmoothingSpeed <
 
 ##### Shared Method From Header File
 
-`shared/common/cLib.fxh` -> `Common_CLib_FunctionName()`
+1. **File path**: `shared/common/cLib.fxh`
+1. **Function name**: `Common_CLib_FunctionName()`
+1. **Example**:  `shared/common/cLib.fxh` -> `Common_CLib_FunctionName()`
 
 ##### ALLCAPS
 
-- **State parameters**: `BlendOp = ADD`
-- **System semantics**: `float4 SV_POSITION`
+**State parameters**:
+
+    BlendOp = ADD;
+
+**System semantics**:
+
+    float4 SV_POSITION;
 
 ##### ALL_CAPS
 
-- **Preprocessor definition**: `#define SHADER_VERSION`
-- **Preprocessor macros**: `#define EXAMPLE_MACRO()`
-- **Preprocessor macro arguments**: `#define EXAMPLE_MACRO(EXAMPLE_ARG)`
+**Preprocessor definitions**:
+
+    #define SHADER_VERSION
+
+**Preprocessor macros**:
+
+    #define EXAMPLE_MACRO()
+
+**Preprocessor macro arguments**
+
+    #define EXAMPLE_MACRO(EXAMPLE_ARG)
 
 ##### _SnakeCase
 
-- **Uniform variables**: `uniform float3 _Example`
+**Uniform variables**:
+
+    uniform float _Example
 
 ##### SnakeCase
 
-- **Function arguments**: `void Function(float4 ArgumentOne)`
-- **Global variables**:
+**Function arguments**:
 
-    ```hlsl
+    void Function(int ArgumentOne)
+
+**Global variables**:
+
     static const float4 GlobalVariable = 1.0;
     void Function()
     {
         return GlobalVariable;
     }
-    ```
 
-- **Local variables**:
+**Local variables**:
 
-    ```hlsl
     void Function()
     {
         float4 LocalVariable = 1.0;
         return LocalVariable;
     }
-    ```
 
-- **Textures and Samples**:
+**Textures and samplers**:
 
-    `texture2D ExampleTex ...`
-
-    `sampler2D SampleExampleTex ...`
+    texture2D ExampleTex(...)
+    sampler2D SampleExampleTex(...)
 
 ##### SNAKE_Case
 
-- **`struct` datatype**:
+**`struct` datatypes**:
 
-    `struct APP2VS_Example ...`
+    struct APP2VS_Foobar { ... };
+    struct VS2PS_Foobar { ... };
+    struct PS2FB_Foobar { ... };
+    struct PS2MRT_Foobar { ... };
 
-    `struct VS2PS_Example ...`
+**`VertexShader` and `PixelShader`**
 
-    `struct PS2FB_Example ...`
-
-    `struct PS2MRT_Example ...`
-
-- **`VertexShader` and `PixelShader`**:
-
-    `VertexShader = VS_Example;`
-
-    `PixelShader = PS_Example;`
+    VertexShader = VS_Example(...);
+    PixelShader = PS_Example(...);
 
 ### Virtual-Key Codes
 
