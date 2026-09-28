@@ -16,7 +16,7 @@ CShade offers visual techniques, including sharpening, color conversions, optica
 
 ### When Was CShade Created?
 
-The project began in 2020 as ‘BrimsonFX’ before evolving into CShade.
+The project began in 2020 as *BrimsonFX* before evolving into CShade.
 
 ### Where is CShade Located?
 
