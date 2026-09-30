@@ -1,28 +1,26 @@
 # CShade
 
-## About
+## The "Wh-"s of CShade
 
-CShade is a free repository of HLSL image and video processing shaders designed for ReShade.
-
-### Who is Behind CShade?
+### "Who is behind CShade?"
 
 * **Creator and Primary Maintainer**: I lead the CShade project.
 * **Contributors**: Community members who support the project by reporting bugs, submitting ideas, asking questions, and creating pull requests.
 * **Users**: The user community's ongoing input, usage, and feedback drive continuous improvements.
 
-### When Was CShade Created?
+### "When was CShade created?"
 
 The project began in 2020 as *BrimsonFX* before evolving into CShade.
 
-### Where is CShade Located?
-
-You can access the source code, open issues, and contribute here on GitHub.
-
-### Why CShade?
+### "Why CShade?"
 
 CShade exists to keep real-time image and video processing tools free as in beer and freedom.
 
-### What's in CShade?
+### "Where is CShade located?"
+
+You can access the source code, open issues, and contribute here on GitHub.
+
+### "What's inside CShade?"
 
 - **Reusable Utilities**: CShade includes `.fxh` header files with reusable algorithms and utilities
 - **Image Processing**: CShade features shaders that extract information from images.
