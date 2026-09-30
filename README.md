@@ -1,26 +1,26 @@
 # CShade
 
-## The "Wh-"s of CShade
+## About
 
-### "Who is behind CShade?"
+### Who is behind CShade?
 
 * **Creator and Primary Maintainer**: I lead the CShade project.
 * **Contributors**: Community members who support the project by reporting bugs, submitting ideas, asking questions, and creating pull requests.
 * **Users**: The user community's ongoing input, usage, and feedback drive continuous improvements.
 
-### "When was CShade created?"
+### When was CShade created?
 
 The project began in 2020 as *BrimsonFX* before evolving into CShade.
 
-### "Why CShade?"
+### Why CShade?
 
 CShade exists to keep real-time image and video processing tools free as in beer and freedom.
 
-### "Where is CShade located?"
+### Where is CShade located?
 
 You can access the source code, open issues, and contribute here on GitHub.
 
-### "What's inside CShade?"
+### What's inside CShade?
 
 - **Reusable Utilities**: CShade includes `.fxh` header files with reusable algorithms and utilities
 - **Image Processing**: CShade features shaders that extract information from images.
