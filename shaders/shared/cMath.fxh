@@ -957,19 +957,19 @@
     }
 
     #define TEMPLATE_CMATH_GET_GRADIENT_NOISE(DATA_TYPE, LENGTH) \
-    DATA_TYPE CMath_GetGradientNoise_FLT##LENGTH(float2 Tex, float Bias, bool OutputSigned) \
-    { \
-        float2 I = floor(Tex); \
-        float2 F = frac(Tex); \
-        DATA_TYPE A = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 0.0), Bias); \
-        DATA_TYPE B = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 0.0), Bias); \
-        DATA_TYPE C = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 1.0), Bias); \
-        DATA_TYPE D = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 1.0), Bias); \
-        float2 UV = CMath_GetQuintic(F); \
-        DATA_TYPE Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y); \
-        Noise = OutputSigned ? Noise : saturate(CMath_SNORMtoUNORM_FLT##LENGTH(Noise)); \
-        return Noise; \
-    } \
+        DATA_TYPE CMath_GetGradientNoise_FLT##LENGTH(float2 Tex, float Bias, bool OutputSigned) \
+        { \
+            float2 I = floor(Tex); \
+            float2 F = frac(Tex); \
+            DATA_TYPE A = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 0.0), Bias); \
+            DATA_TYPE B = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 0.0), Bias); \
+            DATA_TYPE C = CMath_GetGradient_FLT##LENGTH(I, F, float2(0.0, 1.0), Bias); \
+            DATA_TYPE D = CMath_GetGradient_FLT##LENGTH(I, F, float2(1.0, 1.0), Bias); \
+            float2 UV = CMath_GetQuintic(F); \
+            DATA_TYPE Noise = lerp(lerp(A, B, UV.x), lerp(C, D, UV.x), UV.y); \
+            Noise = OutputSigned ? Noise : saturate(CMath_SNORMtoUNORM_FLT##LENGTH(Noise)); \
+            return Noise; \
+        } \
 
     TEMPLATE_CMATH_GET_GRADIENT_NOISE(float, 1) // float CMath_GetGradientNoise_FLT1(float2 Tex, float Bias, bool OutputSigned)
     TEMPLATE_CMATH_GET_GRADIENT_NOISE(float2, 2) // float2 CMath_GetGradientNoise_FLT2(float2 Tex, float Bias, bool OutputSigned)
