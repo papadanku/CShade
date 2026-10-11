@@ -6,10 +6,27 @@
 #include "cBlur.fxh"
 #include "cMath.fxh"
 
-#if !defined(INCLUDE_CMOTIONESTIMATION)
-    #define INCLUDE_CMOTIONESTIMATION
+#if !defined(INCLUDE_CMOTION)
+    #define INCLUDE_CMOTION
 
-    float2 CMotionEstimation_GetSparsePyramidUpsample(float2 HPos, float2 Tex, float2 PixelSize, sampler2D SampleSource)
+    float3 CMotion_GetPyramids(sampler2D Image, float2 Tex)
+    {
+        float3 ColorL = tex2Dlod(SampleSource, CShade_PadFloat2(FetchTex)).rgb;
+        float3 ColorP = CColor_EncodeLogC(ColorL) / CColor_EncodeLogC(1.0);
+
+        float ColorSumP = dot(ColorP, 1.0);
+        float3 ColorRatioP = abs(ColorSumP) > 0.0 ? ColorP / ColorSumP : 1.0 / 3.0;
+        float MaxColorRatioP = max(ColorRatioP.r, max(ColorRatioP.g, ColorRatioP.b));
+        float MaxColorP = max(ColorP.r, max(ColorP.g, ColorP.b));
+
+        float3 Output = 0.0;
+        Output.xy = (ColorSumP > 0.0) ? ColorRatioP.xy / MaxColorRatioP : 1.0;
+        Output.z = MaxColorP;
+
+        return Output;
+    }
+
+    float2 CMotion_GetSparsePyramidUpsample(float2 HPos, float2 Tex, float2 PixelSize, sampler2D SampleSource)
     {
         /*
             Dilate up to 2^3 pixels.
@@ -57,14 +74,7 @@
         Titkov, V. V., Panin, S. V., Lyubutin, P. S., Chemezov, V. O., & Eremin, A. V. (2017). Application of Lucas–Kanade algorithm with weight coefficient bilateral filtration for the digital image correlation method. IOP Conference Series: Materials Science and Engineering, 177, 012039. https://doi.org/10.1088/1757-899X/177/1/012039
     */
 
-    float3 CMotionEstimation_GetPlanes(sampler2D Image, float2 Tex)
-    {
-        float3 Color = tex2Dlod(Image, CShade_PadFloat2(Tex)).rgb;
-        Color = CColor_SRGBtoYUV444(Color, false);
-        return Color;
-    }
-
-    float CMotionEstimation_GetDiceIndex(
+    float CMotion_GetDiceIndex(
         float E,    // dot(T_r, T_r) + dot(I_r, I_r)
         float3 T_r, // T (Reference)
         float3 T_s, // T (Sample)
@@ -82,7 +92,7 @@
         return S;
     }
 
-    float2 CMotionEstimation_GetLucasKanade(
+    float2 CMotion_GetLucasKanade(
         bool IsCoarse,
         float2 MainTex,
         float2 PixelSize,
@@ -153,31 +163,31 @@
         // This unrolled version samples and assigns to the Cache array.
         // The four corners of the 5x5 grid are skipped in the original code,
         // so they are not included in this rewrite.
-        Cache[1] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, -2) * PixelSize));
-        Cache[2] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, -2) * PixelSize));
-        Cache[3] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, -2) * PixelSize));
+        Cache[1] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, -2) * PixelSize))).xyz;
+        Cache[2] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, -2) * PixelSize))).xyz;
+        Cache[3] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, -2) * PixelSize))).xyz;
 
-        Cache[5] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, -1) * PixelSize));
-        Cache[6] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, -1) * PixelSize));
-        Cache[7] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, -1) * PixelSize));
-        Cache[8] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, -1) * PixelSize));
-        Cache[9] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, -1) * PixelSize));
+        Cache[5] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, -1) * PixelSize))).xyz;
+        Cache[6] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, -1) * PixelSize))).xyz;
+        Cache[7] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, -1) * PixelSize))).xyz;
+        Cache[8] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, -1) * PixelSize))).xyz;
+        Cache[9] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, -1) * PixelSize))).xyz;
 
-        Cache[10] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, 0) * PixelSize));
-        Cache[11] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 0) * PixelSize));
-        Cache[12] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 0) * PixelSize));
-        Cache[13] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 0) * PixelSize));
-        Cache[14] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, 0) * PixelSize));
+        Cache[10] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, 0) * PixelSize))).xyz;
+        Cache[11] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 0) * PixelSize))).xyz;
+        Cache[12] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 0) * PixelSize))).xyz;
+        Cache[13] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 0) * PixelSize))).xyz;
+        Cache[14] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, 0) * PixelSize))).xyz;
 
-        Cache[15] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-2, 1) * PixelSize));
-        Cache[16] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 1) * PixelSize));
-        Cache[17] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 1) * PixelSize));
-        Cache[18] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 1) * PixelSize));
-        Cache[19] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(2, 1) * PixelSize));
+        Cache[15] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, 1) * PixelSize))).xyz;
+        Cache[16] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 1) * PixelSize))).xyz;
+        Cache[17] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 1) * PixelSize))).xyz;
+        Cache[18] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 1) * PixelSize))).xyz;
+        Cache[19] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, 1) * PixelSize))).xyz;
 
-        Cache[21] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(-1, 2) * PixelSize));
-        Cache[22] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(0, 2) * PixelSize));
-        Cache[23] = CMotionEstimation_GetPlanes(SampleT, MainTex + (float2(1, 2) * PixelSize));
+        Cache[21] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 2) * PixelSize))).xyz;
+        Cache[22] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 2) * PixelSize))).xyz;
+        Cache[23] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 2) * PixelSize))).xyz;
 
         // Initialize variables
         float3 A = 0.0;
@@ -186,7 +196,7 @@
 
         // Get center textures (this is for the spatial weighting)
         float3 T_C = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float3 I_C = CMotionEstimation_GetPlanes(SampleI, WarpTex);
+        float3 I_C = tex2Dlod(SampleI, CShade_PadFloat2(WarpTex)).xyz;
 
         // Get center magnitudes
         float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
@@ -206,12 +216,12 @@
             bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
             float3 I = CenterFetch
                 ? I_C
-                : CMotionEstimation_GetPlanes(SampleI, UV);
+                : tex2Dlod(SampleI, CShade_PadFloat2(UV)).xyz;
 
             // Calculate bilateral weighting
             float Weight = CenterFetch
                 ? 1.0
-                : CMotionEstimation_GetDiceIndex(TT_II, T_C, T, I_C, I);
+                : CMotion_GetDiceIndex(TT_II, T_C, T, I_C, I);
 
             // Accumulate weight
             WSum += Weight;
@@ -326,7 +336,7 @@
         return CMath_SNORMtoFP16_FLT2(Vectors);
     }
 
-    float3 CMotionEstimation_GetMotionVectorRGB(float2 MotionVectors)
+    float3 CMotion_GetMotionVectorRGB(float2 MotionVectors)
     {
         float3 VectorRGB = normalize(float3(MotionVectors, 1e-3));
         VectorRGB.xy = CMath_SNORMtoUNORM_FLT2(VectorRGB.xy);
@@ -335,7 +345,7 @@
         return VectorRGB;
     }
 
-    float3 CMotionEstimation_GetDebugQuadrant(
+    float3 CMotion_GetDebugQuadrant(
         float3 Base,
         float3 ShaderOutput,
         float2 MotionVectors,
@@ -344,7 +354,7 @@
     {
         // First, process motion vectors
         float VectorMag = length(MotionVectors);
-        float3 VectorRGB = CMotionEstimation_GetMotionVectorRGB(MotionVectors);
+        float3 VectorRGB = CMotion_GetMotionVectorRGB(MotionVectors);
 
         float3 OutputColor = Base;
         OutputColor = lerp(OutputColor, VectorRGB, Index == 1);

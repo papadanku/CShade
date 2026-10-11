@@ -589,7 +589,7 @@
         Output.ArrayWindowImages[6] = QuadFullImages[2] + ArrayImages[3]; // W:     [1 + 2] + [4 + 5] + [0] + [3]
         Output.ArrayWindowImages[7] = QuadFullImages[1] + ArrayImages[5]; // E:     [3 + 4] + [6 + 7] + [8] + [5]
 
-        float2 QuadHalfWeights[6];
+        float QuadHalfWeights[6];
         QuadHalfWeights[0] = ArrayWeights[0] + ArrayWeights[1]; // Vertical Top-Left        (TL)
         QuadHalfWeights[1] = ArrayWeights[3] + ArrayWeights[4]; // Vertical Top-Mid         (TM)
         QuadHalfWeights[2] = ArrayWeights[6] + ArrayWeights[7]; // Vertical Top-Right       (TR)
@@ -597,7 +597,7 @@
         QuadHalfWeights[4] = ArrayWeights[4] + ArrayWeights[5]; // Vertical Bottom-Mid      (BM)
         QuadHalfWeights[5] = ArrayWeights[7] + ArrayWeights[8]; // Vertical Bottom-Right    (BR)
 
-        float2 QuadFullWeights[4];
+        float QuadFullWeights[4];
         QuadFullWeights[0] = (QuadHalfWeights[0] + QuadHalfWeights[1]) + ArrayWeights[6]; // NW & N: [0 + 1] + [3 + 4] + [6]
         QuadFullWeights[1] = (QuadHalfWeights[1] + QuadHalfWeights[2]) + ArrayWeights[8]; // NE & E: [3 + 4] + [6 + 7] + [8]
         QuadFullWeights[2] = (QuadHalfWeights[3] + QuadHalfWeights[4]) + ArrayWeights[0]; // SW & W: [1 + 2] + [4 + 5] + [0]

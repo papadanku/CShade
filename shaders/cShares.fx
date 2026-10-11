@@ -88,36 +88,35 @@
 
     void PS_Pyramid(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
-        float4 Color = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(Input.Tex0));
-        Output.rgb = sqrt(Color.rgb);
-        Output.a = 1.0;
+        Output.xyz = CMotion_GetPyramids(CShade_SampleColorTex, Input.Tex0);
+        Output.w = 1.0;
     }
 
     void PS_PyramidLevel1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_1, Input.Tex0, PixelSize).rgb;
+        Output.rgb = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_1, Input.Tex0, PixelSize).rgb;
         Output.a = 1.0;
     }
 
     void PS_PyramidLevel2(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_2, Input.Tex0, PixelSize).rgb;
+        Output.rgb = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_2, Input.Tex0, PixelSize).rgb;
         Output.a = 1.0;
     }
 
     void PS_PyramidLevel3(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_3, Input.Tex0, PixelSize).rgb;
+        Output.rgb = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_3, Input.Tex0, PixelSize).rgb;
         Output.a = 1.0;
     }
 
     void PS_PyramidLevel4(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0);
-        Output = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_4, Input.Tex0, PixelSize).rgb;
+        Output.rgb = CBlur_DownsampleBox3x3(SampleSharedTex_RGB10A2_4, Input.Tex0, PixelSize).rgb;
         Output.a = 1.0;
     }
 
@@ -127,28 +126,28 @@
     {
         float2 Vectors = 0.0;
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        Output = CMotionEstimation_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_5, SampleSharedTex_RGB10A2_5);
+        Output = CMotion_GetLucasKanade(true, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_5, SampleSharedTex_RGB10A2_5);
     }
 
     void PS_LucasKanade3(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_5_A);
-        Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_4, SampleSharedTex_RGB10A2_4);
+        float2 Vectors = CMotion_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_5_A);
+        Output = CMotion_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_4, SampleSharedTex_RGB10A2_4);
     }
 
     void PS_LucasKanade2(CShade_VS2PS_Quad Input, out float2 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_4_A);
-        Output = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_3, SampleSharedTex_RGB10A2_3);
+        float2 Vectors = CMotion_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_4_A);
+        Output = CMotion_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_3, SampleSharedTex_RGB10A2_3);
     }
 
     void PS_LucasKanade1(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     {
         float2 PixelSize = fwidth(Input.Tex0.xy);
-        float2 Vectors = CMotionEstimation_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_3_A);
-        Output.xy = CMotionEstimation_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_2, SampleSharedTex_RGB10A2_2);
+        float2 Vectors = CMotion_GetSparsePyramidUpsample(Input.HPos.xy, Input.Tex0, PixelSize, SampleSharedTex_RG16F_3_A);
+        Output.xy = CMotion_GetLucasKanade(false, Input.Tex0, PixelSize, Vectors, SamplePreviousFrameTex_CShares_2, SampleSharedTex_RGB10A2_2);
         #if SHADER_TEMPORAL_BLENDING
             Output.zw = float2(0.0, _BlendFactor);
         #else
