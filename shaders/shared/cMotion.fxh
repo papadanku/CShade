@@ -9,7 +9,7 @@
 #if !defined(INCLUDE_CMOTION)
     #define INCLUDE_CMOTION
 
-    float3 CMotion_GetPyramids(sampler2D Image, float2 Tex)
+    float3 CMotion_GetPyramids(sampler2D SampleSource, float2 Tex)
     {
         float3 ColorL = tex2Dlod(SampleSource, CShade_PadFloat2(FetchTex)).rgb;
         float3 ColorP = CColor_EncodeLogC(ColorL) / CColor_EncodeLogC(1.0);
