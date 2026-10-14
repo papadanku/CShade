@@ -74,7 +74,7 @@ You can access the source code, open issues, and contribute here on GitHub.
 #### GitHub Contributors
 
 - **Overall**: 0CCULTIST
-- **Reported Bugs**: Jakey757, simonedibilio, WardedPredator
+- **Reported Bugs**: Jakey757, simonedibilio, WardedPredator, RoseVelika
 - **Submitted Ideas**: mrjoshisattvablack, liuxd17thu, Maximus961
 - **Asked Questions**: R0nBurgandy, lapsio
 
