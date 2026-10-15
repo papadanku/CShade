@@ -233,7 +233,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     }
 
     // Sample the texture and apply the color transform
-    float4 Texture = tex2Dlod(SampleTransformTex, CShade_PadFloat2(Input.Tex0));
+    float4 Texture = tex2Dlod(SampleTransformTex, CMath_PadFloat2(Input.Tex0));
     ApplyColorTransform(Texture);
 
     // RENDER

@@ -51,7 +51,7 @@ struct InstanceSettings
 
 void PS_Copy(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
 {
-    Output = tex2Dlod(CShade_SampleGammaTex, CShade_PadFloat2(Input.Tex0));
+    Output = tex2Dlod(CShade_SampleGammaTex, CMath_PadFloat2(Input.Tex0));
 }
 
 void PS_Blend(
@@ -86,13 +86,13 @@ void PS_Blend(
 
     // Grab our textures.
     #if (CSHADE_READ_SRGB == TRUE)
-        float4 Src = tex2Dlod(SampleSrcTex, CShade_PadFloat2(SrcTex));
-        float4 Dest = tex2Dlod(SampleDestTex, CShade_PadFloat2(DestTex));
+        float4 Src = tex2Dlod(SampleSrcTex, CMath_PadFloat2(SrcTex));
+        float4 Dest = tex2Dlod(SampleDestTex, CMath_PadFloat2(DestTex));
         Src = CColor_SRGBtoRGB(Src);
         Dest = CColor_SRGBtoRGB(Dest);
     #else
-        float4 Src = tex2Dlod(SampleSrcTex, CShade_PadFloat2(SrcTex));
-        float4 Dest = tex2Dlod(SampleDestTex, CShade_PadFloat2(DestTex));
+        float4 Src = tex2Dlod(SampleSrcTex, CMath_PadFloat2(SrcTex));
+        float4 Dest = tex2Dlod(SampleDestTex, CMath_PadFloat2(DestTex));
     #endif
 
     // Set our alpha to constant

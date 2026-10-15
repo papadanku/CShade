@@ -255,9 +255,9 @@
         float2 UNormTex = Tex - 0.5;
 
         // Run Lens
-        Color.r = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(ChromaticAberrationTex.Red)).r;
-        Color.g = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(ChromaticAberrationTex.Green)).g;
-        Color.b = tex2Dlod(CShade_SampleColorTex, CShade_PadFloat2(ChromaticAberrationTex.Blue)).b;
+        Color.r = tex2Dlod(CShade_SampleColorTex, CMath_PadFloat2(ChromaticAberrationTex.Red)).r;
+        Color.g = tex2Dlod(CShade_SampleColorTex, CMath_PadFloat2(ChromaticAberrationTex.Green)).g;
+        Color.b = tex2Dlod(CShade_SampleColorTex, CMath_PadFloat2(ChromaticAberrationTex.Blue)).b;
         CLens_ApplyVignette(Color, UNormTex, 0.0, Vignette);
         CLens_ApplyFilmGrain(Color, HPos, GrainScale, GrainAmount, GrainSeed);
     }

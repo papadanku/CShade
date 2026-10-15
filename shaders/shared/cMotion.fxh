@@ -11,7 +11,7 @@
 
     float3 CMotion_GetPyramids(sampler2D SampleSource, float2 Tex)
     {
-        float3 ColorL = tex2Dlod(SampleSource, CShade_PadFloat2(Tex)).rgb;
+        float3 ColorL = tex2Dlod(SampleSource, CMath_PadFloat2(Tex)).rgb;
         float3 ColorP = CColor_EncodeLogC(ColorL) / CColor_EncodeLogC(1.0);
 
         float ColorSumP = dot(ColorP, 1.0);
@@ -50,7 +50,7 @@
                 float2 Shift = float2(x, y) * DilateScale;
                 float2 FetchTex = Tex + (Shift * PixelSize);
 
-                Sum += tex2Dlod(SampleSource, CShade_PadFloat2(FetchTex)).xy;
+                Sum += tex2Dlod(SampleSource, CMath_PadFloat2(FetchTex)).xy;
                 Weight += 1.0;
             }
         }
@@ -163,31 +163,31 @@
         // This unrolled version samples and assigns to the Cache array.
         // The four corners of the 5x5 grid are skipped in the original code,
         // so they are not included in this rewrite.
-        Cache[1] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, -2) * PixelSize))).xyz;
-        Cache[2] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, -2) * PixelSize))).xyz;
-        Cache[3] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, -2) * PixelSize))).xyz;
+        Cache[1] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-1, -2) * PixelSize))).xyz;
+        Cache[2] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(0, -2) * PixelSize))).xyz;
+        Cache[3] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(1, -2) * PixelSize))).xyz;
 
-        Cache[5] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, -1) * PixelSize))).xyz;
-        Cache[6] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, -1) * PixelSize))).xyz;
-        Cache[7] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, -1) * PixelSize))).xyz;
-        Cache[8] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, -1) * PixelSize))).xyz;
-        Cache[9] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, -1) * PixelSize))).xyz;
+        Cache[5] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-2, -1) * PixelSize))).xyz;
+        Cache[6] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-1, -1) * PixelSize))).xyz;
+        Cache[7] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(0, -1) * PixelSize))).xyz;
+        Cache[8] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(1, -1) * PixelSize))).xyz;
+        Cache[9] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(2, -1) * PixelSize))).xyz;
 
-        Cache[10] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, 0) * PixelSize))).xyz;
-        Cache[11] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 0) * PixelSize))).xyz;
-        Cache[12] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 0) * PixelSize))).xyz;
-        Cache[13] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 0) * PixelSize))).xyz;
-        Cache[14] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, 0) * PixelSize))).xyz;
+        Cache[10] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-2, 0) * PixelSize))).xyz;
+        Cache[11] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-1, 0) * PixelSize))).xyz;
+        Cache[12] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(0, 0) * PixelSize))).xyz;
+        Cache[13] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(1, 0) * PixelSize))).xyz;
+        Cache[14] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(2, 0) * PixelSize))).xyz;
 
-        Cache[15] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-2, 1) * PixelSize))).xyz;
-        Cache[16] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 1) * PixelSize))).xyz;
-        Cache[17] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 1) * PixelSize))).xyz;
-        Cache[18] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 1) * PixelSize))).xyz;
-        Cache[19] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(2, 1) * PixelSize))).xyz;
+        Cache[15] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-2, 1) * PixelSize))).xyz;
+        Cache[16] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-1, 1) * PixelSize))).xyz;
+        Cache[17] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(0, 1) * PixelSize))).xyz;
+        Cache[18] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(1, 1) * PixelSize))).xyz;
+        Cache[19] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(2, 1) * PixelSize))).xyz;
 
-        Cache[21] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(-1, 2) * PixelSize))).xyz;
-        Cache[22] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(0, 2) * PixelSize))).xyz;
-        Cache[23] = tex2Dlod(SampleT, CShade_PadFloat2(MainTex + (float2(1, 2) * PixelSize))).xyz;
+        Cache[21] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(-1, 2) * PixelSize))).xyz;
+        Cache[22] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(0, 2) * PixelSize))).xyz;
+        Cache[23] = tex2Dlod(SampleT, CMath_PadFloat2(MainTex + (float2(1, 2) * PixelSize))).xyz;
 
         // Initialize variables
         float3 A = 0.0;
@@ -196,7 +196,7 @@
 
         // Get center textures (this is for the spatial weighting)
         float3 T_C = Cache[CMath_Get1DIndexFrom2D(int2(2, 2), CacheWidth)];
-        float3 I_C = tex2Dlod(SampleI, CShade_PadFloat2(WarpTex)).xyz;
+        float3 I_C = tex2Dlod(SampleI, CMath_PadFloat2(WarpTex)).xyz;
 
         // Get center magnitudes
         float TT_II = dot(T_C, T_C) + dot(I_C, I_C);
@@ -216,7 +216,7 @@
             bool CenterFetch = (P[i].x == 0) && (P[i].y == 0);
             float3 I = CenterFetch
                 ? I_C
-                : tex2Dlod(SampleI, CShade_PadFloat2(UV)).xyz;
+                : tex2Dlod(SampleI, CMath_PadFloat2(UV)).xyz;
 
             // Calculate bilateral weighting
             float Weight = CenterFetch
