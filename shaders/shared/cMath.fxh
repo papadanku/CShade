@@ -36,19 +36,25 @@
         CMATH: DATA CONVERSION & PROCESSING
     */
 
-    float4 CShade_PadFloat1(float X)
+    float4 CMath_PadFloat1(float X)
     {
-        return float4(X, 0.0, 0.0, 0.0);
+        float Vector = float4(0.0, 0.0, 0.0, 0.0);
+        Vector.x = X;
+        return Vector;
     }
 
-    float4 CShade_PadFloat2(float2 X)
+    float4 CMath_PadFloat2(float2 X)
     {
-        return float4(X, 0.0, 0.0);
+        float Vector = float4(0.0, 0.0, 0.0, 0.0);
+        Vector.xy = X;
+        return Vector;
     }
 
-    float4 CShade_PadFloat3(float3 X)
+    float4 CMath_PadFloat3(float3 X)
     {
-        return float4(X, 0.0);
+        float Vector = float4(0.0, 0.0, 0.0, 0.0);
+        Vector.xyz = X;
+        return Vector;
     }
 
     /*

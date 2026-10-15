@@ -49,7 +49,7 @@
 
         // Sample and weight center first to get even number sides
         float TotalWeight = Weights[0];
-        float4 CenterTex = CShade_PadFloat2(Tex + (Offsets[0] * PSize.xy));
+        float4 CenterTex = CMath_PadFloat2(Tex + (Offsets[0] * PSize.xy));
         OutputColor = tex2Dlod(SampleSource, CenterTex) * Weights[0];
 
         // Sample neighboring pixels
@@ -57,8 +57,8 @@
         {
             const float4 Offset = (Horizontal) ? Offsets[i] * HShift: Offsets[i] * VShift;
             float4 Tex = Tex.xyxy + (Offset * PSize);
-            OutputColor += tex2Dlod(SampleSource, CShade_PadFloat2(Tex.xy)) * Weights[i];
-            OutputColor += tex2Dlod(SampleSource, CShade_PadFloat2(Tex.zw)) * Weights[i];
+            OutputColor += tex2Dlod(SampleSource, CMath_PadFloat2(Tex.xy)) * Weights[i];
+            OutputColor += tex2Dlod(SampleSource, CMath_PadFloat2(Tex.zw)) * Weights[i];
             TotalWeight += (Weights[i] * 2.0);
         }
 
@@ -99,15 +99,15 @@
     float4 CBlur_DownsampleBox3x3(sampler2D Image, float2 Tex, float2 PixelSize)
     {
         float4 Samples[9];
-        Samples[0] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 0.0,  0.0) * PixelSize)));
-        Samples[1] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 0.0, -1.0) * PixelSize)));
-        Samples[2] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2(-1.0,  0.0) * PixelSize)));
-        Samples[3] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 1.0,  0.0) * PixelSize)));
-        Samples[4] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 0.0,  1.0) * PixelSize)));
-        Samples[5] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2(-1.0, -1.0) * PixelSize)));
-        Samples[6] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 1.0, -1.0) * PixelSize)));
-        Samples[7] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2(-1.0,  1.0) * PixelSize)));
-        Samples[8] = tex2Dlod(Image, CShade_PadFloat2(Tex + (float2( 1.0,  1.0) * PixelSize)));
+        Samples[0] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 0.0,  0.0) * PixelSize)));
+        Samples[1] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 0.0, -1.0) * PixelSize)));
+        Samples[2] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2(-1.0,  0.0) * PixelSize)));
+        Samples[3] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 1.0,  0.0) * PixelSize)));
+        Samples[4] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 0.0,  1.0) * PixelSize)));
+        Samples[5] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2(-1.0, -1.0) * PixelSize)));
+        Samples[6] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 1.0, -1.0) * PixelSize)));
+        Samples[7] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2(-1.0,  1.0) * PixelSize)));
+        Samples[8] = tex2Dlod(Image, CMath_PadFloat2(Tex + (float2( 1.0,  1.0) * PixelSize)));
 
         float4 Output = 0.0;
         Output += Samples[0];
@@ -131,11 +131,11 @@
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
 
         float2 Weights = float2(1.0, 4.0) / 8.0;
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex)) * Weights[1]);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.xw)) * Weights[0]);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.zw)) * Weights[0]);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.xy)) * Weights[0]);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.zy)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex)) * Weights[1]);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.xw)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.zw)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.xy)) * Weights[0]);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.zy)) * Weights[0]);
 
         return OutputColor;
     }
@@ -149,10 +149,10 @@
         float4 Tex0 = Tex.xyxy + (float4(-0.5, -0.5, 0.5, 0.5) * Delta.xyxy);
 
         float Weight = 1.0 / 4.0;
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.xw)) * Weight);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.zw)) * Weight);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.xy)) * Weight);
-        OutputColor += (tex2Dlod(Image, CShade_PadFloat2(Tex0.zy)) * Weight);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.xw)) * Weight);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.zw)) * Weight);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.xy)) * Weight);
+        OutputColor += (tex2Dlod(Image, CMath_PadFloat2(Tex0.zy)) * Weight);
 
         return OutputColor;
     }
@@ -168,17 +168,17 @@
         float4 Tex1 = Tex.xyyy + (float4(0.0, 2.0, 0.0, -2.0) * Delta.xyyy);
         float4 Tex2 = Tex.xyyy + (float4(2.0, 2.0, 0.0, -2.0) * Delta.xyyy);
 
-        float4 A0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.xy));
-        float4 A1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.xz));
-        float4 A2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.xw));
+        float4 A0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.xy));
+        float4 A1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.xz));
+        float4 A2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.xw));
 
-        float4 B0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xy));
-        float4 B1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xz));
-        float4 B2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xw));
+        float4 B0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xy));
+        float4 B1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xz));
+        float4 B2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xw));
 
-        float4 C0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xy));
-        float4 C1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xz));
-        float4 C2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xw));
+        float4 C0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xy));
+        float4 C1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xz));
+        float4 C2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xw));
 
         float3 Weights = float3(1.0, 2.0, 4.0) / 16.0;
         float4 OutputColor = 0.0;
@@ -203,7 +203,7 @@
     CBlur_KarisSample GetKarisSample(sampler2D SamplerSource, float2 Tex)
     {
         CBlur_KarisSample Output;
-        Output.Color = tex2Dlod(SamplerSource, CShade_PadFloat2(Tex));
+        Output.Color = tex2Dlod(SamplerSource, CMath_PadFloat2(Tex));
         Output.Weight = CBlur_GetKarisWeight(Output.Color.rgb);
         return Output;
     }
@@ -272,22 +272,22 @@
         }
         else
         {
-            float4 A0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xy));
-            float4 A1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xz));
-            float4 A2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex1.xw));
+            float4 A0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xy));
+            float4 A1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xz));
+            float4 A2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex1.xw));
 
-            float4 B0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xy));
-            float4 B1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xz));
-            float4 B2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex2.xw));
+            float4 B0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xy));
+            float4 B1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xz));
+            float4 B2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex2.xw));
 
-            float4 C0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex3.xy));
-            float4 C1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex3.xz));
-            float4 C2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex3.xw));
+            float4 C0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex3.xy));
+            float4 C1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex3.xz));
+            float4 C2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex3.xw));
 
-            float4 D0 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.xw));
-            float4 D1 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.zw));
-            float4 D2 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.xy));
-            float4 D3 = tex2Dlod(SampleSource, CShade_PadFloat2(Tex0.zy));
+            float4 D0 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.xw));
+            float4 D1 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.zw));
+            float4 D2 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.xy));
+            float4 D3 = tex2Dlod(SampleSource, CMath_PadFloat2(Tex0.zy));
 
             float4 GroupA = A0 + B0 + A1 + B1;
             float4 GroupB = B0 + C0 + B1 + C1;
@@ -497,7 +497,7 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x0, y0) * 2.0;
-                float4 Offset = CShade_PadFloat2(Tex + (Delta * PixelSize));
+                float4 Offset = CMath_PadFloat2(Tex + (Delta * PixelSize));
 
                 // Sampling.
                 float2 GuideSample = tex2Dlod(Guide, Offset).xy;
@@ -746,7 +746,7 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x, y) * 2.0;
-                float4 Offset = CShade_PadFloat2(Tex + (Delta * PixelSize));
+                float4 Offset = CMath_PadFloat2(Tex + (Delta * PixelSize));
                 float2 Sample = tex2Dlod(Image, Offset).xy;
                 ArrayImages[ImageIndex] = Sample;
 
@@ -867,7 +867,7 @@
             {
                 // *2 because the lower sample takes a 2 texel footprint.
                 float2 Delta = float2(x, y) * 2.0;
-                float4 Offset = CShade_PadFloat2(Tex + (Delta * PixelSize));
+                float4 Offset = CMath_PadFloat2(Tex + (Delta * PixelSize));
                 float2 Sample = tex2Dlod(Image, Offset).xy;
                 ArrayImages[ImageIndex] = Sample;
                 ImageIndex += 1;
@@ -922,7 +922,7 @@
         FullQuads[7] *= WeightsCardinal;
 
         // Calculate Side Winder filter
-        float2 Reference = tex2Dlod(Guide, CShade_PadFloat2(Tex)).xy;
+        float2 Reference = tex2Dlod(Guide, CMath_PadFloat2(Tex)).xy;
         float DotRR = dot(Reference, Reference);
 
         float2 NearestWindow = 0.0;
@@ -956,7 +956,7 @@
     {
         // Initialize variables
         float2 PixelSize = ldexp(fwidth(Tex.xy), 1.0);
-        float4 GuideHighSample = tex2Dlod(GuideHigh, CShade_PadFloat2(Tex));
+        float4 GuideHighSample = tex2Dlod(GuideHigh, CMath_PadFloat2(Tex));
 
         float4 BilateralSum = 0.0;
         float BilateralWeightSum = 0.0;
@@ -969,7 +969,7 @@
             {
                 // Calculate offset
                 float2 Offset = float2(x, y);
-                float4 OffsetTex = CShade_PadFloat2(Tex + (Offset * PixelSize));
+                float4 OffsetTex = CMath_PadFloat2(Tex + (Offset * PixelSize));
 
                 // Sample image and guide
                 float4 ImageSample = tex2Dlod(Image, OffsetTex);
