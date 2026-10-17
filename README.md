@@ -80,7 +80,7 @@ You can access the source code, open issues, and contribute here on GitHub.
 
 ## AI Diligence Statement
 
-While developing and maintaining CShade, I used AI models as tools to streamline documentation, version control, and technical research. Mistral AI's Ministral model helped draft commit messages and write project documentation. Google's Gemini Flash-Lite served as an educational and research partner, helping me explore, understand, and synthesize technical computer graphics principles and underlying mathematical concepts.
+While developing and maintaining CShade, I used AI models as tools to streamline documentation, version control, and technical research. **Mistral AI's Ministral** model helped draft commit messages and write project documentation. **Google's Gemini Flash-Lite** served as an educational and research partner, helping me explore, understand, and synthesize technical computer graphics principles and underlying mathematical concepts.
 
 I affirm that all AI-assisted content, documentation, and frameworks have undergone human review, evaluation, and adaptation. The final implementation, architecture, and output reflect my decisions, expertise, and intended design. While these AI models provided valuable assistance throughout development, I remain responsible for the project's codebase, accuracy, and overall direction. This disclosure is provided in the spirit of transparency, open-source integrity, and a commitment to acknowledging the collaborative tools utilized in CShade's creation.
 
