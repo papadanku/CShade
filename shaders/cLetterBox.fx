@@ -46,7 +46,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     float2 Shaper = step(abs(ShapeTex), _Cutoff);
 
     // RENDER
-    float Shape = Shaper.xxx * Shaper.yyy;
+    float Shape = Shaper.x * Shaper.y;
 
     #if defined(CSHADE_BLENDING)
         Output = float4((float3)Shape, _CShade_AlphaFactor);

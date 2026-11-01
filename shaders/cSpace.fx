@@ -50,54 +50,54 @@ float3 DiplayChromaSpace(float4 Color, float4 Gamma)
     switch(_ChromaSpace)
     {
         case 0: // Length (XY)
-            Output.rg = CColor_RGBtoChromaticityRGB(Color, 0).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color.rgb, 0).rg;
             break;
         case 1: // Length (XYZ)
-            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 0).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color.rgb, 0).rgb;
             break;
         case 2: // Average (XY)
-            Output.rg = CColor_RGBtoChromaticityRGB(Color, 1).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color.rgb, 1).rg;
             break;
         case 3: // Average (XYZ)
-            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 1).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color.rgb, 1).rgb;
             break;
         case 4: // Sum (XY)
-            Output.rg = CColor_RGBtoChromaticityRGB(Color, 2).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color.rgb, 2).rg;
             break;
         case 5: // Sum (XYZ)
-            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 2).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color.rgb, 2).rgb;
             break;
         case 6: // Max (XY)
-            Output.rg = CColor_RGBtoChromaticityRGB(Color, 3).rg;
+            Output.rg = CColor_RGBtoChromaticityRGB(Color.rgb, 3).rg;
             break;
         case 7: // Max (XYZ)
-            Output.rgb = CColor_RGBtoChromaticityRGB(Color, 3).rgb;
+            Output.rgb = CColor_RGBtoChromaticityRGB(Color.rgb, 3).rgb;
             break;
         case 8: // Ratio (XY)
-            Output.rg = CColor_RGBtoChromaticityRG(Color);
+            Output.rg = CColor_RGBtoChromaticityRG(Color.rgb);
             break;
         case 9: // Spherical (XY)
-            Output.rg = CColor_RGBtoSphericalRGB(Color).yz;
+            Output.rg = CColor_RGBtoSphericalRGB(Color.rgb).yz;
             break;
         case 10: // Hue-Saturation (HSI)
-            Output.rg = CColor_RGBtoHSI(Color).rg;
+            Output.rg = CColor_RGBtoHSI(Color.rgb).rg;
             break;
         case 11: // Hue-Saturation (HSL)
-            Output.rg = CColor_RGBtoHSL(Color).rg;
+            Output.rg = CColor_RGBtoHSL(Color.rgb).rg;
             break;
         case 12: // Hue-Saturation (HSV)
-            Output.rg = CColor_RGBtoHSV(Color, true).rg;
+            Output.rg = CColor_RGBtoHSV(Color.rgb, true).rg;
             break;
         case 13: // CoCg (XY)
-            Output.rg = CColor_SRGBtoYCOCGR(Gamma, true).yz;
+            Output.rg = CColor_SRGBtoYCOCGR(Gamma.rgb, true).yz;
             break;
         case 14: // OKLab (AB)
-            Output.rg = CColor_RGBtoOKLAB(Color).yz;
+            Output.rg = CColor_RGBtoOKLAB(Color.rgb).yz;
             Output.rg = (Output.rg + 0.4) / 0.8;
             break;
         case 15: // OKLch (CH)
             const float Pi2 = 1.0 / CMath_GetPi();
-            Output.rg = CColor_RGBtoOKLCH(Color).yz;
+            Output.rg = CColor_RGBtoOKLCH(Color.rgb).yz;
             Output.g *= Pi2;
             Output.g = CMath_SNORMtoUNORM_FLT1(Output.g);
             break;

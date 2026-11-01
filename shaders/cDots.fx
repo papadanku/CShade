@@ -285,7 +285,7 @@ void PS_Blit(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
     #if SHADER_RGB_VERSION
         Output = CColor_ApplyLogContrast(Output.rgb, _InputContrast);
     #else
-        Output.a = CColor_ApplyLogContrast((float3)Output.a, _InputContrast);
+        Output.a = CColor_ApplyLogContrast((float3)Output.a, _InputContrast).r;
     #endif
 }
 
@@ -323,7 +323,7 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         CircleMask = smoothstep(0.8, 1.0, CircleDistance);
 
         // Compute masked color
-        OutputColor = lerp(_FrontColor, _BackColor, CircleMask);
+        OutputColor.rgb = lerp(_FrontColor.rgb, _BackColor, CircleMask);
 
         // Per-color cropping
         CropChannel(OutputColor.r, 0, RedChannel_Tiles, _RedChannelCrop);
@@ -344,13 +344,13 @@ void PS_Main(CShade_VS2PS_Quad Input, out float4 Output : SV_TARGET0)
         CircleMask = smoothstep(0.8, 1.0, CircleDistance);
 
         // Compute masked color
-        OutputColor = lerp(_FrontColor, _BackColor, CircleMask);
+        OutputColor.rgb = lerp(_FrontColor.rgb, _BackColor.rgb, CircleMask);
 
         // Crop the image
-        OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.x > _Crop.x);
-        OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.x < (_CircleAmount - _Crop.y));
-        OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y > _Crop.z * 2.0);
-        OutputColor = lerp(_BackColor, OutputColor, MainTiles.Value.y < (_CircleAmount - _Crop.w * 2.0));
+        OutputColor.rgb = lerp(_BackColor.rgb, OutputColor.rgb, MainTiles.Value.x > _Crop.x);
+        OutputColor.rgb = lerp(_BackColor.rgb, OutputColor.rgb, MainTiles.Value.x < (_CircleAmount - _Crop.y));
+        OutputColor.rgb = lerp(_BackColor.rgb, OutputColor.rgb, MainTiles.Value.y > _Crop.z * 2.0);
+        OutputColor.rgb = lerp(_BackColor.rgb, OutputColor.rgb, MainTiles.Value.y < (_CircleAmount - _Crop.w * 2.0));
     #endif
 
     // RENDER

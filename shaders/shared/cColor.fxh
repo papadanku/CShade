@@ -16,13 +16,13 @@
 
     float4 CColor_SRGBtoRGB(float4 RGB)
     {
-        RGB = (RGB <= 0.04045) ? RGB / 12.92 : pow((RGB + 0.055) / 1.055, 2.4);
+        RGB = (RGB <= 0.04045) ? RGB / 12.92 : pow((abs(RGB) + 0.055) / 1.055, 2.4);
         return RGB;
     }
 
     float4 CColor_RGBtoSRGB(float4 RGB)
     {
-        RGB = (RGB <= 0.0031308) ? 12.92 * RGB : 1.055 * pow(RGB, 1.0 / 2.4) - 0.055;
+        RGB = (RGB <= 0.0031308) ? 12.92 * RGB : 1.055 * pow(abs(RGB), 1.0 / 2.4) - 0.055;
         return RGB;
     }
 
