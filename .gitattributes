@@ -1,5 +1,8 @@
 
 * text=auto eol=lf
 
+*.fx text eol=crlf
+*.fxh text eol=crlf
+*.mfx text eol=crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
